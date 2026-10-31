@@ -13,6 +13,7 @@ import {
   KeyRound,
   Copy,
   Check,
+  X,
   Eye,
   EyeOff,
   RefreshCw,
@@ -50,8 +51,13 @@ import {
   Calendar,
   ShieldCheck,
   MessageCircle,
-  Power
+  Power,
+  CreditCard,
+  Lock,
+  ArrowRight,
+  Sparkles,
 } from '../icons.jsx';
+import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { fetchProducts } from '../../productData.js';
 import { storeConfig } from '../../config.js';
@@ -233,7 +239,7 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
   const gstNumber = apiKey?.gst_number || apiKey?.profiles?.gstin || apiKey?.profiles?.gst_number || buyerProfile?.gstin || buyerProfile?.gst_number || '';
   const email = apiKey?.profiles?.email || user?.email || 'N/A';
   const phone = apiKey?.profiles?.whatsapp || apiKey?.profiles?.whatsapp_number || apiKey?.profiles?.phone || buyerProfile?.whatsapp || '';
-  
+
   const city = apiKey?.profiles?.city || buyerProfile?.city || '';
   const state = apiKey?.profiles?.state || buyerProfile?.state || '';
   const pincode = apiKey?.profiles?.pincode || buyerProfile?.pincode || '';
@@ -241,25 +247,25 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
   const locationStr = locationParts.length > 0 ? locationParts.join(', ') : 'Not specified';
 
   const buyerType = apiKey?.profiles?.buyer_subtype || apiKey?.profiles?.role || buyerProfile?.buyer_subtype || buyerProfile?.buyer_type || 'Reseller / Developer';
-  
+
   const createdAtFormatted = apiKey?.created_at
     ? new Date(apiKey.created_at).toLocaleString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'N/A';
 
   const lastUsedFormatted = apiKey?.last_used_at
     ? new Date(apiKey.last_used_at).toLocaleString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'No requests recorded';
 
   const catalogModeLabel = apiKey?.catalog_mode === 'curated'
@@ -270,8 +276,8 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
   const waCleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
   const waUrl = waCleanPhone
     ? `https://wa.me/${waCleanPhone}?text=${encodeURIComponent(
-        `Hi ${domainOwnerName !== 'N/A' ? domainOwnerName : clientName}, regarding your Weave365 Developer API connection for ${clientName}...`
-      )}`
+      `Hi ${domainOwnerName !== 'N/A' ? domainOwnerName : clientName}, regarding your Weave365 Developer API connection for ${clientName}...`
+    )}`
     : null;
 
   return (
@@ -548,6 +554,348 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
   );
 }
 
+export function PlanSelectionCard({
+  apiKey,
+  user,
+  onActivated,
+  isRenewal = false,
+  isExpired = false,
+  onClose = null,
+}) {
+  const [selectedPlan, setSelectedPlan] = useState(
+    apiKey?.subscription_plan === 'pro' || apiKey?.tier === 'pro' ? 'pro' : 'growth'
+  );
+  const [selectedGateway, setSelectedGateway] = useState('cashfree'); // 'cashfree' | 'phonepe'
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const plans = [
+    {
+      id: 'growth',
+      name: 'Growth Partner',
+      price: 299,
+      priceLabel: '₹299',
+      period: '/ month',
+      badge: 'Stock Sync',
+      tagline: 'Sync live stock & wholesale catalog automatically.',
+      features: [
+        { text: 'Live stock status sync (Shopify & WooCommerce)', included: true },
+        { text: 'Real-time wholesale catalog & pricing feeds', included: true },
+        { text: '10,000 API requests / month (3 req/sec)', included: true },
+        { text: 'Automated order placement', included: false, notice: 'Manual Orders' },
+      ],
+      ordersEnabled: false,
+    },
+    {
+      id: 'pro',
+      name: 'Pro Scale',
+      price: 499,
+      priceLabel: '₹499',
+      period: '/ month',
+      badge: 'Recommended • Full Automation',
+      recommended: true,
+      tagline: 'Continuous stock synchronization plus automated order routing.',
+      features: [
+        { text: 'Everything in Growth Partner plan', included: true },
+        { text: 'Automated order placement API (/api/v1/orders)', included: true, highlightNotice: 'Full Automation' },
+        { text: 'Multi-store SKU routing & priority warehouse queue', included: true },
+        { text: '25,000 API requests / month & priority dispatch', included: true },
+      ],
+      ordersEnabled: true,
+    },
+  ];
+
+  const currentSelected = plans.find((p) => p.id === selectedPlan) || plans[0];
+
+  const handlePay = async () => {
+    if (!apiKey?.id) return;
+    setSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const returnUrl = `${window.location.origin}/account?tab=developer&key_id=${apiKey.id}`;
+      const data = await developerService.createSubscriptionOrder({
+        keyId: apiKey.id,
+        plan: selectedPlan,
+        gateway: selectedGateway,
+        returnUrl: selectedGateway === 'phonepe' ? `${returnUrl}&gateway=phonepe` : returnUrl,
+      });
+
+      if (selectedGateway === 'phonepe') {
+        if (!data.redirect_url) throw new Error('PhonePe did not provide checkout URL.');
+        window.location.assign(data.redirect_url);
+        return;
+      }
+
+      // Cashfree Modal Checkout
+      const envMode = (data.environment || 'SANDBOX').toLowerCase() === 'production' ? 'production' : 'sandbox';
+      const cashfree = await loadCashfree({ mode: envMode });
+      if (!cashfree) throw new Error('Cashfree Payment Gateway SDK failed to initialize.');
+
+      const checkoutResult = await cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: '_modal',
+        appearance: { width: '650px', height: '780px' },
+      });
+
+      if (checkoutResult?.error) {
+        setErrorMsg('Payment cancelled or dismissed. You can retry whenever you are ready.');
+        setSubmitting(false);
+        return;
+      }
+
+      if (checkoutResult?.redirect) {
+        return;
+      }
+
+      // Customer completed payment -> verify server-to-server
+      const verifyRes = await developerService.verifySubscriptionOrder({
+        keyId: apiKey.id,
+        gateway: 'cashfree',
+        orderId: data.order_id,
+      });
+
+      if (verifyRes?.success && verifyRes.is_paid) {
+        setSuccessMsg('🎉 Payment confirmed! Your 30-day Developer API subscription is now active.');
+        if (onActivated) {
+          onActivated(verifyRes.keyRecord);
+        }
+      } else {
+        setErrorMsg('Payment verification unconfirmed. Please wait a moment and refresh.');
+      }
+    } catch (err) {
+      console.error('[PlanSelectionCard] Error:', err);
+      setErrorMsg(err.message || 'Payment initiation failed. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="dev-plan-selection-card">
+      <div className="dev-plan-header">
+        <div className={`dev-plan-header-badge ${isExpired ? 'error' : isRenewal ? 'warning' : 'success'}`}>
+          {isExpired ? (
+            <>
+              <AlertTriangle size={12} />
+              <span>Subscription Expired</span>
+            </>
+          ) : isRenewal ? (
+            <>
+              <RefreshCw size={12} />
+              <span>Extend Subscription</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 size={12} />
+              <span>Application Approved</span>
+            </>
+          )}
+        </div>
+        <h2 className="dev-plan-title">
+          {isExpired
+            ? 'Renew API Subscription'
+            : isRenewal
+              ? 'Extend Your Plan'
+              : 'Select Your API Plan'}
+        </h2>
+        <p className="dev-plan-subtitle">
+          {isExpired
+            ? 'Choose a plan to restore your API credentials and live feeds.'
+            : isRenewal
+              ? 'Add 30 days or upgrade to full order automation.'
+              : 'Choose a monthly plan to activate your credentials.'}
+        </p>
+      </div>
+
+      {errorMsg && (
+        <div className="dev-plan-alert error" role="alert">
+          <AlertTriangle size={16} />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="dev-plan-alert success" role="alert">
+          <CheckCircle2 size={16} />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      {/* 2 Plans Grid */}
+      <div className="dev-plans-grid">
+        {plans.map((p) => {
+          const isSelected = selectedPlan === p.id;
+          return (
+            <div
+              key={p.id}
+              className={`dev-plan-option-box ${isSelected ? 'selected' : ''} ${p.recommended ? 'recommended' : ''}`}
+              onClick={() => setSelectedPlan(p.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault();
+                  setSelectedPlan(p.id);
+                }
+              }}
+            >
+              <div className="dev-plan-option-top">
+                <span className={`dev-plan-badge-tag ${p.recommended ? 'highlight' : ''}`}>
+                  {p.badge}
+                </span>
+                <div className="dev-plan-radio">
+                  <div className={`dev-radio-circle ${isSelected ? 'active' : ''}`}>
+                    {isSelected && <div className="dev-radio-dot" />}
+                  </div>
+                </div>
+              </div>
+
+              <div className="dev-plan-name-block">
+                <h3 className="dev-plan-name">{p.name}</h3>
+                <p className="dev-plan-tagline">{p.tagline}</p>
+              </div>
+
+              <div className="dev-plan-price-block">
+                <span className="dev-plan-amount">{p.priceLabel}</span>
+                <span className="dev-plan-period">{p.period}</span>
+              </div>
+
+              <div className="dev-plan-divider" />
+
+              <div className="dev-plan-features-list">
+                {p.features.map((feat, idx) => (
+                  <div key={idx} className={`dev-plan-feat-item ${feat.included ? 'included' : 'not-included'} ${feat.highlightNotice ? 'highlighted' : ''}`}>
+                    {feat.included ? (
+                      <Check size={14} className="dev-feat-check" />
+                    ) : (
+                      <X size={14} className="dev-feat-cross" />
+                    )}
+                    <div className="dev-feat-content">
+                      <span className={`dev-feat-text ${!feat.included ? 'disabled' : ''}`}>
+                        {feat.text}
+                      </span>
+                      {feat.notice && (
+                        <span className="dev-feat-pill notice">{feat.notice}</span>
+                      )}
+                      {feat.highlightNotice && (
+                        <span className="dev-feat-pill highlight">{feat.highlightNotice}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Payment Gateway Selector */}
+      <div className="dev-gateway-section">
+        <div className="dev-gateway-header-row">
+          <span className="dev-gateway-title-label">Choose Payment Gateway</span>
+        </div>
+
+        <div className="dev-gateways-grid">
+          <label className={`dev-gateway-card ${selectedGateway === 'cashfree' ? 'selected' : ''}`}>
+            <div className="dev-gateway-card-top">
+              <input
+                type="radio"
+                name="gateway_option"
+                value="cashfree"
+                checked={selectedGateway === 'cashfree'}
+                onChange={() => setSelectedGateway('cashfree')}
+              />
+              <div className="dev-gateway-logo-badge">
+                <img
+                  src="/assets/payment-methods/cashfree.svg"
+                  alt="Cashfree"
+                  width={24}
+                  height={24}
+                  className="dev-gateway-logo-img"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <div className="dev-gateway-card-body">
+              <span className="dev-gateway-title">Cashfree Payments</span>
+              <span className="dev-gateway-desc">UPI, Cards & NetBanking</span>
+            </div>
+          </label>
+
+          <label className={`dev-gateway-card ${selectedGateway === 'phonepe' ? 'selected' : ''}`}>
+            <div className="dev-gateway-card-top">
+              <input
+                type="radio"
+                name="gateway_option"
+                value="phonepe"
+                checked={selectedGateway === 'phonepe'}
+                onChange={() => setSelectedGateway('phonepe')}
+              />
+              <div className="dev-gateway-logo-badge">
+                <img
+                  src="/assets/payment-methods/phonepe.svg"
+                  alt="PhonePe"
+                  width={24}
+                  height={24}
+                  className="dev-gateway-logo-img"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <div className="dev-gateway-card-body">
+              <span className="dev-gateway-title">PhonePe Checkout</span>
+              <span className="dev-gateway-desc">UPI, QR Code & Cards</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      {/* Action Footer */}
+      <div className="dev-plan-footer">
+        <div className="dev-plan-security-inline">
+          <Shield size={14} className="dev-shield-icon" />
+          <span>Prepaid 30-day access • Instant automatic activation</span>
+        </div>
+
+        <div className="dev-plan-footer-actions">
+          {onClose && (
+            <button
+              type="button"
+              className="api-btn-secondary"
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="dev-btn-checkout"
+            onClick={handlePay}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <RefreshCw size={14} className="spin-icon" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Lock size={14} />
+                <span>Pay ₹{currentSelected.price} & Activate →</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DeveloperDashboard({
   user,
   buyerProfile,
@@ -565,7 +913,50 @@ export function DeveloperDashboard({
   const [copiedField, setCopiedField] = useState(null);
   const [usageStats, setUsageStats] = useState({ usage: [], totalMonth: initialKeyRecord?.monthTotal ?? 0 });
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce');
-  
+
+  // Subscription Plan & Gateway State
+  const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [verifyingSub, setVerifyingSub] = useState(false);
+  const [subNotice, setSubNotice] = useState(null);
+
+  // Auto-verify subscription if returning from gateway redirect (PhonePe / Cashfree)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const ppSubId = urlParams.get('pp_sub_id') || (urlParams.get('gateway') === 'phonepe' ? (urlParams.get('order_id') || urlParams.get('orderId')) : null);
+    const cfSubId = urlParams.get('cf_sub_id') || (urlParams.get('gateway') === 'cashfree' ? (urlParams.get('order_id') || urlParams.get('orderId')) : null);
+    const subOrderId = ppSubId || cfSubId || urlParams.get('order_id') || urlParams.get('orderId');
+    const targetKeyId = urlParams.get('key_id') || apiKey?.id;
+
+    if (subOrderId && targetKeyId) {
+      const gateway = (ppSubId || String(subOrderId).startsWith('PP_')) ? 'phonepe' : 'cashfree';
+      setVerifyingSub(true);
+      developerService.verifySubscriptionOrder({
+        keyId: targetKeyId,
+        gateway,
+        orderId: subOrderId,
+      })
+        .then((res) => {
+          if (res?.success && res.keyRecord) {
+            setApiKey(res.keyRecord);
+            setSubNotice({ type: 'success', message: '🎉 Payment successful! Your 30-day Developer API subscription is active.' });
+            const cleanUrl = window.location.pathname + '?tab=developer';
+            window.history.replaceState({}, document.title, cleanUrl);
+            if (onAdminUpdate) onAdminUpdate(res.keyRecord);
+          } else {
+            setSubNotice({ type: 'error', message: 'Could not automatically confirm payment. Please check your transaction status.' });
+          }
+        })
+        .catch((err) => {
+          console.warn('[DeveloperDashboard] auto-verify error:', err);
+          setSubNotice({ type: 'error', message: err.message || 'Payment verification failed.' });
+        })
+        .finally(() => {
+          setVerifyingSub(false);
+        });
+    }
+  }, [apiKey?.id]);
+
   // Test Console State
   const [testEndpoint, setTestEndpoint] = useState('/api/v1/stock-status');
   const [testLoading, setTestLoading] = useState(false);
@@ -751,13 +1142,13 @@ export function DeveloperDashboard({
       const pTitle = (p.title || p.name || '').toLowerCase();
       const pCat = (p.category || '').toLowerCase();
       const pFabric = (p.fabric || '').toLowerCase();
-      
+
       if (curatorSearch.trim()) {
         const q = curatorSearch.toLowerCase().trim();
         const matches = pSku.includes(q) || pTitle.includes(q) || pCat.includes(q) || pFabric.includes(q);
         if (!matches) return false;
       }
-      
+
       if (curatorCategory !== 'all') {
         if (pCat !== curatorCategory.toLowerCase()) return false;
       }
@@ -825,7 +1216,7 @@ export function DeveloperDashboard({
 
   const handleSaveCatalogSelection = async () => {
     if (!apiKey?.id) return;
-    
+
     const executeSave = async () => {
       setSavingSelection(true);
       setSelectionSuccessMsg(null);
@@ -919,7 +1310,7 @@ export function DeveloperDashboard({
     triggerConfirm({
       title: newChecked ? 'Enable Order API Access' : 'Disable Order API Access',
       message: newChecked
-        ? `Grant /api/v1/orders access to ${apiKey?.client_name || 'this client'}? They will be authorized to submit wholesale dropship orders.`
+        ? `Grant /api/v1/orders access to ${apiKey?.client_name || 'this client'}? They will be authorized to submit wholesale orders.`
         : `Revoke /api/v1/orders access for ${apiKey?.client_name || 'this client'}? Any subsequent order requests will receive 403 Forbidden.`,
       confirmLabel: newChecked ? 'Enable Order API' : 'Disable Order API',
       isDanger: !newChecked,
@@ -1288,12 +1679,37 @@ export function DeveloperDashboard({
     );
   }
 
+  const isKeyActive = Boolean(apiKey?.is_active);
+  const approvalStatus = apiKey?.approval_status || (isKeyActive ? 'approved' : 'pending');
+  const subscriptionStatus = apiKey?.subscription_status || (isKeyActive ? 'active' : 'inactive');
+
+  const expiresAtMs = apiKey?.subscription_expires_at ? new Date(apiKey.subscription_expires_at).getTime() : null;
+  const isSubscriptionExpired = Boolean(apiKey?.subscription_status === 'expired' || (expiresAtMs && expiresAtMs < Date.now()));
+  const daysRemaining = expiresAtMs ? Math.max(0, Math.ceil((expiresAtMs - Date.now()) / (1000 * 60 * 60 * 24))) : null;
+
   // Pending request in profile qualification
   const pendingRequest = apiKey?.profiles?.qualification?.api_access_request || buyerProfile?.qualification?.api_access_request;
-  const isPendingApproval = Boolean(!apiKey?.is_active && (apiKey || pendingRequest));
+  const hasSubmittedRequest = Boolean(apiKey || pendingRequest);
 
-  // If request is submitted and pending manual Admin approval
-  if (!isAdminMode && isPendingApproval) {
+  // 1. Returning from PhonePe or Cashfree redirect, currently verifying
+  if (verifyingSub) {
+    return (
+      <div className="dev-dashboard-loading" style={{ minHeight: '340px' }}>
+        <RefreshCw size={36} className="spin-icon" style={{ color: '#0284c7' }} />
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0f172a', margin: '14px 0 4px' }}>
+          Confirming Subscription Payment...
+        </h3>
+        <p style={{ color: '#64748b', fontSize: '0.875rem', maxWidth: '380px', textAlign: 'center' }}>
+          Verifying your transaction with the payment gateway. Your developer credentials and dashboard will unlock immediately.
+        </p>
+      </div>
+    );
+  }
+
+  // 2. Request submitted and pending manual Admin approval
+  const isPendingAdminReview = !isAdminMode && hasSubmittedRequest && !isKeyActive && approvalStatus === 'pending';
+
+  if (isPendingAdminReview) {
     const waSupportUrl = `https://wa.me/91${(storeConfig.whatsapp || '9919101369').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
       'Hi Weave 365 Team, I have submitted an API Access Request and would like to contact support.'
     )}`;
@@ -1310,7 +1726,7 @@ export function DeveloperDashboard({
           </div>
           <h2 className="dev-after-heading">Thanks. We’ve received your API access request.</h2>
           <p className="dev-after-body">
-            Our team will review your business and integration requirements and contact you regarding API access and API documentation.
+            Our team will review your business and integration requirements and contact you regarding API access and API documentation. Once approved, you will be able to select your monthly developer plan.
           </p>
           <div className="dev-after-actions">
             <button
@@ -1347,6 +1763,24 @@ export function DeveloperDashboard({
             </a>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // 3. Admin approved the request! Now show the Plan Selection UI
+  const isPendingPlanPayment = !isAdminMode && approvalStatus === 'approved' && (subscriptionStatus === 'pending_payment' || subscriptionStatus === 'inactive');
+
+  if (isPendingPlanPayment) {
+    return (
+      <div className="dev-plan-selection-container">
+        <PlanSelectionCard
+          apiKey={apiKey}
+          user={user}
+          onActivated={(updatedRecord) => {
+            setApiKey(updatedRecord);
+            if (onAdminUpdate) onAdminUpdate(updatedRecord);
+          }}
+        />
       </div>
     );
   }
@@ -1667,6 +2101,27 @@ export function DeveloperDashboard({
 
   return (
     <div className="dev-dashboard-container">
+      {/* 0. Subscription Gateway Notice (Success / Error notification) */}
+      {subNotice && (
+        <div
+          className={`dev-plan-alert ${subNotice.type === 'success' ? 'success' : 'error'}`}
+          style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {subNotice.type === 'success' ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+            <span>{subNotice.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSubNotice(null)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'inherit' }}
+            aria-label="Dismiss message"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* 1. Admin Inspection Header (Admin Mode Only) */}
       {isAdminMode && (
         <div className="dev-admin-banner">
@@ -1711,8 +2166,38 @@ export function DeveloperDashboard({
         </div>
       )}
 
+      {/* Expired Subscription Callout (Reseller Mode) */}
+      {!isAdminMode && isSubscriptionExpired && (
+        <div className="dev-expired-callout-card" role="alert">
+          <div className="dev-expired-callout-main">
+            <div className="dev-expired-callout-icon">
+              <AlertTriangle size={20} />
+            </div>
+            <div className="dev-expired-callout-text">
+              <div className="dev-expired-callout-title-row">
+                <h4 className="dev-expired-callout-title">Subscription Expired</h4>
+                <span className="dev-status-pill disabled" style={{ background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5' }}>
+                  HTTP 403 Forbidden
+                </span>
+              </div>
+              <p className="dev-expired-callout-desc">
+                Your 30-day billing cycle for the <strong>{apiKey?.subscription_plan === 'pro' ? 'Pro / Scale' : 'Growth Partner'}</strong> plan has expired. Live external API requests to <code>/api/v1/*</code> are currently rejected. Renew now to restore instant catalog sync and inventory feeds.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="dev-btn-renew-hero"
+            onClick={() => setPlanModalOpen(true)}
+          >
+            <RefreshCw size={15} />
+            <span>Renew Subscription (₹{apiKey?.subscription_amount || (apiKey?.subscription_plan === 'pro' ? 499 : 299)}/mo)</span>
+          </button>
+        </div>
+      )}
+
       {/* Distilled, Clarified & Quieter Suspended API Notice */}
-      {apiKey && !apiKey.is_active && (
+      {apiKey && !apiKey.is_active && !isSubscriptionExpired && (
         <div
           className="dev-suspended-quiet-card"
           role="alert"
@@ -1729,7 +2214,7 @@ export function DeveloperDashboard({
               </div>
               <p className="dev-suspended-quiet-desc">
                 {isAdminMode
-                  ? 'All external requests to /api/v1 are blocked. Storefront catalog syncing and dropship orders are paused.'
+                  ? 'All external requests to /api/v1 are blocked. Storefront catalog syncing and automated orders are paused.'
                   : 'Your API key is inactive and live requests are blocked. Contact Weave365 support on WhatsApp to restore access.'}
               </p>
             </div>
@@ -1775,18 +2260,90 @@ export function DeveloperDashboard({
         onDeleteApiKey={handleDeleteApiKey}
       />
 
+      {/* Subscription Validity & Billing Cycle Card */}
+      {apiKey && (
+        <div className="dev-card dev-sub-validity-card">
+          <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div className="dev-card-title">
+              <CreditCard size={16} />
+              <h3>Prepaid Developer Subscription</h3>
+              <span className={`dev-sub-status-pill ${isSubscriptionExpired ? 'expired' : daysRemaining !== null && daysRemaining <= 7 ? 'warning' : 'active'}`}>
+                {isSubscriptionExpired
+                  ? 'Expired (HTTP 403)'
+                  : daysRemaining !== null
+                    ? daysRemaining <= 7
+                      ? `Expiring in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}`
+                      : `Active (${daysRemaining} days remaining)`
+                    : 'Active'}
+              </span>
+            </div>
+
+            {!isAdminMode && (
+              <button
+                type="button"
+                className="dev-btn-renew"
+                onClick={() => setPlanModalOpen(true)}
+              >
+                <RefreshCw size={13} />
+                <span>{isSubscriptionExpired ? 'Renew Subscription' : 'Renew / Change Plan'}</span>
+              </button>
+            )}
+          </div>
+
+          <div className="dev-sub-grid">
+            <div className="dev-sub-item">
+              <span className="dev-sub-label">Current Plan</span>
+              <strong className="dev-sub-value">
+                {apiKey.subscription_plan === 'pro'
+                  ? 'Pro / Scale (₹499/mo)'
+                  : apiKey.subscription_plan === 'growth'
+                    ? 'Growth Partner (₹299/mo)'
+                    : (apiKey.tier ? `${apiKey.tier.toUpperCase()} Tier` : 'Growth Partner (₹299/mo)')}
+              </strong>
+            </div>
+
+            <div className="dev-sub-item">
+              <span className="dev-sub-label">Billing Cycle</span>
+              <strong className="dev-sub-value">30-Day Prepaid</strong>
+            </div>
+
+            <div className="dev-sub-item">
+              <span className="dev-sub-label">Valid Until</span>
+              <strong className="dev-sub-value">
+                {apiKey.subscription_expires_at
+                  ? new Date(apiKey.subscription_expires_at).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                  : 'Active • Direct Admin'}
+              </strong>
+            </div>
+
+            <div className="dev-sub-item">
+              <span className="dev-sub-label">Payment Gateway</span>
+              <strong className="dev-sub-value">
+                {apiKey.payment_gateway
+                  ? apiKey.payment_gateway.charAt(0).toUpperCase() + apiKey.payment_gateway.slice(1)
+                  : 'Cashfree / PhonePe'}
+              </strong>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Secret Key Notification Banner (When Key is newly generated) */}
       {newGeneratedSecret && (
         <div className="dev-new-secret-alert">
-          <button 
-            type="button" 
-            className="dev-close-secret" 
-            onClick={() => setNewGeneratedSecret(null)} 
+          <button
+            type="button"
+            className="dev-close-secret"
+            onClick={() => setNewGeneratedSecret(null)}
             aria-label="Dismiss notification"
           >
             ✕
           </button>
-          
+
           <div className="dev-alert-left">
             <CheckCircle2 size={18} className="dev-alert-icon" />
             <div className="dev-alert-content">
@@ -2102,7 +2659,7 @@ export function DeveloperDashboard({
               {!apiKey?.is_active ? (
                 <span className="dev-permission-note" style={{ color: '#dc2626' }}>API suspended</span>
               ) : !apiKey?.orders_enabled && !isAdminMode ? (
-                <span className="dev-permission-note">Growth tier only</span>
+                <span className="dev-permission-note" style={{ color: '#b45309', fontWeight: '600' }}>Requires Pro Plan (₹499)</span>
               ) : null}
             </div>
           </div>
@@ -2275,7 +2832,8 @@ export function DeveloperDashboard({
                   const isSelected = selectedSkus.includes(sku);
                   const isOutOfStock = p.isOutOfStock || p.stockStatusOverride === 'out-of-stock';
                   const firstPrices = p.variants?.[0]?.prices || {};
-                  const price = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
+                  // Strictly B2R Reseller Price
+                  const price = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
                   const image = p.images?.[0] || p.image || '/images/placeholder.webp';
 
                   return (
@@ -2288,7 +2846,7 @@ export function DeveloperDashboard({
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => {}} // handled by parent onClick
+                          onChange={() => { }} // handled by parent onClick
                           className="dev-item-checkbox"
                         />
                       </div>
@@ -2421,7 +2979,7 @@ export function DeveloperDashboard({
                 </div>
                 <div className="dev-code-block-wrap">
                   <pre>
-{`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
+                    {`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
 add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
 
 function sync_weave365_inventory() {
@@ -2516,7 +3074,7 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                 </div>
                 <div className="dev-code-block-wrap">
                   <pre>
-{`<?php
+                    {`<?php
 // PrestaShop 1.7 / 8.x Stock Synchronizer
 require_once dirname(__FILE__) . '/config/config.inc.php';
 
@@ -2557,7 +3115,7 @@ if (!empty($data['stock_map'])) {
                 </div>
                 <div className="dev-code-block-wrap">
                   <pre>
-{`# 1. Fetch Complete Wholesale Catalog
+                    {`# 1. Fetch Complete Wholesale Catalog
 curl -X GET "https://www.weave365.com/api/v1/catalog" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
 
@@ -2565,27 +3123,28 @@ curl -X GET "https://www.weave365.com/api/v1/catalog" \\
 curl -X GET "https://www.weave365.com/api/v1/stock-status" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
 
-# 3. Place Dropship Order via API (Growth Tier)
+# 3. Place Automated Order via API (Pro Tier)
 curl -X POST "https://www.weave365.com/api/v1/orders" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "reseller_order_id": "ORD-101",
+    "reseller_email": "reseller@example.com",
     "customer": {
       "name": "Priya Sharma",
       "phone": "+919876543210",
-      "pincode": "560034",
-      "address_line1": "Flat 402, Green Valley",
-      "city": "Bangalore",
+      "pincode": "560038",
+      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
+      "city": "Bengaluru",
       "state": "Karnataka"
     },
-    "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]
+    "items": [{ "sku": "102001", "color": "Copper", "quantity": 1, "customer_price": 2899 }]
   }'`}
                   </pre>
                   <button
                     type="button"
                     className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog\ncurl -X GET "https://www.weave365.com/api/v1/catalog" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 2. Fetch Lightweight Stock Availability Map\ncurl -X GET "https://www.weave365.com/api/v1/stock-status" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 3. Place Dropship Order via API (Growth Tier)\ncurl -X POST "https://www.weave365.com/api/v1/orders" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "reseller_order_id": "ORD-101",\n    "customer": {\n      "name": "Priya Sharma",\n      "phone": "+919876543210",\n      "pincode": "560034",\n      "address_line1": "Flat 402, Green Valley",\n      "city": "Bangalore",\n      "state": "Karnataka"\n    },\n    "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]\n  }'`, 'curl-code')}
+                    onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog\ncurl -X GET "https://www.weave365.com/api/v1/catalog" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 2. Fetch Lightweight Stock Availability Map\ncurl -X GET "https://www.weave365.com/api/v1/stock-status" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 3. Place Automated Order via API (Pro Tier)\ncurl -X POST "https://www.weave365.com/api/v1/orders" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "reseller_order_id": "ORD-101",\n    "reseller_email": "reseller@example.com",\n    "customer": {\n      "name": "Priya Sharma",\n      "phone": "+919876543210",\n      "pincode": "560038",\n      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",\n      "city": "Bengaluru",\n      "state": "Karnataka"\n    },\n    "items": [{ "sku": "102001", "color": "Copper", "quantity": 1, "customer_price": 2899 }]\n  }'`, 'curl-code')}
                   >
                     {copiedField === 'curl-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}
                   </button>
@@ -2600,7 +3159,7 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
                 </div>
                 <div className="dev-code-block-wrap">
                   <pre>
-{`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
+                    {`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
 
 async function fetchWeave365Catalog() {
   const response = await fetch('https://www.weave365.com/api/v1/catalog', {
@@ -2660,7 +3219,7 @@ fetchWeave365Catalog();`}
                   className="dev-endpoint-select"
                 >
                   <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
-                  <option value="/api/v1/catalog">/api/v1/catalog (Full B2B Product Feed)</option>
+                  <option value="/api/v1/catalog">/api/v1/catalog (B2R Reseller Catalog Feed)</option>
                   <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
                   <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
                   <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>
@@ -2692,6 +3251,35 @@ fetchWeave365Catalog();`}
                 <pre>{JSON.stringify(testResponse, null, 2)}</pre>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Subscription Renewal / Upgrade Modal */}
+      {planModalOpen && (
+        <div
+          className="dev-plan-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setPlanModalOpen(false)}
+        >
+          <div className="dev-plan-modal-content" onClick={(e) => e.stopPropagation()}>
+            <PlanSelectionCard
+              apiKey={apiKey}
+              user={user}
+              isRenewal={true}
+              isExpired={isSubscriptionExpired}
+              onClose={() => setPlanModalOpen(false)}
+              onActivated={(updatedRecord) => {
+                setApiKey(updatedRecord);
+                setPlanModalOpen(false);
+                setSubNotice({
+                  type: 'success',
+                  message: '🎉 Subscription renewed successfully! Your 30-day billing cycle is active.',
+                });
+                if (onAdminUpdate) onAdminUpdate(updatedRecord);
+              }}
+            />
           </div>
         </div>
       )}

@@ -44,18 +44,19 @@ const NAV_GROUPS = [
     title: 'Getting Started',
     items: [
       { id: 'overview', label: 'Overview', icon: BookOpen },
+      { id: 'quickstart', label: '3-Step Integration', icon: Sparkles },
       { id: 'authentication', label: 'Authentication', icon: KeyRound },
       { id: 'platforms', label: 'Supported Platforms', icon: Layers },
-      { id: 'curated-catalog', label: 'Curated Catalog Sync', icon: Sparkles },
+      { id: 'curated-catalog', label: 'Curated Catalog Sync', icon: Sliders },
     ],
   },
   {
     title: 'API Endpoints',
     items: [
-      { id: 'endpoint-catalog', label: 'GET /catalog', method: 'GET', desc: 'Reseller Catalog' },
+      { id: 'endpoint-catalog', label: 'GET /catalog', method: 'GET', desc: 'B2R Catalog Feed' },
       { id: 'endpoint-stock', label: 'GET /stock-status', method: 'GET', desc: 'Stock Map' },
       { id: 'endpoint-product', label: 'GET /products/:sku', method: 'GET', desc: 'Product Lookup' },
-      { id: 'endpoint-order', label: 'POST /orders', method: 'POST', desc: 'Forward Dropship' },
+      { id: 'endpoint-order', label: 'POST /orders', method: 'POST', desc: 'Automated Orders' },
       { id: 'endpoint-get-orders', label: 'GET /orders', method: 'GET', desc: 'Tracking & History' },
       { id: 'endpoint-me', label: 'GET /me', method: 'GET', desc: 'Quota & Metrics' },
     ],
@@ -72,6 +73,7 @@ const NAV_GROUPS = [
 
 const SECTION_IDS = [
   'overview',
+  'quickstart',
   'authentication',
   'platforms',
   'curated-catalog',
@@ -257,8 +259,8 @@ async function checkStock() {
   console.log('Live Stock Map:', data.stock_map);
 }
 
-// 2. Forward Customer Order Directly for Blind Dropship Dispatch
-async function placeDropshipOrder(orderData) {
+// 2. Submit Wholesale Order Directly via API
+async function placeOrder(orderData) {
   const res = await fetch(\`\${BASE_URL}/orders\`, {
     method: 'POST',
     headers: {
@@ -267,23 +269,31 @@ async function placeDropshipOrder(orderData) {
     },
     body: JSON.stringify({
       reseller_order_id: orderData.storeOrderId,
+      reseller_email: 'reseller@example.com', // Registered email where invoice & payment link are dispatched
       items: [
-        { sku: '100001', color: 'Royal Blue', quantity: 1 }
+        {
+          sku: '102001',
+          color: 'Copper',
+          quantity: 2,
+          customer_price: 2899 // Retail price charged to customer for printing on courier parcel slip
+        }
       ],
       shipping_address: {
-        name: orderData.customerName,
-        phone: orderData.customerPhone,
+        name: orderData.recipientName,
+        phone: orderData.phone,
         address_line1: orderData.address1,
         city: orderData.city,
         state: orderData.state,
         pincode: orderData.pincode
       },
-      packing_preference: 'Blind Packaging'
+      shipping_notes: 'Wholesale handloom pure silk parcel'
     })
   });
   
   const result = await res.json();
-  console.log('Order queued for weaver dispatch! Tracking URL:', result.tracking_url);
+  console.log('Order status:', result.order_status); // 'payment_pending'
+  console.log('Invoice emailed to:', result.invoice_email_sent_to);
+  console.log('Payment Link:', result.payment_link);
   return result;
 }
 
@@ -297,7 +307,7 @@ async function getOrders() {
   return data.orders;
 }`,
 
-    curl: `# 1. Fetch Reseller Catalog (JSON)
+    curl: `# 1. Fetch Reseller B2R Catalog (JSON)
 curl -X GET "https://www.weave365.com/api/v1/catalog" \\
   -H "x-api-key: w365_live_YOUR_API_KEY"
 
@@ -306,24 +316,33 @@ curl -X GET "https://www.weave365.com/api/v1/stock-status" \\
   -H "x-api-key: w365_live_YOUR_API_KEY"
 
 # 3. Lookup Single Saree SKU
-curl -X GET "https://www.weave365.com/api/v1/products/100001" \\
+curl -X GET "https://www.weave365.com/api/v1/products/102001" \\
   -H "x-api-key: w365_live_YOUR_API_KEY"
 
-# 4. Push Dropship Customer Order
+# 4. Submit Wholesale Order via API
 curl -X POST "https://www.weave365.com/api/v1/orders" \\
   -H "x-api-key: w365_live_YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "reseller_order_id": "RESELLER-ORD-1092",
-    "items": [{"sku": "100001", "color": "Royal Blue", "quantity": 1}],
+    "reseller_email": "reseller@example.com",
+    "items": [
+      {
+        "sku": "102001",
+        "color": "Copper",
+        "quantity": 2,
+        "customer_price": 2899
+      }
+    ],
     "shipping_address": {
-      "name": "Ananya Verma",
+      "name": "Priya Sharma",
       "phone": "9876543210",
-      "address_line1": "Flat 302, Green Meadows",
-      "city": "Mumbai",
-      "state": "Maharashtra",
-      "pincode": "400050"
-    }
+      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560038"
+    },
+    "shipping_notes": "Wholesale handloom pure silk parcel"
   }'
 
 # 5. Fetch Placed Orders & Live Courier Tracking
@@ -418,7 +437,7 @@ curl -X GET "https://www.weave365.com/api/v1/orders" \\
             </div>
 
             <p className="api-docs-lead">
-              High-performance REST API for B2B resellers and automated storefronts. Synchronize wholesale catalogs, verify real-time handloom stock, and submit blind dropship fulfillment orders directly with Varanasi weavers.
+              High-performance REST API for B2B resellers and automated storefronts. Synchronize wholesale catalogs, verify real-time handloom stock, and submit wholesale procurement orders directly with Varanasi weavers.
             </p>
 
             <div className="api-docs-hero-actions">
@@ -439,7 +458,7 @@ curl -X GET "https://www.weave365.com/api/v1/orders" \\
           <section id="overview" className="api-docs-section">
             <h2>Overview</h2>
             <p>
-              The Weave365 REST API allows B2B resellers and eCommerce storefronts to query live catalog pricing, verify real-time inventory availability, and automate dropship order fulfillment directly with weavers in Varanasi.
+              The Weave365 REST API allows B2B resellers and eCommerce storefronts to query live catalog pricing, verify real-time inventory availability, and automate wholesale order procurement directly with weavers in Varanasi.
             </p>
 
             <div className="api-key-metrics-grid">
@@ -454,6 +473,40 @@ curl -X GET "https://www.weave365.com/api/v1/orders" \\
               <div className="api-metric-card">
                 <span className="api-metric-label">Payload Format</span>
                 <code className="api-metric-value">JSON / UTF-8</code>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: 3-Step Integration Quick Start */}
+          <section id="quickstart" className="api-docs-section">
+            <h2>3-Step Storefront Integration</h2>
+            <p>
+              Integrating Weave365 with your storefront takes less than 15 minutes. Follow this 3-step blueprint:
+            </p>
+
+            <div className="api-quickstart-grid">
+              <div className="api-quickstart-card">
+                <div className="api-quickstart-num">1</div>
+                <h4>Generate Key &amp; Subscribe</h4>
+                <p>
+                  Submit your API request in your <a href="/account?tab=developer">Developer Dashboard</a>. Once approved, select a 30-day plan (<strong>Growth Partner</strong> for Stock &amp; Catalog sync, or <strong>Pro Scale</strong> for Automated Orders API).
+                </p>
+              </div>
+
+              <div className="api-quickstart-card">
+                <div className="api-quickstart-num">2</div>
+                <h4>Sync Catalog &amp; Stock Feeds</h4>
+                <p>
+                  Fetch products via <code>GET /api/v1/catalog</code> (strictly Reseller B2R prices) and setup an automated 5–15 min cron query to <code>GET /api/v1/stock-status</code> to keep your store inventory in sync with the Varanasi warehouse.
+                </p>
+              </div>
+
+              <div className="api-quickstart-card">
+                <div className="api-quickstart-num">3</div>
+                <h4>Forward Orders &amp; Track</h4>
+                <p>
+                  Submit wholesale procurement orders directly to the Varanasi warehouse queue via <code>POST /api/v1/orders</code> and track live dispatch and courier fulfillment in real time.
+                </p>
               </div>
             </div>
           </section>
@@ -790,13 +843,24 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge post">POST</span>
                   <span>/api/v1/orders</span>
                 </div>
-                <span className="api-endpoint-tag">Forward Dropship Order</span>
+                <span className="api-endpoint-tag">Automated Wholesale Order</span>
               </div>
               <div className="api-endpoint-body">
                 <p>
-                  Forward your customer&apos;s order directly to the Weave365 fulfillment center in Varanasi. 
-                  All parcels are dispatched under <strong>Blind Packaging</strong> (your store name as the sender, zero supplier branding or invoices).
+                  Submit wholesale procurement orders directly to the Weave365 fulfillment center in Varanasi.
                 </p>
+
+                <div className="api-status-flow-box" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', margin: '16px 0' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#0f172a', marginBottom: '6px' }}>
+                    Automated Reseller Invoice &amp; Payment Flow
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: '#475569', lineHeight: 1.6 }}>
+                    <li><strong>1. Initial Placement:</strong> Order is created in <code>payment_pending</code> status.</li>
+                    <li><strong>2. Invoice Email:</strong> An itemized B2B wholesale invoice with a direct payment link is automatically emailed to your registered reseller address.</li>
+                    <li><strong>3. Payment Settlement:</strong> Settle the wholesale total via UPI, NetBanking, or Cards. Status immediately updates to <code>payment_received</code>.</li>
+                    <li><strong>4. Varanasi Fulfillment:</strong> Once payment is confirmed, the parcel enters our quality inspection and courier dispatch queue.</li>
+                  </ul>
+                </div>
 
                 <div className="api-response-header">
                   <span className="api-response-title">Request Body (JSON)</span>
@@ -804,27 +868,71 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "reseller_order_id": "RESELLER-ORD-1092",
+  "reseller_email": "reseller@example.com",
   "items": [
     {
-      "sku": "100001",
-      "color": "Royal Blue",
-      "quantity": 1
+      "sku": "102001",
+      "color": "Copper",
+      "quantity": 2,
+      "customer_price": 2899
     }
   ],
   "shipping_address": {
     "name": "Priya Sharma",
     "phone": "9876543210",
-    "address_line1": "Flat 402, Lotus Residency",
+    "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
     "city": "Bengaluru",
     "state": "Karnataka",
-    "pincode": "560001"
+    "pincode": "560038"
   },
-  "packing_preference": "Blind Packaging"
+  "shipping_notes": "Wholesale handloom pure silk parcel"
 }`}</pre>
                 </div>
 
                 <div className="api-response-header">
-                  <span className="api-response-title">Success Response</span>
+                  <span className="api-response-title">Request Parameters</span>
+                </div>
+                <div className="api-table-wrapper">
+                  <table className="api-params-table">
+                    <thead>
+                      <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span className="api-param-name">reseller_order_id</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Your custom storefront order reference number (e.g. <code>RESELLER-ORD-1092</code>).</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">reseller_email</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Your registered email to receive the itemized B2B wholesale invoice and payment link.</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">items</span></td>
+                        <td><span className="api-param-type">array (required)</span></td>
+                        <td>Array of items: <code>sku</code>, <code>color</code>, <code>quantity</code>, and <code>customer_price</code> (the retail price you charged the buyer, printed on the courier parcel slip).</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">shipping_address</span></td>
+                        <td><span className="api-param-type">object (required)</span></td>
+                        <td>End consignee delivery address: <code>name</code>, <code>phone</code>, <code>address_line1</code>, <code>city</code>, <code>state</code>, and <code>pincode</code>.</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">shipping_notes</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Special delivery instructions or packaging references.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="api-response-header">
+                  <span className="api-response-title">Success Response (JSON)</span>
                   <span className="api-status-code-badge success">HTTP 201 Created</span>
                 </div>
                 <div className="api-code-wrapper">
@@ -832,18 +940,33 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
   "status": "success",
   "order_id": "ord_8f7b2a19-3c94",
   "reseller_order_id": "RESELLER-ORD-1092",
-  "message": "Order received successfully and queued for wholesale fulfillment.",
+  "order_status": "payment_pending",
+  "payment_status": "pending",
+  "payment_link": "https://www.weave365.com/order-tracking/ord_8f7b2a19-3c94?pay=1",
+  "invoice_email_sent_to": "reseller@example.com",
+  "pricing": {
+    "wholesale_amount": 3528,
+    "customer_billed_price": 5798,
+    "reseller_margin": 2270,
+    "currency": "INR"
+  },
+  "courier_slip": {
+    "sender_name": "My Reseller Store",
+    "recipient_name": "Priya Sharma",
+    "recipient_address": "Flat 402, Lotus Orchid, Indiranagar, Bengaluru, Karnataka - PIN: 560038",
+    "parcel_declared_value": 5798
+  },
   "tracking_url": "https://www.weave365.com/order-tracking/ord_8f7b2a19-3c94",
-  "estimated_dispatch": "24-48 Business Hours"
+  "estimated_dispatch": "24-48 Business Hours after payment confirmation"
 }`}</pre>
                 </div>
 
                 <div className="api-response-header">
-                  <span className="api-response-title">Order API Permission Requirement</span>
+                  <span className="api-response-title">Pro Scale Plan Requirement</span>
                   <span className="api-status-code-badge forbidden">HTTP 403 Forbidden</span>
                 </div>
                 <p className="api-endpoint-note">
-                  Dropship ordering requires active Order API permissions (enabled by default on Growth tier or upon partner onboarding approval):
+                  Automated wholesale order routing requires an active <strong>Pro Scale Plan (₹499/mo)</strong>. Keys on the <strong>Growth Partner (₹299/mo)</strong> plan have catalog and stock sync enabled; wholesale orders on the Growth plan are placed manually on Weave365:
                 </p>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
@@ -895,7 +1018,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                       <tr>
                         <td><span className="api-param-name">status</span></td>
                         <td><span className="api-param-type">string (optional)</span></td>
-                        <td>Filter by order status (<code>new</code>, <code>verified</code>, <code>processing</code>, <code>dispatched</code>, <code>delivered</code>, <code>cancelled</code>).</td>
+                        <td>Filter by order status (<code>payment_pending</code>, <code>payment_received</code>, <code>processing</code>, <code>dispatched</code>, <code>delivered</code>, <code>cancelled</code>).</td>
                       </tr>
                       <tr>
                         <td><span className="api-param-name">limit</span></td>
@@ -913,34 +1036,69 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
-  "total_orders": 1,
+  "total_orders": 2,
   "orders": [
     {
       "id": "ord_8f7b2a19-3c94",
       "reseller_order_id": "RESELLER-ORD-1092",
       "created_at": "2026-08-27T01:15:00Z",
-      "status": "dispatched",
-      "status_label": "Dispatched / In Transit",
-      "is_dropship": true,
+      "status": "payment_received",
+      "status_label": "Payment Received / In QC",
+      "payment_status": "paid",
+      "payment_link": null,
       "tracking": {
         "carrier": "Delhivery Express",
         "tracking_number": "DEL198273645",
-        "tracking_message": "Dispatched via Delhivery Surface. Expected delivery in 3 days.",
+        "tracking_message": "Quality inspection verified. Prepared for courier dispatch.",
         "tracking_url": "https://www.weave365.com/order-tracking/ord_8f7b2a19-3c94",
-        "is_dispatched": true
+        "is_dispatched": false
       },
       "customer": {
         "name": "Priya Sharma",
         "phone": "9876543210",
-        "address": "Flat 402, Lotus Residency",
+        "address": "Flat 402, Lotus Orchid, Indiranagar",
         "city": "Bengaluru",
         "state": "Karnataka",
-        "pincode": "560001"
+        "pincode": "560038"
+      },
+      "items": [
+        {
+          "sku": "102001",
+          "variant_code": "102001",
+          "product_title": "Katan Silk Handloom Banarasi Saree",
+          "color": "Copper",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "ord_a12c45e8-9b10",
+      "reseller_order_id": "RESELLER-ORD-1093",
+      "created_at": "2026-08-27T03:30:00Z",
+      "status": "payment_pending",
+      "status_label": "Payment Pending",
+      "payment_status": "pending",
+      "payment_link": "https://www.weave365.com/order-tracking/ord_a12c45e8-9b10?pay=1",
+      "tracking": {
+        "carrier": null,
+        "tracking_number": null,
+        "tracking_message": null,
+        "tracking_url": "https://www.weave365.com/order-tracking/ord_a12c45e8-9b10",
+        "is_dispatched": false
+      },
+      "customer": {
+        "name": "Ananya Verma",
+        "phone": "9812345678",
+        "address": "12 Banjara Hills, Road No 3",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "pincode": "500034"
       },
       "items": [
         {
           "sku": "100001",
           "variant_code": "100001",
+          "product_title": "Pure Kanchipuram Silk Saree",
           "color": "Royal Blue",
           "quantity": 1
         }
@@ -1075,11 +1233,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
             <div className="api-pricing-grid" style={{ maxWidth: '860px', margin: '1.75rem auto' }}>
               {/* Growth Partner */}
-              <div className="api-pricing-card featured">
+              <div className="api-pricing-card">
                 <div className="api-pricing-top">
                   <div className="api-pricing-header">
                     <span className="api-pricing-name">Growth Partner</span>
-                    <p className="api-pricing-desc">For active stores &amp; automated dropshipping</p>
+                    <p className="api-pricing-desc">For storefronts syncing live stock &amp; catalog</p>
                   </div>
                   <div className="api-pricing-price-wrap">
                     <span className="api-pricing-amount">₹299</span>
@@ -1091,47 +1249,45 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <ul className="api-pricing-features">
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span><strong>10,000</strong> requests / month</span>
+                      <span><strong>10,000</strong> requests / month (3 req/sec)</span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>Rate limit: <strong>3 req / sec</strong></span>
+                      <span>Full B2R Catalog Feed (<code>/api/v1/catalog</code>)</span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>High-frequency 5–15 min live sync</span>
+                      <span>Real-time stock status sync (<code>/api/v1/stock-status</code>)</span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>Automated dropship order dispatch</span>
+                      <span>WooCommerce &amp; Shopify cron sync code</span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>Curated feed &amp; multi-sku routing</span>
+                      <span>Standard B2R Reseller pricing feed</span>
                     </li>
-                    <li>
-                      <Check size={14} className="api-feature-icon" />
-                      <span>Priority WhatsApp developer support</span>
+                    <li style={{ color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, marginRight: '4px' }}>✕</span>
+                      <span>Automated Orders API (Manual orders on Weave365)</span>
                     </li>
                   </ul>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Growth%20Partner%20API%20Tier%20(₹299/mo)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="api-pricing-btn primary"
+                  href="/account?tab=developer"
+                  className="api-pricing-btn secondary"
                 >
-                  Upgrade to Growth
+                  Activate in Dashboard
                 </a>
               </div>
 
               {/* Pro Scale */}
-              <div className="api-pricing-card">
+              <div className="api-pricing-card featured">
                 <div className="api-pricing-top">
                   <div className="api-pricing-header">
                     <span className="api-pricing-name">Pro Scale</span>
-                    <p className="api-pricing-desc">For multi-store brands &amp; high volume</p>
+                    <p className="api-pricing-desc">Full Automation: Catalog + Orders API</p>
                   </div>
                   <div className="api-pricing-price-wrap">
                     <span className="api-pricing-amount">₹499</span>
@@ -1143,19 +1299,19 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <ul className="api-pricing-features">
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span><strong>25,000</strong> requests / month</span>
+                      <span><strong>25,000</strong> requests / month (5 req/sec)</span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>Rate limit: <strong>5 req / sec</strong></span>
+                      <span><strong>Everything in Growth Partner plan</strong></span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>Real-time multi-store catalog sync</span>
+                      <span><strong>Automated Orders API (<code>/api/v1/orders</code>)</strong></span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span>Blind white-label custom packaging</span>
+                      <span>Multi-store SKU routing &amp; priority queue</span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
@@ -1169,12 +1325,10 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹499/mo)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="api-pricing-btn secondary"
+                  href="/account?tab=developer"
+                  className="api-pricing-btn primary"
                 >
-                  Contact for Pro
+                  Activate in Dashboard
                 </a>
               </div>
             </div>

@@ -205,7 +205,7 @@ export const developerService = {
           .eq('id', keyId)
           .maybeSingle();
         if (keyRecord?.user_id) targetUserId = keyRecord.user_id;
-      } catch (_) {}
+      } catch (_) { }
     }
 
     let query = supabase
@@ -243,14 +243,38 @@ export const developerService = {
   /**
    * Create a new API Key for a user
    */
-  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'growth', customQuota, customRps, ordersEnabled = false, isActive = false, requestDetails = null }) {
+  async createApiKey(userId, options = {}) {
     if (!isSupabaseConfigured || !userId) throw new Error('Supabase not configured or missing userId');
+
+    const {
+      clientName,
+      clientWebsite = '',
+      domainOwnerName = '',
+      gstNumber = '',
+      tier = 'growth',
+      customQuota,
+      customRps,
+      ordersEnabled,
+      orders_enabled,
+      isActive,
+      is_active,
+      approvalStatus,
+      approval_status,
+      subscriptionStatus,
+      subscription_status,
+      requestDetails = null,
+    } = options;
 
     const tierConfig = TIER_CONFIGS[tier] || TIER_CONFIGS.growth;
     const rawKey = generateRawApiKey();
     const keyHash = await hashApiKey(rawKey);
     // Non-secret masked prefix for dashboard reference and logging (e.g. w365_live_9a7f...d82e)
     const maskedPrefix = `${rawKey.slice(0, 14)}...${rawKey.slice(-4)}`;
+
+    const finalOrdersEnabled = Boolean(ordersEnabled ?? orders_enabled ?? false);
+    const finalIsActive = Boolean(isActive ?? is_active ?? false);
+    const finalApprovalStatus = approvalStatus || approval_status || (finalIsActive ? 'approved' : 'pending');
+    const finalSubStatus = subscriptionStatus || subscription_status || (finalIsActive ? 'active' : 'inactive');
 
     const insertPayload = {
       user_id: userId,
@@ -263,9 +287,11 @@ export const developerService = {
       tier: tier,
       monthly_quota: customQuota || tierConfig.monthlyQuota,
       rate_limit_rps: customRps || tierConfig.rateLimitRps,
-      is_active: Boolean(isActive),
-      orders_enabled: Boolean(ordersEnabled), // Disabled by default for security
-      allowed_endpoints: ordersEnabled ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+      is_active: finalIsActive,
+      orders_enabled: finalOrdersEnabled,
+      allowed_endpoints: finalOrdersEnabled ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+      approval_status: finalApprovalStatus,
+      subscription_status: finalSubStatus,
     };
 
     let data, error;
@@ -279,6 +305,18 @@ export const developerService = {
       error = res.error;
     } catch (e) {
       error = e;
+    }
+
+    if (error && (error.message?.includes('approval_status') || error.message?.includes('subscription_status') || error.code === '42703')) {
+      delete insertPayload.approval_status;
+      delete insertPayload.subscription_status;
+      const retryRes = await supabase
+        .from('api_keys')
+        .insert([insertPayload])
+        .select()
+        .single();
+      data = retryRes.data;
+      error = retryRes.error;
     }
 
     if (error && (error.message?.includes('orders_enabled') || error.code === '42703')) {
@@ -307,15 +345,11 @@ export const developerService = {
 
     if (error) throw error;
 
-    // Sync domain owner name, GST number, and request details to user profile
+    // Sync domain owner name and request details to user profile
     try {
       const profileUpdates = {};
       if (clientName) profileUpdates.business_name = clientName;
       if (domainOwnerName) profileUpdates.full_name = domainOwnerName;
-      if (gstNumber) {
-        profileUpdates.gstin = gstNumber;
-        profileUpdates.gst_number = gstNumber;
-      }
       if (requestDetails) {
         let currentQual = {};
         try {
@@ -332,10 +366,13 @@ export const developerService = {
         };
       }
       if (Object.keys(profileUpdates).length > 0) {
-        await supabase
+        const { error: profErr } = await supabase
           .from('profiles')
           .update(profileUpdates)
           .eq('id', userId);
+        if (profErr) {
+          console.warn('[developerService] Profile update warning:', profErr);
+        }
       }
     } catch (e) {
       console.warn('[developerService] Profile sync error:', e);
@@ -544,7 +581,7 @@ export const developerService = {
             .from('profiles')
             .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification')
             .in('id', userIds);
-          
+
           if (profs && profs.length > 0) {
             const pMap = {};
             profs.forEach(p => { pMap[p.id] = p; });
@@ -617,4 +654,55 @@ export const developerService = {
       allKeys: allKeys || [],
     };
   },
+
+  /**
+   * Initialize a developer subscription payment order with Cashfree or PhonePe
+   */
+  async createSubscriptionOrder({ keyId, plan = 'growth', gateway = 'cashfree', returnUrl }) {
+    if (!keyId) throw new Error('Missing keyId');
+    const session = (await supabase?.auth?.getSession())?.data?.session;
+    const token = session?.access_token;
+    if (!token) throw new Error('Please sign in to select a subscription plan.');
+
+    const res = await fetch('/api/developer/subscribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ keyId, plan, gateway, returnUrl }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Failed to initialize subscription payment.');
+    }
+    return data;
+  },
+
+  /**
+   * Verify developer subscription payment and activate key
+   */
+  async verifySubscriptionOrder({ keyId, gateway = 'cashfree', orderId }) {
+    if (!keyId || !orderId) throw new Error('Missing keyId or orderId');
+    const session = (await supabase?.auth?.getSession())?.data?.session;
+    const token = session?.access_token;
+    if (!token) throw new Error('Please sign in to verify subscription.');
+
+    const res = await fetch('/api/developer/verify-subscription', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ keyId, gateway, order_id: orderId }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Subscription verification unconfirmed.');
+    }
+    return data;
+  },
 };
+

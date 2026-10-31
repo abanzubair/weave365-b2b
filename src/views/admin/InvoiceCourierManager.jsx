@@ -23,19 +23,19 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
   const [copyFeedback, setCopyFeedback] = useState({});
 
   const filteredInquiries = useMemo(() => {
-    return inquiries.filter((inq) => {
-      if (typeFilter === 'orders' && inq._sourceTable !== 'orders') return false;
+    const list = inquiries.filter((inq) => {
+      if (typeFilter === 'orders' && inq._sourceTable !== 'orders' && inq._sourceTable !== 'api_orders') return false;
       if (typeFilter === 'inquiries' && inq._sourceTable !== 'inquiries') return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const text = `${inq.id} ${inq.buyer_name || ''} ${inq.business_name || ''} ${inq.email || ''} ${inq.phone || ''} ${inq.tracking_number || ''}`.toLowerCase();
+        const text = `${inq.id} ${inq.order_number || ''} ${inq.reseller_order_id || ''} ${inq.buyer_name || ''} ${inq.business_name || ''} ${inq.email || ''} ${inq.phone || ''} ${inq.tracking_number || ''}`.toLowerCase();
         return text.includes(q);
       }
       return true;
     });
 
-    return [...filtered].sort((a, b) => {
+    return list.slice().sort((a, b) => {
       const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return timeB - timeA;
@@ -269,17 +269,55 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                 const invCode = inq.id ? String(inq.id).slice(0, 8).toUpperCase() : 'INV-1001';
                 const isCopied = copyFeedback[inq.id];
 
+                const items = Array.isArray(inq.order_items) && inq.order_items.length > 0 ? inq.order_items : (Array.isArray(inq.items) ? inq.items : []);
+                
+                // 1. Slip retail price (what seller wants to print on the courier slip)
+                let slipPrice = 0;
+                const noteText = inq.shipping_notes || inq.message || '';
+                const mSlip = noteText.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*₹?([0-9.,]+)/i);
+                if (mSlip && mSlip[1]) {
+                  slipPrice = Number(mSlip[1].replace(/,/g, '')) || 0;
+                } else if (items.length > 0) {
+                  slipPrice = items.reduce((acc, it) => acc + (Number(it.customer_price || it.selling_price || it.custom_billed_price || it.price || 0) * (it.quantity || 1)), 0);
+                }
+
+                // 2. Wholesale due (what reseller owes Weave365)
+                let wholesaleDue = Number(inq.total_amount || 0);
+                const mWholesale = noteText.match(/Wholesale Due:\s*₹?([0-9.,]+)/i);
+                if (mWholesale && mWholesale[1]) {
+                  wholesaleDue = Number(mWholesale[1].replace(/,/g, '')) || wholesaleDue;
+                } else if (!wholesaleDue && items.length > 0) {
+                  wholesaleDue = items.reduce((acc, it) => acc + (Number(it.wholesale_price || it.price || 0) * (it.quantity || 1)), 0);
+                }
+
                 return (
                   <tr key={inq.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={{ padding: '14px 16px' }}>
                       <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#1f2937', background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px' }}>
                         #{invCode}
                       </span>
+                      {inq.reseller_order_id && (
+                        <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>
+                          Ref: {inq.reseller_order_id}
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ fontWeight: '600', color: '#111827' }}>{inq.buyer_name || inq.full_name || 'B2B Buyer'}</div>
                       {inq.business_name && <div style={{ fontSize: '13px', color: '#4b5563' }}>{inq.business_name}</div>}
                       <div style={{ fontSize: '12px', color: '#6b7280' }}>{inq.email || 'No email'} · {inq.phone || 'No phone'}</div>
+                      {slipPrice > 0 && (
+                        <div style={{ marginTop: '6px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '11px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '2px 7px', borderRadius: '4px', fontWeight: '700' }} title="Declared retail price to print on the parcel courier slip">
+                            Slip Value: ₹{slipPrice.toLocaleString('en-IN')}
+                          </span>
+                          {wholesaleDue > 0 && (
+                            <span style={{ fontSize: '11px', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '2px 7px', borderRadius: '4px', fontWeight: '500' }} title="Your wholesale procurement price from reseller">
+                              Wholesale: ₹{wholesaleDue.toLocaleString('en-IN')}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ fontSize: '13px', fontWeight: '500' }}>{inq.tracking_carrier || 'Standard Courier'}</div>
@@ -288,12 +326,55 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                       </div>
                     </td>
                     <td style={{ padding: '14px 16px' }}>
-                      <span style={{ display: 'inline-block', padding: '3px 9px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', textTransform: 'capitalize', background: inq.status === 'completed' || inq.status === 'delivered' ? '#dcfce7' : '#fef3c7', color: inq.status === 'completed' || inq.status === 'delivered' ? '#166534' : '#92400e' }}>
-                        {inq.status || 'Verified'}
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 10px',
+                        borderRadius: '9999px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        background: inq.status === 'payment_received' || inq.status === 'completed' || inq.status === 'delivered'
+                          ? '#dcfce7'
+                          : inq.status === 'payment_pending' || inq.status === 'new'
+                            ? '#fef3c7'
+                            : '#f3f4f6',
+                        color: inq.status === 'payment_received' || inq.status === 'completed' || inq.status === 'delivered'
+                          ? '#166534'
+                          : inq.status === 'payment_pending' || inq.status === 'new'
+                            ? '#92400e'
+                            : '#374151',
+                      }}>
+                        {inq.status === 'payment_pending' || inq.status === 'new'
+                          ? 'Payment Pending'
+                          : inq.status === 'payment_received'
+                            ? 'Payment Received'
+                            : (inq.status?.replace('_', ' ') || 'Verified')}
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        {(inq.status === 'payment_pending' || inq.status === 'new') && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch('/api/v1/verify-order-payment', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ order_id: inq.id, payment_method: 'admin_reconciliation' }),
+                                });
+                                if (res.ok && loadAdminData) loadAdminData();
+                              } catch (e) {
+                                console.error('Error marking order paid:', e);
+                              }
+                            }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: '#166534', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                            title="Mark Wholesale Payment Received"
+                          >
+                            <Check size={12} /> Mark Paid
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => handlePrintInvoice(inq)}

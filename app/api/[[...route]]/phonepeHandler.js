@@ -40,7 +40,7 @@ function getCorsHeaders(request) {
   };
 }
 
-function getPhonePeConfig() {
+export function getPhonePeConfig() {
   const env = (process.env.PHONEPE_ENVIRONMENT || 'SANDBOX').toUpperCase();
   const isProd = env === 'PRODUCTION' || env === 'PROD';
 
@@ -61,7 +61,7 @@ function getPhonePeConfig() {
   };
 }
 
-function getSupabaseAdmin() {
+export function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -79,7 +79,7 @@ function getSupabaseAdmin() {
 // ---------------------------------------------------------------------------
 let cachedToken = null; // { value, type, expiresAtMs, cacheKey }
 
-async function getAccessToken(pp) {
+export async function getAccessToken(pp) {
   const cacheKey = `${pp.env}:${pp.clientId}`;
   if (cachedToken && cachedToken.cacheKey === cacheKey && cachedToken.expiresAtMs - 60_000 > Date.now()) {
     return cachedToken;
@@ -112,7 +112,7 @@ async function getAccessToken(pp) {
   return cachedToken;
 }
 
-async function phonepeFetch(pp, path, init = {}) {
+export async function phonepeFetch(pp, path, init = {}) {
   const token = await getAccessToken(pp);
   return fetch(`${pp.apiBase}${path}`, {
     ...init,
@@ -125,7 +125,7 @@ async function phonepeFetch(pp, path, init = {}) {
 }
 
 /** Server-to-server order status. state: PENDING | COMPLETED | FAILED */
-async function fetchOrderStatus(pp, merchantOrderId) {
+export async function fetchOrderStatus(pp, merchantOrderId) {
   const res = await phonepeFetch(
     pp,
     `/checkout/v2/order/${encodeURIComponent(merchantOrderId)}/status?details=false`,
@@ -592,6 +592,77 @@ export async function handleWebhook(request) {
     console.log(`[PhonePe Webhook] Verified event received: ${event} (${merchantOrderId})`);
 
     if (event === 'checkout.order.completed' && merchantOrderId && payload.state === 'COMPLETED') {
+      // 0. Check if this is a Developer API Subscription Order (PP_SUB_*)
+      if (merchantOrderId.startsWith('PP_SUB_')) {
+        try {
+          const supabase = getSupabaseAdmin();
+          const { data: keyRecord } = await supabase
+            .from('api_keys')
+            .select('*')
+            .eq('last_payment_id', merchantOrderId)
+            .maybeSingle();
+
+          if (keyRecord) {
+            const now = new Date();
+            const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
+            const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
+            const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
+            const plan = keyRecord.subscription_plan || 'growth';
+            const isPro = plan === 'pro';
+
+            await supabase
+              .from('api_keys')
+              .update({
+                approval_status: 'approved',
+                subscription_status: 'active',
+                subscription_plan: plan,
+                subscription_amount: isPro ? 499 : 299,
+                subscription_started_at: keyRecord.subscription_started_at || now.toISOString(),
+                subscription_expires_at: expiresAt,
+                is_active: true,
+                tier: plan,
+                monthly_quota: isPro ? 25000 : 10000,
+                rate_limit_rps: isPro ? 5 : 3,
+                orders_enabled: isPro,
+                allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+                payment_gateway: 'phonepe',
+                last_payment_id: merchantOrderId,
+                updated_at: now.toISOString(),
+              })
+              .eq('id', keyRecord.id);
+
+            try {
+              await supabase
+                .from('api_subscription_payments')
+                .insert([{
+                  api_key_id: keyRecord.id,
+                  user_id: keyRecord.user_id || null,
+                  plan,
+                  amount: isPro ? 499 : 299,
+                  currency: 'INR',
+                  payment_gateway: 'phonepe',
+                  gateway_order_id: merchantOrderId,
+                  gateway_payment_id: transactionId || 'phonepe_webhook',
+                  status: 'completed',
+                  billing_cycle_days: 30,
+                  orders_enabled: isPro,
+                  allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+                  period_start: now.toISOString(),
+                  period_end: expiresAt,
+                  created_at: now.toISOString(),
+                }]);
+            } catch (ledgerErr) {
+              console.warn('[PhonePe Webhook] api_subscription_payments ledger record notice:', ledgerErr?.message);
+            }
+
+            console.log(`[PhonePe Webhook] Activated developer API subscription for key ${keyRecord.id} (${plan})`);
+            return Response.json({ status: 'OK', subscription: 'activated' }, { status: 200 });
+          }
+        } catch (subErr) {
+          console.error('[PhonePe Webhook] Error activating subscription key:', subErr);
+        }
+      }
+
       // Defense in depth: confirm with PhonePe directly rather than trusting the callback body alone
       const status = await fetchOrderStatus(pp, merchantOrderId);
       if (status.ok && status.data.state === 'COMPLETED') {

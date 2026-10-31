@@ -51,7 +51,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
   const [tierFilter, setTierFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [endpointFilter, setEndpointFilter] = useState('all');
-  
+
   // Selected user for "Inspect Dashboard" mode
   const [inspectedKeyId, setInspectedKeyId] = useState(null);
 
@@ -130,14 +130,14 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
         prev.map((k) =>
           k.id === editingKey.id
             ? {
-                ...k,
-                tier: editTier,
-                monthly_quota: quotaNum,
-                rate_limit_rps: rpsNum,
-                is_active: editIsActive,
-                orders_enabled: finalOrdersEnabled,
-                client_website: editClientWebsite.trim(),
-              }
+              ...k,
+              tier: editTier,
+              monthly_quota: quotaNum,
+              rate_limit_rps: rpsNum,
+              is_active: editIsActive,
+              orders_enabled: finalOrdersEnabled,
+              client_website: editClientWebsite.trim(),
+            }
             : k
         )
       );
@@ -183,7 +183,18 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       if (tierFilter !== 'all' && k.tier !== tierFilter) return false;
       if (statusFilter === 'active' && !k.is_active) return false;
       if (statusFilter === 'disabled' && k.is_active) return false;
-      if (statusFilter === 'pending' && (k.is_active || !k.profiles?.qualification?.api_access_request)) return false;
+      if (statusFilter === 'pending') {
+        const isPending = !k.is_active && (k.approval_status === 'pending' || Boolean(k.profiles?.qualification?.api_access_request));
+        if (!isPending) return false;
+      }
+      if (statusFilter === 'pending_payment') {
+        const isPendingPay = k.approval_status === 'approved' && k.subscription_status === 'pending_payment';
+        if (!isPendingPay) return false;
+      }
+      if (statusFilter === 'expired') {
+        const isExp = k.subscription_status === 'expired' || (k.subscription_expires_at && new Date(k.subscription_expires_at).getTime() < Date.now());
+        if (!isExp) return false;
+      }
 
       if (endpointFilter === 'orders_on' && !k.orders_enabled) return false;
       if (endpointFilter === 'orders_off' && k.orders_enabled) return false;
@@ -476,8 +487,10 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Statuses</option>
-            <option value="pending">Pending Approval Only</option>
+            <option value="pending">Pending Admin Review</option>
+            <option value="pending_payment">Approved • Awaiting Payment</option>
             <option value="active">Active Only</option>
+            <option value="expired">Subscription Expired</option>
             <option value="disabled">Disabled Only</option>
           </select>
 
@@ -513,7 +526,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
               const tierInfo = TIER_CONFIGS[item.tier] || TIER_CONFIGS.free;
               const phone = item.profiles?.whatsapp || '';
               const whatsappUrl = phone ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(item.client_name)},%20regarding%20your%20Weave365%20API%20integration...` : null;
-              const hasAccessRequest = Boolean(item.profiles?.qualification?.api_access_request);
+              const hasAccessRequest = item.approval_status === 'pending' || Boolean(item.profiles?.qualification?.api_access_request);
 
               return (
                 <tr key={item.id}>
@@ -532,7 +545,31 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       <span className="api-no-website">No website specified</span>
                     )}
 
-                    {!item.is_active && hasAccessRequest && (
+                    {item.approval_status === 'approved' && item.subscription_status === 'pending_payment' ? (
+                      <div style={{ marginTop: '5px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setReviewRequestItem(item)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.6875rem',
+                            fontWeight: 600,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #bfdbfe',
+                            cursor: 'pointer',
+                          }}
+                          title="Application approved! Click to inspect details or override"
+                        >
+                          <Clock size={10} />
+                          <span>Approved • Awaiting Payment</span>
+                        </button>
+                      </div>
+                    ) : (!item.is_active && hasAccessRequest) ? (
                       <div style={{ marginTop: '5px' }}>
                         <button
                           type="button"
@@ -556,7 +593,27 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                           <span>Pending Approval</span>
                         </button>
                       </div>
-                    )}
+                    ) : item.subscription_status === 'expired' || (item.subscription_expires_at && new Date(item.subscription_expires_at).getTime() < Date.now()) ? (
+                      <div style={{ marginTop: '5px' }}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.6875rem',
+                            fontWeight: 600,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            background: '#fef2f2',
+                            color: '#b91c1c',
+                            border: '1px solid #fecaca',
+                          }}
+                        >
+                          <AlertTriangle size={10} />
+                          <span>Expired</span>
+                        </span>
+                      </div>
+                    ) : null}
                   </td>
 
                   <td>
@@ -623,8 +680,8 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                           !item.is_active
                             ? 'Cannot enable Order API: Product API must be enabled first'
                             : item.orders_enabled
-                            ? 'Order API is Enabled (Click to Disable)'
-                            : 'Order API is Disabled (Click to Enable)'
+                              ? 'Order API is Enabled (Click to Disable)'
+                              : 'Order API is Disabled (Click to Enable)'
                         }
                       >
                         <span
@@ -1045,7 +1102,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       {inspectedKeyId && inspectedRecord && (
         <div className="api-inspect-modal-overlay">
           <div className="api-inspect-modal-content">
-            
+
             {/* Modal Top Control Bar */}
             <div className="api-inspect-top-bar">
               <div className="api-inspect-top-left">
@@ -1132,22 +1189,39 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
 
             <div className="api-req-modal-body">
               {(() => {
-                const req = reviewRequestItem.profiles?.qualification?.api_access_request || {};
+                const prof = reviewRequestItem.profiles || {};
+                const profQual = prof.qualification || {};
+                const req = reviewRequestItem.request_details || profQual.api_access_request || {};
                 const isItemActive = Boolean(reviewRequestItem.is_active);
+                const isApprovedPendingPay = reviewRequestItem.approval_status === 'approved' && reviewRequestItem.subscription_status === 'pending_payment';
+
+                // Intelligent resolution across direct request details, profile qualification, and storefront data
+                const businessDescription = req.businessType || profQual.business_type_label || (profQual.business_type ? profQual.business_type.replace(/_/g, ' ') : '') || prof.buyer_subtype || 'Online Store / B2B Partner';
+                const operationalStatus = req.operationalStatus || (profQual.business_experience ? `Operational (${profQual.business_experience.replace(/_/g, ' ')})` : (profQual.form_completed ? 'Operational Storefront' : 'Active Storefront'));
+                const storefrontUrl = req.websiteUrl || reviewRequestItem.client_website || prof.website || profQual.website || '';
+                const platform = req.platform || (storefrontUrl.toLowerCase().includes('shopify') ? 'Shopify' : (storefrontUrl.toLowerCase().includes('woo') ? 'WooCommerce' : 'Custom eCommerce Storefront'));
+                const useCases = (Array.isArray(req.apiUseCases) && req.apiUseCases.length > 0)
+                  ? req.apiUseCases
+                  : ['Product Catalog', 'Live Inventory', 'Wholesale Pricing'];
+                const monthlyVolume = req.monthlyOrderVolume || (profQual.monthly_budget ? `Budget: ${profQual.monthly_budget.replace(/_/g, ' ')}` : '50 - 200 orders');
+                const timeline = req.timeline || (profQual.purchase_intent ? `Within ${profQual.purchase_intent.replace(/_/g, ' ')}` : 'Immediate / Within 7 days');
+                const otherSuppliers = req.sellsOtherSuppliers || (profQual.sales_channels ? `Sales Channels: ${profQual.sales_channels.join(', ')}` : 'Direct Weave 365 sourcing');
+                const techEmail = req.technicalEmail || prof.email || 'None provided';
+                const goals = req.goals || (profQual.instagram ? `Instagram: ${profQual.instagram} · Automated catalog and live inventory synchronization for ${reviewRequestItem.client_name || 'storefront'}.` : `Automated catalog & stock integration for ${reviewRequestItem.client_name || 'connected storefront'}.`);
 
                 return (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isItemActive ? '#ecfdf5' : '#fffbeb', borderRadius: '8px', border: `1px solid ${isItemActive ? '#a7f3d0' : '#fde68a'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isItemActive ? '#ecfdf5' : isApprovedPendingPay ? '#eff6ff' : '#fffbeb', borderRadius: '8px', border: `1px solid ${isItemActive ? '#a7f3d0' : isApprovedPendingPay ? '#bfdbfe' : '#fde68a'}` }}>
                       <div>
-                        <strong style={{ fontSize: '0.9375rem', color: isItemActive ? '#065f46' : '#92400e', display: 'block' }}>
+                        <strong style={{ fontSize: '0.9375rem', color: isItemActive ? '#065f46' : isApprovedPendingPay ? '#1e40af' : '#92400e', display: 'block' }}>
                           {reviewRequestItem.client_name || 'Client'}
                         </strong>
-                        <span style={{ fontSize: '0.8125rem', color: isItemActive ? '#047857' : '#b45309' }}>
-                          Account: {reviewRequestItem.profiles?.email || 'N/A'}
+                        <span style={{ fontSize: '0.8125rem', color: isItemActive ? '#047857' : isApprovedPendingPay ? '#2563eb' : '#b45309' }}>
+                          Account: {prof.email || 'N/A'}
                         </span>
                       </div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px', background: isItemActive ? '#10b981' : '#f59e0b', color: '#ffffff' }}>
-                        {isItemActive ? 'Active & Approved' : 'Pending Approval'}
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px', background: isItemActive ? '#10b981' : isApprovedPendingPay ? '#3b82f6' : '#f59e0b', color: '#ffffff' }}>
+                        {isItemActive ? 'Active & Approved' : isApprovedPendingPay ? 'Approved • Awaiting Plan Payment' : 'Pending Admin Review'}
                       </span>
                     </div>
 
@@ -1155,20 +1229,20 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       <div className="api-req-item">
                         <span className="api-req-label">GSTIN</span>
                         <span className="api-req-val" style={{ fontFamily: 'monospace' }}>
-                          {req.gstin || reviewRequestItem.gst_number || 'N/A'}
+                          {req.gstin || reviewRequestItem.gst_number || profQual.gstin || 'N/A'}
                         </span>
                       </div>
                       <div className="api-req-item">
                         <span className="api-req-label">Storefront URL</span>
-                        {req.websiteUrl || reviewRequestItem.client_website ? (
+                        {storefrontUrl ? (
                           <a
-                            href={req.websiteUrl || reviewRequestItem.client_website}
+                            href={storefrontUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="api-client-link"
                             style={{ fontSize: '0.9375rem', wordBreak: 'break-all' }}
                           >
-                            <Globe size={12} /> {req.websiteUrl || reviewRequestItem.client_website} <ExternalLink size={10} />
+                            <Globe size={12} /> {storefrontUrl} <ExternalLink size={10} />
                           </a>
                         ) : (
                           <span className="api-req-val">N/A</span>
@@ -1179,7 +1253,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     <div className="api-req-item">
                       <span className="api-req-label">Business Description</span>
                       <span className="api-req-val">
-                        {req.businessType || 'N/A'}
+                        {businessDescription}
                       </span>
                     </div>
 
@@ -1187,13 +1261,13 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       <div className="api-req-item">
                         <span className="api-req-label">Operational Status</span>
                         <span className="api-req-val">
-                          {req.operationalStatus || 'N/A'}
+                          {operationalStatus}
                         </span>
                       </div>
                       <div className="api-req-item">
                         <span className="api-req-label">Integration Platform</span>
                         <span className="api-req-val">
-                          {req.platform || 'N/A'}
+                          {platform}
                         </span>
                       </div>
                     </div>
@@ -1201,26 +1275,22 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     <div className="api-req-item">
                       <span className="api-req-label">API Use Cases Requested</span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
-                        {Array.isArray(req.apiUseCases) && req.apiUseCases.length > 0 ? (
-                          req.apiUseCases.map((uc) => (
-                            <span
-                              key={uc}
-                              style={{
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                padding: '3px 8px',
-                                borderRadius: '6px',
-                                background: '#f1f5f9',
-                                border: '1px solid #cbd5e1',
-                                color: '#334155',
-                              }}
-                            >
-                              ✓ {uc}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="api-req-val">None specified</span>
-                        )}
+                        {useCases.map((uc) => (
+                          <span
+                            key={uc}
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              background: '#f1f5f9',
+                              border: '1px solid #cbd5e1',
+                              color: '#334155',
+                            }}
+                          >
+                            ✓ {uc}
+                          </span>
+                        ))}
                       </div>
                     </div>
 
@@ -1228,13 +1298,13 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       <div className="api-req-item">
                         <span className="api-req-label">Expected Monthly Volume</span>
                         <span className="api-req-val">
-                          {req.monthlyOrderVolume || 'N/A'}
+                          {monthlyVolume}
                         </span>
                       </div>
                       <div className="api-req-item">
                         <span className="api-req-label">Start Timeline</span>
                         <span className="api-req-val">
-                          {req.timeline || 'N/A'}
+                          {timeline}
                         </span>
                       </div>
                     </div>
@@ -1243,13 +1313,13 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       <div className="api-req-item">
                         <span className="api-req-label">Sells from Other Suppliers?</span>
                         <span className="api-req-val">
-                          {req.sellsOtherSuppliers || 'N/A'}
+                          {otherSuppliers}
                         </span>
                       </div>
                       <div className="api-req-item">
                         <span className="api-req-label">Technical Contact Email</span>
                         <span className="api-req-val">
-                          {req.technicalEmail || 'None provided'}
+                          {techEmail}
                         </span>
                       </div>
                     </div>
@@ -1268,7 +1338,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                           whiteSpace: 'pre-wrap',
                         }}
                       >
-                        {req.goals || 'No description provided.'}
+                        {goals}
                       </div>
                     </div>
 
@@ -1290,7 +1360,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
               >
                 Close
               </button>
-              {!reviewRequestItem.is_active && (
+              {reviewRequestItem.approval_status !== 'approved' && !reviewRequestItem.is_active && (
                 <button
                   type="button"
                   disabled={approvingRequestId === reviewRequestItem.id}
@@ -1308,13 +1378,17 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     const keyId = reviewRequestItem.id;
                     setApprovingRequestId(keyId);
                     try {
-                      const { error } = await developerService.updateApiKey(keyId, { is_active: true });
+                      const { error } = await developerService.updateApiKey(keyId, {
+                        approval_status: 'approved',
+                        subscription_status: 'pending_payment',
+                        is_active: false,
+                      });
                       if (error) throw error;
-                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true } : k)));
-                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true } : null));
-                      alert('API Access approved and enabled successfully!');
+                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, approval_status: 'approved', subscription_status: 'pending_payment', is_active: false } : k)));
+                      setReviewRequestItem((prev) => (prev ? { ...prev, approval_status: 'approved', subscription_status: 'pending_payment', is_active: false } : null));
+                      alert('API Access approved! The partner can now select either Growth Partner (₹299/mo) or Pro Scale (₹499/mo) plan to activate their API key.');
                     } catch (err) {
-                      alert('Failed to enable API access: ' + err.message);
+                      alert('Failed to approve API access: ' + err.message);
                     } finally {
                       setApprovingRequestId(null);
                     }
@@ -1325,7 +1399,45 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   ) : (
                     <CheckCircle2 size={14} />
                   )}
-                  <span>Approve & Enable API Access</span>
+                  <span>Approve API Access (Allow Plan Selection)</span>
+                </button>
+              )}
+              {reviewRequestItem.approval_status === 'approved' && !reviewRequestItem.is_active && (
+                <button
+                  type="button"
+                  disabled={approvingRequestId === reviewRequestItem.id}
+                  className="api-btn-secondary"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    fontSize: '0.8125rem',
+                    color: '#2563eb',
+                    borderColor: '#93c5fd',
+                    background: '#eff6ff',
+                  }}
+                  onClick={async () => {
+                    const keyId = reviewRequestItem.id;
+                    setApprovingRequestId(keyId);
+                    try {
+                      const { error } = await developerService.updateApiKey(keyId, {
+                        is_active: true,
+                        subscription_status: 'active',
+                      });
+                      if (error) throw error;
+                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, subscription_status: 'active' } : k)));
+                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true, subscription_status: 'active' } : null));
+                      alert('Key directly activated by Admin override.');
+                    } catch (err) {
+                      alert('Failed to activate key: ' + err.message);
+                    } finally {
+                      setApprovingRequestId(null);
+                    }
+                  }}
+                >
+                  <Power size={13} />
+                  <span>Admin Bypass: Activate Key Directly</span>
                 </button>
               )}
             </div>

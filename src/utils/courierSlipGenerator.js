@@ -62,32 +62,26 @@ export function getDropshipCustomPricing(inquiry) {
     ? inquiry.order_items
     : (Array.isArray(inquiry.items) ? inquiry.items : []);
 
-  let billedPrice = Number(inquiry.dropship_billed_price || inquiry.custom_billed_price || 0);
+  let billedPrice = Number(inquiry.dropship_billed_price || inquiry.custom_billed_price || inquiry.customer_price || inquiry.customer_order_amount || 0);
   let discount = Number(inquiry.dropship_discount || inquiry.custom_discount || 0);
 
   if (!billedPrice) {
-    const itWithPrice = items.find(it => it && (Number(it.custom_billed_price) > 0 || Number(it.dropship_billed_price) > 0));
+    const itWithPrice = items.find(it => it && (Number(it.customer_price) > 0 || Number(it.selling_price) > 0 || Number(it.custom_billed_price) > 0 || Number(it.dropship_billed_price) > 0));
     if (itWithPrice) {
-      billedPrice = Number(itWithPrice.custom_billed_price || itWithPrice.dropship_billed_price || 0);
+      billedPrice = Number(itWithPrice.customer_price || itWithPrice.selling_price || itWithPrice.custom_billed_price || itWithPrice.dropship_billed_price || 0);
     }
   }
 
-  if (!discount) {
-    const itWithDisc = items.find(it => it && (Number(it.custom_discount) > 0 || Number(it.dropship_discount) > 0));
-    if (itWithDisc) {
-      discount = Number(itWithDisc.custom_discount || itWithDisc.dropship_discount || 0);
-    }
-  }
-
-  if (!billedPrice && inquiry.message) {
-    const m = inquiry.message.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*₹?([0-9.,]+)/i);
+  const msgText = inquiry.shipping_notes || inquiry.message || '';
+  if (!billedPrice && msgText) {
+    const m = msgText.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*₹?([0-9.,]+)/i);
     if (m && m[1]) {
       billedPrice = Number(m[1].replace(/,/g, '')) || 0;
     }
   }
 
-  if (!discount && inquiry.message) {
-    const m = inquiry.message.match(/Discount on (?:Slip|Bill):\s*₹?([0-9.,]+)/i);
+  if (!discount && msgText) {
+    const m = msgText.match(/Discount on (?:Slip|Bill):\s*₹?([0-9.,]+)/i);
     if (m && m[1]) {
       discount = Number(m[1].replace(/,/g, '')) || 0;
     }
@@ -216,7 +210,11 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
     let unitPrice = 0;
     let discount = 0;
 
-    if (customPricing.hasCustom) {
+    const directItemPrice = Number(item.customer_price || item.selling_price || item.custom_billed_price || item.dropship_billed_price || 0);
+    if (directItemPrice > 0) {
+      unitPrice = directItemPrice;
+      discount = Number(item.discount || 0);
+    } else if (customPricing.hasCustom) {
       if (itemsList.length === 1) {
         unitPrice = customPricing.billedPrice / qty;
         discount = customPricing.discount;

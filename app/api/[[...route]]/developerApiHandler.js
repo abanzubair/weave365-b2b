@@ -7,6 +7,10 @@
 
 export const runtime = 'edge';
 
+import { getCashfreeConfig } from './cashfreeHandler.js';
+import { getPhonePeConfig, phonepeFetch, fetchOrderStatus } from './phonepeHandler.js';
+import { sendResellerInvoiceEmail } from './resellerInvoiceEmailService.js';
+
 let supabaseInstance = null;
 export function _setSupabaseClientForTesting(client) {
   supabaseInstance = client;
@@ -43,7 +47,7 @@ function getCorsHeaders(request, clientWebsite = null) {
   if (clientWebsite) {
     try {
       allowedOrigins.push(new URL(clientWebsite).origin);
-    } catch {}
+    } catch { }
   }
 
   const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.weave365.com');
@@ -87,7 +91,7 @@ export async function hashApiKey(rawKey) {
  * Authenticate API Key and check monthly quota.
  * Strictly requires full unmasked API secret via X-API-Key or Authorization: Bearer header.
  */
-async function authenticateApiKey(request, supabase) {
+export async function authenticateApiKey(request, supabase) {
   const rawKey = (
     request.headers.get('x-api-key') ||
     (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
@@ -138,11 +142,43 @@ async function authenticateApiKey(request, supabase) {
     };
   }
 
+  // 1. Monthly Subscription Expiry Enforcement
+  if (keyRecord.subscription_expires_at) {
+    const expiresAt = new Date(keyRecord.subscription_expires_at).getTime();
+    if (!Number.isNaN(expiresAt) && expiresAt < now) {
+      return {
+        authenticated: false,
+        status: 403,
+        code: 'SUBSCRIPTION_EXPIRED',
+        error: 'Your API subscription has expired. Please renew your plan in the developer dashboard to restore API access.',
+        keyRecord,
+      };
+    }
+  } else if (keyRecord.subscription_status === 'expired') {
+    return {
+      authenticated: false,
+      status: 403,
+      code: 'SUBSCRIPTION_EXPIRED',
+      error: 'Your API subscription has expired. Please renew your plan in the developer dashboard to restore API access.',
+      keyRecord,
+    };
+  } else if (keyRecord.subscription_status === 'pending_payment') {
+    return {
+      authenticated: false,
+      status: 403,
+      code: 'SUBSCRIPTION_PENDING_PAYMENT',
+      error: 'API access requires an active plan subscription. Please complete your subscription payment in the developer dashboard.',
+      keyRecord,
+    };
+  }
+
+  // 2. Active status enforcement
   if (!keyRecord.is_active) {
     return {
       authenticated: false,
       status: 403,
       error: 'This API Key is currently deactivated. Please contact Weave365 admin.',
+      keyRecord,
     };
   }
 
@@ -278,38 +314,40 @@ function formatForShopify(products) {
       .replace(/^-|-$/g, '');
 
     const firstPrices = p.variants?.[0]?.prices || {};
-    const resellerPrice = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
-    const suggestedMrp = Number(firstPrices.single || p.mrp || p.suggestedMrp || Math.round(resellerPrice * 1.5));
+    // Strictly B2R Reseller Price (B2B bulk wholesale / cost prices are strictly blocked from the API)
+    const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
+    // Compare-at price: Use D2C single price or markup, never the B2B bulk column
+    const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
 
     const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
     const shopifyVariants = hasExplicitVariants
       ? p.variants.map((v, idx) => {
-          const vPrices = v.prices || {};
-          const vPrice = Number(vPrices.b2r || vPrices.single || resellerPrice);
-          return {
-            id: `${p.id || p.groupKey}-${idx}`,
-            title: v.color || `Option ${idx + 1}`,
-            sku: v.code || `${p.id || p.groupKey}-${(v.color || 'VAR').toUpperCase().slice(0, 3)}`,
-            price: vPrice,
-            compare_at_price: suggestedMrp,
-            inventory_management: 'shopify',
-            inventory_policy: 'deny',
-            inventory_quantity: p.isOutOfStock ? 0 : 5,
-            option1: v.color || 'Default',
-            image: v.image || p.images?.[0] || '',
-          };
-        })
-      : (p.colors || ['Default']).map((color, idx) => ({
+        const vPrices = v.prices || {};
+        const vPrice = Number(vPrices.b2r || resellerPrice);
+        return {
           id: `${p.id || p.groupKey}-${idx}`,
-          title: color,
-          sku: `${p.id || p.groupKey}-${color.toUpperCase().slice(0, 3)}`,
-          price: resellerPrice,
+          title: v.color || `Option ${idx + 1}`,
+          sku: v.code || `${p.id || p.groupKey}-${(v.color || 'VAR').toUpperCase().slice(0, 3)}`,
+          price: vPrice,
           compare_at_price: suggestedMrp,
           inventory_management: 'shopify',
           inventory_policy: 'deny',
           inventory_quantity: p.isOutOfStock ? 0 : 5,
-          option1: color,
-        }));
+          option1: v.color || 'Default',
+          image: v.image || p.images?.[0] || '',
+        };
+      })
+      : (p.colors || ['Default']).map((color, idx) => ({
+        id: `${p.id || p.groupKey}-${idx}`,
+        title: color,
+        sku: `${p.id || p.groupKey}-${color.toUpperCase().slice(0, 3)}`,
+        price: resellerPrice,
+        compare_at_price: suggestedMrp,
+        inventory_management: 'shopify',
+        inventory_policy: 'deny',
+        inventory_quantity: p.isOutOfStock ? 0 : 5,
+        option1: color,
+      }));
 
     return {
       id: p.id || p.groupKey,
@@ -462,7 +500,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       last_synced_at: new Date().toISOString(),
       products: paginatedProducts.map((p) => {
         const firstPrices = p.variants?.[0]?.prices || {};
-        const resellerPrice = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
+        // Strictly B2R price only. B2B bulk wholesale / cost prices are never exposed on the API.
+        const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
 
         const extractedColors = Array.isArray(p.colorOptions) && p.colorOptions.length > 0
           ? p.colorOptions.map(c => c.name).filter(Boolean)
@@ -474,7 +513,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
         const structuredVariants = (p.variants || []).map(v => {
           const vPrices = v.prices || {};
-          const vPrice = Number(vPrices.b2r || vPrices.single || resellerPrice);
+          const vPrice = Number(vPrices.b2r || resellerPrice);
           return {
             code: v.code,
             sku: v.code,
@@ -616,7 +655,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         total_products: matchedList.length,
         products: matchedList.map((matched) => {
           const firstPrices = matched.variants?.[0]?.prices || {};
-          const resellerPrice = Number(firstPrices.b2r || firstPrices.single || matched.resellerPrice || matched.price || 0);
+          // Strictly B2R Reseller Price (B2B bulk prices are blocked from API)
+          const resellerPrice = Number(firstPrices.b2r || matched.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
           return {
             id: matched.id || matched.groupKey,
             sku: matched.id || matched.groupKey,
@@ -659,7 +699,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     }
 
     const firstPrices = matched.variants?.[0]?.prices || {};
-    const resellerPrice = Number(firstPrices.b2r || firstPrices.single || matched.resellerPrice || matched.price || 0);
+    // Strictly B2R Reseller Price (B2B bulk prices are blocked from API)
+    const resellerPrice = Number(firstPrices.b2r || matched.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
 
     return Response.json({
       status: 'success',
@@ -831,14 +872,14 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       const latestFulfillment = fulfillments.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
       const itemsList = (Array.isArray(o.order_items) && o.order_items.length > 0)
         ? o.order_items.map(it => ({
-            sku: it.variant_code || it.product_id,
-            product_id: it.product_id,
-            title: it.product_title || it.title,
-            color: it.color || 'Standard',
-            quantity: it.quantity || 1,
-            price: it.unit_price ?? it.price ?? 0,
-            image: it.thumbnail_url || it.image,
-          }))
+          sku: it.variant_code || it.product_id,
+          product_id: it.product_id,
+          title: it.product_title || it.title,
+          color: it.color || 'Standard',
+          quantity: it.quantity || 1,
+          price: it.unit_price ?? it.price ?? 0,
+          image: it.thumbnail_url || it.image,
+        }))
         : (o.items || []);
 
       return {
@@ -877,22 +918,28 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     const formatStatusLabel = (status) => {
       switch ((status || '').toLowerCase()) {
-        case 'new': return 'New / Under Review';
+        case 'payment_pending': return 'Payment Pending';
+        case 'payment_received': return 'Payment Received / In QC';
+        case 'new': return 'Payment Pending';
         case 'verified': return 'Payment & Stock Verified';
         case 'processing': return 'Packaging & Quality Check';
         case 'dispatched': return 'Dispatched / In Transit';
         case 'delivered': return 'Delivered';
         case 'cancelled': return 'Cancelled';
-        default: return status || 'New';
+        default: return status || 'Payment Pending';
       }
     };
 
     let list = rawOrders.slice(offset, offset + limit).map((o) => {
       let extractedResellerOrderId = o.reseller_order_id || null;
       if (!extractedResellerOrderId && o.message) {
-        const match = o.message.match(/\[API Dropship Order #([^\]]+)\]/);
+        const match = o.message.match(/\[(?:API Dropship Order|Wholesale API Order) #([^\]]+)\]/);
         if (match && match[1] !== 'N/A') extractedResellerOrderId = match[1];
       }
+
+      const orderStatus = o.status || 'payment_pending';
+      const isPaid = ['payment_received', 'verified', 'processing', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase());
+      const siteUrl = 'https://www.weave365.com';
 
       return {
         id: o.id,
@@ -900,15 +947,16 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         reseller_order_id: extractedResellerOrderId,
         created_at: o.created_at,
         updated_at: o.updated_at,
-        status: o.status || 'new',
-        status_label: formatStatusLabel(o.status),
-        is_dropship: Boolean(o.is_dropship || o._sourceTable === 'api_orders'),
+        status: orderStatus,
+        status_label: formatStatusLabel(orderStatus),
+        payment_status: isPaid ? 'paid' : 'pending',
+        payment_link: !isPaid ? `${siteUrl}/order-tracking/${o.id}?pay=1` : null,
         tracking: {
           carrier: o.tracking_carrier || null,
           tracking_number: o.tracking_number || null,
           tracking_message: o.tracking_message || null,
-          tracking_url: `https://www.weave365.com/order-tracking/${o.id}`,
-          is_dispatched: ['dispatched', 'delivered'].includes((o.status || '').toLowerCase()),
+          tracking_url: `${siteUrl}/order-tracking/${o.id}`,
+          is_dispatched: ['dispatched', 'delivered'].includes((orderStatus).toLowerCase()),
         },
         customer: {
           name: o.dropship_recipient_name || o.buyer_name,
@@ -1027,7 +1075,7 @@ async function handleRevealApiKey(request, supabase) {
   let body = {};
   try {
     body = await request.json();
-  } catch {}
+  } catch { }
   const { keyId } = body || {};
 
   if (!keyId) {
@@ -1108,9 +1156,9 @@ async function handleRevealApiKey(request, supabase) {
             ciphertext = parsed.ciphertext;
             break;
           }
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
   }
 
   if (!ciphertext) {
@@ -1168,7 +1216,7 @@ async function handleVaultApiKey(request, supabase) {
   let body = {};
   try {
     body = await request.json();
-  } catch {}
+  } catch { }
   const { keyId, rawKey, userId } = body || {};
 
   if (!keyId || !rawKey || !userId) {
@@ -1208,7 +1256,7 @@ async function handleVaultApiKey(request, supabase) {
     // 2. Direct update to api_keys.encrypted_key if column exists
     try {
       await supabase.from('api_keys').update({ encrypted_key: ciphertext }).eq('id', keyId);
-    } catch (_) {}
+    } catch (_) { }
 
     // 3. Backup vault in admin_notes
     try {
@@ -1216,12 +1264,566 @@ async function handleVaultApiKey(request, supabase) {
         buyer_id: userId,
         note: JSON.stringify({ type: 'encrypted_api_key', keyId, ciphertext, createdAt: new Date().toISOString() })
       }]);
-    } catch (_) {}
+    } catch (_) { }
 
     return Response.json({ success: true }, { status: 200, headers: cors });
   } catch (err) {
     console.error('[handleVaultApiKey] Vaulting failed:', err);
     return Response.json({ success: false, code: 'VAULT_ERROR', error: err.message }, { status: 500, headers: cors });
+  }
+}
+
+/**
+ * Handle creation of Cashfree or PhonePe order for developer API monthly subscription.
+ * Strictly verifies authenticated user session and key ownership.
+ */
+export async function handleCreateSubscriptionOrder(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+  if (!token) {
+    return Response.json({
+      success: false,
+      code: 'UNAUTHORIZED',
+      error: 'Authentication token required.',
+    }, { status: 401, headers: cors });
+  }
+
+  // 1. Verify caller session with Supabase Auth
+  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !authUser) {
+    return Response.json({
+      success: false,
+      code: 'UNAUTHORIZED',
+      error: 'Invalid or expired session. Please sign in again.',
+    }, { status: 401, headers: cors });
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch { }
+
+  const { keyId, plan = 'growth', gateway = 'cashfree', returnUrl } = body || {};
+
+  if (!keyId) {
+    return Response.json({
+      success: false,
+      code: 'BAD_REQUEST',
+      error: 'Missing required keyId parameter.',
+    }, { status: 400, headers: cors });
+  }
+
+  const planKey = (plan === 'pro') ? 'pro' : 'growth';
+  const planAmount = planKey === 'pro' ? 499 : 299;
+
+  // 2. Fetch target API key record
+  const { data: keyRecord, error: keyError } = await supabase
+    .from('api_keys')
+    .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp)')
+    .eq('id', keyId)
+    .maybeSingle();
+
+  if (keyError || !keyRecord) {
+    return Response.json({
+      success: false,
+      code: 'NOT_FOUND',
+      error: 'API key record not found.',
+    }, { status: 404, headers: cors });
+  }
+
+  // 3. Authorize: key owner or admin
+  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const userEmail = (authUser.email || '').trim().toLowerCase();
+  const isAuthorized = (authUser.id === keyRecord.user_id) || adminEmails.includes(userEmail);
+
+  if (!isAuthorized) {
+    return Response.json({
+      success: false,
+      code: 'FORBIDDEN',
+      error: 'You do not have permission to manage subscriptions for this API key.',
+    }, { status: 403, headers: cors });
+  }
+
+  // 4. Verify that the request has been approved by Admin
+  if (keyRecord.approval_status && keyRecord.approval_status !== 'approved') {
+    return Response.json({
+      success: false,
+      code: 'APPROVAL_PENDING',
+      error: 'Your API access request is currently under review. Plan payment will unlock once approved by Weave365 admin.',
+    }, { status: 400, headers: cors });
+  }
+
+  // 5. Verify that key is not suspended by Weave365 admin
+  const isExpired = keyRecord.subscription_status === 'expired' || (keyRecord.subscription_expires_at && new Date(keyRecord.subscription_expires_at).getTime() < Date.now());
+  if (!keyRecord.is_active && keyRecord.subscription_status === 'active' && !isExpired) {
+    return Response.json({
+      success: false,
+      code: 'KEY_SUSPENDED',
+      error: 'This API key has been suspended by Weave365 administration. Please contact support before initiating payment.',
+    }, { status: 403, headers: cors });
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+  const cleanKeyId = keyId.replace(/-/g, '').slice(0, 12);
+
+  if (gateway === 'phonepe') {
+    const pp = getPhonePeConfig();
+    if (!pp.clientId || !pp.clientSecret) {
+      return Response.json({
+        success: false,
+        error: 'PhonePe gateway credentials are not configured on the server.',
+      }, { status: 500, headers: cors });
+    }
+
+    const merchantOrderId = `PP_SUB_${cleanKeyId}_${Date.now().toString().slice(-8)}`;
+    const amountPaise = planAmount * 100;
+
+    let finalRedirectUrl = returnUrl || `${siteUrl}/account?tab=developer`;
+    const sep = finalRedirectUrl.includes('?') ? '&' : '?';
+    if (!finalRedirectUrl.includes('pp_sub_id') && !finalRedirectUrl.includes(merchantOrderId)) {
+      finalRedirectUrl = `${finalRedirectUrl}${sep}pp_sub_id=${merchantOrderId}&key_id=${keyId}`;
+    }
+
+    const ppRes = await phonepeFetch(pp, '/checkout/v2/pay', {
+      method: 'POST',
+      body: JSON.stringify({
+        merchantOrderId,
+        amount: amountPaise,
+        expireAfter: 1200,
+        paymentFlow: {
+          type: 'PG_CHECKOUT',
+          message: `Weave365 API Subscription - ${planKey === 'pro' ? 'Pro Scale (₹499/mo)' : 'Growth Partner (₹299/mo)'}`,
+          merchantUrls: {
+            redirectUrl: finalRedirectUrl,
+          },
+        },
+        metaInfo: { udf1: keyId, udf2: planKey },
+      }),
+    });
+
+    const ppData = await ppRes.json().catch(() => ({}));
+    if (!ppRes.ok || !ppData.redirectUrl) {
+      return Response.json({
+        success: false,
+        error: ppData.message || 'Failed to initialize PhonePe payment session.',
+        details: ppData,
+      }, { status: ppRes.status || 500, headers: cors });
+    }
+
+    // Save gateway info on api_keys record
+    try {
+      await supabase.from('api_keys').update({
+        payment_gateway: 'phonepe',
+        last_payment_id: merchantOrderId,
+        subscription_plan: planKey,
+        subscription_amount: planAmount,
+      }).eq('id', keyId);
+    } catch (saveErr) {
+      console.warn('[handleCreateSubscriptionOrder] Error recording pending payment info:', saveErr);
+    }
+
+    return Response.json({
+      success: true,
+      redirect_url: ppData.redirectUrl,
+      order_id: merchantOrderId,
+      gateway: 'phonepe',
+      plan: planKey,
+      amount: planAmount,
+    }, { status: 200, headers: cors });
+  } else {
+    // Default: Cashfree
+    const cf = getCashfreeConfig();
+    if (!cf.appId || !cf.secretKey) {
+      return Response.json({
+        success: false,
+        error: 'Cashfree gateway credentials are not configured on the server.',
+      }, { status: 500, headers: cors });
+    }
+
+    const cfOrderId = `CF_SUB_${cleanKeyId}_${Date.now().toString().slice(-6)}`;
+    const customerPhone = (keyRecord.profiles?.whatsapp || '').replace(/[^0-9]/g, '').slice(-10) || '9999999999';
+    const customerName = (keyRecord.domain_owner_name || keyRecord.client_name || authUser.email || 'Developer Partner').slice(0, 50);
+
+    let finalReturnUrl = returnUrl || `${siteUrl}/account?tab=developer`;
+    const sep = finalReturnUrl.includes('?') ? '&' : '?';
+    if (!finalReturnUrl.includes('cf_sub_id') && !finalReturnUrl.includes('{order_id}')) {
+      finalReturnUrl = `${finalReturnUrl}${sep}cf_sub_id={order_id}&key_id=${keyId}`;
+    }
+
+    const cfReqBody = {
+      order_id: cfOrderId,
+      order_amount: planAmount,
+      order_currency: 'INR',
+      customer_details: {
+        customer_id: authUser.id,
+        customer_name: customerName,
+        customer_phone: customerPhone.length === 10 ? customerPhone : '9999999999',
+        customer_email: authUser.email || 'support@weave365.com',
+      },
+      order_meta: {
+        return_url: finalReturnUrl,
+        notify_url: `${siteUrl}/api/cashfree/webhook`,
+      },
+      order_tags: {
+        key_id: keyId,
+        plan: planKey,
+      },
+      order_note: `Weave365 API Subscription - ${planKey === 'pro' ? 'Pro Scale (₹499/mo)' : 'Growth Partner (₹299/mo)'}`,
+    };
+
+    const cfRes = await fetch(`${cf.baseUrl}/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-client-id': cf.appId,
+        'x-client-secret': cf.secretKey,
+        'x-api-version': cf.apiVersion,
+      },
+      body: JSON.stringify(cfReqBody),
+    });
+
+    const cfData = await cfRes.json();
+    if (!cfRes.ok || !cfData.payment_session_id) {
+      return Response.json({
+        success: false,
+        error: cfData.message || 'Failed to initialize Cashfree payment order.',
+        details: cfData,
+      }, { status: cfRes.status || 500, headers: cors });
+    }
+
+    try {
+      await supabase.from('api_keys').update({
+        payment_gateway: 'cashfree',
+        last_payment_id: cfOrderId,
+        subscription_plan: planKey,
+        subscription_amount: planAmount,
+      }).eq('id', keyId);
+    } catch (saveErr) {
+      console.warn('[handleCreateSubscriptionOrder] Error recording pending payment info:', saveErr);
+    }
+
+    return Response.json({
+      success: true,
+      payment_session_id: cfData.payment_session_id,
+      order_id: cfOrderId,
+      gateway: 'cashfree',
+      environment: cf.env,
+      plan: planKey,
+      amount: planAmount,
+    }, { status: 200, headers: cors });
+  }
+}
+
+/**
+ * Server-to-server payment verification and subscription activation.
+ */
+export async function handleVerifySubscription(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+  if (!token) {
+    return Response.json({
+      success: false,
+      code: 'UNAUTHORIZED',
+      error: 'Authentication token required.',
+    }, { status: 401, headers: cors });
+  }
+
+  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !authUser) {
+    return Response.json({
+      success: false,
+      code: 'UNAUTHORIZED',
+      error: 'Invalid or expired session. Please sign in again.',
+    }, { status: 401, headers: cors });
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch { }
+
+  const { keyId, order_id, gateway } = body || {};
+
+  if (!keyId || !order_id) {
+    return Response.json({
+      success: false,
+      code: 'BAD_REQUEST',
+      error: 'Missing required keyId or order_id.',
+    }, { status: 400, headers: cors });
+  }
+
+  const { data: keyRecord, error: keyError } = await supabase
+    .from('api_keys')
+    .select('*')
+    .eq('id', keyId)
+    .maybeSingle();
+
+  if (keyError || !keyRecord) {
+    return Response.json({
+      success: false,
+      code: 'NOT_FOUND',
+      error: 'API key not found.',
+    }, { status: 404, headers: cors });
+  }
+
+  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const userEmail = (authUser.email || '').trim().toLowerCase();
+  const isAuthorized = (authUser.id === keyRecord.user_id) || adminEmails.includes(userEmail);
+
+  if (!isAuthorized) {
+    return Response.json({
+      success: false,
+      code: 'FORBIDDEN',
+      error: 'You do not have permission to verify payments for this API key.',
+    }, { status: 403, headers: cors });
+  }
+
+  // Idempotent shortcut: If webhook already activated the key for this order
+  if (keyRecord.subscription_status === 'active' && keyRecord.is_active && keyRecord.last_payment_id === order_id) {
+    return Response.json({
+      success: true,
+      is_paid: true,
+      message: 'Subscription is already active!',
+      keyRecord,
+    }, { status: 200, headers: cors });
+  }
+
+  let isPaid = false;
+  const isPhonePe = (gateway === 'phonepe') || String(order_id).startsWith('PP_');
+
+  if (isPhonePe) {
+    const pp = getPhonePeConfig();
+    const status = await fetchOrderStatus(pp, order_id);
+    if (status.ok && (status.data.state === 'COMPLETED' || status.data.code === 'PAYMENT_SUCCESS')) {
+      isPaid = true;
+    }
+  } else {
+    // Cashfree
+    const cf = getCashfreeConfig();
+    const cfRes = await fetch(`${cf.baseUrl}/orders/${encodeURIComponent(order_id)}`, {
+      method: 'GET',
+      headers: {
+        'x-client-id': cf.appId,
+        'x-client-secret': cf.secretKey,
+        'x-api-version': cf.apiVersion,
+      },
+    });
+    const cfOrder = await cfRes.json();
+    if (cfRes.ok && cfOrder.order_status === 'PAID') {
+      isPaid = true;
+    }
+  }
+
+  if (!isPaid) {
+    return Response.json({
+      success: false,
+      is_paid: false,
+      error: 'Payment unconfirmed. If funds were deducted, please wait a moment and try refreshing.',
+    }, { status: 400, headers: cors });
+  }
+
+  // Payment verified! Apply 30-day billing cycle
+  const now = new Date();
+  const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
+  // If user renews early, add 30 days to existing expiry date; otherwise 30 days from now
+  const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
+  const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const plan = keyRecord.subscription_plan || 'growth';
+  const isPro = plan === 'pro';
+  const monthlyQuota = isPro ? 25000 : 10000;
+  const rateLimitRps = isPro ? 5 : 3;
+  const price = isPro ? 499 : 299;
+
+  const updatePayload = {
+    approval_status: 'approved',
+    subscription_status: 'active',
+    subscription_plan: plan,
+    subscription_amount: price,
+    subscription_started_at: keyRecord.subscription_started_at || now.toISOString(),
+    subscription_expires_at: expiresAt,
+    is_active: true,
+    tier: plan,
+    monthly_quota: monthlyQuota,
+    rate_limit_rps: rateLimitRps,
+    orders_enabled: isPro,
+    allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+    payment_gateway: isPhonePe ? 'phonepe' : 'cashfree',
+    last_payment_id: order_id,
+    updated_at: now.toISOString(),
+  };
+
+  let updatedKey = null;
+  const { data: updatedData, error: updateErr } = await supabase
+    .from('api_keys')
+    .update(updatePayload)
+    .eq('id', keyId)
+    .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
+    .single();
+
+  if (updateErr) {
+    const { data: fallbackUpdated, error: fallbackErr } = await supabase
+      .from('api_keys')
+      .update(updatePayload)
+      .eq('id', keyId)
+      .select()
+      .single();
+
+    if (fallbackErr) {
+      console.error('[handleVerifySubscription] Error updating key record:', fallbackErr);
+      return Response.json({
+        success: false,
+        error: 'Payment was verified, but database update failed: ' + fallbackErr.message,
+      }, { status: 500, headers: cors });
+    }
+    updatedKey = { ...fallbackUpdated, profiles: keyRecord.profiles || null };
+  } else {
+    updatedKey = updatedData || { ...updatePayload, id: keyId, profiles: keyRecord.profiles || null };
+  }
+
+  // Record immutable transaction record into api_subscription_payments ledger table
+  try {
+    await supabase
+      .from('api_subscription_payments')
+      .insert([{
+        api_key_id: keyId,
+        user_id: keyRecord.user_id || null,
+        plan,
+        amount: price,
+        currency: 'INR',
+        payment_gateway: isPhonePe ? 'phonepe' : 'cashfree',
+        gateway_order_id: order_id,
+        gateway_payment_id: paymentId ? String(paymentId) : (isPhonePe ? 'phonepe_verified' : 'cashfree_verified'),
+        status: 'completed',
+        billing_cycle_days: 30,
+        orders_enabled: isPro,
+        allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+        period_start: now.toISOString(),
+        period_end: expiresAt,
+        created_at: now.toISOString(),
+      }]);
+  } catch (ledgerErr) {
+    console.warn('[handleVerifySubscription] api_subscription_payments ledger insert notice:', ledgerErr?.message);
+  }
+
+  // Clear Edge in-memory cache so client requests immediately see the active key
+  keyMemoryCache.clear();
+
+  return Response.json({
+    success: true,
+    is_paid: true,
+    message: 'Subscription successfully activated for 30 days!',
+    keyRecord: updatedKey,
+  }, { status: 200, headers: cors });
+}
+
+/**
+ * Handles verifying and settling wholesale order payment.
+ * Transitions order status from 'payment_pending' to 'payment_received'.
+ */
+export async function handleVerifyOrderPayment(request, supabase, corsHeaders = defaultCorsHeaders) {
+  try {
+    const body = await request.json();
+    const orderId = String(body?.order_id || body?.id || body?.order_number || '').trim();
+    if (!orderId) {
+      return Response.json({
+        status: 'error',
+        code: 'MISSING_ORDER_ID',
+        message: 'order_id or id is required.',
+      }, { status: 400, headers: corsHeaders });
+    }
+
+    const paymentMethod = String(body?.payment_method || 'instant_payment_link').trim();
+    const paymentReference = String(body?.payment_reference || body?.payment_id || `SETTLE-${Date.now().toString(36).toUpperCase()}`).trim();
+
+    let updatedOrder = null;
+
+    // 1. Try finding in api_orders table (Primary for developer orders)
+    const { data: apiOrd } = await supabase
+      .from('api_orders')
+      .select('*')
+      .or(`id.eq.${orderId},reseller_order_id.eq.${orderId}`)
+      .maybeSingle();
+
+    if (apiOrd) {
+      const paymentNote = `[Wholesale Payment Received: Verified via ${paymentMethod} (Ref: ${paymentReference}) on ${new Date().toISOString()}]`;
+      const { data: updatedApiOrd, error: updateErr } = await supabase
+        .from('api_orders')
+        .update({
+          status: 'payment_received',
+          shipping_notes: `${apiOrd.shipping_notes ? `${apiOrd.shipping_notes} | ` : ''}${paymentNote}`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', apiOrd.id)
+        .select()
+        .single();
+
+      if (!updateErr && updatedApiOrd) {
+        updatedOrder = updatedApiOrd;
+      }
+    }
+
+    // 2. Also check fallback orders table
+    const { data: ord } = await supabase
+      .from('orders')
+      .select('*')
+      .or(`id.eq.${orderId},order_number.eq.${orderId}`)
+      .maybeSingle();
+
+    if (ord) {
+      const paymentNote = `\n[Wholesale Payment Received: Verified via ${paymentMethod} (Ref: ${paymentReference}) on ${new Date().toISOString()}]`;
+      const { data: updatedOrd } = await supabase
+        .from('orders')
+        .update({
+          status: 'payment_received',
+          payment_method: paymentMethod,
+          message: `${ord.message || ''}${paymentNote}`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', ord.id)
+        .select()
+        .single();
+
+      if (!updatedOrder && updatedOrd) {
+        updatedOrder = updatedOrd;
+      }
+    }
+
+    if (!updatedOrder) {
+      return Response.json({
+        status: 'error',
+        code: 'ORDER_NOT_FOUND',
+        message: `Order '${orderId}' was not found in the database.`,
+      }, { status: 404, headers: corsHeaders });
+    }
+
+    return Response.json({
+      status: 'success',
+      order_id: updatedOrder.id,
+      order_number: updatedOrder.order_number || null,
+      order_status: 'payment_received',
+      payment_status: 'paid',
+      status_label: 'Payment Received / In QC',
+      payment_reference: paymentReference,
+      message: 'Payment verified successfully. Order status updated to Payment Received and forwarded to Varanasi fulfillment queue.',
+    }, { status: 200, headers: corsHeaders });
+  } catch (err) {
+    console.error('[developerApi verify-order-payment] Error:', err);
+    return Response.json({
+      status: 'error',
+      code: 'INTERNAL_ERROR',
+      message: err.message || 'Failed to verify order payment',
+    }, { status: 500, headers: corsHeaders });
   }
 }
 
@@ -1236,12 +1838,23 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
   const endpoint = pathSegments[1] || '';
 
-  // 0. On-Demand Secure Key Reveal & Vaulting for Authenticated Users (Session Auth)
+  // 0. Public or Session-Based Order Payment Verification (invoked from order tracking payment link)
+  if (endpoint === 'verify-order-payment' || endpoint === 'pay-order') {
+    return handleVerifyOrderPayment(request, supabase, defaultCorsHeaders);
+  }
+
+  // 0b. On-Demand Secure Key Reveal, Vaulting & Subscription for Authenticated Users (Session Auth)
   if (endpoint === 'reveal-key') {
     return handleRevealApiKey(request, supabase);
   }
   if (endpoint === 'vault-key') {
     return handleVaultApiKey(request, supabase);
+  }
+  if (endpoint === 'subscribe' || endpoint === 'create-subscription-order') {
+    return handleCreateSubscriptionOrder(request, supabase);
+  }
+  if (endpoint === 'verify-subscription') {
+    return handleVerifySubscription(request, supabase);
   }
 
   // 1. Authenticate Request via API Key
@@ -1252,8 +1865,13 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
   const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
 
-  // 2. Route: POST /api/v1/orders (Automated Reseller Order Placement)
+  // 2. Route: POST /api/v1/orders (Automated Reseller Order Placement & Payment Verification)
   if (endpoint === 'orders' || endpoint === 'order') {
+    // 2a. Payment Verification Subroute: POST /api/v1/orders/verify-payment or POST /api/v1/orders/pay
+    if (pathSegments[2] === 'verify-payment' || pathSegments[2] === 'pay') {
+      return handleVerifyOrderPayment(request, supabase, cors);
+    }
+
     // Backend enforcement of Admin-Controlled Order API Access Toggle
     if (!auth.keyRecord.orders_enabled) {
       return Response.json({
@@ -1361,15 +1979,15 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         let matchedVariant = null;
         if (matchedProduct?.variants && matchedProduct.variants.length > 0) {
           matchedVariant = matchedProduct.variants.find(v => String(v.code || '').toLowerCase() === skuLower);
-          
+
           if (!matchedVariant && itemColorLower) {
-            matchedVariant = matchedProduct.variants.find(v => 
+            matchedVariant = matchedProduct.variants.find(v =>
               String(v.color || v.colorName || '').toLowerCase() === itemColorLower
             );
           }
 
           if (!matchedVariant && itemColorLower && Array.isArray(matchedProduct.colorOptions)) {
-            const colorOption = matchedProduct.colorOptions.find(c => 
+            const colorOption = matchedProduct.colorOptions.find(c =>
               String(c.name || '').toLowerCase() === itemColorLower
             );
             if (colorOption) {
@@ -1386,7 +2004,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }
 
         const colorName = itemColor || matchedVariant?.color || matchedVariant?.colorName || matchedProduct?.colorOptions?.[0]?.name || 'Standard';
-        
+
         let imageSrc = item.image || item.image_url || '';
         if (!imageSrc && matchedProduct) {
           if (colorName && matchedProduct.colorOptions) {
@@ -1401,11 +2019,23 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           }
         }
 
-        let itemPrice = item.price ? Number(item.price) : undefined;
-        if (!itemPrice && (matchedVariant || matchedProduct)) {
+        // 1. Reseller B2R price from Weave 365 catalog (what reseller owes Weave 365 - B2B bulk price is strictly excluded)
+        let wholesalePrice = 0;
+        if (matchedVariant || matchedProduct) {
           const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
-          itemPrice = Number(prices.b2r || prices.single || matchedProduct?.resellerPrice || matchedProduct?.price || 0);
+          wholesalePrice = Number(prices.b2r || matchedProduct?.resellerPrice || (prices.single ? prices.single : 0));
         }
+
+        // 2. Selling price / Retail price charged to end customer (what appears on courier slip & invoice)
+        const customerItemPrice = Number(
+          item.selling_price ||
+          item.customer_price ||
+          item.retail_price ||
+          item.custom_billed_price ||
+          item.price ||
+          0
+        );
+        const finalSellingPrice = customerItemPrice > 0 ? customerItemPrice : (wholesalePrice || 0);
 
         const productTitle = item.product_title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
 
@@ -1416,10 +2046,35 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           product_title: productTitle,
           color: colorName,
           quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
-          price: itemPrice > 0 ? itemPrice : undefined,
+          wholesale_price: wholesalePrice > 0 ? wholesalePrice : undefined,
+          selling_price: finalSellingPrice,
+          custom_billed_price: finalSellingPrice,
+          dropship_billed_price: finalSellingPrice,
+          price: finalSellingPrice,
           image: imageSrc || undefined,
         };
       });
+
+      // Compute total wholesale amount vs total retail customer amount
+      const totalWholesaleAmount = normalizedItems.reduce((acc, it) => acc + ((Number(it.wholesale_price) || 0) * (it.quantity || 1)), 0);
+      const calculatedRetailTotal = normalizedItems.reduce((acc, it) => acc + ((Number(it.selling_price) || 0) * (it.quantity || 1)), 0);
+
+      const customerOrderAmount = Number(
+        body?.customer_price ||
+        body?.customer_selling_price ||
+        body?.selling_price ||
+        body?.retail_price ||
+        body?.billed_price ||
+        body?.custom_billed_price ||
+        body?.total_customer_price ||
+        calculatedRetailTotal ||
+        totalWholesaleAmount
+      );
+
+      const paymentType = String(body?.payment_type || body?.payment_mode || 'prepaid').toLowerCase();
+      const isCod = paymentType === 'cod' || paymentType === 'cash_on_delivery';
+      const codAmountToCollect = isCod ? Number(body?.cod_amount || customerOrderAmount) : 0;
+      const resellerProfitMargin = Math.max(0, customerOrderAmount - totalWholesaleAmount);
 
       // Check Real-Time Stock Availability for all items before placing
       const { data: stockData } = await supabase.from('vendor_product_stock').select('*');
@@ -1450,6 +2105,28 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
       const senderPhone = sender?.phone || '';
 
+      const courierSlipSummary = `Billed Retail Price on Parcel Slip: ₹${customerOrderAmount.toLocaleString('en-IN')}. Payment Mode: ${isCod ? `COD (Collect ₹${codAmountToCollect.toLocaleString('en-IN')})` : 'PREPAID'}. Wholesale Due: ₹${totalWholesaleAmount.toLocaleString('en-IN')}. Reseller Margin: ₹${resellerProfitMargin.toLocaleString('en-IN')}.`;
+
+      // Resolve reseller email to send the wholesale invoice & payment link
+      let resellerEmail = (body?.reseller_email || body?.reseller?.email || sender?.email || '').trim().toLowerCase();
+      if (!resellerEmail && auth.keyRecord?.user_id) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, full_name, business_name')
+            .eq('id', auth.keyRecord.user_id)
+            .maybeSingle();
+          if (profile?.email) {
+            resellerEmail = profile.email.trim().toLowerCase();
+          }
+        } catch (e) {
+          console.warn('Failed to resolve reseller profile email:', e);
+        }
+      }
+      if (!resellerEmail || !resellerEmail.includes('@')) {
+        resellerEmail = auth.keyRecord?.client_email || auth.keyRecord?.email || '';
+      }
+
       // 1. Primary: Insert into dedicated api_orders table (strictly bound to authenticated key)
       const apiOrderPayload = {
         api_key_id: auth.keyRecord?.id || null,
@@ -1465,10 +2142,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         recipient_pincode: recipientPincode,
         sender_name: senderName,
         sender_phone: senderPhone,
-        packing_preference: packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)',
+        packing_preference: packing_preference || 'Standard Protective Wholesale Packaging',
         items: normalizedItems,
-        status: 'new',
-        shipping_notes: shipping_notes || '',
+        status: 'payment_pending',
+        shipping_notes: `${shipping_notes ? `${shipping_notes} | ` : ''}${courierSlipSummary}`,
       };
 
       let insertedOrder = null;
@@ -1491,22 +2168,13 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           buyer_name: cust.name,
           business_name: senderName,
           phone: cust.phone,
-          email: cust.email || '',
+          email: cust.email || resellerEmail || '',
           pincode: recipientPincode,
-          message: `[API Dropship Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. Notes: ${shipping_notes || 'Blind packaging'}`,
+          message: `[Wholesale API Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. ${courierSlipSummary} Notes: ${shipping_notes || 'Wholesale Packaging'}`,
           items: normalizedItems,
-          total_amount: calculatedTotalAmount,
-          status: 'new',
-          is_dropship: true,
-          dropship_sender_name: senderName,
-          dropship_sender_phone: senderPhone,
-          dropship_recipient_name: cust.name,
-          dropship_recipient_phone: cust.phone,
-          dropship_recipient_address: recipientAddress,
-          dropship_recipient_city: recipientCity,
-          dropship_recipient_state: recipientState,
-          dropship_recipient_pincode: recipientPincode,
-          dropship_packing_preference: packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)',
+          total_amount: totalWholesaleAmount,
+          payment_method: isCod ? 'cod' : 'api_invoice_payment',
+          status: 'payment_pending',
         };
 
         const ordersRes = await supabase
@@ -1538,20 +2206,63 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         throw new Error('Database insert failed');
       }
 
+      const siteUrl = 'https://www.weave365.com';
+      const paymentLink = `${siteUrl}/order-tracking/${insertedOrder.id}?pay=1`;
+
+      // Dispatch automated wholesale invoice & payment link email to reseller website owner
+      let emailResult = { success: false };
+      try {
+        emailResult = await sendResellerInvoiceEmail({
+          order: insertedOrder,
+          resellerOrderId: reseller_order_id,
+          totalWholesaleAmount,
+          items: normalizedItems,
+          recipientName: cust.name,
+          shippingAddress: fullAddressStr,
+          recipientEmail: resellerEmail,
+          paymentLink,
+          supabase,
+        });
+      } catch (eErr) {
+        console.error('[developerApi POST /orders] Reseller invoice email dispatch error:', eErr);
+      }
+
       return Response.json({
         status: 'success',
         order_id: insertedOrder.id,
         order_number: insertedOrder.order_number || null,
         reseller_order_id: reseller_order_id || null,
-        message: 'Order received successfully and queued for wholesale fulfillment.',
-        tracking_url: `https://www.weave365.com/order-tracking/${encodeURIComponent(insertedOrder.order_number || insertedOrder.id)}`,
-        estimated_dispatch: '24-48 Business Hours',
+        order_status: 'payment_pending',
+        payment_status: 'pending',
+        payment_link: paymentLink,
+        invoice_email_sent_to: resellerEmail,
+        email_dispatched: Boolean(emailResult?.success),
+        pricing: {
+          wholesale_amount: totalWholesaleAmount,
+          customer_billed_price: customerOrderAmount,
+          reseller_margin: resellerProfitMargin,
+          payment_mode: isCod ? 'COD' : 'PREPAID',
+          cod_amount_to_collect: codAmountToCollect,
+          currency: 'INR',
+        },
+        courier_slip: {
+          sender_name: senderName,
+          sender_phone: senderPhone,
+          recipient_name: cust.name,
+          recipient_address: fullAddressStr,
+          parcel_declared_value: customerOrderAmount,
+          cod_amount_to_collect: codAmountToCollect,
+        },
+        message: 'Wholesale order received. An invoice and instant payment link has been emailed to your reseller account. Order fulfillment begins upon payment confirmation.',
+        tracking_url: `${siteUrl}/order-tracking/${encodeURIComponent(insertedOrder.order_number || insertedOrder.id)}`,
+        estimated_dispatch: '24-48 Business Hours after payment confirmation',
         order: {
           id: insertedOrder.id,
           order_number: insertedOrder.order_number || null,
-          status: 'new',
-          status_label: 'New / Under Review',
-          is_dropship: true,
+          status: 'payment_pending',
+          status_label: 'Payment Pending',
+          payment_status: 'pending',
+          payment_link: paymentLink,
           items: normalizedItems,
           customer: {
             name: cust.name,

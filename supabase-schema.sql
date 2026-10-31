@@ -1609,6 +1609,23 @@ alter table public.api_keys add column if not exists catalog_mode text not null 
 alter table public.api_keys add column if not exists selected_skus jsonb default '[]'::jsonb;
 alter table public.api_keys add column if not exists orders_enabled boolean not null default false;
 alter table public.api_keys add column if not exists encrypted_key text;
+alter table public.api_keys add column if not exists approval_status text not null default 'pending';
+alter table public.api_keys add column if not exists subscription_status text not null default 'inactive';
+alter table public.api_keys add column if not exists subscription_plan text;
+alter table public.api_keys add column if not exists subscription_amount numeric;
+alter table public.api_keys add column if not exists subscription_started_at timestamptz;
+alter table public.api_keys add column if not exists subscription_expires_at timestamptz;
+alter table public.api_keys add column if not exists payment_gateway text;
+alter table public.api_keys add column if not exists last_payment_id text;
+
+-- Constraints for strict data integrity
+alter table public.api_keys drop constraint if exists api_keys_approval_status_check;
+alter table public.api_keys add constraint api_keys_approval_status_check
+  check (approval_status in ('pending', 'approved', 'rejected'));
+
+alter table public.api_keys drop constraint if exists api_keys_subscription_status_check;
+alter table public.api_keys add constraint api_keys_subscription_status_check
+  check (subscription_status in ('inactive', 'pending_payment', 'active', 'expired', 'cancelled'));
 
 -- Data migration: Safely mask any legacy plaintext API keys stored in key_prefix so secrets cannot be retrieved
 update public.api_keys
@@ -1624,6 +1641,10 @@ create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
 create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
 create index if not exists api_keys_is_active_idx on public.api_keys (is_active);
 create index if not exists api_keys_orders_enabled_idx on public.api_keys (orders_enabled);
+create index if not exists api_keys_approval_status_idx on public.api_keys (approval_status);
+create index if not exists api_keys_subscription_status_idx on public.api_keys (subscription_status);
+create index if not exists api_keys_subscription_expires_at_idx on public.api_keys (subscription_expires_at);
+create index if not exists api_keys_last_payment_id_idx on public.api_keys (last_payment_id);
 
 -- Daily Aggregated Usage Tracking Table (1 row per key/user per day = zero DB bloat)
 create table if not exists public.api_usage_daily (

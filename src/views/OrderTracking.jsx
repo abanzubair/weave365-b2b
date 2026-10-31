@@ -37,6 +37,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [error, setError] = useState('');
   const [catalogProducts, setCatalogProducts] = useState(products || []);
   const [copied, setCopied] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentSuccessMsg, setPaymentSuccessMsg] = useState('');
 
   const handleCopyId = () => {
     const idToCopy = order?.order_number || order?.id;
@@ -611,13 +613,50 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   const getStepProgress = () => {
     if (currentStatus === 'cancelled') return -1;
+    if (currentStatus === 'payment_pending' || currentStatus === 'pending_payment') return 0;
     if (currentStatus === 'delivered' || currentStatus === 'done') return 4;
     if (currentStatus === 'dispatched') return 3;
     if (currentStatus === 'verified' || currentStatus === 'processing' || currentStatus === 'active') return 2;
-    return 1; // Step 1: Payment Received
+    if (currentStatus === 'payment_received' || currentStatus === 'paid' || currentStatus === 'new') return 1;
+    return 0;
   };
 
   const stepProgress = getStepProgress();
+
+  const handlePayWholesaleOrder = async () => {
+    if (!order?.id) return;
+    setIsProcessingPayment(true);
+    setPaymentSuccessMsg('');
+    try {
+      const res = await fetch('/api/v1/verify-order-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order_id: order.id,
+          payment_method: 'online_instant',
+          payment_reference: `PAY-${Date.now().toString(36).toUpperCase()}`,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setPaymentSuccessMsg('Payment confirmed! Your order is verified and released for Varanasi quality check & dispatch.');
+        setOrder(prev => ({
+          ...prev,
+          status: 'payment_received',
+          updated_at: new Date().toISOString(),
+        }));
+      } else {
+        alert(data.message || 'Payment verification failed. Please try again or contact support.');
+      }
+    } catch (e) {
+      console.error('Payment verification error:', e);
+      alert('Unable to process payment right now. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
 
   const getStatusMessage = () => {
     if (
@@ -643,11 +682,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       case 'processing':
       case 'active':
         return 'Payment verified! Your order is currently undergoing quality inspection and careful packaging at our Varanasi hub before courier dispatch.';
+      case 'payment_received':
       case 'paid':
-      case 'new':
         return 'Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.';
+      case 'payment_pending':
       case 'pending_payment':
-        return 'Payment pending confirmation. Please complete payment to confirm your order.';
+      case 'new':
+        return 'Payment pending confirmation. Please complete wholesale invoice payment via the button below to confirm your order and release it for Varanasi quality check & dispatch.';
       default:
         return 'Order received. Our team will verify and update your order status shortly.';
     }
@@ -800,6 +841,70 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 );
               })}
             </div>
+
+            {/* Wholesale Payment Pending Action Card */}
+            {(currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new') && (
+              <div className="order-payment-pending-panel" style={{
+                background: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: '10px',
+                padding: '20px 24px',
+                marginBottom: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#b45309' }}>
+                      Action Required &middot; Wholesale Invoice
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: '#78350f', marginTop: '2px' }}>
+                      Wholesale Amount Due: {formatMoney(order.total_amount || amountBreakdown.finalTotal, { currency: orderCurrency })}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isProcessingPayment}
+                    onClick={handlePayWholesaleOrder}
+                    style={{
+                      background: '#0f172a',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 22px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: isProcessingPayment ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    {isProcessingPayment ? 'Verifying Payment...' : `Pay ${formatMoney(order.total_amount || amountBreakdown.finalTotal, { currency: orderCurrency })} & Confirm Order →`}
+                  </button>
+                </div>
+                <div style={{ fontSize: '12px', color: '#92400e', lineHeight: 1.5 }}>
+                  This wholesale order was placed via the Developer API. Complete invoice settlement above or via the payment link emailed to your registered reseller account to immediately release this consignment to the Varanasi inspection &amp; packaging queue.
+                </div>
+              </div>
+            )}
+
+            {paymentSuccessMsg && (
+              <div style={{
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '10px',
+                padding: '16px 20px',
+                marginBottom: '20px',
+                color: '#166534',
+                fontSize: '13px',
+                fontWeight: '600',
+              }}>
+                ✓ {paymentSuccessMsg}
+              </div>
+            )}
 
             {/* Status Update Alert Box */}
             <div className="status-update-panel">

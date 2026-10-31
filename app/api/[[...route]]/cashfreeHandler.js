@@ -31,7 +31,7 @@ function getCorsHeaders(request) {
   };
 }
 
-function getCashfreeConfig() {
+export function getCashfreeConfig() {
   const env = (process.env.CASHFREE_ENVIRONMENT || process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || 'SANDBOX').toUpperCase();
   const isProd = env === 'PRODUCTION' || env === 'PROD';
   const baseUrl = isProd ? 'https://api.cashfree.com/pg' : 'https://sandbox.cashfree.com/pg';
@@ -48,7 +48,7 @@ function getCashfreeConfig() {
   };
 }
 
-function getSupabaseAdmin() {
+export function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -556,6 +556,77 @@ export async function handleWebhook(request) {
 
       if (cfOrderId) {
         const supabase = getSupabaseAdmin();
+
+        // 0. Check if this is a Developer API Subscription Order (CF_SUB_*)
+        if (cfOrderId.startsWith('CF_SUB_')) {
+          try {
+            const { data: keyRecord } = await supabase
+              .from('api_keys')
+              .select('*')
+              .eq('last_payment_id', cfOrderId)
+              .maybeSingle();
+
+            if (keyRecord) {
+              const now = new Date();
+              const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
+              const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
+              const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
+              const plan = keyRecord.subscription_plan || 'growth';
+              const isPro = plan === 'pro';
+
+              await supabase
+                .from('api_keys')
+                .update({
+                  approval_status: 'approved',
+                  subscription_status: 'active',
+                  subscription_plan: plan,
+                  subscription_amount: isPro ? 499 : 299,
+                  subscription_started_at: keyRecord.subscription_started_at || now.toISOString(),
+                  subscription_expires_at: expiresAt,
+                  is_active: true,
+                  tier: plan,
+                  monthly_quota: isPro ? 25000 : 10000,
+                  rate_limit_rps: isPro ? 5 : 3,
+                  orders_enabled: isPro,
+                  allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+                  payment_gateway: 'cashfree',
+                  last_payment_id: cfOrderId,
+                  updated_at: now.toISOString(),
+                })
+                .eq('id', keyRecord.id);
+
+              try {
+                await supabase
+                  .from('api_subscription_payments')
+                  .insert([{
+                    api_key_id: keyRecord.id,
+                    user_id: keyRecord.user_id || null,
+                    plan,
+                    amount: isPro ? 499 : 299,
+                    currency: 'INR',
+                    payment_gateway: 'cashfree',
+                    gateway_order_id: cfOrderId,
+                    gateway_payment_id: paymentId ? String(paymentId) : 'cashfree_webhook',
+                    status: 'completed',
+                    billing_cycle_days: 30,
+                    orders_enabled: isPro,
+                    allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
+                    period_start: now.toISOString(),
+                    period_end: expiresAt,
+                    created_at: now.toISOString(),
+                  }]);
+              } catch (ledgerErr) {
+                console.warn('[Cashfree Webhook] api_subscription_payments ledger record notice:', ledgerErr?.message);
+              }
+
+              console.log(`[Cashfree Webhook] Activated developer API subscription for key ${keyRecord.id} (${plan})`);
+              return new Response('Subscription activated via webhook', { status: 200 });
+            }
+          } catch (subErr) {
+            console.error('[Cashfree Webhook] Error activating subscription key:', subErr);
+          }
+        }
+
         // 1. Instant indexed lookup via cf_order_id
         let target = null;
         const { data: indexedOrders } = await supabase
