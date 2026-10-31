@@ -228,8 +228,12 @@ export function getBuyerAccess(user, buyerProfile) {
   const blockedByPincode = Boolean(isVaranasiPincode(profile.pincode));
   const category = detectAccountCategory(user, profile);
   const isAdmin = user?.role === 'admin' || user?.user_metadata?.role === 'admin' || profile?.role === 'admin';
+  const isDropOff = !isAdmin && isDropOffAccount(profile, user);
   const isCustomer = !isVendor && !isAdmin && category === 'customer';
-  const accountLocked = !isAdmin && Boolean(isAccountLocked(profile, user));
+  const accountLocked = !isAdmin && (Boolean(isAccountLocked(profile, user)) || isDropOff);
+
+  const canDownloadCatalogue = !isAdmin ? (!isDropOff && !accountLocked && !isCustomer) : true;
+  const canShareCatalogue = !isAdmin ? (!isDropOff && !accountLocked && !isCustomer) : true;
 
   return {
     isLoggedIn: true,
@@ -254,8 +258,11 @@ export function getBuyerAccess(user, buyerProfile) {
     ),
     accountCategory: category,
     isCustomer,
+    isDropOff,
     accountLocked,
     isLocked: accountLocked,
+    canDownloadCatalogue,
+    canShareCatalogue,
   };
 }
 
@@ -270,10 +277,32 @@ export function priceNoticeForAccess(buyerAccess) {
 }
 
 /**
+ * Checks if a user's account is a drop-off account (incomplete profile registration).
+ * Consistent with Buyer Pipeline classification:
+ * An account lacking a valid contact phone/WhatsApp (at least 6 digits) or a city.
+ */
+export function isDropOffAccount(profile, user) {
+  if (!profile && !user) return false;
+  const p = profile || user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
+
+  // Administrators are never drop-off accounts
+  const role = String(p.role || user?.user_metadata?.role || user?.role || '').toLowerCase().trim();
+  if (role === 'admin') {
+    return false;
+  }
+
+  const cleanPhone = String(p.whatsapp_number || p.whatsapp || p.phone || user?.phone || '').replace(/\D/g, '');
+  const city = String(p.city || p.location_city || '').trim();
+
+  return cleanPhone.length < 6 || !city;
+}
+
+/**
  * Checks if a user's account is locked pending required profile completion.
  * Works dynamically without requiring an 'account_locked' column in the database:
  * 1. Checks explicit lock state stored in the qualification JSONB column (or profile object).
- * 2. If user is Business/Reseller or Supplier/Vendor, they MUST have completed the respective
+ * 2. If user is a drop-off account (incomplete phone or city), the account is locked.
+ * 3. If user is Business/Reseller or Supplier/Vendor, they MUST have completed the respective
  *    qualification/onboarding form; otherwise, the account is locked.
  */
 export function isAccountLocked(profile, user) {
@@ -292,6 +321,11 @@ export function isAccountLocked(profile, user) {
   // Admin is never locked
   if (role === 'admin' || user?.user_metadata?.role === 'admin' || user?.role === 'admin') {
     return false;
+  }
+
+  // Drop-off / incomplete accounts are locked pending profile completion
+  if (isDropOffAccount(p, user)) {
+    return true;
   }
 
   // Explicit unlock flag takes precedence if set by form completion

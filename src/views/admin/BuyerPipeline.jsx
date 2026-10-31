@@ -25,7 +25,7 @@ import {
   Sparkles,
 } from '../../components/icons.jsx';
 import { WhatsappIcon } from '../../components/WhatsappIcon.jsx';
-import { normalizeBuyerType, isVendorProfile, isAccountLocked, isCategoryDetailsComplete } from '../../utils/buyerAccess.js';
+import { normalizeBuyerType, isVendorProfile, isAccountLocked, isCategoryDetailsComplete, isDropOffAccount } from '../../utils/buyerAccess.js';
 import { adminEmails, storeConfig } from '../../config.js';
 import {
   joinByUser,
@@ -233,9 +233,9 @@ export default function BuyerPipeline({
     setSelectedRoleToSet(newRole);
     if (newRole !== 'customer') {
       const isComplete = isCategoryDetailsComplete(inspectProfile, newRole);
-      setLockStatusToSet(!isComplete);
+      setLockStatusToSet(!isComplete || isDropOffAccount(inspectProfile));
     } else {
-      setLockStatusToSet(false);
+      setLockStatusToSet(isDropOffAccount(inspectProfile));
     }
     setRoleSwitchSuccess('');
     setRoleSwitchError('');
@@ -321,11 +321,7 @@ export default function BuyerPipeline({
     }
   };
 
-  const isIncomplete = (p) => {
-    if (!p) return false;
-    const cleanPhone = String(p.whatsapp_number || p.whatsapp || '').replace(/\D/g, '');
-    return cleanPhone.length < 6 || !String(p.city || '').trim();
-  };
+  const isIncomplete = (p) => isDropOffAccount(p);
 
   const sortedProfiles = useMemo(() => {
     let profiles = (adminData.profiles || []).filter((p) => {

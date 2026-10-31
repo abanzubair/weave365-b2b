@@ -127,8 +127,9 @@ export function ResellerWhatsappShare({
     return () => { isActive = false; };
   }, [open, shareImagesKey, isApprovedReseller, product?.title, activeVariant?.code, priceAccess?.isLoggedIn]);
 
-  const isLocked = Boolean(priceAccess?.accountLocked || priceAccess?.isLocked);
-  if (!priceAccess?.isLoggedIn || !isApprovedReseller || isLocked || !product) return null;
+  const isDropOff = Boolean(priceAccess?.isDropOff);
+  const isLocked = Boolean(priceAccess?.accountLocked || priceAccess?.isLocked || isDropOff);
+  if (!priceAccess?.isLoggedIn || !isApprovedReseller || isLocked || isDropOff || !product) return null;
 
   async function copyMessage() {
     try {

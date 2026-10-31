@@ -885,7 +885,17 @@ drop policy if exists "Allow users to insert own download logs" on public.downlo
 create policy "Allow users to insert own download logs"
   on public.download_logs for insert
   to authenticated
-  with check ((select auth.uid()) = user_id or public.is_admin());
+  with check (
+    public.is_admin() or (
+      (select auth.uid()) = user_id
+      and exists (
+        select 1 from public.profiles p
+        where p.id = (select auth.uid())
+          and coalesce(length(regexp_replace(coalesce(p.whatsapp_number, p.whatsapp, ''), '\D', '', 'g')), 0) >= 6
+          and trim(coalesce(p.city, '')) <> ''
+      )
+    )
+  );
 
 -- Index for high-performance daily lookup queries
 create index if not exists download_logs_user_product_date_idx 

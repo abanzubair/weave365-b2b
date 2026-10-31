@@ -38,6 +38,7 @@ import {
 } from '../utils/imageOptimizer.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { ResellerWhatsappShare } from './ResellerWhatsappShare.jsx';
+import { isDropOffAccount } from '../utils/buyerAccess.js';
 import dynamic from 'next/dynamic';
 
 const ResellerShareModal = dynamic(
@@ -103,7 +104,11 @@ export const ProductCard = memo(function ProductCard({
   const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess, currentCountry, exchangeRates);
   const canResellerShare = priceAccess?.canViewPrices !== false;
   const isCustomer = Boolean(priceAccess?.isCustomer);
-  const isLocked = Boolean(priceAccess?.accountLocked || priceAccess?.isLocked);
+  const isDropOff = Boolean(
+    priceAccess?.isDropOff ||
+    (priceAccess?.userId && isDropOffAccount(null, { id: priceAccess.userId, phone: priceAccess.buyerPhone }))
+  );
+  const isLocked = Boolean(priceAccess?.accountLocked || priceAccess?.isLocked || isDropOff);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showResellerWhatsapp, setShowResellerWhatsapp] = useState(false);
   const [showBuyPanel, setShowBuyPanel] = useState(false);
@@ -234,7 +239,7 @@ export const ProductCard = memo(function ProductCard({
       return;
     }
 
-    if (isLocked) {
+    if (isDropOff || isLocked) {
       handleClose();
       triggerToast('Complete profile to download photos');
       return;
@@ -583,7 +588,7 @@ export const ProductCard = memo(function ProductCard({
                       triggerToast('Only logged in users can share catalogue details');
                       return;
                     }
-                    if (isLocked) {
+                    if (isDropOff || isLocked) {
                       triggerToast('Complete profile to share products');
                       return;
                     }
@@ -599,7 +604,7 @@ export const ProductCard = memo(function ProductCard({
                     <strong>Share on Social Media</strong>
                     {!priceAccess?.isLoggedIn ? (
                       <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
-                    ) : isLocked ? (
+                    ) : (isDropOff || isLocked) ? (
                       <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Complete profile required</span></span>
                     ) : isCustomer ? (
                       <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
@@ -618,7 +623,7 @@ export const ProductCard = memo(function ProductCard({
                     if (!priceAccess?.isLoggedIn) {
                       handleClose();
                       triggerToast('Only logged in users can download catalogue photos');
-                    } else if (isLocked) {
+                    } else if (isDropOff || isLocked) {
                       handleClose();
                       triggerToast('Complete profile to download photos');
                     } else if (isCustomer) {
@@ -635,7 +640,7 @@ export const ProductCard = memo(function ProductCard({
                     <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
                     {!priceAccess?.isLoggedIn ? (
                       <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
-                    ) : isLocked ? (
+                    ) : (isDropOff || isLocked) ? (
                       <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Complete profile required</span></span>
                     ) : isCustomer ? (
                       <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
@@ -652,7 +657,7 @@ export const ProductCard = memo(function ProductCard({
                     className="sheet-item"
                     onClick={() => {
                       handleClose();
-                      if (isLocked) {
+                      if (isDropOff || isLocked) {
                         triggerToast('Complete profile to access website');
                         return;
                       }
@@ -662,7 +667,7 @@ export const ProductCard = memo(function ProductCard({
                     <div className="item-icon link"><Store size={20} /></div>
                     <div className="item-copy">
                       <strong>Add to My Website</strong>
-                      {isLocked && (
+                      {(isDropOff || isLocked) && (
                         <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Complete profile required</span></span>
                       )}
                     </div>

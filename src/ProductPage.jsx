@@ -79,7 +79,7 @@ const ResellerWhatsappShare = dynamic(
 );
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { WhatsappIcon } from './components/WhatsappIcon.jsx';
-import { priceNoticeForAccess, detectAccountCategory, isAccountLocked } from './utils/buyerAccess.js';
+import { priceNoticeForAccess, detectAccountCategory, isAccountLocked, isDropOffAccount } from './utils/buyerAccess.js';
 import {
   getOptimizedImageUrl,
   getImageSrcSet,
@@ -177,9 +177,14 @@ export function ProductDetail({
     priceAccess?.isCustomer ||
     (user && !priceAccess?.isVendor && detectAccountCategory(user, buyerProfile) === 'customer')
   );
+  const isDropOff = Boolean(
+    priceAccess?.isDropOff ||
+    (user && isDropOffAccount(buyerProfile, user))
+  );
   const isLocked = Boolean(
     priceAccess?.accountLocked ||
     priceAccess?.isLocked ||
+    isDropOff ||
     (user && isAccountLocked(buyerProfile, user))
   );
 
@@ -1293,7 +1298,7 @@ export function ProductDetail({
       return;
     }
 
-    if (isLocked) {
+    if (isDropOff || isLocked) {
       setToastMessage('Complete profile to download photos');
       setTimeout(() => setToastMessage(''), 3500);
       return;
@@ -2113,7 +2118,7 @@ export function ProductDetail({
                                 handleRestrictedAction('share catalogue details', () => setWhatsappShareOpen(true));
                                 return;
                               }
-                              if (isLocked) {
+                              if (isDropOff || isLocked) {
                                 setToastMessage('Complete profile to share products');
                                 setTimeout(() => setToastMessage(''), 3500);
                                 return;
@@ -2131,7 +2136,7 @@ export function ProductDetail({
                               <strong>Share on Social Media</strong>
                               {!priceAccess?.isLoggedIn ? (
                                 <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
-                              ) : isLocked ? (
+                              ) : (isDropOff || isLocked) ? (
                                 <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Complete profile required</span></span>
                               ) : isCustomer ? (
                                 <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
@@ -2152,7 +2157,7 @@ export function ProductDetail({
                                 handleRestrictedAction('download catalogue photos', downloadImagesAsZip);
                                 return;
                               }
-                              if (isLocked) {
+                              if (isDropOff || isLocked) {
                                 setToastMessage('Complete profile to download photos');
                                 setTimeout(() => setToastMessage(''), 3500);
                                 return;
@@ -2171,7 +2176,7 @@ export function ProductDetail({
                               <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
                               {!priceAccess?.isLoggedIn ? (
                                 <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
-                              ) : isLocked ? (
+                              ) : (isDropOff || isLocked) ? (
                                 <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Complete profile required</span></span>
                               ) : isCustomer ? (
                                 <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
@@ -2188,7 +2193,7 @@ export function ProductDetail({
                               className="sheet-item"
                               onClick={() => {
                                 handleClosePanel();
-                                if (isLocked) {
+                                if (isDropOff || isLocked) {
                                   setToastMessage('Complete profile to access website');
                                   setTimeout(() => setToastMessage(''), 3500);
                                   return;
@@ -2199,7 +2204,7 @@ export function ProductDetail({
                               <div className="item-icon link"><Store size={20} /></div>
                               <div className="item-copy">
                                 <strong>Add to My Website</strong>
-                                {isLocked && (
+                                {(isDropOff || isLocked) && (
                                   <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Complete profile required</span></span>
                                 )}
                               </div>

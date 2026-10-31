@@ -58,6 +58,10 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
   const externalWebsiteUrl = rawWebsiteUrl ? normalizeWebsiteUrl(rawWebsiteUrl) : '';
 
   const handleAdd = async () => {
+    if (priceAccess?.isDropOff || priceAccess?.isLocked || priceAccess?.accountLocked) {
+      alert('Please complete your profile to add products to your boutique website.');
+      return;
+    }
     let uid = user?.id;
     if (!uid) {
       const { data: { session } } = await supabase.auth.getSession();
