@@ -248,11 +248,16 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
         clientName,
         onConfirm: async () => {
           try {
+            const now = new Date();
+            const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
             const { error } = await developerService.updateApiKey(keyId, {
               is_active: true,
+              subscription_status: 'active',
+              subscription_started_at: now.toISOString(),
+              subscription_expires_at: expiresAt,
             });
             if (error) throw error;
-            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true } : k)));
+            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
           } catch (err) {
             alert('Failed to update status: ' + err.message);
           }
@@ -296,7 +301,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
   };
 
   // Delete key
-  const handleDeleteKey = (keyId, clientName) => {
+  const handleDeleteKey = (keyId, clientName, userId = null) => {
     triggerConfirm({
       title: 'Delete API Key',
       message: 'This action cannot be undone. All connected storefront plugins and feeds using this key will immediately lose access.',
@@ -306,11 +311,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       clientName,
       onConfirm: async () => {
         try {
-          const { error } = await developerService.deleteApiKey(keyId);
+          const { error } = await developerService.deleteApiKey(keyId, userId);
           if (error) throw error;
           setAllKeys((prev) => prev.filter((k) => k.id !== keyId));
           if (inspectedKeyId === keyId) setInspectedKeyId(null);
-          alert('API Key revoked successfully.');
+          alert('API Key revoked and deleted successfully.');
         } catch (err) {
           alert('Failed to delete key: ' + err.message);
         }
@@ -786,7 +791,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       )}
                       <button
                         type="button"
-                        onClick={() => handleDeleteKey(item.id, item.client_name)}
+                        onClick={() => handleDeleteKey(item.id, item.client_name, item.user_id)}
                         title="Revoke API Key"
                         className="api-action-btn api-delete-btn"
                         aria-label="Delete Key"
@@ -1174,8 +1179,8 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
           <div className="api-req-modal" onClick={(e) => e.stopPropagation()}>
             <div className="api-req-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={18} style={{ color: '#0284c7' }} />
-                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700 }}>API Access Request Application</h3>
+                <KeyRound size={17} style={{ color: '#0f172a' }} />
+                <h3>API Access Request Application</h3>
               </div>
               <button
                 type="button"
@@ -1202,7 +1207,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                 const platform = req.platform || (storefrontUrl.toLowerCase().includes('shopify') ? 'Shopify' : (storefrontUrl.toLowerCase().includes('woo') ? 'WooCommerce' : 'Custom eCommerce Storefront'));
                 const useCases = (Array.isArray(req.apiUseCases) && req.apiUseCases.length > 0)
                   ? req.apiUseCases
-                  : ['Product Catalog', 'Live Inventory', 'Wholesale Pricing'];
+                  : ['Product Catalog', 'Live Inventory', 'Pricing Feed'];
                 const monthlyVolume = req.monthlyOrderVolume || (profQual.monthly_budget ? `Budget: ${profQual.monthly_budget.replace(/_/g, ' ')}` : '50 - 200 orders');
                 const timeline = req.timeline || (profQual.purchase_intent ? `Within ${profQual.purchase_intent.replace(/_/g, ' ')}` : 'Immediate / Within 7 days');
                 const otherSuppliers = req.sellsOtherSuppliers || (profQual.sales_channels ? `Sales Channels: ${profQual.sales_channels.join(', ')}` : 'Direct Weave 365 sourcing');
@@ -1211,26 +1216,53 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
 
                 return (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isItemActive ? '#ecfdf5' : isApprovedPendingPay ? '#eff6ff' : '#fffbeb', borderRadius: '8px', border: `1px solid ${isItemActive ? '#a7f3d0' : isApprovedPendingPay ? '#bfdbfe' : '#fde68a'}` }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 16px',
+                      background: '#f8fafc',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0'
+                    }}>
                       <div>
-                        <strong style={{ fontSize: '0.9375rem', color: isItemActive ? '#065f46' : isApprovedPendingPay ? '#1e40af' : '#92400e', display: 'block' }}>
+                        <strong style={{ fontSize: '0.9375rem', color: '#0f172a', display: 'block', fontWeight: 700 }}>
                           {reviewRequestItem.client_name || 'Client'}
                         </strong>
-                        <span style={{ fontSize: '0.8125rem', color: isItemActive ? '#047857' : isApprovedPendingPay ? '#2563eb' : '#b45309' }}>
+                        <span style={{ fontSize: '0.8125rem', color: '#64748b' }}>
                           Account: {prof.email || 'N/A'}
                         </span>
                       </div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px', background: isItemActive ? '#10b981' : isApprovedPendingPay ? '#3b82f6' : '#f59e0b', color: '#ffffff' }}>
-                        {isItemActive ? 'Active & Approved' : isApprovedPendingPay ? 'Approved • Awaiting Plan Payment' : 'Pending Admin Review'}
+                      <span style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        padding: '3px 9px',
+                        borderRadius: '5px',
+                        background: isItemActive ? '#ecfdf5' : isApprovedPendingPay ? '#eff6ff' : '#fef3c7',
+                        color: isItemActive ? '#065f46' : isApprovedPendingPay ? '#1e40af' : '#92400e',
+                        border: `1px solid ${isItemActive ? '#a7f3d0' : isApprovedPendingPay ? '#bfdbfe' : '#fde68a'}`
+                      }}>
+                        {isItemActive ? 'Active & Approved' : isApprovedPendingPay ? 'Approved • Awaiting Payment' : 'Pending Admin Review'}
                       </span>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       <div className="api-req-item">
                         <span className="api-req-label">GSTIN</span>
-                        <span className="api-req-val" style={{ fontFamily: 'monospace' }}>
-                          {req.gstin || reviewRequestItem.gst_number || profQual.gstin || 'N/A'}
-                        </span>
+                        <div>
+                          <span style={{
+                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, monospace',
+                            fontSize: '0.8125rem',
+                            fontWeight: 600,
+                            background: '#f1f5f9',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            color: '#0f172a',
+                            display: 'inline-block'
+                          }}>
+                            {req.gstin || reviewRequestItem.gst_number || profQual.gstin || 'N/A'}
+                          </span>
+                        </div>
                       </div>
                       <div className="api-req-item">
                         <span className="api-req-label">Storefront URL</span>
@@ -1239,10 +1271,18 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                             href={storefrontUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="api-client-link"
-                            style={{ fontSize: '0.9375rem', wordBreak: 'break-all' }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              color: '#0284c7',
+                              textDecoration: 'none',
+                              wordBreak: 'break-all'
+                            }}
                           >
-                            <Globe size={12} /> {storefrontUrl} <ExternalLink size={10} />
+                            <Globe size={13} /> {storefrontUrl} <ExternalLink size={11} />
                           </a>
                         ) : (
                           <span className="api-req-val">N/A</span>
@@ -1274,21 +1314,24 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
 
                     <div className="api-req-item">
                       <span className="api-req-label">API Use Cases Requested</span>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '3px' }}>
                         {useCases.map((uc) => (
                           <span
                             key={uc}
                             style={{
                               fontSize: '0.75rem',
-                              fontWeight: 600,
+                              fontWeight: 500,
                               padding: '3px 8px',
-                              borderRadius: '6px',
-                              background: '#f1f5f9',
-                              border: '1px solid #cbd5e1',
+                              borderRadius: '5px',
+                              background: '#f8fafc',
+                              border: '1px solid #e2e8f0',
                               color: '#334155',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
                             }}
                           >
-                            ✓ {uc}
+                            <Check size={11} style={{ color: '#059669' }} /> {uc}
                           </span>
                         ))}
                       </div>
@@ -1325,16 +1368,16 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     </div>
 
                     <div className="api-req-item">
-                      <span className="api-req-label">Integration Goals & Objectives</span>
+                      <span className="api-req-label">Integration Goals &amp; Objectives</span>
                       <div
                         style={{
                           background: '#f8fafc',
-                          padding: '12px 14px',
-                          borderRadius: '8px',
+                          padding: '10px 14px',
+                          borderRadius: '6px',
                           border: '1px solid #e2e8f0',
-                          fontSize: '0.875rem',
-                          lineHeight: '1.5',
-                          color: '#1e293b',
+                          fontSize: '0.8125rem',
+                          lineHeight: '1.55',
+                          color: '#334155',
                           whiteSpace: 'pre-wrap',
                         }}
                       >
@@ -1356,23 +1399,65 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
               <button
                 type="button"
                 className="api-btn-secondary"
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  fontSize: '0.8125rem',
+                  fontWeight: 500,
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}
                 onClick={() => setReviewRequestItem(null)}
               >
                 Close
+              </button>
+              <button
+                type="button"
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  fontSize: '0.8125rem',
+                  fontWeight: 500,
+                  color: '#dc2626',
+                  borderColor: '#fca5a5',
+                  background: '#ffffff',
+                  border: '1px solid #fca5a5',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  whiteSpace: 'nowrap',
+                }}
+                onClick={() => {
+                  const keyId = reviewRequestItem.id;
+                  const cName = reviewRequestItem.client_name || reviewRequestItem.profiles?.business_name || 'Client';
+                  const userId = reviewRequestItem.user_id;
+                  setReviewRequestItem(null);
+                  handleDeleteKey(keyId, cName, userId);
+                }}
+              >
+                <Trash2 size={13} />
+                <span>Reject &amp; Delete</span>
               </button>
               {reviewRequestItem.approval_status !== 'approved' && !reviewRequestItem.is_active && (
                 <button
                   type="button"
                   disabled={approvingRequestId === reviewRequestItem.id}
-                  className="primary-button"
                   style={{
+                    height: '36px',
+                    padding: '0 18px',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    background: '#059669',
+                    border: '1px solid #059669',
+                    color: '#ffffff',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '8px 18px',
-                    fontSize: '0.875rem',
-                    background: '#059669',
-                    borderColor: '#059669',
+                    whiteSpace: 'nowrap',
                   }}
                   onClick={async () => {
                     const keyId = reviewRequestItem.id;
@@ -1399,35 +1484,44 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   ) : (
                     <CheckCircle2 size={14} />
                   )}
-                  <span>Approve API Access (Allow Plan Selection)</span>
+                  <span>Approve Access (Allow Plan Selection)</span>
                 </button>
               )}
               {reviewRequestItem.approval_status === 'approved' && !reviewRequestItem.is_active && (
                 <button
                   type="button"
                   disabled={approvingRequestId === reviewRequestItem.id}
-                  className="api-btn-secondary"
                   style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 16px',
+                    height: '36px',
+                    padding: '0 16px',
                     fontSize: '0.8125rem',
+                    fontWeight: 500,
                     color: '#2563eb',
                     borderColor: '#93c5fd',
                     background: '#eff6ff',
+                    border: '1px solid #93c5fd',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
                   }}
                   onClick={async () => {
                     const keyId = reviewRequestItem.id;
                     setApprovingRequestId(keyId);
                     try {
+                      const now = new Date();
+                      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
                       const { error } = await developerService.updateApiKey(keyId, {
                         is_active: true,
                         subscription_status: 'active',
+                        subscription_started_at: now.toISOString(),
+                        subscription_expires_at: expiresAt,
                       });
                       if (error) throw error;
-                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, subscription_status: 'active' } : k)));
-                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true, subscription_status: 'active' } : null));
+                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
+                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true, subscription_status: 'active', subscription_expires_at: expiresAt } : null));
                       alert('Key directly activated by Admin override.');
                     } catch (err) {
                       alert('Failed to activate key: ' + err.message);
@@ -1437,7 +1531,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   }}
                 >
                   <Power size={13} />
-                  <span>Admin Bypass: Activate Key Directly</span>
+                  <span>Admin Bypass: Activate Key</span>
                 </button>
               )}
             </div>

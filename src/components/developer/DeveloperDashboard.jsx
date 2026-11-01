@@ -230,7 +230,7 @@ export function ConfirmActionModal({
  * Quiet, elegant card displaying storefront registration and developer activation details.
  */
 function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copiedField, copyToClipboard, tierInfo }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(!isAdminMode);
 
   // Extract all data fields with intelligent fallbacks
   const clientName = apiKey?.client_name || apiKey?.profiles?.business_name || buyerProfile?.business_name || 'N/A';
@@ -289,48 +289,25 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
           </div>
           <div className="dev-activation-title-group">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a' }}>
-                {clientName !== 'N/A' ? clientName : (isAdminMode ? 'Activation Details' : 'Storefront Profile')}
+              <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#0f172a' }}>
+                Storefront &amp; Registration Profile
               </h3>
-              <span className={`dev-quiet-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
-                <span className="dev-quiet-dot" />
-                {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
-              </span>
-              {tierInfo && (
+              {clientName !== 'N/A' && (
                 <span className="dev-tier-tag" style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '6px', background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#334155', fontWeight: 600 }}>
-                  {tierInfo.name} • {tierInfo.priceLabel}
+                  {clientName}
                 </span>
               )}
             </div>
             <p style={{ margin: '3px 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>
-              {isAdminMode
-                ? 'Registered storefront parameters, buyer account details, and API credentials'
-                : 'Your registered storefront parameters and API credentials'}
+              {clientWebsite ? `${clientWebsite.replace(/^https?:\/\//, '')} • ` : ''}
+              {email !== 'N/A' ? `${email} • ` : ''}
+              {gstNumber ? `GSTIN: ${gstNumber} • ` : ''}
+              Feed: {catalogModeLabel}
             </p>
           </div>
         </div>
 
         <div className="dev-activation-head-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <a
-            href="/developer-api"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="dev-action-chip"
-            style={{
-              height: '30px',
-              fontSize: '0.75rem',
-              fontWeight: 500,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              textDecoration: 'none',
-            }}
-            title="Open official REST API documentation & endpoint references"
-          >
-            <BookOpen size={13} />
-            <span>API Docs ↗</span>
-          </a>
-
           {waUrl && (
             <a
               href={waUrl}
@@ -345,18 +322,26 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
             </a>
           )}
 
-          {!isAdminMode && (
-            <button
-              type="button"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="dev-icon-btn"
-              style={{ width: '30px', height: '30px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', cursor: 'pointer' }}
-              title={isCollapsed ? 'Expand Storefront Profile' : 'Collapse Storefront Profile'}
-              aria-label={isCollapsed ? 'Expand Storefront Profile' : 'Collapse Storefront Profile'}
-            >
-              {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="dev-action-chip"
+            style={{
+              height: '30px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              background: isCollapsed ? '#ffffff' : '#f1f5f9',
+            }}
+            title={isCollapsed ? 'Expand Storefront Profile' : 'Collapse Storefront Profile'}
+            aria-label={isCollapsed ? 'Expand Storefront Profile' : 'Collapse Storefront Profile'}
+          >
+            {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+            <span>{isCollapsed ? 'View Store Details' : 'Hide Details'}</span>
+          </button>
         </div>
       </div>
 
@@ -1560,13 +1545,17 @@ export function DeveloperDashboard({
       requiredInputText: 'DELETE',
       onConfirm: async () => {
         try {
-          const { error } = await developerService.deleteApiKey(apiKey.id);
+          const targetUserId = apiKey.user_id || user?.id;
+          const { error } = await developerService.deleteApiKey(apiKey.id, targetUserId);
           if (error) throw error;
           setApiKey(null);
           setRevealedKey(null);
           setNewGeneratedSecret(null);
           setNewClientName(buyerProfile?.business_name || '');
           setNewClientWebsite('');
+          if (buyerProfile?.qualification?.api_access_request) {
+            delete buyerProfile.qualification.api_access_request;
+          }
           if (onAdminUpdate) onAdminUpdate(null);
           alert('API Key permanently deleted.');
         } catch (err) {
@@ -1679,17 +1668,36 @@ export function DeveloperDashboard({
     );
   }
 
+  const hasKey = Boolean(apiKey?.id);
   const isKeyActive = Boolean(apiKey?.is_active);
-  const approvalStatus = apiKey?.approval_status || (isKeyActive ? 'approved' : 'pending');
+  const approvalStatus = apiKey?.approval_status || (isKeyActive ? 'approved' : 'none');
   const subscriptionStatus = apiKey?.subscription_status || (isKeyActive ? 'active' : 'inactive');
 
-  const expiresAtMs = apiKey?.subscription_expires_at ? new Date(apiKey.subscription_expires_at).getTime() : null;
-  const isSubscriptionExpired = Boolean(apiKey?.subscription_status === 'expired' || (expiresAtMs && expiresAtMs < Date.now()));
+  const rawExpiresAt = apiKey?.subscription_expires_at
+    ? new Date(apiKey.subscription_expires_at)
+    : apiKey?.subscription_started_at
+      ? new Date(new Date(apiKey.subscription_started_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+      : apiKey?.created_at
+        ? new Date(new Date(apiKey.created_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+        : null;
+
+  const effectiveExpiryDate = (rawExpiresAt && !isNaN(rawExpiresAt.getTime()))
+    ? (isKeyActive && rawExpiresAt.getTime() < Date.now())
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      : rawExpiresAt
+    : (isKeyActive ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null);
+
+  const expiresAtMs = effectiveExpiryDate ? effectiveExpiryDate.getTime() : null;
+  const isSubscriptionExpired = Boolean(apiKey?.subscription_status === 'expired' || (expiresAtMs && expiresAtMs < Date.now() && !isKeyActive));
   const daysRemaining = expiresAtMs ? Math.max(0, Math.ceil((expiresAtMs - Date.now()) / (1000 * 60 * 60 * 24))) : null;
 
-  // Pending request in profile qualification
-  const pendingRequest = apiKey?.profiles?.qualification?.api_access_request || buyerProfile?.qualification?.api_access_request;
-  const hasSubmittedRequest = Boolean(apiKey || pendingRequest);
+  const formattedValidUntil = effectiveExpiryDate
+    ? effectiveExpiryDate.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '30 Days from Activation';
 
   // 1. Returning from PhonePe or Cashfree redirect, currently verifying
   if (verifyingSub) {
@@ -1707,7 +1715,7 @@ export function DeveloperDashboard({
   }
 
   // 2. Request submitted and pending manual Admin approval
-  const isPendingAdminReview = !isAdminMode && hasSubmittedRequest && !isKeyActive && approvalStatus === 'pending';
+  const isPendingAdminReview = !isAdminMode && hasKey && !isKeyActive && approvalStatus === 'pending';
 
   if (isPendingAdminReview) {
     const waSupportUrl = `https://wa.me/91${(storeConfig.whatsapp || '9919101369').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
@@ -1768,7 +1776,7 @@ export function DeveloperDashboard({
   }
 
   // 3. Admin approved the request! Now show the Plan Selection UI
-  const isPendingPlanPayment = !isAdminMode && approvalStatus === 'approved' && (subscriptionStatus === 'pending_payment' || subscriptionStatus === 'inactive');
+  const isPendingPlanPayment = !isAdminMode && hasKey && approvalStatus === 'approved' && (subscriptionStatus === 'pending_payment' || subscriptionStatus === 'inactive');
 
   if (isPendingPlanPayment) {
     return (
@@ -1785,8 +1793,8 @@ export function DeveloperDashboard({
     );
   }
 
-  // If user has not submitted request yet and not in admin mode
-  if (!apiKey && !isAdminMode) {
+  // If user has not submitted request yet (or key was deleted) and not in admin mode
+  if (!hasKey && !isAdminMode) {
     return (
       <div className="dev-api-request-container">
         <div className="dev-api-request-card">
@@ -2247,91 +2255,6 @@ export function DeveloperDashboard({
         </div>
       )}
 
-      {/* 2. User & Storefront Activation Profile Card with Integrated Actions */}
-      <UserActivationInfoCard
-        apiKey={apiKey}
-        user={user}
-        buyerProfile={buyerProfile}
-        isAdminMode={isAdminMode}
-        copiedField={copiedField}
-        copyToClipboard={copyToClipboard}
-        tierInfo={tierInfo}
-        onRegenerateKey={handleRegenerateKey}
-        onDeleteApiKey={handleDeleteApiKey}
-      />
-
-      {/* Subscription Validity & Billing Cycle Card */}
-      {apiKey && (
-        <div className="dev-card dev-sub-validity-card">
-          <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div className="dev-card-title">
-              <CreditCard size={16} />
-              <h3>Prepaid Developer Subscription</h3>
-              <span className={`dev-sub-status-pill ${isSubscriptionExpired ? 'expired' : daysRemaining !== null && daysRemaining <= 7 ? 'warning' : 'active'}`}>
-                {isSubscriptionExpired
-                  ? 'Expired (HTTP 403)'
-                  : daysRemaining !== null
-                    ? daysRemaining <= 7
-                      ? `Expiring in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}`
-                      : `Active (${daysRemaining} days remaining)`
-                    : 'Active'}
-              </span>
-            </div>
-
-            {!isAdminMode && (
-              <button
-                type="button"
-                className="dev-btn-renew"
-                onClick={() => setPlanModalOpen(true)}
-              >
-                <RefreshCw size={13} />
-                <span>{isSubscriptionExpired ? 'Renew Subscription' : 'Renew / Change Plan'}</span>
-              </button>
-            )}
-          </div>
-
-          <div className="dev-sub-grid">
-            <div className="dev-sub-item">
-              <span className="dev-sub-label">Current Plan</span>
-              <strong className="dev-sub-value">
-                {apiKey.subscription_plan === 'pro'
-                  ? 'Pro / Scale (₹499/mo)'
-                  : apiKey.subscription_plan === 'growth'
-                    ? 'Growth Partner (₹299/mo)'
-                    : (apiKey.tier ? `${apiKey.tier.toUpperCase()} Tier` : 'Growth Partner (₹299/mo)')}
-              </strong>
-            </div>
-
-            <div className="dev-sub-item">
-              <span className="dev-sub-label">Billing Cycle</span>
-              <strong className="dev-sub-value">30-Day Prepaid</strong>
-            </div>
-
-            <div className="dev-sub-item">
-              <span className="dev-sub-label">Valid Until</span>
-              <strong className="dev-sub-value">
-                {apiKey.subscription_expires_at
-                  ? new Date(apiKey.subscription_expires_at).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })
-                  : 'Active • Direct Admin'}
-              </strong>
-            </div>
-
-            <div className="dev-sub-item">
-              <span className="dev-sub-label">Payment Gateway</span>
-              <strong className="dev-sub-value">
-                {apiKey.payment_gateway
-                  ? apiKey.payment_gateway.charAt(0).toUpperCase() + apiKey.payment_gateway.slice(1)
-                  : 'Cashfree / PhonePe'}
-              </strong>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Secret Key Notification Banner (When Key is newly generated) */}
       {newGeneratedSecret && (
         <div className="dev-new-secret-alert">
@@ -2382,7 +2305,7 @@ export function DeveloperDashboard({
           background: '#fef2f2',
           border: '1px solid #fecaca',
           borderRadius: '12px',
-          marginBottom: '1.25rem',
+          marginBottom: '0.5rem',
           flexWrap: 'wrap',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
@@ -2420,68 +2343,59 @@ export function DeveloperDashboard({
         </div>
       )}
 
-      {/* 3. Metric Gauges (Quota & Rate Limit) */}
-      <div className="dev-metrics-grid">
-        <div className="dev-metric-card">
-          <div className="dev-metric-head">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="dev-metric-label">Monthly Request Quota</span>
-              {!apiKey?.is_active && (
-                <span className="dev-metric-badge-suspended">
-                  <AlertTriangle size={10} /> Paused
-                </span>
-              )}
-            </div>
-            <Activity size={15} className="dev-metric-icon" />
-          </div>
-          <div className="dev-metric-value">
-            {currentMonthUsed.toLocaleString()} <span className="dev-metric-total">/ {monthlyQuota.toLocaleString()} req</span>
-          </div>
-          <div className="dev-progress-bar-wrap">
-            <div
-              className={`dev-progress-bar ${!apiKey?.is_active ? 'disabled' : usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
-              style={{
-                transform: `scaleX(${usagePercent / 100})`,
-                background: !apiKey?.is_active ? '#cbd5e1' : undefined,
-              }}
-            />
-          </div>
-          <div className="dev-metric-footer">
-            <span>
-              {!apiKey?.is_active
-                ? 'API suspended • Requests blocked'
-                : `${remainingQuota.toLocaleString()} requests remaining (${usagePercent}% used)`}
+      {/* Unified Developer Dashboard Header */}
+      <div className="dev-page-header">
+        <div className="dev-page-header-left">
+          <div className="dev-page-header-title-row">
+            <h2 className="dev-page-header-title">Developer API</h2>
+            <span className={`dev-page-header-badge ${apiKey?.is_active && !isSubscriptionExpired ? 'active' : 'suspended'}`}>
+              <span className="dev-quiet-dot" />
+              {apiKey?.is_active && !isSubscriptionExpired
+                ? 'Active'
+                : (isSubscriptionExpired ? 'Expired' : 'Suspended')}
             </span>
-            <span>Resets in {daysInMonthLeft} days</span>
+            {apiKey?.is_active && (
+              <span className="dev-page-header-plan-pill">
+                {apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled ? 'Pro Scale' : 'Growth Partner'}
+              </span>
+            )}
           </div>
+          <p className="dev-page-header-desc">
+            Production API credentials and live storefront catalog sync
+            {daysRemaining !== null && !isSubscriptionExpired && (
+              <span className="dev-page-header-validity">
+                {' '}• Valid until <strong>{formattedValidUntil}</strong> ({daysRemaining}d left)
+              </span>
+            )}
+          </p>
         </div>
 
-        <div className="dev-metric-card">
-          <div className="dev-metric-head">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="dev-metric-label">Rate Limit & Throughput</span>
-              {!apiKey?.is_active && (
-                <span className="dev-metric-badge-suspended">
-                  <AlertTriangle size={10} /> Blocked
-                </span>
-              )}
-            </div>
-            <Zap size={15} className="dev-metric-icon" />
-          </div>
-          <div className="dev-metric-value">
-            {!apiKey?.is_active ? 0 : (apiKey?.rate_limit_rps || 1)}{' '}
-            <span className="dev-metric-unit">{!apiKey?.is_active ? 'req / sec (Blocked)' : 'req / sec'}</span>
-          </div>
-          <p className="dev-metric-subtext">
-            {!apiKey?.is_active
-              ? 'All storefront requests are rejected with 403 Forbidden until reactivated.'
-              : `Standard burst allowance: ${Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent requests`}
-          </p>
+        <div className="dev-page-header-actions">
+          <a
+            href="/developer-api"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dev-header-btn-docs"
+            title="Open official REST API documentation & endpoint references"
+          >
+            <BookOpen size={13} />
+            <span>Documentation ↗</span>
+          </a>
+          {!isAdminMode && (
+            <button
+              type="button"
+              className="dev-header-btn-renew"
+              onClick={() => setPlanModalOpen(true)}
+            >
+              <RefreshCw size={12} />
+              <span>{isSubscriptionExpired ? 'Renew Subscription' : 'Renew / Change Plan'}</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 4. Credentials & Base URLs Card */}
-      <div className="dev-card">
+      {/* 1. Primary Hero: API Credentials */}
+      <div className="dev-card dev-credentials-card">
         <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div className="dev-card-title">
             <KeyRound size={16} />
@@ -2587,6 +2501,87 @@ export function DeveloperDashboard({
                 <span>{copiedField === 'base-url' ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Unified Overview & Usage Metrics Bar (Consolidated 4-Metric Strip) */}
+      <div className="dev-unified-stats-bar">
+        {/* Tile 1: Subscription */}
+        <div className="dev-stat-tile">
+          <div className="dev-stat-tile-head">
+            <span className="dev-stat-tile-label">Subscription</span>
+            <CreditCard size={15} className="dev-stat-tile-icon" />
+          </div>
+          <div className="dev-stat-tile-value">
+            {apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled
+              ? 'Pro Scale'
+              : 'Growth Partner'}
+          </div>
+          <div className="dev-stat-tile-meta">
+            <strong>{apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled ? '₹499/mo' : '₹299/mo'}</strong> • {isSubscriptionExpired ? 'Expired' : `Renews ${formattedValidUntil}`}
+          </div>
+        </div>
+
+        {/* Tile 2: Monthly Quota */}
+        <div className="dev-stat-tile">
+          <div className="dev-stat-tile-head">
+            <span className="dev-stat-tile-label">Monthly Quota</span>
+            <Activity size={15} className="dev-stat-tile-icon" />
+          </div>
+          <div className="dev-stat-tile-value">
+            {currentMonthUsed.toLocaleString()} <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: '#64748b' }}>/ {monthlyQuota.toLocaleString()} req</span>
+          </div>
+          <div className="dev-progress-bar-wrap" style={{ margin: '2px 0' }}>
+            <div
+              className={`dev-progress-bar ${!apiKey?.is_active ? 'disabled' : usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
+              style={{
+                transform: `scaleX(${usagePercent / 100})`,
+                background: !apiKey?.is_active ? '#cbd5e1' : undefined,
+              }}
+            />
+          </div>
+          <div className="dev-stat-tile-meta">
+            {!apiKey?.is_active ? 'Paused' : `${remainingQuota.toLocaleString()} remaining • Resets in ${daysInMonthLeft}d`}
+          </div>
+        </div>
+
+        {/* Tile 3: Rate Limit */}
+        <div className="dev-stat-tile">
+          <div className="dev-stat-tile-head">
+            <span className="dev-stat-tile-label">Rate Limit</span>
+            <Zap size={15} className="dev-stat-tile-icon" />
+          </div>
+          <div className="dev-stat-tile-value">
+            {!apiKey?.is_active ? 0 : (apiKey?.rate_limit_rps || 1)}{' '}
+            <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: '#64748b' }}>
+              {!apiKey?.is_active ? 'req/s (Blocked)' : 'req / sec'}
+            </span>
+          </div>
+          <div className="dev-stat-tile-meta">
+            {!apiKey?.is_active
+              ? 'Requests return 403 Forbidden'
+              : `Burst allowance: ${Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent`}
+          </div>
+        </div>
+
+        {/* Tile 4: Capabilities */}
+        <div className="dev-stat-tile">
+          <div className="dev-stat-tile-head">
+            <span className="dev-stat-tile-label">Order Routing</span>
+            <ShieldCheck size={15} className="dev-stat-tile-icon" />
+          </div>
+          <div className="dev-stat-tile-value">
+            {apiKey?.orders_enabled && apiKey?.is_active
+              ? 'Automated'
+              : !apiKey?.is_active
+                ? 'Suspended'
+                : 'Manual Only'}
+          </div>
+          <div className="dev-stat-tile-meta">
+            {apiKey?.orders_enabled && apiKey?.is_active
+              ? 'POST /orders active (Pro)'
+              : 'Upgrade to Pro for automated orders'}
           </div>
         </div>
       </div>
@@ -3254,6 +3249,17 @@ fetchWeave365Catalog();`}
           </div>
         </div>
       )}
+
+      {/* 8. Storefront & Registration Parameters (Clean collapsible reference at bottom) */}
+      <UserActivationInfoCard
+        apiKey={apiKey}
+        user={user}
+        buyerProfile={buyerProfile}
+        isAdminMode={isAdminMode}
+        copiedField={copiedField}
+        copyToClipboard={copyToClipboard}
+        tierInfo={tierInfo}
+      />
 
       {/* Subscription Renewal / Upgrade Modal */}
       {planModalOpen && (

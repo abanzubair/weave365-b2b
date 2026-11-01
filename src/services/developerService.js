@@ -505,24 +505,48 @@ export const developerService = {
   },
 
   /**
-   * Delete / Revoke API key (preserves user-level usage history)
+   * Delete / Revoke API key (preserves user-level usage history and clears profile request)
    */
-  async deleteApiKey(keyId) {
+  async deleteApiKey(keyId, targetUserId = null) {
     if (!isSupabaseConfigured || !keyId) return { error: 'Missing keyId' };
 
     try {
-      // Preserve user_id on all usage rows before removing key record
-      const { data: keyRecord } = await supabase
-        .from('api_keys')
-        .select('user_id')
-        .eq('id', keyId)
-        .maybeSingle();
+      let userId = targetUserId;
+      if (!userId) {
+        const { data: keyRecord } = await supabase
+          .from('api_keys')
+          .select('user_id')
+          .eq('id', keyId)
+          .maybeSingle();
+        userId = keyRecord?.user_id;
+      }
 
-      if (keyRecord?.user_id) {
+      if (userId) {
+        // Preserve user_id on all usage rows before removing key record
         await supabase
           .from('api_usage_daily')
-          .update({ user_id: keyRecord.user_id })
+          .update({ user_id: userId })
           .eq('api_key_id', keyId);
+
+        // Clear qualification.api_access_request so the account resets to a clean state
+        try {
+          const { data: pData } = await supabase
+            .from('profiles')
+            .select('qualification')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (pData?.qualification?.api_access_request) {
+            const updatedQual = { ...pData.qualification };
+            delete updatedQual.api_access_request;
+            await supabase
+              .from('profiles')
+              .update({ qualification: updatedQual })
+              .eq('id', userId);
+          }
+        } catch (qualErr) {
+          console.warn('[developerService] Error clearing qualification request on delete:', qualErr);
+        }
       }
 
       // Detach api_key_id so usage history remains tied to user_id even after key deletion

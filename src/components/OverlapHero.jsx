@@ -188,14 +188,6 @@ const OVERLAP_HERO_CSS = `
   border-radius: clamp(22px, 3.5vw, 32px);
   overflow: hidden;
   box-shadow: 0 22px 52px -12px rgba(45, 30, 20, 0.13);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@media (hover: hover) {
-  .overlap-hero-card:hover {
-    transform: translateY(-3px) scale(1.008);
-    box-shadow: 0 28px 60px -12px rgba(45, 30, 20, 0.18);
-  }
 }
 
 .overlap-hero-picture {
@@ -214,13 +206,6 @@ const OVERLAP_HERO_CSS = `
   display: block;
   user-select: none;
   -webkit-user-drag: none;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@media (hover: hover) {
-  .overlap-hero-card:hover .overlap-hero-img {
-    transform: scale(1.025);
-  }
 }
 
 /* ── Full-Width Dark Features Bar ── */
@@ -503,12 +488,6 @@ const OVERLAP_HERO_CSS = `
 .dark-mode .overlap-hero-card {
   background-color: #1c1b19;
   box-shadow: 0 22px 52px -12px rgba(0, 0, 0, 0.55);
-}
-
-@media (hover: hover) {
-  .dark-mode .overlap-hero-card:hover {
-    box-shadow: 0 30px 64px -12px rgba(0, 0, 0, 0.7);
-  }
 }
 `;
 

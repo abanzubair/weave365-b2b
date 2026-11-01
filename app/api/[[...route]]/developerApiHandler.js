@@ -10,6 +10,7 @@ export const runtime = 'edge';
 import { getCashfreeConfig } from './cashfreeHandler.js';
 import { getPhonePeConfig, phonepeFetch, fetchOrderStatus } from './phonepeHandler.js';
 import { sendResellerInvoiceEmail } from './resellerInvoiceEmailService.js';
+import { checkAndSendRenewalReminders, sendApiRenewalEmail } from './apiRenewalReminderService.js';
 
 let supabaseInstance = null;
 export function _setSupabaseClientForTesting(client) {
@@ -379,6 +380,12 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
   const endpoint = pathSegments[1] || ''; // e.g. 'catalog', 'stock-status', 'products', 'me'
   const { searchParams } = new URL(request.url);
+
+  // 0. Automated Cron Endpoint for Subscription Renewal Reminders (7-day and 3-day notices)
+  if (endpoint === 'cron-renewal-reminders' || endpoint === 'check-renewal-reminders') {
+    const result = await checkAndSendRenewalReminders(supabase);
+    return Response.json({ status: 'success', result }, { headers: defaultCorsHeaders });
+  }
 
   // 1. Authenticate Request
   const auth = await authenticateApiKey(request, supabase);
@@ -1855,6 +1862,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
   }
   if (endpoint === 'verify-subscription') {
     return handleVerifySubscription(request, supabase);
+  }
+  if (endpoint === 'send-renewal-reminders' || endpoint === 'cron-renewal-reminders') {
+    const result = await checkAndSendRenewalReminders(supabase);
+    return Response.json({ status: 'success', result }, { headers: defaultCorsHeaders });
   }
 
   // 1. Authenticate Request via API Key
