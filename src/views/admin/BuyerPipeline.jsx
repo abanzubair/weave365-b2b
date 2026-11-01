@@ -307,7 +307,7 @@ export default function BuyerPipeline({
         };
         setInspectProfile(updated);
         setRoleSwitchSuccess(
-          `Account type updated to ${selectedRoleToSet === 'supplier' ? 'Supplier Partner' : (selectedRoleToSet === 'reseller' ? 'Business & Reseller' : 'Customer')}! ${finalLockStatus ? 'Account is locked pending required profile details.' : 'Account is unlocked.'}`
+          `Account type updated to ${selectedRoleToSet === 'supplier' ? 'Supplier' : (selectedRoleToSet === 'reseller' ? 'Business & Reseller' : 'Customer')}! ${finalLockStatus ? 'Account is locked pending required profile details.' : 'Account is unlocked.'}`
         );
         if (loadAdminData) loadAdminData();
       } else {
@@ -1077,11 +1077,51 @@ export default function BuyerPipeline({
                 </button>
               </div>
 
-              {/* CARD 1: Core Contact & Location */}
+              {/* SECTION 1: Account Type */}
+              <div className="pipeline-switch-role-card">
+                <div className="pipeline-switch-header">
+                  <div className="pipeline-switch-title-wrap">
+                    <Shield size={14} />
+                    <span className="pipeline-switch-title">Account Type</span>
+                  </div>
+                  <span className="pipeline-switch-hint">Takes effect on save</span>
+                </div>
+
+                <div className="pipeline-role-selector-row" style={{ marginBottom: 0 }}>
+                  <button
+                    type="button"
+                    className={`pipeline-role-chip ${selectedRoleToSet === 'reseller' ? 'active' : ''}`}
+                    onClick={() => handleRoleSelectionChange('reseller')}
+                  >
+                    <span className="role-chip-name">Business &amp; Reseller</span>
+                    <span className="role-chip-sub">Wholesale pricing</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`pipeline-role-chip ${selectedRoleToSet === 'customer' ? 'active' : ''}`}
+                    onClick={() => handleRoleSelectionChange('customer')}
+                  >
+                    <span className="role-chip-name">Customer</span>
+                    <span className="role-chip-sub">Personal retail</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`pipeline-role-chip ${selectedRoleToSet === 'supplier' ? 'active' : ''}`}
+                    onClick={() => handleRoleSelectionChange('supplier')}
+                  >
+                    <span className="role-chip-name">Supplier</span>
+                    <span className="role-chip-sub">Artisan / Weaver</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* SECTION 2: Contact Details */}
               <div className="pipeline-detail-card">
                 <div className="pipeline-detail-card-head">
                   <h4 className="pipeline-detail-card-title">
-                    <Users size={14} /> Contact &amp; Location
+                    <Users size={14} /> Contact Details
                   </h4>
                 </div>
                 <div className="pipeline-detail-grid">
@@ -1120,11 +1160,11 @@ export default function BuyerPipeline({
                 </div>
               </div>
 
-              {/* CARD 2: Online & Marketing */}
+              {/* SECTION 3: Online Presence */}
               <div className="pipeline-detail-card">
                 <div className="pipeline-detail-card-head">
                   <h4 className="pipeline-detail-card-title">
-                    <Globe size={14} /> Online Presence &amp; Marketing
+                    <Globe size={14} /> Online Presence
                   </h4>
                 </div>
                 <div className="pipeline-detail-grid">
@@ -1193,11 +1233,11 @@ export default function BuyerPipeline({
                 </div>
               </div>
 
-              {/* CARD 3: Business & Qualification Details */}
+              {/* SECTION 4: Business Details */}
               <div className="pipeline-detail-card">
                 <div className="pipeline-detail-card-head">
                   <h4 className="pipeline-detail-card-title">
-                    <Building size={14} /> Business Qualification Details
+                    <Building size={14} /> Business Details
                   </h4>
                   <span className="pipeline-detail-card-sub">
                     Entered during signup or profile update
@@ -1309,45 +1349,8 @@ export default function BuyerPipeline({
                 </div>
               )}
 
-              {/* CARD 5: SWITCH ACCOUNT TYPE (ADMIN CORE ACTION) */}
-              <div className="pipeline-switch-role-card">
-                <div className="pipeline-switch-header">
-                  <div className="pipeline-switch-title-wrap">
-                    <Shield size={14} />
-                    <span className="pipeline-switch-title">Account Role &amp; Permissions</span>
-                  </div>
-                  <span className="pipeline-switch-hint">Takes effect on save</span>
-                </div>
-
-                <div className="pipeline-role-selector-row">
-                  <button
-                    type="button"
-                    className={`pipeline-role-chip ${selectedRoleToSet === 'customer' ? 'active' : ''}`}
-                    onClick={() => handleRoleSelectionChange('customer')}
-                  >
-                    <span className="role-chip-name">Customer</span>
-                    <span className="role-chip-sub">Personal retail</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`pipeline-role-chip ${selectedRoleToSet === 'reseller' ? 'active' : ''}`}
-                    onClick={() => handleRoleSelectionChange('reseller')}
-                  >
-                    <span className="role-chip-name">Business &amp; Reseller</span>
-                    <span className="role-chip-sub">Wholesale pricing</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`pipeline-role-chip ${selectedRoleToSet === 'supplier' ? 'active' : ''}`}
-                    onClick={() => handleRoleSelectionChange('supplier')}
-                  >
-                    <span className="role-chip-name">Supplier Partner</span>
-                    <span className="role-chip-sub">Artisan / Weaver</span>
-                  </button>
-                </div>
-
+              {/* SECTION 5: SHARED FOOTER (Lock Account Checkbox + Close + Save Changes) */}
+              <div className="pipeline-switch-role-card pipeline-modal-footer-card">
                 {/* Minimal Lock Toggle */}
                 <div className="pipeline-role-lock-toggle">
                   <label className="pipeline-lock-checkbox-label">
