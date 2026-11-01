@@ -11,6 +11,8 @@ export function RoleEntryCards({
   onSelectType,
   onContinue,
   onSwitchToLogin,
+  isOnboarding = false,
+  onLogoutGuest,
 }) {
   const getIcon = (id) => {
     switch (id) {
@@ -80,13 +82,28 @@ export function RoleEntryCards({
       </button>
 
       <div className="signup-switch-link" style={{ marginTop: '20px' }}>
-        Already have an account?{' '}
-        <button
-          type="button"
-          onClick={onSwitchToLogin}
-        >
-          Sign in
-        </button>
+        {isOnboarding ? (
+          <>
+            Prefer to look around first?{' '}
+            <button
+              type="button"
+              onClick={onLogoutGuest || onSwitchToLogin}
+              style={{ fontWeight: 600, color: '#b78646' }}
+            >
+              Log out &amp; browse as guest
+            </button>
+          </>
+        ) : (
+          <>
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+            >
+              Sign in
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

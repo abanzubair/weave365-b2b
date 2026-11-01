@@ -8,7 +8,7 @@ import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections, resolveItemVariant } from '../utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getCachedAuth, clearCachedAuth } from '../utils/authCache.js';
-import { getBuyerAccess } from '../utils/buyerAccess.js';
+import { getBuyerAccess, isDropOffAccount } from '../utils/buyerAccess.js';
 import { trackSiteTraffic, getStoredAttribution } from '../utils/trafficTracker.js';
 import {
   setStoredReferralCode,
@@ -515,8 +515,21 @@ export function AppShell({ children }) {
     return Boolean(isEmailAdmin || isRoleAdmin);
   }, [user, buyerProfile]);
 
-  // Allow authenticated users to browse freely without route hijacking
-  // Incomplete profiles are prompted organically at checkout or inside Account page
+  // Lock authenticated users with incomplete/drop-off profiles on the signup/completion page
+  // until required profile information is filled. If they want to continue browsing, they can
+  // log out via the prominent button and browse freely as a guest.
+  const isProfileIncomplete = useMemo(() => {
+    if (!user || !isProfileHydrated || isAdmin) return false;
+    return !isProfileComplete(user, buyerProfile) || isDropOffAccount(buyerProfile, user);
+  }, [user, isProfileHydrated, isAdmin, buyerProfile]);
+
+  useEffect(() => {
+    if (!isProfileIncomplete) return;
+    const isSignupPage = pathname === '/signup' || pathname === '/signup/';
+    if (!isSignupPage) {
+      router.replace('/signup?mode=complete-profile');
+    }
+  }, [isProfileIncomplete, pathname, router]);
 
   const productsById = useMemo(() => {
     const map = new Map();
@@ -731,6 +744,7 @@ export function AppShell({ children }) {
           buyerProfile={buyerProfile}
           vendorOnboarding={vendorOnboarding}
           isAdmin={isAdmin}
+          isProfileIncomplete={isProfileIncomplete}
           favoritesCount={favoritesCount}
           handleSignOut={handleSignOut}
           setCartOpen={setCartOpen}
@@ -755,6 +769,7 @@ export function AppShell({ children }) {
           navigate={navigate}
           user={user}
           isAdmin={isAdmin}
+          isProfileIncomplete={isProfileIncomplete}
           priceAccess={priceAccess}
           openAuth={() => navigate('signup')}
           setCartOpen={setCartOpen}

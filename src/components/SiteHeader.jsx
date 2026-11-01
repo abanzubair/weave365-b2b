@@ -122,6 +122,7 @@ export function SiteHeader(props) {
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const userEmail = (activeUser?.email || '').toLowerCase().trim();
   const isAdmin = props.isAdmin ?? Boolean(userEmail && adminEmails.includes(userEmail));
+  const isProfileIncomplete = Boolean(props.isProfileIncomplete);
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const handleSignOut = props.handleSignOut;
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
@@ -484,16 +485,30 @@ export function SiteHeader(props) {
                   Admin Panel
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => {
-                  if (navigate) navigate('account');
-                  else window.location.href = '/account';
-                  setDropdownOpen(null);
-                }}
-              >
-                My Account
-              </button>
+              {isProfileIncomplete ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigate) navigate('signup', null, null, { mode: 'complete-profile' });
+                    else window.location.href = '/signup?mode=complete-profile';
+                    setDropdownOpen(null);
+                  }}
+                  style={{ color: '#b45309', fontWeight: 600 }}
+                >
+                  Complete Profile
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigate) navigate('account');
+                    else window.location.href = '/account';
+                    setDropdownOpen(null);
+                  }}
+                >
+                  My Account
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -501,7 +516,7 @@ export function SiteHeader(props) {
                   setDropdownOpen(null);
                 }}
               >
-                Log Out
+                {isProfileIncomplete ? 'Log Out & Browse as Guest' : 'Log Out'}
               </button>
             </DropdownPortal>
           )}

@@ -2114,6 +2114,131 @@
 }
 
 /* ==========================================================================
+   Locked Onboarding / Incomplete Profile Notice & Guest Browse Actions
+   ========================================================================== */
+
+.signup-locked-notice-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.04);
+}
+
+.signup-locked-notice-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.signup-locked-notice-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.signup-locked-notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.signup-locked-notice-text strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.signup-locked-notice-text span {
+  font-size: 12.5px;
+  color: #78350f;
+  line-height: 1.4;
+}
+
+.signup-locked-guest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #d97706;
+  color: #92400e;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.signup-locked-guest-btn:hover {
+  background: #fef3c7;
+  border-color: #b45309;
+  color: #78350f;
+}
+
+.signup-onboarding-guest-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.signup-onboarding-guest-action span {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.signup-guest-browse-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b78646;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.signup-guest-browse-link:hover {
+  color: #8c6430;
+}
+
+@media (max-width: 640px) {
+  .signup-locked-notice-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .signup-locked-guest-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
    Complete Scrollbar Removal (Chrome, Safari, Firefox, Edge, Touch)
    ========================================================================== */
 html:has(.signup-page-wrapper),

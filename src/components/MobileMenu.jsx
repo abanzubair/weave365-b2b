@@ -43,6 +43,7 @@ export function MobileMenu(props) {
   const onSignOut = props.onSignOut;
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const isAdmin = props.isAdmin;
+  const isProfileIncomplete = Boolean(props.isProfileIncomplete);
 
   // Active subpanel: null (root) | 'wholesale' | 'resell' | 'custom-weaving' | 'collections' | 'company' | 'account'
   const [activeSubpanel, setActiveSubpanel] = useState(null);
@@ -116,8 +117,10 @@ export function MobileMenu(props) {
       }
     ] : []),
     ...(user ? [
-      { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
-      { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut?.(); onClose(); } },
+      isProfileIncomplete
+        ? { icon: <User size={18} style={{ color: '#b45309' }} />, label: 'Complete Profile', action: () => { navigate('signup', null, null, { mode: 'complete-profile' }); onClose(); } }
+        : { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
+      { icon: <LogOut size={18} />, label: isProfileIncomplete ? 'Logout & Browse as Guest' : 'Logout', action: () => { onSignOut?.(); onClose(); } },
     ] : [
       { icon: <User size={18} />, label: 'Login / Register', action: () => { navigate('signup'); onClose(); } },
     ]),

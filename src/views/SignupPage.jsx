@@ -328,6 +328,41 @@ export function SignupPage({
     }
   }
 
+  async function handleLogoutAndBrowseGuest() {
+    setLoading(true);
+    try {
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut().catch(() => {});
+      }
+      clearCachedAuth();
+      if (setUser) setUser(null);
+      if (setBuyerProfile) setBuyerProfile(null);
+      setEmail('');
+      setPassword('');
+      setProfile((prev) => ({
+        ...prev,
+        website: '',
+        socialHandle: '',
+        buyerType: '',
+        buyerSubtype: '',
+      }));
+      setMode('login');
+      setMessage('');
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', '/');
+      }
+      if (navigate) {
+        navigate('home');
+      } else if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Pre-fill authenticated Google/User info & auto-complete pending registration if present
   useEffect(() => {
     if (!user) return;
@@ -452,16 +487,16 @@ export function SignupPage({
     }
 
     const activeProf = buyerProfile || user?.user_metadata?.buyer_profile;
-    const currentLocked = isAccountLocked(activeProf, user);
-    if (currentLocked) {
-      if (navigate) {
+    const profileDone = isProfileComplete(user, activeProf);
+
+    if (!profileDone) {
+      setMode('complete-profile');
+    } else {
+      const currentLocked = isAccountLocked(activeProf, user);
+      if (currentLocked && navigate) {
         navigate('account');
         return;
       }
-    }
-
-    if (!isProfileComplete(user, buyerProfile)) {
-      setMode('complete-profile');
     }
   }, [user, buyerProfile, initialMode, mode, navigate, setBuyerProfile]);
 
@@ -1227,16 +1262,16 @@ export function SignupPage({
             setBuyerProfile(profileData.profile);
           }
           const activeProf = profileData.profile || loggedUser.user_metadata?.buyer_profile;
-          const userIsLocked = isAccountLocked(activeProf, loggedUser);
           const userIsComplete = isProfileComplete(loggedUser, activeProf);
+          const userIsLocked = isAccountLocked(activeProf, loggedUser);
 
-          if (userIsLocked) {
-            navigate('account');
-          } else if (userIsComplete) {
-            navigate('home');
-          } else {
+          if (!userIsComplete) {
             setMode('complete-profile');
             setLoading(false);
+          } else if (userIsLocked) {
+            navigate('account');
+          } else {
+            navigate('home');
           }
         }
       }
@@ -1466,7 +1501,7 @@ export function SignupPage({
                   </div>
                 )}
               </div>
-            ) : user && mode !== 'register' && !loading && (accountLocked || profileComplete) ? (
+            ) : user && mode !== 'register' && mode !== 'complete-profile' && !isOnboarding && profileComplete && !loading ? (
               accountLocked ? (
                 /* =================================================================
                    Already Logged In — Account Locked (Profile Details Required)
@@ -1709,6 +1744,28 @@ export function SignupPage({
                  ================================================================= */
               <div className="signup-form-view-wrapper">
                 <div className="signup-form-centered-body">
+                  {(isOnboarding || mode === 'complete-profile') && (
+                    <div className="signup-locked-notice-card">
+                      <div className="signup-locked-notice-main">
+                        <div className="signup-locked-notice-icon">
+                          <Lock size={18} />
+                        </div>
+                        <div className="signup-locked-notice-text">
+                          <strong>Profile completion required to activate account</strong>
+                          <span>Please fill in your details below to activate pricing &amp; checkout.</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleLogoutAndBrowseGuest}
+                        className="signup-locked-guest-btn"
+                        title="Sign out and continue browsing as a guest"
+                      >
+                        Log out &amp; browse as guest →
+                      </button>
+                    </div>
+                  )}
+
                   {/* STEP 0: Role Selection ("Which best describes you?") */}
                   {signupStep === 'select-type' ? (
                     <RoleEntryCards
@@ -1721,6 +1778,8 @@ export function SignupPage({
                         setMode('login');
                         setMessage('');
                       }}
+                      isOnboarding={isOnboarding || mode === 'complete-profile'}
+                      onLogoutGuest={handleLogoutAndBrowseGuest}
                     />
                   ) : signupStep === 'business-qualification' ? (
                     /* STEP 1A: Business Qualification Form (5 Questions) */
@@ -2169,6 +2228,19 @@ export function SignupPage({
                           </>
                         )}
 
+                        {(isOnboarding || mode === 'complete-profile') && (
+                          <div className="signup-onboarding-guest-action">
+                            <span>Prefer to browse before completing your profile?</span>
+                            <button
+                              type="button"
+                              onClick={handleLogoutAndBrowseGuest}
+                              className="signup-guest-browse-link"
+                            >
+                              Log out &amp; continue browsing as guest →
+                            </button>
+                          </div>
+                        )}
+
                         {message && message !== 'verification-email-sent' && message !== 'seller-registered' && (
                           <div className="signup-alert-error">
                             <AlertCircle size={18} style={{ flexShrink: 0 }} />
@@ -2183,14 +2255,14 @@ export function SignupPage({
                 <div className="signup-form-bottom-footer">
                   <LegalDisclaimer />
 
-                  {isOnboarding && user?.email ? (
+                  {(isOnboarding || mode === 'complete-profile') && user?.email ? (
                     <div className="signup-switch-link">
                       Signed in as {user.email} •{' '}
                       <button
                         type="button"
-                        onClick={handleSignOut}
+                        onClick={handleLogoutAndBrowseGuest}
                       >
-                        Sign out
+                        Log out to browse as guest
                       </button>
                     </div>
                   ) : (
