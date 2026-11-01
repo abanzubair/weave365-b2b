@@ -31,7 +31,15 @@ export function profileRowFromUser(user) {
     user?.user_metadata?.role === 'vendor'
   );
 
-  const isBusiness = !isVendor && (
+  const isExplicitCustomer =
+    !isVendor &&
+    (buyerProfile.user_type === 'customer' || buyerProfile.role === 'customer' || buyerProfile.buyer_type === 'customer' || buyerProfile.buyer_subtype === 'Customer') &&
+    buyerProfile.user_type !== 'business' &&
+    buyerProfile.role !== 'reseller' &&
+    buyerProfile.buyer_type !== 'business' &&
+    buyerProfile.buyer_type !== 'reseller';
+
+  const isBusiness = !isVendor && !isExplicitCustomer && (
     buyerProfile.user_type === 'business' ||
     user?.user_metadata?.user_type === 'business' ||
     buyerProfile.buyer_type === 'business' ||

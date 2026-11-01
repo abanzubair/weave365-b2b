@@ -213,6 +213,19 @@ export default function BuyerPipeline({
       return 'supplier';
     }
     const subtype = String(p.buyer_subtype || '').toLowerCase().trim();
+    // Explicit Customer assignment takes precedence over fallback heuristics
+    if (
+      (p.user_type === 'customer' || p.role === 'customer' || p.buyer_type === 'customer' || subtype === 'customer') &&
+      p.user_type !== 'business' &&
+      p.user_type !== 'supplier' &&
+      p.role !== 'reseller' &&
+      p.role !== 'vendor' &&
+      p.buyer_type !== 'business' &&
+      p.buyer_type !== 'reseller' &&
+      p.buyer_type !== 'vendor'
+    ) {
+      return 'customer';
+    }
     if (subtype.includes('reseller') || subtype.includes('wholeseller') || p.role === 'reseller' || p.user_type === 'business' || p.buyer_type === 'business' || p.buyer_type === 'reseller') {
       return 'reseller';
     }
@@ -275,20 +288,23 @@ export default function BuyerPipeline({
       const existingQual = (typeof inspectProfile.qualification === 'object' && inspectProfile.qualification) ? inspectProfile.qualification : {};
       const newQual = {
         ...existingQual,
+        ...(selectedRoleToSet === 'customer' ? { business_type: null, business_type_label: null, user_type: 'customer' } : {}),
         account_locked: finalLockStatus,
         locked_reason: finalLockStatus ? (existingQual.locked_reason || 'switched_by_admin_pending_details') : null,
         ...(finalLockStatus === false ? { form_completed: true } : {}),
       };
 
-      // Fallback business_name to full_name if currently empty for reseller
-      const resolvedBusinessName = inspectProfile.business_name?.trim() || (selectedRoleToSet === 'reseller' ? inspectProfile.full_name?.trim() : '');
+      // When switching to customer, clear firm/business name; otherwise resolve business name
+      const resolvedBusinessName = selectedRoleToSet === 'customer'
+        ? ''
+        : (inspectProfile.business_name?.trim() || (selectedRoleToSet === 'reseller' ? inspectProfile.full_name?.trim() : ''));
 
       const updateData = {
         user_type: newUserType,
         role: newRole,
         buyer_type: newBuyerType,
         buyer_subtype: newBuyerSubtype,
-        ...(resolvedBusinessName ? { business_name: resolvedBusinessName } : {}),
+        business_name: resolvedBusinessName,
         qualification: newQual,
         updated_at: new Date().toISOString(),
       };
@@ -431,6 +447,9 @@ export default function BuyerPipeline({
     if (!profile) return 'Customer';
     if (isIncomplete(profile)) return 'Drop Off';
     const roleKey = getProfileRoleKey(profile);
+    if (roleKey === 'customer') {
+      return 'Customer';
+    }
     if (roleKey === 'supplier') {
       const rawSub = String(profile.buyer_subtype || '').trim();
       const cleanSub = rawSub.split('(')[0].split('/')[0].trim();

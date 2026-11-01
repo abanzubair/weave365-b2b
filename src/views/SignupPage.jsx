@@ -1755,14 +1755,6 @@ export function SignupPage({
                           <span>Please fill in your details below to activate pricing &amp; checkout.</span>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleLogoutAndBrowseGuest}
-                        className="signup-locked-guest-btn"
-                        title="Sign out and continue browsing as a guest"
-                      >
-                        Log out &amp; browse as guest →
-                      </button>
                     </div>
                   )}
 
@@ -1883,7 +1875,7 @@ export function SignupPage({
                     </div>
                   ) : (
                     /* STEP 2: Standard Account Creation Form (Old Business Type field removed) */
-                    <div>
+                    <div className="signup-account-form-view">
                       {/* Role Chip Banner & Back Navigation */}
                       <div className="signup-role-chip-banner">
                         <div className="signup-role-chip-left">

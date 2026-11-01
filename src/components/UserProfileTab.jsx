@@ -98,6 +98,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
 
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
+  const [showSupplierConfirm, setShowSupplierConfirm] = useState(false);
 
   // WhatsApp quick-action URLs
   const cleanStoreWa = String(storeConfig?.whatsapp || '9919101369').replace(/\D/g, '');
@@ -109,9 +110,9 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
   const businessWaMsg = `Hi Weave365, I would like to switch my account to a Business & Reseller account.\nName: ${activeName || 'N/A'}\nEmail: ${activeEmail || 'N/A'}\nPhone: ${activePhone || 'N/A'}`;
   const businessWaUrl = `https://wa.me/${fullWaPhone}?text=${encodeURIComponent(businessWaMsg)}`;
 
-  const sellerWaMsg = `Hi Weave365, I would like to switch my account to a Seller account.\nName: ${activeName || 'N/A'}\nEmail: ${activeEmail || 'N/A'}\nPhone: ${activePhone || 'N/A'}`;
-  const sellerWaUrl = `https://wa.me/${fullWaPhone}?text=${encodeURIComponent(sellerWaMsg)}`;
-  const supplierWaUrl = sellerWaUrl;
+  const supplierWaMsg = `Hi Weave365, I would like to sell my products on Weave 365 as a Supplier.\nName: ${activeName || 'N/A'}\nEmail: ${activeEmail || 'N/A'}\nPhone: ${activePhone || 'N/A'}`;
+  const supplierWaUrl = `https://wa.me/${fullWaPhone}?text=${encodeURIComponent(supplierWaMsg)}`;
+  const sellerWaUrl = supplierWaUrl;
 
   const supportWaMsg = `Hi Weave365, I have an inquiry regarding my account.\nName: ${activeName || 'N/A'}\nEmail: ${activeEmail || 'N/A'}\nPhone: ${activePhone || 'N/A'}`;
   const supportWaUrl = `https://wa.me/${fullWaPhone}?text=${encodeURIComponent(supportWaMsg)}`;
@@ -560,15 +561,14 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
 
         <div className="account-profile-header-actions">
           {selectedCategory === 'reseller' && (
-            <a
-              href={sellerWaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => setShowSupplierConfirm(true)}
               className="account-role-support-btn"
             >
               <WhatsappIcon size={14} />
-              <span>Switch to Seller</span>
-            </a>
+              <span>Switch to Supplier</span>
+            </button>
           )}
           {selectedCategory === 'customer' && (
             <div className="account-header-cust-actions">
@@ -581,14 +581,14 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                 <WhatsappIcon size={14} />
                 <span>Switch to Business</span>
               </a>
-              <a
-                href={sellerWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setShowSupplierConfirm(true)}
                 className="account-artisan-link"
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
               >
-                Apply as Seller →
-              </a>
+                Apply as Supplier →
+              </button>
             </div>
           )}
           {selectedCategory === 'supplier' && (
@@ -604,6 +604,44 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           )}
         </div>
       </div>
+
+      {/* Popover confirmation for selling on Weave 365 as Supplier */}
+      {showSupplierConfirm && (
+        <div
+          className="supplier-popover-overlay"
+          onClick={() => setShowSupplierConfirm(false)}
+        >
+          <div
+            className="supplier-popover-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <p className="supplier-popover-title">
+              Do you want to sell your products on Weave 365?
+            </p>
+            <div className="supplier-popover-actions">
+              <button
+                type="button"
+                onClick={() => setShowSupplierConfirm(false)}
+                className="supplier-popover-btn no"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSupplierConfirm(false);
+                  window.open(supplierWaUrl, '_blank', 'noopener,noreferrer');
+                }}
+                className="supplier-popover-btn yes"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {statusMessage && (

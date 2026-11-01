@@ -115,7 +115,15 @@ export function isVaranasiPincode(value) {
 export function applyAutoApprovalToBuyerProfile(profile) {
   if (!profile) return profile;
   const isVendor = isVendorProfile(profile) || profile.user_type === 'supplier' || profile.role === 'vendor' || profile.buyer_type === 'vendor';
-  const isBusiness = !isVendor && (
+  const isExplicitCustomer =
+    !isVendor &&
+    (profile.user_type === 'customer' || profile.role === 'customer' || profile.buyer_type === 'customer' || profile.buyer_subtype === 'Customer') &&
+    profile.user_type !== 'business' &&
+    profile.role !== 'reseller' &&
+    profile.buyer_type !== 'business' &&
+    profile.buyer_type !== 'reseller';
+
+  const isBusiness = !isVendor && !isExplicitCustomer && (
     profile.user_type === 'business' ||
     profile.buyer_type === 'business' ||
     profile.buyer_type === 'reseller' ||
@@ -152,6 +160,22 @@ export function detectAccountCategory(user, buyerProfile) {
   // 1. Check genuine verified vendor first
   if (isVendorProfile(p) || userType === 'supplier' || userType === 'vendor' || buyerType === 'vendor' || role === 'vendor' || role === 'supplier') {
     return 'supplier';
+  }
+
+  // Explicit customer check: if explicitly marked customer and not marked business/reseller/supplier
+  if (
+    (userType === 'customer' || role === 'customer' || buyerType === 'customer' || buyerSubtype === 'customer') &&
+    userType !== 'business' &&
+    userType !== 'reseller' &&
+    userType !== 'supplier' &&
+    role !== 'reseller' &&
+    role !== 'vendor' &&
+    role !== 'supplier' &&
+    buyerType !== 'business' &&
+    buyerType !== 'reseller' &&
+    buyerType !== 'vendor'
+  ) {
+    return 'customer';
   }
 
   // 2. Business / Reseller check: check this before generic supplier fallbacks to protect resellers
