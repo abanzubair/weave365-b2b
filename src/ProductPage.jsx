@@ -79,7 +79,7 @@ const ResellerWhatsappShare = dynamic(
 );
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { WhatsappIcon } from './components/WhatsappIcon.jsx';
-import { priceNoticeForAccess, detectAccountCategory, isAccountLocked, isDropOffAccount } from './utils/buyerAccess.js';
+import { priceNoticeForAccess, detectAccountCategory, isAccountLocked, isDropOffAccount, isProfileComplete } from './utils/buyerAccess.js';
 import {
   getOptimizedImageUrl,
   getImageSrcSet,
@@ -177,15 +177,26 @@ export function ProductDetail({
     priceAccess?.isCustomer ||
     (user && !priceAccess?.isVendor && detectAccountCategory(user, buyerProfile) === 'customer')
   );
+  const activeUser = user || (priceAccess?.userId ? { id: priceAccess.userId, phone: priceAccess.buyerPhone, city: priceAccess.buyerCity, user_metadata: { full_name: priceAccess.buyerName || '' } } : null);
+  const activeProfile = buyerProfile || user?.user_metadata?.buyer_profile || user?.buyer_profile || null;
+  const isProfileDone = Boolean(
+    priceAccess?.isProfileComplete !== undefined
+      ? priceAccess.isProfileComplete
+      : (activeUser ? isProfileComplete(activeUser, activeProfile) : false)
+  );
   const isDropOff = Boolean(
     priceAccess?.isDropOff ||
-    (user && isDropOffAccount(buyerProfile, user))
+    priceAccess?.isProfileIncomplete ||
+    (priceAccess?.isLoggedIn && !isProfileDone) ||
+    (activeUser && !isProfileDone) ||
+    (activeUser && isDropOffAccount(activeProfile, activeUser))
   );
   const isLocked = Boolean(
     priceAccess?.accountLocked ||
     priceAccess?.isLocked ||
     isDropOff ||
-    (user && isAccountLocked(buyerProfile, user))
+    (activeUser && !isProfileDone) ||
+    (activeUser && isAccountLocked(activeProfile, activeUser))
   );
 
   const resolvedInitial = useMemo(() => {
@@ -3299,7 +3310,15 @@ export function ProductDetail({
         isSoldAsPc={isSoldAsPc}
       />
 
-      <div className={`elegant-toast ${toastMessage ? 'show' : ''}`}>
+      <div
+        className={`elegant-toast ${toastMessage ? 'show' : ''}`}
+        onClick={() => {
+          if (toastMessage.toLowerCase().includes('complete profile') && navigate) {
+            navigate('signup', null, null, { mode: 'complete-profile' });
+          }
+        }}
+        style={{ cursor: toastMessage.toLowerCase().includes('complete profile') ? 'pointer' : 'default' }}
+      >
         <LockKeyhole size={16} />
         {toastMessage}
       </div>

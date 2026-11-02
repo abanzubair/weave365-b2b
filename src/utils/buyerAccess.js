@@ -237,12 +237,18 @@ export function getBuyerAccess(user, buyerProfile) {
       buyerName: null,
       buyerPhone: null,
       buyerPincode: null,
+      buyerCity: null,
       blockedByVaranasiPincode: false,
       isVendor: false,
+      isAdmin: false,
       accountCategory: 'guest',
       isCustomer: false,
       accountLocked: false,
       isLocked: false,
+      isProfileComplete: false,
+      isProfileIncomplete: false,
+      canDownloadCatalogue: false,
+      canShareCatalogue: false,
     };
   }
 
@@ -252,12 +258,14 @@ export function getBuyerAccess(user, buyerProfile) {
   const blockedByPincode = Boolean(isVaranasiPincode(profile.pincode));
   const category = detectAccountCategory(user, profile);
   const isAdmin = user?.role === 'admin' || user?.user_metadata?.role === 'admin' || profile?.role === 'admin';
-  const isDropOff = !isAdmin && isDropOffAccount(profile, user);
+  const profileDone = isAdmin || isProfileComplete(user, profile);
+  const isDropOff = !isAdmin && (isDropOffAccount(profile, user) || !profileDone);
   const isCustomer = !isVendor && !isAdmin && category === 'customer';
-  const accountLocked = !isAdmin && (Boolean(isAccountLocked(profile, user)) || isDropOff);
+  const isProfileIncomplete = !isAdmin && (!profileDone || isDropOff);
+  const accountLocked = !isAdmin && (Boolean(isAccountLocked(profile, user)) || isProfileIncomplete);
 
-  const canDownloadCatalogue = !isAdmin ? (!isDropOff && !accountLocked && !isCustomer) : true;
-  const canShareCatalogue = !isAdmin ? (!isDropOff && !accountLocked && !isCustomer) : true;
+  const canDownloadCatalogue = !isAdmin ? (!isProfileIncomplete && !accountLocked && !isCustomer) : true;
+  const canShareCatalogue = !isAdmin ? (!isProfileIncomplete && !accountLocked && !isCustomer) : true;
 
   return {
     isLoggedIn: true,
@@ -266,6 +274,7 @@ export function getBuyerAccess(user, buyerProfile) {
     message: '',
     buyerType,
     isVendor,
+    isAdmin,
     priceGroup: 'approved',
     priceLabel: 'Wholesale & Reseller',
     approvalStatus: 'approved',
@@ -273,8 +282,9 @@ export function getBuyerAccess(user, buyerProfile) {
     userId: user.id || null,
     userEmail: user.email || null,
     buyerName: profile.business_name || profile.full_name || null,
-    buyerPhone: profile.whatsapp || profile.whatsapp_number || null,
+    buyerPhone: profile.whatsapp || profile.whatsapp_number || profile.phone || user.phone || null,
     buyerPincode: profile.pincode || null,
+    buyerCity: profile.city || profile.location_city || null,
     resellerDashboardEnabled: Boolean(
       profile.reseller_dashboard_enabled === true ||
       user?.user_metadata?.reseller_dashboard_enabled === true ||
@@ -283,8 +293,10 @@ export function getBuyerAccess(user, buyerProfile) {
     accountCategory: category,
     isCustomer,
     isDropOff,
-    accountLocked,
-    isLocked: accountLocked,
+    isProfileComplete: Boolean(profileDone),
+    isProfileIncomplete: Boolean(isProfileIncomplete),
+    accountLocked: Boolean(accountLocked),
+    isLocked: Boolean(accountLocked),
     canDownloadCatalogue,
     canShareCatalogue,
   };
@@ -316,9 +328,35 @@ export function isDropOffAccount(profile, user) {
   }
 
   const cleanPhone = String(p.whatsapp_number || p.whatsapp || p.phone || user?.phone || '').replace(/\D/g, '');
-  const city = String(p.city || p.location_city || '').trim();
+  const city = String(p.city || p.location_city || user?.city || '').trim();
 
   return cleanPhone.length < 6 || !city;
+}
+
+/**
+ * Checks if a user has completed the required profile information.
+ * Required: full name, contact number (whatsapp/phone, 6-15 digits), city, and pincode (>= 3 chars).
+ */
+export function isProfileComplete(user, buyerProfile) {
+  if (!user && !buyerProfile) return false;
+  const profile = buyerProfile || user?.user_metadata?.buyer_profile || user?.buyer_profile || (user?.id ? user : null);
+  if (!profile) return false;
+
+  const role = String(profile.role || user?.user_metadata?.role || user?.role || '').toLowerCase().trim();
+  if (role === 'admin') {
+    return true;
+  }
+
+  const fullName = String(profile.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || profile.business_name || '').trim();
+  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || profile.phone || user?.phone || '').replace(/\D/g, '').slice(0, 15);
+  const city = String(profile.city || profile.location_city || user?.city || '').trim();
+  const pincode = String(profile.pincode || profile.postal_code || user?.pincode || '').replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 12);
+
+  if (!fullName || whatsapp.length < 6 || whatsapp.length > 15 || !city || pincode.length < 3) {
+    return false;
+  }
+
+  return true;
 }
 
 /**

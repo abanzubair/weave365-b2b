@@ -12,7 +12,8 @@ async function getSupabase() {
   const mod = await import('../supabaseClient.js');
   return mod.isSupabaseConfigured && mod.supabase ? mod.supabase : null;
 }
-import { applyAutoApprovalToBuyerProfile, isVendorProfile } from './buyerAccess.js';
+import { applyAutoApprovalToBuyerProfile, isVendorProfile, isProfileComplete } from './buyerAccess.js';
+export { isProfileComplete };
 import { getStoredAttribution } from './trafficTracker.js';
 
 export function profileRowFromUser(user) {
@@ -248,19 +249,4 @@ export async function loadProfileForUser(user) {
   return { profile: mergedProfile, error };
 }
 
-export function isProfileComplete(user, buyerProfile) {
-  if (!user) return false;
-  const profile = buyerProfile || user.user_metadata?.buyer_profile || user.buyer_profile;
-  if (!profile) return false;
 
-  const fullName = String(profile.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
-  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || '').replace(/\D/g, '').slice(0, 15);
-  const city = String(profile.city || '').trim();
-  const pincode = String(profile.pincode || '').replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 12);
-
-  if (!fullName || whatsapp.length < 6 || whatsapp.length > 15 || !city || pincode.length < 3) {
-    return false;
-  }
-
-  return true;
-}

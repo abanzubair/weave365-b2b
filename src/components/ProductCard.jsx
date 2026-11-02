@@ -106,7 +106,9 @@ export const ProductCard = memo(function ProductCard({
   const isCustomer = Boolean(priceAccess?.isCustomer);
   const isDropOff = Boolean(
     priceAccess?.isDropOff ||
-    (priceAccess?.userId && isDropOffAccount(null, { id: priceAccess.userId, phone: priceAccess.buyerPhone }))
+    priceAccess?.isProfileIncomplete ||
+    (priceAccess?.isLoggedIn && priceAccess?.isProfileComplete === false) ||
+    (priceAccess?.userId && isDropOffAccount(null, { id: priceAccess.userId, phone: priceAccess.buyerPhone, city: priceAccess.buyerCity }))
   );
   const isLocked = Boolean(priceAccess?.accountLocked || priceAccess?.isLocked || isDropOff);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -774,7 +776,16 @@ export const ProductCard = memo(function ProductCard({
       )}
 
       {toastMessage && typeof document !== 'undefined' && createPortal(
-        <div className="elegant-toast show" style={{ zIndex: 9999 }}>
+        <div
+          className="elegant-toast show"
+          style={{ zIndex: 9999, cursor: toastMessage.toLowerCase().includes('complete profile') ? 'pointer' : 'default' }}
+          onClick={() => {
+            if (toastMessage.toLowerCase().includes('complete profile') && navigate) {
+              navigate('signup', null, null, { mode: 'complete-profile' });
+            }
+          }}
+        >
+          <LockKeyhole size={16} />
           {toastMessage}
         </div>,
         document.body
