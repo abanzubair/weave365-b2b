@@ -1213,7 +1213,7 @@ export default function BuyerPipeline({
           <div className="pipeline-pagination-controls">
             <button
               type="button"
-              className="pipeline-page-nav-btn"
+              className="pipeline-page-nav-btn pipeline-page-nav-edge"
               onClick={() => setCurrentPage(1)}
               disabled={safeCurrentPage === 1}
               title="First page"
@@ -1258,7 +1258,7 @@ export default function BuyerPipeline({
             </button>
             <button
               type="button"
-              className="pipeline-page-nav-btn"
+              className="pipeline-page-nav-btn pipeline-page-nav-edge"
               onClick={() => setCurrentPage(totalPages)}
               disabled={safeCurrentPage === totalPages}
               title="Last page"
