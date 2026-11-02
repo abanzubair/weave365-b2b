@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Users,
   ShoppingBag,
@@ -23,6 +23,7 @@ import {
   Shield,
   Layers,
   Sparkles,
+  RotateCcw,
 } from '../../components/icons.jsx';
 import { WhatsappIcon } from '../../components/WhatsappIcon.jsx';
 import { normalizeBuyerType, isVendorProfile, isAccountLocked, isCategoryDetailsComplete, isDropOffAccount } from '../../utils/buyerAccess.js';
@@ -140,11 +141,13 @@ export default function BuyerPipeline({
   loading = false,
 }) {
   // Local state for filters and sorting
-  const [userTypeFilter, setUserTypeFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [acquisitionFilter, setAcquisitionFilter] = useState('all');
   const [activityFilter, setActivityFilter] = useState('all');
-  const [userPageLimit, setUserPageLimit] = useState('10');
-  const [userSortField, setUserSortField] = useState('date');
+  const [userPageLimit, setUserPageLimit] = useState('15');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [userSortField, setUserSortField] = useState('last_seen');
   const [userSortOrder, setUserSortOrder] = useState('desc');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -346,27 +349,33 @@ export default function BuyerPipeline({
       return !isAdminUser(p) && !isConfiguredAdmin && p.role !== 'admin';
     });
 
-    if (userTypeFilter === 'customer') {
+    // Filter by Role
+    if (roleFilter !== 'all') {
       profiles = profiles.filter((p) => {
         const roleKey = getProfileRoleKey(p);
-        return roleKey === 'customer' && !isIncomplete(p);
+        if (roleFilter === 'reseller' || roleFilter === 'business') {
+          return roleKey === 'reseller';
+        }
+        if (roleFilter === 'customer') {
+          return roleKey === 'customer';
+        }
+        if (roleFilter === 'supplier' || roleFilter === 'vendor') {
+          return roleKey === 'supplier';
+        }
+        return true;
       });
-    } else if (userTypeFilter === 'business') {
-      profiles = profiles.filter((p) => {
-        const roleKey = getProfileRoleKey(p);
-        return roleKey === 'reseller' && !isIncomplete(p);
-      });
-    } else if (userTypeFilter === 'vendor') {
-      profiles = profiles.filter((p) => {
-        const roleKey = getProfileRoleKey(p);
-        return roleKey === 'supplier' && !isIncomplete(p);
-      });
-    } else if (userTypeFilter === 'locked') {
-      profiles = profiles.filter((p) => isAccountLocked(p));
-    } else if (userTypeFilter === 'incomplete') {
-      profiles = profiles.filter((p) => isIncomplete(p));
     }
-    // When 'all', retain all accounts including drop-offs (incomplete)
+
+    // Filter by Account Status
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'locked') {
+        profiles = profiles.filter((p) => isAccountLocked(p));
+      } else if (statusFilter === 'dropoff' || statusFilter === 'incomplete') {
+        profiles = profiles.filter((p) => isIncomplete(p));
+      } else if (statusFilter === 'active') {
+        profiles = profiles.filter((p) => !isAccountLocked(p) && !isIncomplete(p));
+      }
+    }
 
     // Filter by marketing acquisition channel
     if (acquisitionFilter !== 'all') {
@@ -391,12 +400,21 @@ export default function BuyerPipeline({
       profiles = profiles.filter((p) => {
         const name = String(p.full_name || p.business_name || '').toLowerCase();
         const email = String(p.email || '').toLowerCase();
-        const phone = String(p.whatsapp || '').toLowerCase();
+        const phone = String(p.whatsapp || p.whatsapp_number || p.phone || '').toLowerCase();
+        const city = String(p.city || p.location_city || '').toLowerCase();
         const social = String(p.social_handle || p.socialHandle || '').toLowerCase();
         const website = String(p.website || p.client_website || '').toLowerCase();
         const attr = acquisitionMap.get(p.id);
         const attrText = attr ? `${attr.cleanName} ${attr.landingPath} ${attr.category}`.toLowerCase() : '';
-        return name.includes(q) || email.includes(q) || phone.includes(q) || social.includes(q) || website.includes(q) || attrText.includes(q);
+        return (
+          name.includes(q) ||
+          email.includes(q) ||
+          phone.includes(q) ||
+          city.includes(q) ||
+          social.includes(q) ||
+          website.includes(q) ||
+          attrText.includes(q)
+        );
       });
     }
     return [...profiles].sort((a, b) => {
@@ -426,12 +444,107 @@ export default function BuyerPipeline({
       if (valA > valB) return userSortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter, acquisitionFilter, activityFilter, acquisitionMap, presenceMap, searchQuery]);
+  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, roleFilter, statusFilter, acquisitionFilter, activityFilter, acquisitionMap, presenceMap, searchQuery]);
+
+  const handleResetFilters = useCallback(() => {
+    setSearchQuery('');
+    setRoleFilter('all');
+    setStatusFilter('all');
+    setAcquisitionFilter('all');
+    setActivityFilter('all');
+  }, []);
+
+  const activeFilters = useMemo(() => {
+    const filters = [];
+    if (searchQuery.trim()) {
+      filters.push({
+        id: 'search',
+        label: `Search: "${searchQuery.trim()}"`,
+        onRemove: () => setSearchQuery(''),
+      });
+    }
+    if (roleFilter !== 'all') {
+      const roleLabels = {
+        reseller: 'Role: Business',
+        business: 'Role: Business',
+        customer: 'Role: Customer',
+        supplier: 'Role: Seller',
+        vendor: 'Role: Seller',
+      };
+      filters.push({
+        id: 'role',
+        label: roleLabels[roleFilter] || `Role: ${roleFilter}`,
+        onRemove: () => setRoleFilter('all'),
+      });
+    }
+    if (statusFilter !== 'all') {
+      const statusLabels = {
+        active: 'Status: Active',
+        dropoff: 'Status: Drop Off',
+        incomplete: 'Status: Drop Off',
+        locked: 'Status: Locked',
+      };
+      filters.push({
+        id: 'status',
+        label: statusLabels[statusFilter] || `Status: ${statusFilter}`,
+        onRemove: () => setStatusFilter('all'),
+      });
+    }
+    if (acquisitionFilter !== 'all') {
+      const channelLabels = {
+        ai: 'Channel: AI Assistants',
+        search: 'Channel: Search Engines',
+        social: 'Channel: Social Media',
+        referral: 'Channel: Referral Sites',
+        direct: 'Channel: Direct Links',
+      };
+      filters.push({
+        id: 'acquisition',
+        label: channelLabels[acquisitionFilter] || `Channel: ${acquisitionFilter}`,
+        onRemove: () => setAcquisitionFilter('all'),
+      });
+    }
+    if (activityFilter !== 'all') {
+      const activityLabels = {
+        online: 'Activity: Online Now',
+        today: 'Activity: Active Today',
+        week: 'Activity: Active This Week',
+      };
+      filters.push({
+        id: 'activity',
+        label: activityLabels[activityFilter] || `Activity: ${activityFilter}`,
+        onRemove: () => setActivityFilter('all'),
+      });
+    }
+    return filters;
+  }, [searchQuery, roleFilter, statusFilter, acquisitionFilter, activityFilter]);
+
+  const pageSize = parseInt(userPageLimit, 10) || 15;
+  const totalPages = Math.max(1, Math.ceil(sortedProfiles.length / pageSize));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  // Reset to page 1 whenever any filter/sort/limit changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [roleFilter, statusFilter, acquisitionFilter, activityFilter, searchQuery, userSortField, userSortOrder, userPageLimit]);
 
   const displayedProfiles = useMemo(() => {
-    if (userPageLimit === 'all') return sortedProfiles;
-    return sortedProfiles.slice(0, parseInt(userPageLimit));
-  }, [sortedProfiles, userPageLimit]);
+    const startIdx = (safeCurrentPage - 1) * pageSize;
+    return sortedProfiles.slice(startIdx, startIdx + pageSize);
+  }, [sortedProfiles, safeCurrentPage, pageSize]);
+
+  const paginationNumbers = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (safeCurrentPage <= 4) {
+      return [1, 2, 3, 4, 5, '...', totalPages];
+    }
+    if (safeCurrentPage >= totalPages - 3) {
+      return [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, '...', safeCurrentPage - 1, safeCurrentPage, safeCurrentPage + 1, '...', totalPages];
+  }, [totalPages, safeCurrentPage]);
 
   const toTitleCase = (str) => {
     if (!str) return '';
@@ -637,87 +750,190 @@ export default function BuyerPipeline({
 
       {/* Search + Filters Bar */}
       <div className="pipeline-toolbar">
-        <div className="pipeline-search-wrap">
-          <Search size={18} className="pipeline-search-icon" />
-          <input
-            type="text"
-            placeholder="Search by name, email, phone, social, or website..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pipeline-search-input"
-          />
+        <div className="pipeline-filter-field pipeline-search-wrap">
+          <label className="pipeline-field-label">Search</label>
+          <div className="pipeline-search-input-wrap">
+            <Search size={16} className="pipeline-search-icon" />
+            <input
+              type="text"
+              placeholder="Name, email, phone, city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pipeline-search-input"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="pipeline-search-clear"
+                onClick={() => setSearchQuery('')}
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
+
         <div className="pipeline-filters">
-          <select
-            value={userTypeFilter}
-            onChange={(e) => setUserTypeFilter(e.target.value)}
-            className="pipeline-filter-select"
-          >
-            <option value="all">All</option>
-            <option value="customer">Customer</option>
-            <option value="business">Business</option>
-            <option value="vendor">Seller</option>
-            <option value="locked">Locked</option>
-            <option value="incomplete">Drop Off</option>
-          </select>
+          {/* Role Filter */}
+          <div className="pipeline-filter-field">
+            <label className={`pipeline-field-label ${roleFilter !== 'all' ? 'is-active' : ''}`} htmlFor="filter-role">Role</label>
+            <select
+              id="filter-role"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className={`pipeline-filter-select ${roleFilter !== 'all' ? 'is-active' : ''}`}
+            >
+              <option value="all">All Roles</option>
+              <option value="business">Business (Reseller)</option>
+              <option value="customer">Customer (Retail)</option>
+              <option value="supplier">Seller (Supplier)</option>
+            </select>
+          </div>
 
-          <select
-            value={acquisitionFilter}
-            onChange={(e) => setAcquisitionFilter(e.target.value)}
-            className="pipeline-filter-select"
-            title="Filter leads by acquisition source"
-          >
-            <option value="all">All Channels</option>
-            <option value="ai">🤖 AI Assistants</option>
-            <option value="search">🔍 Search Engines</option>
-            <option value="social">📱 Social Media</option>
-            <option value="referral">🌐 Referral Sites</option>
-            <option value="direct">🧭 Direct / App Links</option>
-          </select>
+          {/* Status Filter */}
+          <div className="pipeline-filter-field">
+            <label className={`pipeline-field-label ${statusFilter !== 'all' ? 'is-active' : ''}`} htmlFor="filter-status">Status</label>
+            <select
+              id="filter-status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className={`pipeline-filter-select ${statusFilter !== 'all' ? 'is-active' : ''}`}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="dropoff">Drop Off</option>
+              <option value="locked">Locked</option>
+            </select>
+          </div>
 
-          <select
-            value={activityFilter}
-            onChange={(e) => setActivityFilter(e.target.value)}
-            className="pipeline-filter-select"
-            title="Filter by online status or recent activity"
-          >
-            <option value="all">All Activity</option>
-            <option value="online">🟢 Online Now</option>
-            <option value="today">⚡ Active Today</option>
-            <option value="week">📅 Active This Week</option>
-          </select>
+          {/* Acquisition Channel Filter */}
+          <div className="pipeline-filter-field">
+            <label className={`pipeline-field-label ${acquisitionFilter !== 'all' ? 'is-active' : ''}`} htmlFor="filter-channel">Channel</label>
+            <select
+              id="filter-channel"
+              value={acquisitionFilter}
+              onChange={(e) => setAcquisitionFilter(e.target.value)}
+              className={`pipeline-filter-select ${acquisitionFilter !== 'all' ? 'is-active' : ''}`}
+            >
+              <option value="all">All Channels</option>
+              <option value="ai">🤖 AI Assistants</option>
+              <option value="search">🔍 Search Engines</option>
+              <option value="social">📱 Social Media</option>
+              <option value="referral">🌐 Referral Sites</option>
+              <option value="direct">🧭 Direct Links</option>
+            </select>
+          </div>
 
-          <select
-            value={userSortField}
-            onChange={(e) => setUserSortField(e.target.value)}
-            className="pipeline-filter-select"
-            title="Sort buyer accounts"
-          >
-            <option value="last_seen">Sort: Last Seen</option>
-            <option value="date">Sort: Registered Date</option>
-            <option value="name">Sort: Name</option>
-            <option value="order_list">Sort: Orders</option>
-            <option value="favourites">Sort: Favourites</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => setUserSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-            className="pipeline-sort-toggle"
-          >
-            {userSortOrder === 'asc' ? '↑' : '↓'}
-          </button>
-          <select
-            value={userPageLimit}
-            onChange={(e) => setUserPageLimit(e.target.value)}
-            className="pipeline-filter-select"
-          >
-            <option value="10">10 rows</option>
-            <option value="20">20 rows</option>
-            <option value="30">30 rows</option>
-            <option value="all">All</option>
-          </select>
+          {/* Activity Filter */}
+          <div className="pipeline-filter-field">
+            <label className={`pipeline-field-label ${activityFilter !== 'all' ? 'is-active' : ''}`} htmlFor="filter-activity">Activity</label>
+            <select
+              id="filter-activity"
+              value={activityFilter}
+              onChange={(e) => setActivityFilter(e.target.value)}
+              className={`pipeline-filter-select ${activityFilter !== 'all' ? 'is-active' : ''}`}
+            >
+              <option value="all">All Activity</option>
+              <option value="online">🟢 Online Now</option>
+              <option value="today">⚡ Active Today</option>
+              <option value="week">📅 Active This Week</option>
+            </select>
+          </div>
+
+          {/* Reset Filters Button */}
+          <div className="pipeline-filter-field pipeline-filter-action">
+            <label className="pipeline-field-label pipeline-label-action">
+              {activeFilters.length > 0 ? `${activeFilters.length} Active` : '\u00A0'}
+            </label>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className={`pipeline-reset-filters-btn ${activeFilters.length > 0 ? 'has-active' : ''}`}
+              title="Reset all filters and search"
+            >
+              <RotateCcw size={13} className="reset-icon" />
+              <span>Reset</span>
+            </button>
+          </div>
+
+          <div className="pipeline-toolbar-divider" aria-hidden="true" />
+
+          {/* Sort Field */}
+          <div className="pipeline-filter-field">
+            <label className="pipeline-field-label" htmlFor="filter-sort">Sort By</label>
+            <div className="pipeline-sort-group">
+              <select
+                id="filter-sort"
+                value={userSortField}
+                onChange={(e) => setUserSortField(e.target.value)}
+                className="pipeline-filter-select"
+              >
+                <option value="last_seen">Last Seen</option>
+                <option value="date">Registered Date</option>
+                <option value="name">Name</option>
+                <option value="order_list">Orders</option>
+                <option value="favourites">Favourites</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => setUserSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="pipeline-sort-toggle"
+                title={userSortOrder === 'asc' ? 'Ascending (click for Descending)' : 'Descending (click for Ascending)'}
+                aria-label="Toggle sort order"
+              >
+                {userSortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+            </div>
+          </div>
+
+          {/* Rows Per Page */}
+          <div className="pipeline-filter-field">
+            <label className="pipeline-field-label" htmlFor="filter-rows">Rows</label>
+            <select
+              id="filter-rows"
+              value={userPageLimit}
+              onChange={(e) => {
+                setUserPageLimit(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="pipeline-filter-select"
+            >
+              <option value="15">15 rows</option>
+              <option value="30">30 rows</option>
+              <option value="60">60 rows</option>
+            </select>
+          </div>
         </div>
       </div>
+
+      {/* Active Filter Pills Bar */}
+      {activeFilters.length > 0 && (
+        <div className="pipeline-active-filters-bar">
+          <span className="pipeline-active-filter-label">Active filters:</span>
+          {activeFilters.map(filter => (
+            <span key={filter.id} className="pipeline-active-filter-pill">
+              <span>{filter.label}</span>
+              <button
+                type="button"
+                onClick={filter.onRemove}
+                title={`Remove ${filter.label}`}
+                aria-label={`Remove ${filter.label}`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="pipeline-clear-all-link"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
 
       {/* Main Table */}
       <div className="pipeline-table-container">
@@ -750,7 +966,7 @@ export default function BuyerPipeline({
                 return (
                   <tr key={profile.id}>
                     <td className="pipeline-col-sno">
-                      <span className="pipeline-sno-num">{sortedProfiles.length - index}</span>
+                      <span className="pipeline-sno-num">{sortedProfiles.length - ((safeCurrentPage - 1) * pageSize + index)}</span>
                     </td>
                     <td className="pipeline-col-activity">
                       {(() => {
@@ -801,7 +1017,7 @@ export default function BuyerPipeline({
                           {profile.email && (
                             <a
                               href={`mailto:${profile.email}`}
-                              className="pipeline-buyer-sub-link"
+                              className="pipeline-buyer-sub-link pipeline-buyer-email"
                               title={profile.email}
                             >
                               {profile.email}
@@ -812,7 +1028,7 @@ export default function BuyerPipeline({
                           )}
                           {(profile.city || profile.pincode) && (
                             <span
-                              className="pipeline-buyer-sub-text"
+                              className="pipeline-buyer-sub-text pipeline-buyer-city"
                               title={`${profile.city || ''}${profile.pincode ? `, ${profile.pincode}` : ''}`}
                             >
                               {profile.city || 'No City'}
@@ -826,7 +1042,7 @@ export default function BuyerPipeline({
                               href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="pipeline-buyer-sub-link"
+                              className="pipeline-buyer-sub-link pipeline-buyer-phone"
                               title={profile.whatsapp}
                             >
                               {profile.whatsapp}
@@ -897,7 +1113,7 @@ export default function BuyerPipeline({
                       </div>
                     </td>
                     <td className="pipeline-col-action">
-                      <div className="pipeline-action-row-inline">
+                      <div className="pipeline-action-stack">
                         <button
                           type="button"
                           onClick={() => openInspectModal(profile)}
@@ -907,48 +1123,50 @@ export default function BuyerPipeline({
                           <Eye size={12} />
                           <span>Details</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyUserDetails(profile)}
-                          className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
-                          title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
-                        >
-                          {copyFeedback[profile.id] ? (
-                            <Check size={13} className="icon-check-anim" />
-                          ) : (
-                            <Copy size={12} />
+                        <div className="pipeline-action-sub-row">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyUserDetails(profile)}
+                            className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
+                            title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
+                          >
+                            {copyFeedback[profile.id] ? (
+                              <Check size={13} className="icon-check-anim" />
+                            ) : (
+                              <Copy size={12} />
+                            )}
+                          </button>
+                          {storeUrl && (
+                            <a
+                              href={storeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="pipeline-action-icon-btn pipeline-store-link-btn"
+                              title={`Open reseller storefront: ${storeDisplayName}`}
+                            >
+                              <Globe size={12} />
+                            </a>
                           )}
-                        </button>
-                        {storeUrl && (
-                          <a
-                            href={storeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="pipeline-action-icon-btn pipeline-store-link-btn"
-                            title={`Open reseller storefront: ${storeDisplayName}`}
-                          >
-                            <Globe size={12} />
-                          </a>
-                        )}
-                        {toggleResellerDashboard && (
-                          <label
-                            className={`pipeline-switch-toggle ${profile.reseller_dashboard_enabled ? 'is-enabled' : ''}`}
-                            title={`Reseller Website: ${profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'} (Click to toggle)`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={Boolean(profile.reseller_dashboard_enabled)}
-                              onChange={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
-                              aria-label="Toggle Reseller Website"
-                            />
-                            <span className="pipeline-switch-track">
-                              <span className="pipeline-switch-thumb" />
-                            </span>
-                            <span className="pipeline-switch-label">
-                              Web
-                            </span>
-                          </label>
-                        )}
+                          {toggleResellerDashboard && (
+                            <label
+                              className={`pipeline-switch-toggle ${profile.reseller_dashboard_enabled ? 'is-enabled' : ''}`}
+                              title={`Reseller Website: ${profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'} (Click to toggle)`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={Boolean(profile.reseller_dashboard_enabled)}
+                                onChange={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
+                                aria-label="Toggle Reseller Website"
+                              />
+                              <span className="pipeline-switch-track">
+                                <span className="pipeline-switch-thumb" />
+                              </span>
+                              <span className="pipeline-switch-label">
+                                Web
+                              </span>
+                            </label>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -957,8 +1175,25 @@ export default function BuyerPipeline({
               })}
               {displayedProfiles.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="admin-table-empty">
-                    {adminData?.hasLoaded === false ? 'Loading accounts...' : 'No profiles found.'}
+                  <td colSpan="7" className="pipeline-empty-cell">
+                    <div className="pipeline-empty-state">
+                      <Users size={32} className="pipeline-empty-icon" />
+                      <p className="pipeline-empty-title">
+                        {adminData?.hasLoaded === false ? 'Loading accounts...' : 'No accounts match the selected filters.'}
+                      </p>
+                      {activeFilters.length > 0 && (
+                        <>
+                          <p className="pipeline-empty-hint">Try adjusting or clearing your active search and filter criteria.</p>
+                          <button
+                            type="button"
+                            onClick={handleResetFilters}
+                            className="pipeline-empty-reset-btn"
+                          >
+                            <RotateCcw size={14} /> Reset All Filters
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )}
@@ -967,10 +1202,71 @@ export default function BuyerPipeline({
         </div>
       </div>
 
-      {/* Row count summary */}
-      <div className="pipeline-footer-summary">
-        Showing {displayedProfiles.length} of {sortedProfiles.length} accounts
-        {userTypeFilter !== 'all' && ` (${userTypeFilter})`}
+      {/* Bottom Pagination Bar (Separated from table, no box wrapper) */}
+      <div className="pipeline-pagination-bar">
+        <div className="pipeline-pagination-info">
+          Showing <strong>{sortedProfiles.length === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1}</strong> – <strong>{Math.min(sortedProfiles.length, safeCurrentPage * pageSize)}</strong> of <strong>{sortedProfiles.length}</strong> accounts
+          {activeFilters.length > 0 && ` (filtered from ${adminData.profiles?.length || 0} total)`}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="pipeline-pagination-controls">
+            <button
+              type="button"
+              className="pipeline-page-nav-btn"
+              onClick={() => setCurrentPage(1)}
+              disabled={safeCurrentPage === 1}
+              title="First page"
+            >
+              « First
+            </button>
+            <button
+              type="button"
+              className="pipeline-page-nav-btn"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={safeCurrentPage === 1}
+              title="Previous page"
+            >
+              ‹ Prev
+            </button>
+
+            <div className="pipeline-page-numbers">
+              {paginationNumbers.map((p, idx) => (
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="pipeline-page-ellipsis">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`pipeline-page-number ${safeCurrentPage === p ? 'active' : ''}`}
+                  >
+                    {p}
+                  </button>
+                )
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="pipeline-page-nav-btn"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safeCurrentPage === totalPages}
+              title="Next page"
+            >
+              Next ›
+            </button>
+            <button
+              type="button"
+              className="pipeline-page-nav-btn"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={safeCurrentPage === totalPages}
+              title="Last page"
+            >
+              Last »
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Notices */}

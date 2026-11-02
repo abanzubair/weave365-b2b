@@ -1472,17 +1472,9 @@
   }
 }
 
-/* Middle Details Area Blur (From 'Including GST' down to color swatches when popover opens) */
+/* Middle Details Area */
 .product-middle-details {
-  transition: filter 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
-  will-change: filter, opacity;
-}
-
-.product-middle-details.blurred-details {
-  filter: blur(4.5px);
-  opacity: 0.45;
-  pointer-events: none;
-  user-select: none;
+  transition: opacity 0.25s ease;
 }
 
 /* Product Main Actions & Primary CTA Buttons */
@@ -1606,6 +1598,11 @@
   width: 100%;
 }
 
+.reseller-sell-wrapper.has-popover {
+  position: relative;
+  z-index: 1050;
+}
+
 .reseller-sell-btn {
   padding: 0 16px;
   background: #ffffff;
@@ -1617,6 +1614,11 @@
   gap: 8px;
   cursor: pointer;
   transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.1s ease;
+}
+
+.reseller-sell-btn.is-open {
+  position: relative;
+  z-index: 1051;
 }
 
 .reseller-sell-btn:hover {
@@ -1655,10 +1657,25 @@
   flex-shrink: 0;
 }
 
+/* Targeted Content Blur directly under the Reseller Popover (CTA row + Reseller copy) */
+.product-primary-cta-row,
+.reseller-callout-copy {
+  transition: filter 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  will-change: filter, opacity;
+}
+
+.product-primary-cta-row.blurred-under-popup,
+.reseller-callout-copy.blurred-under-popup {
+  filter: blur(4.5px);
+  opacity: 0.42;
+  pointer-events: none;
+  user-select: none;
+}
+
 .reseller-sell-wrapper .product-page-popover.sell-popover {
   bottom: calc(100% + 8px);
   left: 0;
-  z-index: 1050;
+  z-index: 1052;
 }
 
 .product-quality-terms-note {

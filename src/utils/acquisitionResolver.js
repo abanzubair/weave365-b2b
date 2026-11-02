@@ -170,7 +170,10 @@ function enrichAttribution(attr, profile) {
   }
 
   const landingPath = attr.landing_path || '/';
-  const cleanName = attr.name || 'Direct Visit';
+  let cleanName = attr.name || 'Direct Visit';
+  if (cleanName.includes('Dark App Link') || cleanName === 'Dark App Link (Referrer Stripped)') {
+    cleanName = 'Referrer Stripped';
+  }
 
   // Construct comprehensive narrative
   let narrative = attr.inferred_intent || '';

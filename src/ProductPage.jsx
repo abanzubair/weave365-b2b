@@ -1995,7 +1995,7 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className={`product-middle-details ${showSellPanel ? 'blurred-details' : ''}`}>
+            <div className="product-middle-details">
               <div className="product-logistics-info">
                 <div className="tax-shipping-line">
                   <span>GST Included</span>
@@ -2065,7 +2065,7 @@ export function ProductDetail({
             </div>
 
             <div className="product-main-actions">
-              <div className="product-primary-cta-row">
+              <div className={`product-primary-cta-row ${showSellPanel && !isClosing ? 'blurred-under-popup' : ''}`}>
                 <button
                   type="button"
                   className="product-btn-buy-now"
@@ -2088,13 +2088,15 @@ export function ProductDetail({
               </div>
 
               <div className="reseller-callout-card">
-                <h3 className="reseller-callout-heading">Are you a reseller?</h3>
-                <p className="reseller-callout-text">
-                  Add your own profit margin, share our white-label catalogue on social media, and sell to your customers. Download product images and details, or list the products on your own website.
-                </p>
+                <div className={`reseller-callout-copy ${showSellPanel && !isClosing ? 'blurred-under-popup' : ''}`}>
+                  <h3 className="reseller-callout-heading">Are you a reseller?</h3>
+                  <p className="reseller-callout-text">
+                    Add your own profit margin, share our white-label catalogue on social media, and sell to your customers. Download product images and details, or list the products on your own website.
+                  </p>
+                </div>
 
                 <div className="reseller-callout-actions">
-                  <div className="reseller-sell-wrapper" ref={popoverWrapperRef}>
+                  <div className={`reseller-sell-wrapper ${showSellPanel ? 'has-popover' : ''}`} ref={popoverWrapperRef}>
                     <button
                       type="button"
                       className={`reseller-sell-btn ${showSellPanel ? 'is-open' : ''}`}

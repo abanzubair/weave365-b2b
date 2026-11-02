@@ -350,7 +350,7 @@ export function classifyTraffic({
   if (isDeepRoute) {
     return buildResult({
       category: 'Direct / App Link',
-      name: 'Dark App Link (Referrer Stripped)',
+      name: 'Referrer Stripped',
       brand: 'App Link',
       type: 'direct',
       cleanPath,
