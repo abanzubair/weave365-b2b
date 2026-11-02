@@ -116,26 +116,18 @@ export function isDeliveredStatus(status) {
 
 export function getOrderStatusDisplay(status) {
   const s = String(status || 'new').toLowerCase().trim();
-  if (s === 'paid') {
+  if (s === 'paid' || s === 'new' || s === 'unfulfilled') {
     return {
-      label: 'Payment Received',
-      pillClass: 'pill-paid',
-      dotColor: '#16a34a',
-      category: 'needs_attention'
-    };
-  }
-  if (s === 'new') {
-    return {
-      label: 'Payment Received',
-      pillClass: 'pill-paid',
-      dotColor: '#16a34a',
+      label: s === 'unfulfilled' ? 'Needs Attention' : 'Payment Received',
+      pillClass: 'pill-needs_attention',
+      dotColor: '#d97706',
       category: 'needs_attention'
     };
   }
   if (s === 'pending_payment') {
     return {
       label: 'Pending Payment',
-      pillClass: 'pill-new',
+      pillClass: 'pill-needs_attention',
       dotColor: '#d97706',
       category: 'needs_attention'
     };
@@ -143,7 +135,7 @@ export function getOrderStatusDisplay(status) {
   if (isFulfillmentStatus(s)) {
     return {
       label: s === 'processing' ? 'Processing' : 'In Fulfillment (QC)',
-      pillClass: 'pill-verified',
+      pillClass: 'pill-fulfillment',
       dotColor: '#4f46e5',
       category: 'in_fulfillment'
     };
@@ -151,8 +143,8 @@ export function getOrderStatusDisplay(status) {
   if (isTransitStatus(s)) {
     return {
       label: 'In Transit',
-      pillClass: 'pill-dispatched',
-      dotColor: '#0284c7',
+      pillClass: 'pill-transit',
+      dotColor: '#db2777',
       category: 'in_transit'
     };
   }
@@ -160,7 +152,7 @@ export function getOrderStatusDisplay(status) {
     return {
       label: 'Delivered',
       pillClass: 'pill-delivered',
-      dotColor: '#16a34a',
+      dotColor: '#059669',
       category: 'delivered'
     };
   }
@@ -168,7 +160,7 @@ export function getOrderStatusDisplay(status) {
     return {
       label: 'Cancelled',
       pillClass: 'pill-cancelled',
-      dotColor: '#e11d48',
+      dotColor: '#dc2626',
       category: 'cancelled'
     };
   }
@@ -478,75 +470,80 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   return (
     <div className="admin-tracking-container-refined">
       
-      {/* 1. KPI Summary Strip (Distill & Quieter) */}
-      <div className="admin-order-stats-strip">
+      {/* 1. 5 Gradient Metric Cards Row (Matches Dashboard top 5 cards) */}
+      <div className="dashtar-gradient-grid">
+        {/* Card 1: Total Orders */}
         <button 
           type="button"
-          className={`admin-order-kpi-card ${statusFilter === 'all' ? 'active' : ''}`}
+          className={`dashtar-gradient-card card-gradient-blue ${statusFilter === 'all' ? 'active' : ''}`}
           onClick={() => setStatusFilter('all')}
         >
-          <div className="admin-order-kpi-icon-wrap stat-neutral">
+          <div className="gradient-icon-wrap text-blue">
             <Package size={18} />
           </div>
-          <div className="admin-order-kpi-text">
-            <span className="admin-order-kpi-label">TOTAL ORDERS</span>
-            <strong className="admin-order-kpi-value">{orderStats.total}</strong>
+          <div className="gradient-card-val-block">
+            <div className="gradient-card-large-val">{orderStats.total}</div>
+            <span className="gradient-card-label-span">Total Orders</span>
           </div>
         </button>
 
+        {/* Card 2: Needs Attention */}
         <button 
           type="button"
-          className={`admin-order-kpi-card ${statusFilter === 'new' ? 'active' : ''}`}
+          className={`dashtar-gradient-card card-gradient-teal ${statusFilter === 'new' ? 'active' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'new' ? 'all' : 'new')}
         >
-          <div className="admin-order-kpi-icon-wrap stat-amber">
+          <div className="gradient-icon-wrap text-teal">
             <Clock size={18} />
           </div>
-          <div className="admin-order-kpi-text">
-            <span className="admin-order-kpi-label">NEEDS ATTENTION</span>
-            <strong className="admin-order-kpi-value" style={{ color: '#b45309' }}>{orderStats.newCount}</strong>
+          <div className="gradient-card-val-block">
+            <div className="gradient-card-large-val">{orderStats.newCount}</div>
+            <span className="gradient-card-label-span">Needs Attention</span>
           </div>
         </button>
 
+        {/* Card 3: In Fulfillment */}
         <button 
           type="button"
-          className={`admin-order-kpi-card ${statusFilter === 'in_progress' ? 'active' : ''}`}
+          className={`dashtar-gradient-card card-gradient-purple ${statusFilter === 'in_progress' ? 'active' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'in_progress' ? 'all' : 'in_progress')}
         >
-          <div className="admin-order-kpi-icon-wrap stat-indigo">
+          <div className="gradient-icon-wrap text-purple">
             <ShieldCheck size={18} />
           </div>
-          <div className="admin-order-kpi-text">
-            <span className="admin-order-kpi-label">IN FULFILLMENT</span>
-            <strong className="admin-order-kpi-value" style={{ color: '#4338ca' }}>{orderStats.inProgressCount}</strong>
+          <div className="gradient-card-val-block">
+            <div className="gradient-card-large-val">{orderStats.inProgressCount}</div>
+            <span className="gradient-card-label-span">In Fulfillment</span>
           </div>
         </button>
 
+        {/* Card 4: In Transit */}
         <button 
           type="button"
-          className={`admin-order-kpi-card ${statusFilter === 'dispatched' ? 'active' : ''}`}
+          className={`dashtar-gradient-card card-gradient-pink ${statusFilter === 'dispatched' ? 'active' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'dispatched' ? 'all' : 'dispatched')}
         >
-          <div className="admin-order-kpi-icon-wrap stat-cyan">
+          <div className="gradient-icon-wrap text-pink">
             <Truck size={18} />
           </div>
-          <div className="admin-order-kpi-text">
-            <span className="admin-order-kpi-label">IN TRANSIT</span>
-            <strong className="admin-order-kpi-value" style={{ color: '#0369a1' }}>{orderStats.dispatchedCount}</strong>
+          <div className="gradient-card-val-block">
+            <div className="gradient-card-large-val">{orderStats.dispatchedCount}</div>
+            <span className="gradient-card-label-span">In Transit</span>
           </div>
         </button>
 
+        {/* Card 5: Delivered */}
         <button 
           type="button"
-          className={`admin-order-kpi-card ${statusFilter === 'delivered' ? 'active' : ''}`}
+          className={`dashtar-gradient-card card-gradient-green ${statusFilter === 'delivered' ? 'active' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'delivered' ? 'all' : 'delivered')}
         >
-          <div className="admin-order-kpi-icon-wrap stat-emerald">
+          <div className="gradient-icon-wrap text-green">
             <CheckCircle2 size={18} />
           </div>
-          <div className="admin-order-kpi-text">
-            <span className="admin-order-kpi-label">DELIVERED</span>
-            <strong className="admin-order-kpi-value" style={{ color: '#15803d' }}>{orderStats.deliveredCount}</strong>
+          <div className="gradient-card-val-block">
+            <div className="gradient-card-large-val">{orderStats.deliveredCount}</div>
+            <span className="gradient-card-label-span">Delivered</span>
           </div>
         </button>
       </div>
@@ -569,33 +566,10 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
           >
             Dropship Packages ({channelCounts.dropship})
           </button>
-          <button 
-            type="button"
-            className={`admin-channel-pill ${typeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setTypeFilter('all')}
-          >
-            All Inquiries ({channelCounts.all})
-          </button>
         </div>
 
         {/* Right Search & Status Filter */}
         <div className="admin-toolbar-right">
-          {/* Status Dropdown */}
-          <div className="admin-status-dropdown-wrap">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="admin-select-refined"
-            >
-              <option value="new">Status: Needs Attention ({orderStats.newCount})</option>
-              <option value="all">Status: Total Orders ({orderStats.total})</option>
-              <option value="in_progress">Status: In Fulfillment ({orderStats.inProgressCount})</option>
-              <option value="dispatched">Status: In Transit ({orderStats.dispatchedCount})</option>
-              <option value="delivered">Status: Delivered ({orderStats.deliveredCount})</option>
-              <option value="cancelled">Status: Cancelled</option>
-            </select>
-          </div>
-
           {/* Search Field */}
           <div className="admin-search-wrap-refined">
             <Search size={15} className="admin-search-icon-refined" />
@@ -618,21 +592,39 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             )}
           </div>
 
-          {(statusFilter !== 'new' || searchQuery || typeFilter !== 'orders' || dateSortOrder !== 'desc') && (
-            <button 
-              type="button"
-              className="admin-btn-reset-filters"
-              onClick={() => {
-                setStatusFilter('new');
-                setSearchQuery('');
-                setTypeFilter('orders');
-                setDateSortOrder('desc');
-              }}
-              title="Reset to Needs Attention"
-            >
-              <RotateCcw size={13} /> Reset
-            </button>
-          )}
+          {/* Status Dropdown & Reset Action */}
+          <div className="admin-status-actions-row">
+            <div className="admin-status-dropdown-wrap">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="admin-select-refined"
+              >
+                <option value="new">Status: Needs Attention ({orderStats.newCount})</option>
+                <option value="all">Status: Total Orders ({orderStats.total})</option>
+                <option value="in_progress">Status: In Fulfillment ({orderStats.inProgressCount})</option>
+                <option value="dispatched">Status: In Transit ({orderStats.dispatchedCount})</option>
+                <option value="delivered">Status: Delivered ({orderStats.deliveredCount})</option>
+                <option value="cancelled">Status: Cancelled</option>
+              </select>
+            </div>
+
+            {(statusFilter !== 'new' || searchQuery || typeFilter !== 'orders' || dateSortOrder !== 'desc') && (
+              <button 
+                type="button"
+                className="admin-btn-reset-filters"
+                onClick={() => {
+                  setStatusFilter('new');
+                  setSearchQuery('');
+                  setTypeFilter('orders');
+                  setDateSortOrder('desc');
+                }}
+                title="Reset to Needs Attention"
+              >
+                <RotateCcw size={13} /> Reset
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -970,14 +962,21 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   <h3 className="admin-modal-title">
                     {activeModalTab === 'details' ? (
                       <>
-                        <Layers size={18} /> Order Details #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
+                        <Layers size={17} /> Order #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
                       </>
                     ) : (
                       <>
-                        <Truck size={18} /> Update Fulfillment #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
+                        <Truck size={17} /> Update Fulfillment
                       </>
                     )}
                   </h3>
+                  {activeModalTab !== 'details' && (
+                    <span className="admin-order-num-pill">
+                      #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
+                    </span>
+                  )}
+                </div>
+                <div className="admin-modal-sub-row">
                   {(() => {
                     const badgeInfo = getOrderStatusDisplay(selectedInquiry.status);
                     return (
@@ -987,9 +986,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       </span>
                     );
                   })()}
-                </div>
-                <div className="admin-modal-sub-row">
-                  <span>Placed on {new Date(selectedInquiry.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                  <span className="admin-modal-date-text">
+                    {new Date(selectedInquiry.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </span>
                   {selectedInquiry.isDropship && <span className="badge-dropship-mini">Direct Dropship</span>}
                 </div>
               </div>
@@ -1000,6 +999,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   className="admin-modal-close-btn"
                   onClick={() => setSelectedInquiry(null)}
                   title="Close"
+                  aria-label="Close"
                 >
                   <X size={18} />
                 </button>
@@ -1062,7 +1062,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           targetStatus: (selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'new',
                           label: 'Payment Received',
                           sub: 'Payment captured via Gateway · Ready for QC & packaging',
-                          color: '#b45309',
+                          color: '#d97706',
+                          themeKey: 'amber',
                           isSelected: isNeedsAttentionStatus(formStatus)
                         },
                         {
@@ -1070,7 +1071,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           targetStatus: 'verified',
                           label: 'In Fulfillment (QC & Packing)',
                           sub: 'Quality check & packaging at Varanasi hub',
-                          color: '#4338ca',
+                          color: '#4f46e5',
+                          themeKey: 'purple',
                           isSelected: isFulfillmentStatus(formStatus)
                         },
                         {
@@ -1078,7 +1080,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           targetStatus: 'dispatched',
                           label: 'In Transit (Dispatched)',
                           sub: 'Dispatched with logistics carrier tracking AWB',
-                          color: '#0369a1',
+                          color: '#db2777',
+                          themeKey: 'pink',
                           isSelected: isTransitStatus(formStatus)
                         },
                         {
@@ -1086,7 +1089,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           targetStatus: 'delivered',
                           label: 'Delivered',
                           sub: 'Package successfully handed to buyer',
-                          color: '#15803d',
+                          color: '#059669',
+                          themeKey: 'green',
                           isSelected: isDeliveredStatus(formStatus)
                         },
                         {
@@ -1094,20 +1098,21 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           targetStatus: 'cancelled',
                           label: 'Cancelled',
                           sub: 'Order voided, cancelled or returned',
-                          color: '#be123c',
+                          color: '#dc2626',
+                          themeKey: 'red',
                           isSelected: formStatus === 'cancelled' || formStatus === 'rejected'
                         },
                       ].map(st => (
                         <button
                           key={st.id}
                           type="button"
-                          className={`admin-status-card-opt ${st.isSelected ? 'selected' : ''}`}
+                          className={`admin-status-card-opt opt-${st.themeKey} ${st.isSelected ? 'selected' : ''}`}
                           onClick={() => setFormStatus(st.targetStatus)}
                         >
                           <div className="admin-status-card-top">
                             <span className="admin-status-dot-sm" style={{ background: st.color }} />
                             <span className="admin-status-card-name">{st.label}</span>
-                            {st.isSelected && <Check size={14} className="admin-status-check-icon" />}
+                            {st.isSelected && <Check size={14} className="admin-status-check-icon" strokeWidth={2.5} />}
                           </div>
                           <span className="admin-status-card-sub">{st.sub}</span>
                         </button>
@@ -1179,17 +1184,17 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         <span className="admin-section-title">BUYER TRACKING NOTIFICATION NOTE</span>
                       </div>
                       <div className="admin-quick-templates">
-                        <button type="button" onClick={() => applyTemplate('paid')} className="admin-template-btn">
-                          <Sparkles size={11} /> Payment Received
+                        <button type="button" onClick={() => applyTemplate('paid')} className="admin-template-btn template-amber">
+                          <Sparkles size={11} className="template-icon" /> Payment Received
                         </button>
-                        <button type="button" onClick={() => applyTemplate('verified')} className="admin-template-btn">
-                          <Sparkles size={11} /> QC & Packing
+                        <button type="button" onClick={() => applyTemplate('verified')} className="admin-template-btn template-purple">
+                          <Sparkles size={11} className="template-icon" /> QC & Packing
                         </button>
-                        <button type="button" onClick={() => applyTemplate('dispatched')} className="admin-template-btn">
-                          <Sparkles size={11} /> Dispatched
+                        <button type="button" onClick={() => applyTemplate('dispatched')} className="admin-template-btn template-pink">
+                          <Sparkles size={11} className="template-icon" /> Dispatched
                         </button>
-                        <button type="button" onClick={() => applyTemplate('delivered')} className="admin-template-btn">
-                          <Sparkles size={11} /> Delivered
+                        <button type="button" onClick={() => applyTemplate('delivered')} className="admin-template-btn template-green">
+                          <Sparkles size={11} className="template-icon" /> Delivered
                         </button>
                       </div>
                     </div>

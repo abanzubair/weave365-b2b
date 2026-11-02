@@ -880,7 +880,7 @@ export function Admin({
       {/* 1. Sidebar Panel (Desktop & Mobile Drawer) */}
       <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'} ${isSidebarMinimized ? 'minimized' : ''} ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="admin-sidebar-header">
-          {!isSidebarMinimized ? (
+          {!isSidebarMinimized && (
             <a
               href="/"
               target="_blank"
@@ -892,20 +892,6 @@ export function Admin({
                 src={assetSrc(brandLogo)}
                 alt={storeConfig.name}
                 style={{ height: '24px', width: 'auto', objectFit: 'contain' }}
-              />
-            </a>
-          ) : (
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="admin-sidebar-brand-link"
-              title="Open Weave365 Homepage in new tab"
-            >
-              <img
-                src={assetSrc(brandLogo)}
-                alt={storeConfig.name}
-                style={{ height: '20px', width: 'auto', objectFit: 'contain' }}
               />
             </a>
           )}

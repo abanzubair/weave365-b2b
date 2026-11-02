@@ -533,24 +533,19 @@ export default function VendorApplications({
 
   return (
     <div className="admin-partners-tab">
-      {/* 1. Header Dashboard Banner */}
+      {/* 1. Minimal Header */}
       <div className="admin-partners-banner">
         <div className="admin-sync-content">
-          <div className="admin-partners-banner-icon-wrap">
-            <Store size={26} />
-          </div>
-          <div>
-            <h2 className="admin-partners-banner-title">Vendor & Artisan Management</h2>
-            <p className="admin-partners-banner-desc">
-              Manage registered artisan suppliers, assign Vendor Codes (V01, V02...), and toggle website product availability.
-            </p>
-          </div>
+          <h2 className="admin-partners-banner-title">Vendor & Artisan Management</h2>
+          <p className="admin-partners-banner-desc">
+            Manage registered artisan suppliers, assign Vendor Codes (V01, V02...), and toggle website product availability.
+          </p>
         </div>
 
-        <div className="admin-flex-gap12">
+        <div className="admin-partners-banner-actions">
           <button
             type="button"
-            className="admin-btn-refresh-partners"
+            className={`admin-btn-copy-signup ${copyFeedback.signup_link ? 'copied' : ''}`}
             onClick={handleCopySignupLink}
             title="Copy link to vendor registration form"
           >
@@ -560,35 +555,23 @@ export default function VendorApplications({
 
           <button
             type="button"
-            className="admin-btn-refresh-partners"
+            className="admin-btn-refresh-vendors"
             onClick={handleRefresh}
             disabled={refreshing}
+            title="Refresh vendor partners list"
           >
             <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
-            <span>{refreshing ? 'Refreshing...' : 'Refresh Vendors'}</span>
+            <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </div>
 
       {/* 1.5 Sub-view navigation switcher */}
-      <div style={{ display: 'flex', gap: 10, borderBottom: '1px solid #e2e8f0', paddingBottom: 12, marginBottom: 18 }}>
+      <div className="admin-partners-subtab-container">
         <button
           type="button"
           onClick={() => setSubTab('vendors')}
-          style={{
-            background: subTab === 'vendors' ? '#0f172a' : '#f8fafc',
-            color: subTab === 'vendors' ? '#ffffff' : '#475569',
-            border: `1px solid ${subTab === 'vendors' ? '#0f172a' : '#e2e8f0'}`,
-            borderRadius: 8,
-            padding: '8px 18px',
-            fontSize: 13.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            transition: 'all 0.15s ease',
-          }}
+          className={`admin-partners-subtab-item ${subTab === 'vendors' ? 'active' : ''}`}
         >
           <Users size={16} />
           <span>Registered Vendors & Loom Codes</span>
@@ -596,20 +579,7 @@ export default function VendorApplications({
         <button
           type="button"
           onClick={() => setSubTab('uploads')}
-          style={{
-            background: subTab === 'uploads' ? '#0f172a' : '#f8fafc',
-            color: subTab === 'uploads' ? '#ffffff' : '#475569',
-            border: `1px solid ${subTab === 'uploads' ? '#0f172a' : '#e2e8f0'}`,
-            borderRadius: 8,
-            padding: '8px 18px',
-            fontSize: 13.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            transition: 'all 0.15s ease',
-          }}
+          className={`admin-partners-subtab-item ${subTab === 'uploads' ? 'active' : ''}`}
         >
           <Boxes size={16} />
           <span>Seller Product Uploads & Approvals</span>
@@ -621,67 +591,53 @@ export default function VendorApplications({
       ) : (
         <>
       {/* 2. Mini-Metrics KPI Grid */}
-      <div className="admin-partners-metrics-grid">
-        <div className="admin-partner-metric-card">
-          <div className="admin-partner-icon-blue">
-            <Users size={22} />
+      <div className="dashtar-outline-grid">
+        <article className="dashtar-outline-card">
+          <div className="outline-icon-container bg-blue-soft text-blue">
+            <Users size={20} />
           </div>
-          <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Total Registered Vendors</span>
-            <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">{metrics.total}</strong>
-              <span className="admin-partner-status-blue">Partner Accounts</span>
-            </div>
+          <div className="outline-card-info">
+            <span>Total Registered</span>
+            <strong>{metrics.total}</strong>
           </div>
-        </div>
+        </article>
 
-        <div className="admin-partner-metric-card">
-          <div className="admin-partner-icon-purple" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
-            <PackageCheck size={22} />
+        <article className="dashtar-outline-card">
+          <div className="outline-icon-container bg-indigo-soft text-indigo">
+            <PackageCheck size={20} />
           </div>
-          <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Vendor Codes Assigned</span>
-            <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">{metrics.withCode}</strong>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#7c3aed' }}>
-                {metrics.total > 0 ? `${Math.round((metrics.withCode / metrics.total) * 100)}% Linked` : '0%'}
-              </span>
-            </div>
+          <div className="outline-card-info">
+            <span>Codes Assigned</span>
+            <strong>{metrics.withCode}</strong>
           </div>
-        </div>
+        </article>
 
-        <div className="admin-partner-metric-card">
-          <div className="admin-partner-icon-orange" style={{ background: '#fffbeb', color: '#b45309' }}>
-            <Boxes size={22} />
+        <article className="dashtar-outline-card">
+          <div className="outline-icon-container bg-orange-soft text-orange">
+            <Boxes size={20} />
           </div>
-          <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Pending Vendor Code</span>
-            <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">{metrics.withoutCode}</strong>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#b45309' }}>Needs V-Code</span>
-            </div>
+          <div className="outline-card-info">
+            <span>Pending Codes</span>
+            <strong>{metrics.withoutCode}</strong>
           </div>
-        </div>
+        </article>
 
-        <div className="admin-partner-metric-card">
-          <div className="admin-partner-icon-green">
-            <Layers size={22} />
+        <article className="dashtar-outline-card">
+          <div className="outline-icon-container bg-green-soft text-green">
+            <Layers size={20} />
           </div>
-          <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Specialties Covered</span>
-            <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">{allCategoryOptions.length}</strong>
-              <span className="admin-partner-status-green">Handloom Categories</span>
-            </div>
+          <div className="outline-card-info">
+            <span>Specialties</span>
+            <strong>{allCategoryOptions.length}</strong>
           </div>
-        </div>
+        </article>
       </div>
 
       {/* 3. Filtering & Search Toolbar */}
       <div className="admin-partners-filter-strip">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, flexWrap: 'wrap' }}>
-          {/* Search Box */}
-          <div className="admin-search-wrapper" style={{ flex: '1 1 240px', minWidth: '220px' }}>
+        <div className="admin-partners-filter-left">
+          {/* Search Box (Row 1 on mobile) */}
+          <div className="admin-search-wrapper">
             <Search size={15} className="admin-search-icon" />
             <input
               type="text"
@@ -701,73 +657,74 @@ export default function VendorApplications({
             )}
           </div>
 
-          {/* Category Filter */}
-          {allCategoryOptions.length > 0 && (
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="admin-select-input"
-              aria-label="Filter by specialty"
-            >
-              <option value="all">All Specialties ({allCategoryOptions.length})</option>
-              {allCategoryOptions.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          )}
+          {/* Category & Vendor Code Dropdowns (Row 2: 50/50 2-col grid on mobile) */}
+          <div className="admin-partners-filter-selects">
+            {allCategoryOptions.length > 0 && (
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="admin-select-input"
+                aria-label="Filter by specialty"
+              >
+                <option value="all">All Specialties ({allCategoryOptions.length})</option>
+                {allCategoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            )}
 
-          {/* Vendor Code Filter */}
-          <select
-            value={codeFilter}
-            onChange={(e) => setCodeFilter(e.target.value)}
-            className="admin-select-input"
-            aria-label="Filter by vendor code"
-          >
-            <option value="all">All Vendor Codes</option>
-            <option value="assigned">Assigned Code (V01, V02...)</option>
-            <option value="unassigned">Unassigned Code</option>
-          </select>
-
-          {/* Sort Controls */}
-          <div className="admin-flex-align-center-gap8">
-            <span className="admin-partner-sort-label">Sort:</span>
             <select
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value)}
+              value={codeFilter}
+              onChange={(e) => setCodeFilter(e.target.value)}
               className="admin-select-input"
-              aria-label="Sort by field"
+              aria-label="Filter by vendor code"
             >
-              <option value="date">Date Registered</option>
-              <option value="name">Vendor Name</option>
-              <option value="business">Business Name</option>
-              <option value="city">City / Location</option>
-              <option value="code">Vendor Code</option>
+              <option value="all">All Vendor Codes</option>
+              <option value="assigned">Assigned Code (V01, V02...)</option>
+              <option value="unassigned">Unassigned Code</option>
             </select>
+          </div>
+
+          {/* Sort Controls & Export CSV (Row 3 on mobile) */}
+          <div className="admin-partners-sort-row">
+            <div className="admin-partners-sort-group">
+              <span className="admin-partner-sort-label">Sort:</span>
+              <select
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value)}
+                className="admin-select-input admin-partners-sort-select"
+                aria-label="Sort by field"
+              >
+                <option value="date">Date Registered</option>
+                <option value="name">Vendor Name</option>
+                <option value="business">Business Name</option>
+                <option value="city">City / Location</option>
+                <option value="code">Vendor Code</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                className="admin-btn-toggle"
+                title={`Sort order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+              >
+                {sortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
+              </button>
+            </div>
 
             <button
               type="button"
-              onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-              className="admin-btn-toggle"
-              title={`Sort order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+              onClick={handleExportCSV}
+              className="admin-btn-export-csv"
+              title="Download complete vendor directory as CSV"
             >
-              {sortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
+              <FileSpreadsheet size={14} />
+              <span>Export CSV</span>
             </button>
           </div>
         </div>
-
-        {/* Export CSV Button */}
-        <button
-          type="button"
-          onClick={handleExportCSV}
-          className="admin-btn-doc-badge"
-          style={{ background: '#059669', color: '#ffffff', borderColor: '#047857' }}
-          title="Download complete vendor directory as CSV"
-        >
-          <FileSpreadsheet size={14} />
-          <span>Export CSV</span>
-        </button>
       </div>
 
       {/* 4. Vendors Directory Table */}

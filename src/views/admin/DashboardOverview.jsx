@@ -25,9 +25,16 @@ export default function DashboardOverview({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Hover states for the Best Selling Products Pie Chart interactive tooltip
+  // Hover and selection states for the Best Selling Products Donut Chart
   const [hoveredSlice, setHoveredSlice] = useState(null);
+  const [selectedSlice, setSelectedSlice] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+  const activeSlice = hoveredSlice || selectedSlice;
+
+  const handleSliceClick = (slice) => {
+    setSelectedSlice((prev) => (prev?.name === slice.name ? null : slice));
+  };
 
   const handleMouseMove = (e) => {
     setTooltipPos({ x: e.clientX, y: e.clientY });
@@ -35,6 +42,7 @@ export default function DashboardOverview({
 
   // Active chart toggle: 'sales' | 'orders'
   const [activeChartTab, setActiveChartTab] = useState('sales');
+  const [hoveredPoint, setHoveredPoint] = useState(null);
 
   const enquiryRows = useMemo(() => {
     const orders = (adminData.optional.orders || [])
@@ -354,63 +362,123 @@ export default function DashboardOverview({
     return enquiryRows.filter(e => String(e.status || '').toLowerCase().trim() === 'delivered').length;
   }, [enquiryRows]);
 
-  // Weekly Sales Line Chart data: Plots dynamic sales curve based on dates
+  // Weekly Sales Line Chart data: Plots dynamic smooth spline curve based on dates
   const lineGraphData = useMemo(() => {
-    const days = [];
-    const dateLabels = [];
-    const values = [];
+    const isSales = activeChartTab === 'sales';
+    const dayData = [];
+    let totalWeekly = 0;
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400000);
       const dStr = d.toISOString().split('T')[0];
-      const label = d.toLocaleDateString('en-US', { weekday: 'short' });
-      days.push(dStr);
-      dateLabels.push(label);
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const dayMonth = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
       // Sum sales or orders on this date
       const dayRows = enquiryRows.filter(e => e.created_at && e.created_at.startsWith(dStr));
       let val = 0;
-      if (activeChartTab === 'sales') {
+      if (isSales) {
         val = dayRows.filter(isEligibleOrder).reduce((acc, curr) => acc + getOrderAmountInINR(curr), 0);
       } else {
         val = dayRows.filter(isEligibleOrder).length;
       }
-      values.push(val);
+      totalWeekly += val;
+      dayData.push({
+        dStr,
+        dayName,
+        dayMonth,
+        fullDate: `${dayName}, ${dayMonth}`,
+        val,
+      });
     }
 
-    // Grid coordinates on viewbox 380 x 220
-    // Start height: y=190 (bottom), Top height: y=20 (span = 170px)
-    const maxVal = Math.max(activeChartTab === 'sales' ? 14000 : 10, ...values);
-    const minVal = 0;
-    const span = maxVal - minVal;
+    const rawMax = Math.max(...dayData.map(d => d.val));
+    let maxVal = rawMax;
+    if (isSales) {
+      if (rawMax <= 10000) maxVal = 10000;
+      else if (rawMax <= 14000) maxVal = 14000;
+      else if (rawMax <= 20000) maxVal = 20000;
+      else {
+        const step = Math.pow(10, Math.floor(Math.log10(rawMax)));
+        maxVal = Math.ceil(rawMax / step) * step;
+      }
+    } else {
+      maxVal = Math.max(10, Math.ceil(rawMax / 5) * 5);
+    }
 
-    const points = values.map((val, idx) => {
-      const x = 50 + (idx * 51.66); // distribute evenly from 50 to 360
-      const y = 190 - ((val / Math.max(1, maxVal)) * 170);
-      return { x, y, value: val, date: dateLabels[idx] };
+    // Grid coordinates on viewbox 400 x 220
+    const startX = 52;
+    const endX = 382;
+    const topY = 24;
+    const bottomY = 175;
+    const xStep = (endX - startX) / 6;
+
+    const points = dayData.map((item, idx) => {
+      const x = startX + idx * xStep;
+      const ratio = maxVal > 0 ? item.val / maxVal : 0;
+      const y = bottomY - ratio * (bottomY - topY);
+      return {
+        id: `point-${idx}`,
+        x: Number(x.toFixed(1)),
+        y: Number(y.toFixed(1)),
+        value: item.val,
+        displayVal: isSales ? formatMoney(item.val) : `${item.val} ${item.val === 1 ? 'order' : 'orders'}`,
+        dayName: item.dayName,
+        dayMonth: item.dayMonth,
+        fullDate: item.fullDate,
+      };
     });
 
-    const polylinePath = points.map(p => `${p.x},${p.y}`).join(' ');
-    const areaPath = `M 50 190 L ${polylinePath} L ${points[points.length - 1].x} 190 Z`;
+    // Generate smooth cubic bezier spline curve
+    let smoothCurve = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i === 0 ? i : i - 1];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
 
-    const gridIntervals = 5;
-    const yGridValues = [];
-    const yLabels = [];
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      let cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      let cp2y = p2.y - (p3.y - p1.y) / 6;
 
-    for (let i = 0; i <= gridIntervals; i++) {
-      const val = Math.round(maxVal - (i * maxVal) / gridIntervals);
-      yGridValues.push(val);
-      if (activeChartTab === 'sales') {
-        yLabels.push(val >= 1000 ? `₹${(val / 1000).toFixed(1)}k` : `₹${val}`);
-      } else {
-        yLabels.push(String(val));
-      }
+      // Clamp Y to stay within chart boundaries
+      cp1y = Math.min(bottomY, Math.max(topY, cp1y));
+      cp2y = Math.min(bottomY, Math.max(topY, cp2y));
+
+      smoothCurve += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
     }
 
-    return { points, yLabels, yGridValues, polylinePath, areaPath, startDate: days[0], endDate: days[6] };
+    const areaPath = `M ${points[0].x} ${bottomY} L ${points[0].x} ${points[0].y} ${smoothCurve.replace(/^M [^ ]+ [^ ]+/, '')} L ${points[points.length - 1].x} ${bottomY} Z`;
+
+    const gridIntervals = 5;
+    const yGrid = [];
+    for (let i = 0; i <= gridIntervals; i++) {
+      const val = Math.round(maxVal - (i * maxVal) / gridIntervals);
+      const y = topY + (i * (bottomY - topY)) / gridIntervals;
+      let label = '';
+      if (isSales) {
+        label = val >= 1000 ? `₹${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k` : `₹${val}`;
+      } else {
+        label = String(val);
+      }
+      yGrid.push({ val, y: Number(y.toFixed(1)), label });
+    }
+
+    return {
+      points,
+      smoothCurve,
+      areaPath,
+      yGrid,
+      totalWeekly,
+      isSales,
+      accentColor: isSales ? '#10b981' : '#4f46e5',
+      gradId: isSales ? 'salesTrendGrad' : 'ordersTrendGrad',
+      displayTotal: isSales ? formatMoney(totalWeekly) : `${totalWeekly} ${totalWeekly === 1 ? 'order' : 'orders'}`,
+    };
   }, [enquiryRows, activeChartTab]);
 
-  // Best Selling Products Sourcing Preferences for Pie Chart
+  // Best Selling Products Sourcing Preferences for Donut Chart
   const categoryChartData = useMemo(() => {
     const counts = {};
     
@@ -467,72 +535,98 @@ export default function DashboardOverview({
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
 
-    // If we have live products in the map, use them!
+    // If we have live products in the map, prioritize top sellers
     if (sorted.length > 0) {
       if (sorted.length > 4) {
-        const top3 = sorted.slice(0, 3);
-        const othersVal = sorted.slice(3).reduce((acc, curr) => acc + curr.value, 0);
-        top3.push({ name: 'Others', value: othersVal });
-        return top3;
+        const top = sorted.slice(0, 4);
+        const othersVal = sorted.slice(4).reduce((acc, curr) => acc + curr.value, 0);
+        if (othersVal > 0) {
+          top.push({ name: 'Others', value: othersVal });
+        }
+        return top;
       }
       return sorted;
     }
 
-    // Fallback seed variant codes when there are no transactions in the database
-    return [
-      { name: 'Kanjivaram Silk Saree', value: 14 },
-      { name: 'Banarasi Silk Saree', value: 10 },
-      { name: 'Chanderi Cotton Suit', value: 8 },
-      { name: 'Organza Floral Saree', value: 4 }
-    ];
+    return [];
   }, [enquiryRows, adminData.optional.inquiries, adminData.cartItems]);
 
-  const getCoordinatesForPercent = (percent) => {
-    const x = Math.cos(2 * Math.PI * percent);
-    const y = Math.sin(2 * Math.PI * percent);
-    return [x, y];
-  };
+  const totalCategoryUnits = useMemo(() => {
+    return categoryChartData.reduce((acc, curr) => acc + curr.value, 0);
+  }, [categoryChartData]);
 
-  const getPiePath = (startPercent, endPercent, cx = 100, cy = 100, r = 85) => {
-    if (endPercent - startPercent >= 0.999) {
-      return `M ${cx - r} ${cy} a ${r} ${r} 0 1 0 ${2 * r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 Z`;
+  // SVG Donut Path math: generates smooth curved donut segments with outer and inner radii
+  const getDonutPath = (startPercent, endPercent, cx = 100, cy = 100, outerR = 82, innerR = 54) => {
+    const span = endPercent - startPercent;
+    if (span >= 0.999) {
+      return `M ${cx} ${cy - outerR} A ${outerR} ${outerR} 0 1 0 ${cx} ${cy + outerR} A ${outerR} ${outerR} 0 1 0 ${cx} ${cy - outerR} M ${cx} ${cy - innerR} A ${innerR} ${innerR} 0 1 1 ${cx} ${cy + innerR} A ${innerR} ${innerR} 0 1 1 ${cx} ${cy - innerR} Z`;
     }
-    const [startX, startY] = getCoordinatesForPercent(startPercent - 0.25);
-    const [endX, endY] = getCoordinatesForPercent(endPercent - 0.25);
 
-    const x1 = cx + r * startX;
-    const y1 = cy + r * startY;
-    const x2 = cx + r * endX;
-    const y2 = cy + r * endY;
+    const angle1 = (startPercent * 2 * Math.PI) - (Math.PI / 2);
+    const angle2 = (endPercent * 2 * Math.PI) - (Math.PI / 2);
 
-    const largeArcFlag = endPercent - startPercent > 0.5 ? 1 : 0;
+    const x1 = (cx + outerR * Math.cos(angle1)).toFixed(2);
+    const y1 = (cy + outerR * Math.sin(angle1)).toFixed(2);
+    const x2 = (cx + outerR * Math.cos(angle2)).toFixed(2);
+    const y2 = (cy + outerR * Math.sin(angle2)).toFixed(2);
 
-    return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+    const ix1 = (cx + innerR * Math.cos(angle1)).toFixed(2);
+    const iy1 = (cy + innerR * Math.sin(angle1)).toFixed(2);
+    const ix2 = (cx + innerR * Math.cos(angle2)).toFixed(2);
+    const iy2 = (cy + innerR * Math.sin(angle2)).toFixed(2);
+
+    const largeArcFlag = span > 0.5 ? 1 : 0;
+
+    return `M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${ix1} ${iy1} Z`;
   };
 
-  const getPieSlices = () => {
-    const total = categoryChartData.reduce((acc, curr) => acc + curr.value, 0);
+  const pieSlices = useMemo(() => {
+    if (!categoryChartData || categoryChartData.length === 0 || totalCategoryUnits === 0) {
+      return [];
+    }
+
+    // Modern curated palette with accessible contrast
+    const MODERN_PALETTE = [
+      '#4f46e5', // Royal Indigo
+      '#06b6d4', // Vibrant Cyan
+      '#10b981', // Emerald Green
+      '#f59e0b', // Warm Amber
+      '#ec4899', // Rich Pink
+      '#8b5cf6', // Soft Violet
+    ];
+
+    // Compute exact percentages ensuring sum is strictly 100%
+    const rawPercentages = categoryChartData.map(item => (item.value / totalCategoryUnits) * 100);
+    const roundedPercentages = rawPercentages.map(p => Math.round(p));
+    const sumP = roundedPercentages.reduce((a, b) => a + b, 0);
+    if (sumP !== 100 && roundedPercentages.length > 0) {
+      const maxIdx = roundedPercentages.indexOf(Math.max(...roundedPercentages));
+      roundedPercentages[maxIdx] += (100 - sumP);
+    }
+
     let accumulatedPercent = 0;
-    const colors = ['#10b981', '#3b82f6', '#f97316', '#06b6d4', '#8b5cf6'];
+    let paletteIdx = 0;
 
     return categoryChartData.map((item, idx) => {
-      const percent = item.value / Math.max(1, total);
+      const sliceFraction = item.value / totalCategoryUnits;
       const startPercent = accumulatedPercent;
-      const endPercent = accumulatedPercent + percent;
-      accumulatedPercent += percent;
+      const endPercent = accumulatedPercent + sliceFraction;
+      accumulatedPercent += sliceFraction;
 
-      const path = getPiePath(startPercent, endPercent);
+      const isOthers = item.name.toLowerCase() === 'others';
+      const color = isOthers ? '#64748b' : MODERN_PALETTE[paletteIdx++ % MODERN_PALETTE.length];
+      const path = getDonutPath(startPercent, endPercent);
+
       return {
+        id: `slice-${idx}`,
         name: item.name,
         value: item.value,
-        percentage: Math.round(percent * 100),
+        percentage: roundedPercentages[idx] || Math.round(sliceFraction * 100),
         path,
-        color: colors[idx % colors.length],
+        color,
       };
     });
-  };
-
-  const pieSlices = useMemo(getPieSlices, [categoryChartData]);
+  }, [categoryChartData, totalCategoryUnits]);
 
   // Paginated recent enquiries data
   const paginatedEnquiries = useMemo(() => {
@@ -557,11 +651,13 @@ export default function DashboardOverview({
         <h1 className="dashtar-title">Dashboard Overview</h1>
         <button
           type="button"
-          className="pipeline-header-btn"
+          className="admin-sync-sheets-btn"
           onClick={handleManualSync}
           disabled={syncStatus === 'loading'}
+          title="Manually trigger Google Sheets sync to refresh live inventory & pricing"
         >
-          <RefreshCw size={14} className={syncStatus === 'loading' ? 'spin-icon' : ''} /> {syncStatus === 'loading' ? 'Syncing...' : 'Sync Google Sheet'}
+          <RefreshCw size={13.5} className={`sync-icon ${syncStatus === 'loading' ? 'spin-icon' : ''}`} />
+          <span>{syncStatus === 'loading' ? 'Syncing...' : 'Sync Google Sheet'}</span>
         </button>
       </div>
 
@@ -630,7 +726,7 @@ export default function DashboardOverview({
             <Database size={20} strokeWidth={1.5} />
           </div>
           <div className="outline-card-info">
-            <span>Total Order</span>
+            <span>Total Orders</span>
             <strong>{totalOrdersCount}</strong>
           </div>
         </article>
@@ -640,11 +736,13 @@ export default function DashboardOverview({
             <RefreshCw size={18} />
           </div>
           <div className="outline-card-info">
-            <div className="outline-label-row">
-              <span>Orders Pending</span>
-              <span className="outline-highlight-badge">{formatINR(pendingOrdersAmount)}</span>
+            <span>Orders Pending</span>
+            <div className="outline-val-row">
+              <strong>{pendingOrdersCount}</strong>
+              {pendingOrdersAmount > 0 && (
+                <span className="outline-highlight-badge">{formatINR(pendingOrdersAmount)}</span>
+              )}
             </div>
-            <strong>{pendingOrdersCount}</strong>
           </div>
         </article>
 
@@ -671,119 +769,319 @@ export default function DashboardOverview({
 
       {/* 3. Charts Split Section */}
       <div className="dashtar-charts-split">
-        {/* Line Chart: Weekly Sales */}
+        {/* Smooth Spline Chart: Weekly Trends */}
         <article className="admin-panel dashboard-chart-panel">
           <div className="chart-panel-header">
             <div>
-              <h3>Weekly Sales</h3>
-              <small>Sales trends over the week</small>
+              <div className="chart-panel-title-row">
+                <h3>Weekly {activeChartTab === 'sales' ? 'Sales' : 'Orders'}</h3>
+                <span
+                  className="chart-metric-pill"
+                  style={{
+                    color: lineGraphData.accentColor,
+                    backgroundColor: `${lineGraphData.accentColor}14`,
+                    border: `1px solid ${lineGraphData.accentColor}25`,
+                  }}
+                >
+                  {lineGraphData.displayTotal}
+                </span>
+              </div>
+              <small>
+                {hoveredPoint
+                  ? `${hoveredPoint.fullDate}: ${hoveredPoint.displayVal}`
+                  : 'Trends & volume over the past 7 days'}
+              </small>
             </div>
-            <div className="chart-toggle-buttons">
+            <div className="chart-segmented-control">
               <button
                 type="button"
-                onClick={() => setActiveChartTab('sales')}
-                className={`chart-toggle-btn ${activeChartTab === 'sales' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveChartTab('sales');
+                  setHoveredPoint(null);
+                }}
+                className={`chart-segment-btn ${activeChartTab === 'sales' ? 'active' : ''}`}
               >
                 Sales
               </button>
               <button
                 type="button"
-                onClick={() => setActiveChartTab('orders')}
-                className={`chart-toggle-btn ${activeChartTab === 'orders' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveChartTab('orders');
+                  setHoveredPoint(null);
+                }}
+                className={`chart-segment-btn ${activeChartTab === 'orders' ? 'active' : ''}`}
               >
                 Orders
               </button>
             </div>
           </div>
 
-          <div className="svg-chart-wrapper">
-            <svg width="100%" height="230" viewBox="0 0 380 220" preserveAspectRatio="none">
-              {lineGraphData.yGridValues.map((val, idx) => {
-                const y = 20 + (idx * 170) / 5;
-                return (
-                  <g key={idx}>
-                    <text x="40" y={y + 3} fontSize="9" fill="#9ca3af" textAnchor="end">
-                      {lineGraphData.yLabels[idx]}
+          <div className="svg-chart-wrapper" onMouseLeave={() => setHoveredPoint(null)}>
+            <svg
+              width="100%"
+              height="230"
+              viewBox="0 0 400 220"
+              preserveAspectRatio="none"
+              className="trend-svg"
+            >
+              <defs>
+                <linearGradient id="salesTrendGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.28" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                </linearGradient>
+                <linearGradient id="ordersTrendGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.28" />
+                  <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.0" />
+                </linearGradient>
+                <filter id="trendPointGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={lineGraphData.accentColor} floodOpacity="0.35" />
+                </filter>
+              </defs>
+
+              {/* Horizontal grid lines */}
+              {lineGraphData.yGrid.map((grid, idx) => (
+                <g key={idx}>
+                  <text
+                    x="44"
+                    y={grid.y + 3.5}
+                    fontSize="9.5"
+                    fontWeight="500"
+                    fill="#9ca3af"
+                    textAnchor="end"
+                  >
+                    {grid.label}
+                  </text>
+                  <line
+                    x1="50"
+                    y1={grid.y}
+                    x2="385"
+                    y2={grid.y}
+                    stroke="#f1f5f9"
+                    strokeWidth="1"
+                    strokeDasharray={idx === lineGraphData.yGrid.length - 1 ? 'none' : '3 3'}
+                  />
+                </g>
+              ))}
+
+              {/* Gradient area fill under curve */}
+              <path
+                d={lineGraphData.areaPath}
+                fill={`url(#${lineGraphData.gradId})`}
+              />
+
+              {/* Smooth cubic spline line */}
+              <path
+                d={lineGraphData.smoothCurve}
+                fill="none"
+                stroke={lineGraphData.accentColor}
+                strokeWidth="2.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+
+              {/* Active vertical guideline & tooltip bubble */}
+              {hoveredPoint && (
+                <g className="chart-active-guide">
+                  <line
+                    x1={hoveredPoint.x}
+                    y1={24}
+                    x2={hoveredPoint.x}
+                    y2={175}
+                    stroke={lineGraphData.accentColor}
+                    strokeWidth="1.5"
+                    strokeDasharray="3 3"
+                    opacity="0.6"
+                  />
+                  {/* Tooltip bubble on chart */}
+                  <g transform={`translate(${Math.min(340, Math.max(64, hoveredPoint.x))}, ${hoveredPoint.y < 55 ? hoveredPoint.y + 14 : hoveredPoint.y - 28})`}>
+                    <rect
+                      x="-38"
+                      y="0"
+                      width="76"
+                      height="22"
+                      rx="5"
+                      fill="#0f172a"
+                      filter="drop-shadow(0 2px 5px rgba(0,0,0,0.2))"
+                    />
+                    <text
+                      x="0"
+                      y="14.5"
+                      fill="#ffffff"
+                      fontSize="9.5"
+                      fontWeight="600"
+                      textAnchor="middle"
+                    >
+                      {hoveredPoint.displayVal}
                     </text>
-                    <line x1="45" y1={y} x2="360" y2={y} stroke="#f3f4f6" strokeWidth="1" />
+                  </g>
+                </g>
+              )}
+
+              {/* Data points, labels & hit targets */}
+              {lineGraphData.points.map((p) => {
+                const isHovered = hoveredPoint?.id === p.id;
+                return (
+                  <g key={p.id}>
+                    {/* Visual point circle */}
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r={isHovered ? 5.5 : 3}
+                      fill="#ffffff"
+                      stroke={lineGraphData.accentColor}
+                      strokeWidth={isHovered ? 2.75 : 2}
+                      filter={isHovered ? 'url(#trendPointGlow)' : 'none'}
+                      style={{ transition: 'all 0.15s ease' }}
+                    />
+
+                    {/* X Axis Day Label */}
+                    <text
+                      x={p.x}
+                      y="198"
+                      fontSize="10"
+                      fontWeight={isHovered ? '700' : '500'}
+                      fill={isHovered ? '#0f172a' : '#9ca3af'}
+                      textAnchor="middle"
+                      style={{ transition: 'all 0.15s ease' }}
+                    >
+                      {p.dayName}
+                    </text>
+
+                    {/* Enlarged invisible hit target for comfortable mouse hover & mobile tap */}
+                    <rect
+                      x={p.x - 22}
+                      y="20"
+                      width="44"
+                      height="185"
+                      fill="transparent"
+                      style={{ cursor: 'pointer' }}
+                      onMouseEnter={() => setHoveredPoint(p)}
+                      onClick={() => setHoveredPoint((prev) => (prev?.id === p.id ? null : p))}
+                      onTouchStart={() => setHoveredPoint(p)}
+                    />
                   </g>
                 );
               })}
-
-              <path d={lineGraphData.areaPath} fill="rgba(16, 185, 129, 0.08)" />
-
-              <polyline
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="2.5"
-                points={lineGraphData.polylinePath}
-              />
-
-              {lineGraphData.points.map((p, idx) => (
-                <circle key={idx} cx={p.x} cy={p.y} r="2.5" fill="#10b981" />
-              ))}
-
-              <text x="50" y="215" fontSize="9.5" fill="#9ca3af" textAnchor="start">
-                {lineGraphData.startDate}
-              </text>
-              <text x="360" y="215" fontSize="9.5" fill="#9ca3af" textAnchor="end">
-                {lineGraphData.endDate}
-              </text>
             </svg>
           </div>
         </article>
 
-        {/* Pie Chart: Best Selling Products */}
-        <article className="admin-panel dashboard-chart-panel" style={{ height: 'auto', minHeight: '272px' }}>
+        {/* Donut Chart: Best Selling Products */}
+        <article className="admin-panel dashboard-chart-panel">
           <div className="chart-panel-header">
-            <h3>Best Selling Products</h3>
+            <div>
+              <h3>Best Selling Products</h3>
+              <small>Top products by wholesale volume</small>
+            </div>
+            {totalCategoryUnits > 0 && (
+              <span className="pie-header-pill">
+                {totalCategoryUnits} {totalCategoryUnits === 1 ? 'unit' : 'units'} sold
+              </span>
+            )}
           </div>
 
-          <div className="pie-chart-container">
-            <div className="pie-legend-row">
-              {pieSlices.map((slice, idx) => (
-                <div 
-                  key={idx} 
-                  className="pie-legend-item"
-                  style={{ 
-                    cursor: 'pointer', 
-                    opacity: hoveredSlice && hoveredSlice.name !== slice.name ? 0.4 : 1, 
-                    transition: 'opacity 0.2s' 
-                  }}
-                  onMouseEnter={() => setHoveredSlice(slice)}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={() => setHoveredSlice(null)}
+          {pieSlices.length === 0 ? (
+            <div className="donut-empty-state">
+              <div className="donut-empty-icon-wrap">
+                <Box size={22} strokeWidth={1.5} />
+              </div>
+              <p className="donut-empty-title">No Product Data Yet</p>
+              <span className="donut-empty-sub">
+                Best-selling products will appear here as customer orders are verified.
+              </span>
+            </div>
+          ) : (
+            <div className="pie-chart-container">
+              <div className="pie-svg-wrapper">
+                <svg width="180" height="180" viewBox="0 0 200 200" className="donut-svg">
+                  {pieSlices.map((slice) => {
+                    const isSelected = activeSlice?.name === slice.name;
+                    const isMuted = activeSlice && !isSelected;
+                    return (
+                      <path
+                        key={slice.id}
+                        d={slice.path}
+                        fill={slice.color}
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                        className="donut-slice-path"
+                        style={{
+                          opacity: isMuted ? 0.35 : 1,
+                          transform: isSelected ? 'scale(1.04)' : 'scale(1)',
+                          transformOrigin: '100px 100px',
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                        onClick={() => handleSliceClick(slice)}
+                        onMouseEnter={() => setHoveredSlice(slice)}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={() => setHoveredSlice(null)}
+                      />
+                    );
+                  })}
+                </svg>
+
+                <div
+                  className="donut-center-overlay"
+                  onClick={() => setSelectedSlice(null)}
+                  title={activeSlice ? 'Click to show total' : 'Total units sold'}
                 >
-                  <span className="legend-dot" style={{ backgroundColor: slice.color }}></span>
-                  <span className="legend-name">{slice.name} ({slice.percentage}%)</span>
+                  <span
+                    className="donut-center-val"
+                    style={{ color: activeSlice ? activeSlice.color : '#111827' }}
+                  >
+                    {activeSlice ? `${activeSlice.percentage}%` : totalCategoryUnits}
+                  </span>
+                  <span className="donut-center-label">
+                    {activeSlice ? `${activeSlice.value} pcs` : 'Units Sold'}
+                  </span>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="pie-svg-wrapper">
-              <svg width="170" height="170" viewBox="0 0 200 200">
-                {pieSlices.map((slice, idx) => (
-                  <path
-                    key={idx}
-                    d={slice.path}
-                    fill={slice.color}
-                    className="pie-slice-path"
-                    style={{ 
-                      transition: 'all 0.2s ease', 
-                      cursor: 'pointer', 
-                      opacity: hoveredSlice && hoveredSlice.name !== slice.name ? 0.5 : 1,
-                      transform: hoveredSlice && hoveredSlice.name === slice.name ? 'scale(1.03)' : 'scale(1)',
-                      transformOrigin: '100px 100px'
-                    }}
-                    onMouseEnter={() => setHoveredSlice(slice)}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={() => setHoveredSlice(null)}
-                  />
-                ))}
-              </svg>
+              <div className="modern-pie-legend">
+                {pieSlices.map((slice) => {
+                  const isSelected = activeSlice?.name === slice.name;
+                  const isMuted = activeSlice && !isSelected;
+                  return (
+                    <div
+                      key={slice.id}
+                      className={`modern-legend-item ${isSelected ? 'is-selected' : ''} ${isMuted ? 'is-muted' : ''}`}
+                      onClick={() => handleSliceClick(slice)}
+                      onMouseEnter={() => setHoveredSlice(slice)}
+                      onMouseLeave={() => setHoveredSlice(null)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="legend-left">
+                        <span
+                          className="legend-swatch"
+                          style={{
+                            backgroundColor: slice.color,
+                            boxShadow: isSelected ? `0 0 0 2px #ffffff, 0 0 0 4px ${slice.color}` : 'none',
+                          }}
+                        />
+                        <span className="legend-title" title={slice.name}>
+                          {slice.name}
+                        </span>
+                      </div>
+                      <div className="legend-right">
+                        <span className="legend-count">{slice.value} pcs</span>
+                        <span
+                          className="legend-badge"
+                          style={{
+                            backgroundColor: isSelected ? slice.color : `${slice.color}18`,
+                            color: isSelected ? '#ffffff' : slice.color,
+                          }}
+                        >
+                          {slice.percentage}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </article>
+          )}        </article>
       </div>
 
       {/* 4. Recent Order Table */}
@@ -921,28 +1219,16 @@ export default function DashboardOverview({
 
       {hoveredSlice && (
         <div 
+          className="pie-floating-tooltip"
           style={{
-            position: 'fixed',
-            left: `${tooltipPos.x + 15}px`,
-            top: `${tooltipPos.y + 15}px`,
-            backgroundColor: '#1f2937',
-            color: '#ffffff',
-            padding: '8px 14px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            fontWeight: '600',
-            pointerEvents: 'none',
-            zIndex: 99999,
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            whiteSpace: 'nowrap',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(4px)'
+            left: `${Math.min(tooltipPos.x + 15, typeof window !== 'undefined' ? window.innerWidth - 240 : tooltipPos.x)}px`,
+            top: `${Math.max(12, tooltipPos.y - 42)}px`,
           }}
         >
-          <span style={{ color: hoveredSlice.color, marginRight: '6px' }}>●</span>
-          {hoveredSlice.name}: <strong style={{ marginLeft: '4px' }}>{hoveredSlice.percentage}%</strong>
-        </div>
-      )}
+          <span className="tooltip-dot" style={{ backgroundColor: hoveredSlice.color }} />
+          <span className="tooltip-name">{hoveredSlice.name}</span>
+          <span className="tooltip-val">{hoveredSlice.value} pcs ({hoveredSlice.percentage}%)</span>
+        </div>)}
     </div>
   );
 }
