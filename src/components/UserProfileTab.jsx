@@ -461,6 +461,21 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
         }
 
         if (dbError && (
+          dbError.message?.includes('cannot change account role') ||
+          dbError.message?.includes('cannot alter approval status') ||
+          dbError.message?.includes('cannot alter price group') ||
+          dbError.message?.includes('Unauthorized') ||
+          dbError.code === 'P0001'
+        )) {
+          const { role: r, approval_status: a, price_group: p, ...unprivilegedRow } = profileRow;
+          const retryResult = await supabase
+            .from('profiles')
+            .update(unprivilegedRow)
+            .eq('id', user.id);
+          dbError = retryResult.error;
+        }
+
+        if (dbError && (
           dbError.message?.includes('qualification') ||
           dbError.message?.includes('user_type') ||
           dbError.message?.includes('website') ||

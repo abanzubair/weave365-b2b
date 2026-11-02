@@ -164,6 +164,24 @@ export async function syncProfileFromUser(user) {
     .from('profiles')
     .upsert(profileRow, { onConflict: 'id' });
 
+  // If non-admin trigger prevents changing role/approval_status/price_group, retry without protected columns
+  if (error && (
+    error.message?.includes('cannot change account role') ||
+    error.message?.includes('cannot alter approval status') ||
+    error.message?.includes('cannot alter price group') ||
+    error.message?.includes('Unauthorized') ||
+    error.code === 'P0001'
+  )) {
+    const unprivilegedRow = { ...profileRow };
+    delete unprivilegedRow.role;
+    delete unprivilegedRow.approval_status;
+    delete unprivilegedRow.price_group;
+    const retryResult = await supabase
+      .from('profiles')
+      .upsert(unprivilegedRow, { onConflict: 'id' });
+    error = retryResult.error;
+  }
+
   // If a column doesn't exist yet on public.profiles (e.g. pending DB migration),
   // retry without ONLY the specific failing column(s), NEVER stripping qualification or core user profile data.
   if (error && (

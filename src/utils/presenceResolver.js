@@ -9,8 +9,8 @@
  * 5. Orders activity (orders updated_at / created_at)
  * 6. Inquiries / Quotes activity (inquiries updated_at / created_at)
  * 7. Catalogue downloads (download_logs downloaded_at / created_at)
- * 8. Profile sync & modification (profiles updated_at)
- * 9. Initial account registration (profiles created_at fallback)
+ * 8. Initial account registration (profiles created_at fallback)
+ * Note: profiles.updated_at is intentionally excluded so administrative updates/syncs do not falsely trigger "Online Now" status.
  */
 
 /**
@@ -167,9 +167,9 @@ export function resolveBuyerPresence(profile, options = {}) {
     if (!isNaN(t) && t > 0) timestamps.push(t);
   };
 
-  // 1. Direct profile timestamps
+  // 1. Direct profile timestamps (heartbeats and account registration)
+  // NOTE: profile.updated_at is omitted to avoid administrative edits / batch syncs falsely marking users as "Online"
   addTime(profile.last_seen_at);
-  addTime(profile.updated_at);
   addTime(profile.created_at);
 
   // 2. Auth presence map (from Supabase Auth admin API)
