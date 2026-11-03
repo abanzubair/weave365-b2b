@@ -684,7 +684,7 @@ button.card-gradient-purple:hover,
 }
 
 .gradient-card-large-val {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.15;
@@ -692,7 +692,7 @@ button.card-gradient-purple:hover,
 }
 
 .gradient-card-label-span {
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 500;
   color: #64748b;
   letter-spacing: 0.01em;
@@ -6420,32 +6420,32 @@ button.card-gradient-purple:hover,
 .stat-emerald { background: #dcfce7; color: #15803d; }
 
 .admin-order-kpi-text {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  text-align: left !important;
-  gap: 2px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  gap: 2px;
 }
 
 .admin-order-kpi-label {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #64748b !important;
-  letter-spacing: 0.5px !important;
-  text-transform: uppercase !important;
-  text-align: left !important;
-  line-height: 1.2 !important;
-  margin: 0 !important;
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: left;
+  line-height: 1.2;
+  margin: 0;
 }
 
 .admin-order-kpi-value {
-  font-size: 20px !important;
-  font-weight: 700 !important;
-  color: #0f172a !important;
-  line-height: 1.2 !important;
-  text-align: left !important;
-  margin: 0 !important;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+  text-align: left;
+  margin: 0;
 }
 
 /* 2. Unified Toolbar */
@@ -6474,7 +6474,7 @@ button.card-gradient-purple:hover,
 
 .admin-channel-pill {
   padding: 6px 13px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
   background: transparent;
@@ -6516,7 +6516,7 @@ button.card-gradient-purple:hover,
 .admin-select-refined {
   padding: 0 12px;
   height: 38px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   color: #334155;
   background: #ffffff;
@@ -6550,7 +6550,7 @@ button.card-gradient-purple:hover,
   width: 100%;
   height: 38px;
   padding: 0 30px 0 32px;
-  font-size: 12.5px;
+  font-size: 12px;
   color: #0f172a;
   background: #ffffff;
   border: 1px solid #cbd5e1;
@@ -6614,8 +6614,8 @@ button.card-gradient-purple:hover,
   }
 
   .admin-channel-pill-group {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
     gap: 3px;
     padding: 3px;
@@ -6643,7 +6643,7 @@ button.card-gradient-purple:hover,
 
   .admin-input-refined {
     height: 38px;
-    font-size: 13px;
+    font-size: 12px;
     border-radius: 8px;
   }
 
@@ -6691,11 +6691,11 @@ button.card-gradient-purple:hover,
 
 .admin-orders-table {
   width: 100%;
-  min-width: 1050px;
+  min-width: 1200px;
   border-collapse: collapse;
   table-layout: fixed;
   text-align: left;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .admin-orders-table thead tr {
@@ -6704,14 +6704,30 @@ button.card-gradient-purple:hover,
 }
 
 .admin-orders-table th {
-  padding: 10px 14px;
-  font-size: 11px;
+  padding: 10px 12px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #64748b;
   white-space: nowrap;
   box-sizing: border-box;
+  vertical-align: middle;
+  line-height: 1.3;
+}
+
+.admin-th-sortable {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+}
+
+.admin-sort-icon {
+  color: #4f46e5;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .admin-orders-table tbody tr {
@@ -6724,13 +6740,14 @@ button.card-gradient-purple:hover,
 }
 
 .admin-orders-table td {
-  padding: 10px 14px;
+  padding: 10px 12px;
   vertical-align: middle;
   box-sizing: border-box;
+  line-height: 1.35;
 }
 
 .admin-order-row.is-dropship-row {
-  background: #fffdf9;
+  background: #ffffff;
 }
 
 /* Columns Details: Date & Source */
@@ -6750,7 +6767,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-date-time {
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   font-weight: 500;
   white-space: nowrap;
@@ -6759,26 +6776,26 @@ button.card-gradient-purple:hover,
 
 .admin-source-badge {
   display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 5px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 1px 6px;
   border-radius: 4px;
   width: fit-content;
   letter-spacing: 0.2px;
   line-height: 1.3;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .badge-dropship {
-  background: #fef9c3;
-  color: #854d0e;
-  border: 1px solid #fef08a;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .badge-direct {
   background: #f0fdf4;
   color: #166534;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #dcfce7;
 }
 
 /* Order ID Column */
@@ -6794,20 +6811,21 @@ button.card-gradient-purple:hover,
   align-items: center;
   gap: 4px;
   min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .admin-order-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #334155;
-  background: #f1f5f9;
-  padding: 2px 5px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 95px;
+  max-width: none;
+  flex-shrink: 0;
 }
 
 .admin-btn-icon-subtle {
@@ -6833,7 +6851,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-reseller-ref {
-  font-size: 10.5px;
+  font-size: 12px;
   color: #64748b;
   font-weight: 500;
   white-space: nowrap;
@@ -6858,7 +6876,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-recipient-name {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
@@ -6888,7 +6906,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 12px;
   color: #64748b;
   min-width: 0;
   overflow: hidden;
@@ -6917,8 +6935,8 @@ button.card-gradient-purple:hover,
 }
 
 .admin-sender-subtext {
-  font-size: 11px;
-  color: #9a3412;
+  font-size: 12px;
+  color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -6926,7 +6944,7 @@ button.card-gradient-purple:hover,
 
 .admin-sender-subtext strong {
   font-weight: 600;
-  color: #7c2d12;
+  color: #334155;
 }
 
 /* Ordered Items Preview */
@@ -7003,7 +7021,7 @@ button.card-gradient-purple:hover,
   border-radius: 6px;
   background: #e2e8f0;
   color: #475569;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   border: 1.5px solid #ffffff;
   margin-right: -4px;
@@ -7020,7 +7038,7 @@ button.card-gradient-purple:hover,
 
 .admin-item-sku {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
@@ -7029,7 +7047,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-item-desc {
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
@@ -7044,7 +7062,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-item-styles-count {
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   white-space: nowrap;
 }
@@ -7053,7 +7071,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   padding: 1.5px 6px;
   border-radius: 4px;
@@ -7068,7 +7086,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-text-muted-subtle {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #94a3b8;
 }
 
@@ -7093,22 +7111,24 @@ button.card-gradient-purple:hover,
 .admin-awb-row {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .admin-carrier-awb {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .admin-unassigned-badge {
   display: inline-block;
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
   background: #f1f5f9;
   padding: 2px 7px;
@@ -7119,28 +7139,30 @@ button.card-gradient-purple:hover,
 
 /* Status Badges - Unified with 5 Order Metric Cards */
 .admin-status-pill {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 5.5px !important;
-  padding: 3.5px 8.5px !important;
-  border-radius: 6px !important;
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.15px !important;
-  width: fit-content !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-  line-height: 1.3 !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
-  transition: all 0.15s ease !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15px;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.3;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s ease;
 }
 
 .admin-status-pill .admin-status-dot {
-  width: 6px !important;
-  height: 6px !important;
-  border-radius: 50% !important;
-  flex-shrink: 0 !important;
-  display: inline-block !important;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
 }
 
 /* 1. Amber / Gold Theme - Card 2: Needs Attention / Payment Received / Pending Payment */
@@ -7148,15 +7170,15 @@ button.card-gradient-purple:hover,
 .admin-status-pill.pill-paid,
 .admin-status-pill.pill-new,
 .admin-status-pill.pill-pending_payment {
-  background: #fffbeb !important;
-  color: #b45309 !important;
-  border: 1px solid #fde68a !important;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
 }
 .admin-status-pill.pill-needs_attention .admin-status-dot,
 .admin-status-pill.pill-paid .admin-status-dot,
 .admin-status-pill.pill-new .admin-status-dot,
 .admin-status-pill.pill-pending_payment .admin-status-dot {
-  background: #d97706 !important;
+  background: #d97706;
 }
 
 /* 2. Indigo / Purple Theme - Card 3: In Fulfillment (QC & Packing) / Processing */
@@ -7165,16 +7187,16 @@ button.card-gradient-purple:hover,
 .admin-status-pill.pill-processing,
 .admin-status-pill.pill-packing,
 .admin-status-pill.pill-qc {
-  background: #eef2ff !important;
-  color: #4338ca !important;
-  border: 1px solid #c7d2fe !important;
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
 }
 .admin-status-pill.pill-fulfillment .admin-status-dot,
 .admin-status-pill.pill-verified .admin-status-dot,
 .admin-status-pill.pill-processing .admin-status-dot,
 .admin-status-pill.pill-packing .admin-status-dot,
 .admin-status-pill.pill-qc .admin-status-dot {
-  background: #4f46e5 !important;
+  background: #4f46e5;
 }
 
 /* 3. Pink / Rose Theme - Card 4: In Transit (Dispatched) / Shipped */
@@ -7182,150 +7204,198 @@ button.card-gradient-purple:hover,
 .admin-status-pill.pill-dispatched,
 .admin-status-pill.pill-shipped,
 .admin-status-pill.pill-in_transit {
-  background: #fdf2f8 !important;
-  color: #be185d !important;
-  border: 1px solid #fbcfe8 !important;
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
 }
 .admin-status-pill.pill-transit .admin-status-dot,
 .admin-status-pill.pill-dispatched .admin-status-dot,
 .admin-status-pill.pill-shipped .admin-status-dot,
 .admin-status-pill.pill-in_transit .admin-status-dot {
-  background: #db2777 !important;
+  background: #db2777;
 }
 
 /* 4. Mint / Emerald Green Theme - Card 5: Delivered / Completed */
 .admin-status-pill.pill-delivered,
 .admin-status-pill.pill-done,
 .admin-status-pill.pill-completed {
-  background: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
 }
 .admin-status-pill.pill-delivered .admin-status-dot,
 .admin-status-pill.pill-done .admin-status-dot,
 .admin-status-pill.pill-completed .admin-status-dot {
-  background: #059669 !important;
+  background: #059669;
 }
 
 /* 5. Soft Red Theme - Cancelled / Rejected */
 .admin-status-pill.pill-cancelled,
 .admin-status-pill.pill-rejected {
-  background: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 .admin-status-pill.pill-cancelled .admin-status-dot,
 .admin-status-pill.pill-rejected .admin-status-dot {
-  background: #dc2626 !important;
+  background: #dc2626;
 }
 
 /* Fallback / Other */
 .admin-status-pill.pill-other {
-  background: #f8fafc !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 .admin-status-pill.pill-other .admin-status-dot {
-  background: #64748b !important;
+  background: #64748b;
 }
 
-/* Actions */
+/* Actions (Stacked: Update button above Slip + Eye) */
 .admin-actions-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-actions-cell .admin-btn-action-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 86px;
+  max-width: 86px;
+  height: 25px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.admin-actions-cell .admin-btn-action-primary svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  stroke-width: 2;
+  color: #475569;
+}
+
+.admin-actions-cell .admin-btn-action-primary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.admin-actions-cell .admin-btn-action-primary:hover svg {
+  color: #0f172a;
+}
+
+.admin-actions-secondary-row {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 5px;
-  flex-wrap: nowrap;
+  gap: 4px;
+  width: 86px;
+  max-width: 86px;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-.admin-btn-action-primary {
+.admin-actions-secondary-row .admin-btn-action-slip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 0 9px;
-  height: 28px;
-  font-size: 11.5px;
-  font-weight: 600;
+  flex: 1;
+  height: 25px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.admin-actions-secondary-row .admin-btn-action-slip svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  stroke-width: 2;
+  color: #64748b;
+}
+
+.admin-actions-secondary-row .admin-btn-action-slip:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
   color: #0f172a;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
-.admin-btn-action-primary svg {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-  stroke-width: 2.2;
+.admin-actions-secondary-row .admin-btn-action-slip:hover svg {
+  color: #0f172a;
 }
 
-.admin-btn-action-primary:hover {
-  background: #0f172a;
-  color: #ffffff;
-  border-color: #0f172a;
-}
-
-.admin-btn-action-slip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 8px;
-  height: 28px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #854d0e;
-  background: #fef9c3;
-  border: 1px solid #fef08a;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.admin-btn-action-slip svg {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-  stroke-width: 2.2;
-}
-
-.admin-btn-action-slip:hover {
-  background: #fef08a;
-  color: #713f12;
-}
-
-.admin-btn-action-ghost {
+.admin-actions-secondary-row .admin-btn-action-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  width: 28px;
-  height: 28px;
+  width: 25px;
+  height: 25px;
   color: #64748b;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-.admin-btn-action-ghost svg {
-  width: 13px;
-  height: 13px;
+.admin-actions-secondary-row .admin-btn-action-ghost svg {
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
   stroke-width: 2;
+  color: #64748b;
 }
 
-.admin-btn-action-ghost:hover {
+.admin-actions-secondary-row .admin-btn-action-ghost:hover {
   color: #0f172a;
-  background: #f1f5f9;
+  background: #f8fafc;
   border-color: #cbd5e1;
+}
+
+.admin-actions-secondary-row .admin-btn-action-ghost:hover svg {
+  color: #0f172a;
+}
+
+/* Responsive Table Adjustments on Mobile Screens (<= 768px) */
+@media (max-width: 768px) {
+  .admin-orders-table th,
+  .admin-orders-table td {
+    padding: 8px 10px;
+  }
 }
 
 .admin-empty-table-state {
@@ -7341,14 +7411,14 @@ button.card-gradient-purple:hover,
 }
 
 .admin-empty-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 4px;
 }
 
 .admin-empty-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
   margin: 0;
 }
@@ -7371,22 +7441,22 @@ button.card-gradient-purple:hover,
 
 .admin-modal-card {
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 12px;
   width: 100%;
-  max-width: 680px;
+  max-width: 640px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
 }
 
 .admin-modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 14px 18px 12px 18px;
+  align-items: center;
+  padding: 14px 18px;
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;
   gap: 12px;
@@ -7396,7 +7466,7 @@ button.card-gradient-purple:hover,
 .admin-modal-header-left {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
   flex: 1;
 }
@@ -7409,47 +7479,57 @@ button.card-gradient-purple:hover,
 }
 
 .admin-modal-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   font-size: 16px;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
   line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .admin-order-num-pill {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
   background: #f1f5f9;
-  padding: 2px 7px;
-  border-radius: 5px;
-  letter-spacing: 0.2px;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .admin-modal-sub-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
+  gap: 6px;
+  font-size: 12px;
   color: #64748b;
-  flex-wrap: wrap;
+}
+
+.admin-modal-meta-text {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.admin-modal-meta-text strong {
+  color: #1e293b;
+  font-weight: 600;
 }
 
 .admin-modal-date-text {
   color: #64748b;
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .badge-dropship-mini {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 2px 7px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 1px 6px;
   border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .admin-modal-header-right {
@@ -7460,11 +7540,11 @@ button.card-gradient-purple:hover,
 }
 
 .admin-modal-close-btn {
-  background: #f8fafc;
+  background: transparent;
   border: 1px solid #e2e8f0;
   color: #64748b;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -7483,22 +7563,20 @@ button.card-gradient-purple:hover,
 .admin-modal-tabs-strip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 4px;
+  padding: 6px 18px;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
 
 .admin-modal-tab-btn {
-  flex: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
+  padding: 6px 14px;
   border-radius: 6px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   border: 1px solid transparent;
   background: transparent;
@@ -7516,8 +7594,8 @@ button.card-gradient-purple:hover,
 .admin-modal-tab-btn.active {
   background: #ffffff;
   color: #0f172a;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .admin-modal-body {
@@ -7528,107 +7606,76 @@ button.card-gradient-purple:hover,
   box-sizing: border-box;
 }
 
-/* Modal Context Strip */
+/* Modal Context Strip (legacy hidden) */
 .admin-modal-context-banner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  background: #f8fafc;
-  border-bottom: 1px solid #f1f5f9;
-  flex-wrap: wrap;
-  flex-shrink: 0;
+  display: none;
 }
 
-.admin-context-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  color: #475569;
-}
-
-.admin-context-icon {
-  color: #64748b;
-  flex-shrink: 0;
-}
-
-/* Fulfillment Form (Structured 3-Section Layout) */
+/* Fulfillment Form (Clean, Modern, Uncluttered) */
 .admin-fulfillment-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .admin-form-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px 16px;
+  border-radius: 8px;
+  padding: 12px 14px;
   box-sizing: border-box;
 }
 
 .admin-section-header {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .admin-section-header-flex {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .admin-section-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  background: #f1f5f9;
-  color: #334155;
-  font-size: 11px;
-  font-weight: 700;
-  flex-shrink: 0;
-  border: 1px solid #e2e8f0;
+  display: none;
 }
 
 .admin-section-title {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
-  color: #1e293b;
-  letter-spacing: 0.4px;
+  color: #475569;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-/* Status Cards Grid (Clean, Minimal, Modern) */
+/* Status Cards Grid (5-column single row on desktop) */
 .admin-status-picker-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
 }
 
-/* Unselected cards: clean neutral white background, subtle border, colored dot */
 .admin-status-card-opt {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 12px;
-  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #ffffff;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   transition: all 0.15s ease;
   outline: none;
-  position: relative;
+  min-height: 36px;
   box-sizing: border-box;
 }
 
@@ -7640,7 +7687,8 @@ button.card-gradient-purple:hover,
 .admin-status-card-top {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
 }
 
 .admin-status-dot-sm {
@@ -7651,263 +7699,127 @@ button.card-gradient-purple:hover,
 }
 
 .admin-status-card-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #0f172a;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
   white-space: nowrap;
-  flex: 1;
 }
 
 .admin-status-card-sub {
-  font-size: 11px;
-  line-height: 1.3;
-  color: #64748b;
+  display: none;
 }
 
 .admin-status-check-icon {
-  flex-shrink: 0;
+  display: none;
 }
 
-/* Dots indicate status type at all times */
+/* Dots */
 .admin-status-card-opt.opt-amber .admin-status-dot-sm { background: #d97706; }
 .admin-status-card-opt.opt-purple .admin-status-dot-sm { background: #4f46e5; }
 .admin-status-card-opt.opt-pink .admin-status-dot-sm { background: #db2777; }
 .admin-status-card-opt.opt-green .admin-status-dot-sm { background: #059669; }
 .admin-status-card-opt.opt-red .admin-status-dot-sm { background: #dc2626; }
 
-/* Selected cards: refined, subtle tint with crisp active border & checkmark */
+/* Selected status pills */
 .admin-status-card-opt.opt-amber.selected {
-  background: #fffdf5;
-  border: 1.5px solid #d97706;
-  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08);
+  background: #fffbeb;
+  border-color: #f59e0b;
 }
 .admin-status-card-opt.opt-amber.selected .admin-status-card-name {
   color: #b45309;
-  font-weight: 700;
-}
-.admin-status-card-opt.opt-amber.selected .admin-status-check-icon {
-  color: #d97706;
+  font-weight: 600;
 }
 
 .admin-status-card-opt.opt-purple.selected {
-  background: #f8f9ff;
-  border: 1.5px solid #4f46e5;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
+  background: #eef2ff;
+  border-color: #6366f1;
 }
 .admin-status-card-opt.opt-purple.selected .admin-status-card-name {
   color: #4338ca;
-  font-weight: 700;
-}
-.admin-status-card-opt.opt-purple.selected .admin-status-check-icon {
-  color: #4f46e5;
+  font-weight: 600;
 }
 
 .admin-status-card-opt.opt-pink.selected {
-  background: #fdf5f9;
-  border: 1.5px solid #db2777;
-  box-shadow: 0 2px 6px rgba(219, 39, 119, 0.08);
+  background: #fdf2f8;
+  border-color: #ec4899;
 }
 .admin-status-card-opt.opt-pink.selected .admin-status-card-name {
   color: #be185d;
-  font-weight: 700;
-}
-.admin-status-card-opt.opt-pink.selected .admin-status-check-icon {
-  color: #db2777;
+  font-weight: 600;
 }
 
 .admin-status-card-opt.opt-green.selected {
-  background: #f4fcf7;
-  border: 1.5px solid #059669;
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.08);
+  background: #ecfdf5;
+  border-color: #10b981;
 }
 .admin-status-card-opt.opt-green.selected .admin-status-card-name {
   color: #065f46;
-  font-weight: 700;
-}
-.admin-status-card-opt.opt-green.selected .admin-status-check-icon {
-  color: #059669;
+  font-weight: 600;
 }
 
 .admin-status-card-opt.opt-red.selected {
-  background: #fff5f5;
-  border: 1.5px solid #dc2626;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);
+  background: #fef2f2;
+  border-color: #ef4444;
 }
 .admin-status-card-opt.opt-red.selected .admin-status-card-name {
   color: #991b1b;
-  font-weight: 700;
-}
-.admin-status-card-opt.opt-red.selected .admin-status-check-icon {
-  color: #dc2626;
+  font-weight: 600;
 }
 
-/* Template note buttons: clean, white, minimal */
+/* Template note buttons: clean minimal micro-chips */
 .admin-quick-templates {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .admin-template-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 2.5px 8px;
+  font-size: 12px;
   font-weight: 500;
-  background: #ffffff;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
   cursor: pointer;
   transition: all 0.12s ease;
 }
 
 .admin-template-btn:hover {
-  background: #f8fafc;
+  background: #f1f5f9;
   color: #0f172a;
-  border-color: #94a3b8;
-}
-
-.admin-template-btn.template-amber .template-icon { color: #d97706; }
-.admin-template-btn.template-purple .template-icon { color: #4f46e5; }
-.admin-template-btn.template-pink .template-icon { color: #db2777; }
-.admin-template-btn.template-green .template-icon { color: #059669; }
-
-/* Responsive Mobile Layout (<= 640px) */
-@media (max-width: 640px) {
-  .admin-modal-overlay {
-    padding: 0 !important;
-    align-items: flex-end !important;
-  }
-
-  .admin-modal-card {
-    max-width: 100% !important;
-    width: 100% !important;
-    max-height: 94vh !important;
-    border-radius: 18px 18px 0 0 !important;
-    border-bottom: none !important;
-  }
-
-  .admin-modal-header {
-    padding: 14px 14px 12px 14px !important;
-  }
-
-  .admin-modal-body {
-    padding: 12px !important;
-  }
-
-  .admin-modal-tabs-strip {
-    padding: 6px 12px !important;
-  }
-
-  .admin-modal-tab-btn {
-    font-size: 11.5px !important;
-    padding: 7px 6px !important;
-  }
-
-  .admin-modal-context-banner {
-    padding: 8px 12px !important;
-    gap: 8px !important;
-  }
-
-  .admin-context-pill {
-    font-size: 11px !important;
-  }
-
-  .admin-form-section {
-    padding: 12px !important;
-    border-radius: 8px !important;
-  }
-
-  /* Single column on mobile to eliminate all clipping */
-  .admin-status-picker-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 7px !important;
-  }
-
-  .admin-status-card-opt {
-    padding: 10px 12px !important;
-    border-radius: 8px !important;
-  }
-
-  .admin-form-grid-2col {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-  }
-
-  .admin-section-header-flex {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-
-  .admin-quick-templates {
-    width: 100% !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 5px !important;
-  }
-
-  .admin-template-btn {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 6px 4px !important;
-    font-size: 10.5px !important;
-  }
-
-  .admin-modal-footer {
-    flex-direction: column-reverse !important;
-    gap: 8px !important;
-    padding-top: 12px !important;
-  }
-
-  .admin-modal-footer-left,
-  .admin-modal-footer-right {
-    width: 100% !important;
-  }
-
-  .admin-modal-footer-right {
-    display: flex !important;
-    gap: 8px !important;
-  }
-
-  .admin-modal-footer-right button,
-  .admin-modal-footer-left a {
-    flex: 1 !important;
-    justify-content: center !important;
-    text-align: center !important;
-  }
+  border-color: #cbd5e1;
 }
 
 /* 2-Column Form Grid */
 .admin-form-grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 .admin-form-field-wrap {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .admin-field-label {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #334155;
 }
 
 .admin-form-input {
   width: 100%;
-  padding: 9px 12px;
-  font-size: 13px;
+  padding: 8px 10px;
+  font-size: 12px;
   color: #0f172a;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 7px;
+  border-radius: 6px;
   outline: none;
   box-sizing: border-box;
   transition: all 0.15s ease;
@@ -7915,14 +7827,11 @@ button.card-gradient-purple:hover,
 
 .admin-form-input:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .admin-preview-track-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #2563eb;
   text-decoration: none;
@@ -7934,19 +7843,19 @@ button.card-gradient-purple:hover,
 
 .admin-quick-carrier-tags {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   flex-wrap: wrap;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .admin-tag-pill {
-  padding: 3px 8px;
-  font-size: 11px;
+  padding: 2.5px 7px;
+  font-size: 12px;
   font-weight: 500;
   background: #f8fafc;
   color: #475569;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
   transition: all 0.12s ease;
 }
@@ -7965,26 +7874,25 @@ button.card-gradient-purple:hover,
 }
 
 .admin-form-hint {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 1px;
+  display: none;
 }
 
 .admin-label-flex-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-form-textarea {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.45;
   color: #0f172a;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 7px;
+  border-radius: 6px;
   outline: none;
   font-family: inherit;
   resize: vertical;
@@ -7994,107 +7902,194 @@ button.card-gradient-purple:hover,
 
 .admin-form-textarea:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .admin-modal-footer {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  margin-top: 14px !important;
-  padding-top: 16px !important;
-  border-top: 1px solid #e2e8f0 !important;
-  flex-wrap: nowrap !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-modal-footer-left {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .admin-modal-footer-right {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 8px !important;
-  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .admin-btn-secondary {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 7px 14px !important;
-  height: 34px !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  color: #334155 !important;
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-  text-decoration: none !important;
-  white-space: nowrap !important;
-  box-sizing: border-box !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  height: 32px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .admin-btn-secondary:hover {
-  background: #f8fafc !important;
-  color: #0f172a !important;
-  border-color: #94a3b8 !important;
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
 }
 
 .admin-btn-action-wa {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 7px 14px !important;
-  height: 34px !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  color: #15803d !important;
-  background: #dcfce7 !important;
-  border: 1px solid #bbf7d0 !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  text-decoration: none !important;
-  transition: all 0.15s ease !important;
-  white-space: nowrap !important;
-  box-sizing: border-box !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  height: 34px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #15803d;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .admin-btn-action-wa:hover {
-  background: #16a34a !important;
-  color: #ffffff !important;
-  border-color: #16a34a !important;
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
 }
 
 .admin-btn-save-primary {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 7px 16px !important;
-  height: 34px !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  color: #ffffff !important;
-  background: #0f172a !important;
-  border: 1px solid #0f172a !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-  white-space: nowrap !important;
-  box-sizing: border-box !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  height: 34px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .admin-btn-save-primary:hover {
-  background: #1e293b !important;
+  background: #1e293b;
+}
+
+/* Responsive Mobile Layout (<= 640px) - Floating window like desktop */
+@media (max-width: 640px) {
+  .admin-modal-overlay {
+    padding: 16px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-modal-card {
+    max-width: 100%;
+    width: 100%;
+    max-height: 90vh;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  .admin-modal-header {
+    padding: 12px 14px;
+  }
+
+  .admin-modal-body {
+    padding: 12px 14px;
+  }
+
+  .admin-modal-tabs-strip {
+    padding: 6px 12px;
+  }
+
+  .admin-modal-tab-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .admin-form-section {
+    padding: 10px 12px;
+  }
+
+  .admin-status-picker-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .admin-form-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .admin-section-header-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .admin-quick-templates {
+    width: 100%;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .admin-modal-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .admin-modal-footer-left {
+    flex-shrink: 0;
+  }
+
+  .admin-modal-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .admin-modal-footer-right button,
+  .admin-modal-footer-left a {
+    font-size: 12px;
+  }
 }
 
 /* Inspection Tab (Impeccable Layout) */
@@ -8143,7 +8138,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #64748b;
   letter-spacing: 0.5px;
@@ -8151,20 +8146,20 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: #0f172a;
 }
 
 .admin-inspect-detail {
-  font-size: 12.5px;
+  font-size: 12px;
   color: #475569;
   margin: 0;
   line-height: 1.4;
 }
 
 .admin-inspect-pin {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #0f172a;
   margin: 2px 0 0;
@@ -8183,7 +8178,7 @@ button.card-gradient-purple:hover,
 .admin-inspect-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
+  font-size: 12px;
 }
 
 .admin-inspect-table thead tr {
@@ -8192,7 +8187,7 @@ button.card-gradient-purple:hover,
 
 .admin-inspect-table th {
   padding: 9px 12px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -8221,7 +8216,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-subtotal-label {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #475569;
   letter-spacing: -0.1px;
@@ -8230,13 +8225,13 @@ button.card-gradient-purple:hover,
 .admin-inspect-subtotal-units {
   display: inline-block;
   margin-left: 6px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   color: #94a3b8;
 }
 
 .admin-inspect-subtotal-amount {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #1e293b;
   font-variant-numeric: tabular-nums;
@@ -8263,7 +8258,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #a7f3d0;
   padding: 2.5px 8px;
   border-radius: 5px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: 0.4px;
@@ -8276,7 +8271,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-coupon-amount {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #059669;
   font-variant-numeric: tabular-nums;
@@ -8295,7 +8290,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-shipping-amount {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #1e293b;
   font-variant-numeric: tabular-nums;
@@ -8315,7 +8310,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-total-label {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.1px;
@@ -8326,7 +8321,7 @@ button.card-gradient-purple:hover,
   align-items: center;
   padding: 2.5px 8px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -8374,13 +8369,13 @@ button.card-gradient-purple:hover,
 
 .admin-sku-code {
   font-family: monospace;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #1e293b;
 }
 
 .admin-color-tag {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #2563eb;
   font-weight: 600;
 }
@@ -13581,12 +13576,12 @@ button.card-gradient-purple:hover,
   }
 
   .gradient-card-large-val {
-    font-size: 19px;
+    font-size: 24px;
     font-weight: 800;
   }
 
   .gradient-card-label-span {
-    font-size: 11.5px;
+    font-size: 16px;
   }
 
   .dashtar-outline-card {

@@ -456,7 +456,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   }, [inquiries, searchQuery, statusFilter, typeFilter, dateSortOrder]);
 
   // Quick carrier suggestions
-  const carrierSuggestions = ['Delhivery', 'BlueDart', 'DTDC', 'DHL Express', 'India Post Speed Post', 'Shadowfax', 'Trackon'];
+  const carrierSuggestions = ['BlueDart', 'Delhivery', 'DTDC', 'DHL Express', 'India Post', 'Shadowfax'];
 
   if (loading) {
     return (
@@ -632,28 +632,38 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
       <div className="admin-orders-card-table">
         <div className="admin-table-scroll-container">
           <table className="admin-orders-table">
+            <colgroup>
+              <col style={{ width: '120px' }} />
+              <col style={{ width: '160px' }} />
+              <col style={{ width: '235px' }} />
+              <col style={{ width: '175px' }} />
+              <col style={{ width: '190px' }} />
+              <col style={{ width: '150px' }} />
+              <col style={{ width: '170px' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th 
-                  style={{ width: '110px', cursor: 'pointer', userSelect: 'none' }}
+                  className="admin-th-col admin-th-date"
+                  style={{ width: '120px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
                   onClick={() => setDateSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
                   title={`Sort by Date: currently ${dateSortOrder === 'desc' ? 'Latest at top (newest first)' : 'Oldest first'}. Click to toggle.`}
                 >
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <div className="admin-th-sortable">
                     <span>Date</span>
                     {dateSortOrder === 'desc' ? (
-                      <ArrowDown size={11} style={{ color: '#4f46e5' }} />
+                      <ArrowDown size={12} className="admin-sort-icon" />
                     ) : (
-                      <ArrowUp size={11} style={{ color: '#4f46e5' }} />
+                      <ArrowUp size={12} className="admin-sort-icon" />
                     )}
                   </div>
                 </th>
-                <th style={{ width: '115px' }}>Order ID</th>
-                <th style={{ width: '230px' }}>Recipient & Destination</th>
-                <th style={{ width: '185px' }}>Items</th>
-                <th style={{ width: '135px' }}>Carrier & Tracking</th>
-                <th style={{ width: '115px', whiteSpace: 'nowrap' }}>Status</th>
-                <th style={{ width: '160px', textAlign: 'right' }}>Actions</th>
+                <th className="admin-th-col admin-th-order-id" style={{ width: '160px', textAlign: 'left' }}>Order ID</th>
+                <th className="admin-th-col admin-th-recipient" style={{ width: '235px', textAlign: 'left' }}>Recipient & Destination</th>
+                <th className="admin-th-col admin-th-items" style={{ width: '175px', textAlign: 'left' }}>Items</th>
+                <th className="admin-th-col admin-th-carrier" style={{ width: '190px', textAlign: 'left' }}>Carrier & Tracking</th>
+                <th className="admin-th-col admin-th-status" style={{ width: '150px', textAlign: 'left' }}>Status</th>
+                <th className="admin-th-col admin-th-actions" style={{ width: '170px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -852,12 +862,14 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
                     {/* Logistics Carrier & Tracking */}
                     <td>
-                      {inquiry.tracking_carrier ? (
+                      {inquiry.tracking_carrier || inquiry.tracking_number ? (
                         <div className="admin-carrier-col">
-                          <strong className="admin-carrier-title">{inquiry.tracking_carrier}</strong>
+                          <strong className="admin-carrier-title">
+                            {inquiry.tracking_carrier || "Courier"}
+                          </strong>
                           <div className="admin-awb-row">
-                            <span className="admin-carrier-awb" title={inquiry.tracking_number || 'Pending'}>
-                              {inquiry.tracking_number ? `AWB: ${inquiry.tracking_number}` : 'AWB: Pending'}
+                            <span className="admin-carrier-awb" title={inquiry.tracking_number ? `AWB: ${inquiry.tracking_number}` : 'Pending'}>
+                              {inquiry.tracking_number || 'Pending'}
                             </span>
                             {inquiry.tracking_number && (
                               <button 
@@ -875,7 +887,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                 target="_blank" 
                                 rel="noreferrer" 
                                 className="admin-btn-icon-subtle"
-                                title={`Track on ${inquiry.tracking_carrier}`}
+                                title={`Track on ${inquiry.tracking_carrier || "Courier"}`}
                               >
                                 <ArrowUpRight size={11} />
                               </a>
@@ -911,24 +923,26 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         >
                           <Edit3 size={13} /> <span>Update</span>
                         </button>
-                        {isDropship && (
+                        <div className="admin-actions-secondary-row">
+                          {isDropship && (
+                            <button
+                              type="button"
+                              onClick={() => handlePrintBlindLabel(inquiry)}
+                              className="admin-btn-action-slip"
+                              title="Print Blind Dispatch Slip"
+                            >
+                              <Printer size={13} /> <span>Slip</span>
+                            </button>
+                          )}
                           <button
                             type="button"
-                            onClick={() => handlePrintBlindLabel(inquiry)}
-                            className="admin-btn-action-slip"
-                            title="Print Blind Dispatch Slip"
+                            onClick={() => handleOpenEditor(inquiry, 'details')}
+                            className="admin-btn-action-ghost"
+                            title="View Full Order Details"
                           >
-                            <Printer size={13} /> <span>Slip</span>
+                            <Eye size={13} />
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditor(inquiry, 'details')}
-                          className="admin-btn-action-ghost"
-                          title="View Full Order Details"
-                        >
-                          <Eye size={13} />
-                        </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -960,40 +974,31 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
               <div className="admin-modal-header-left">
                 <div className="admin-modal-title-row">
                   <h3 className="admin-modal-title">
-                    {activeModalTab === 'details' ? (
-                      <>
-                        <Layers size={17} /> Order #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
-                      </>
-                    ) : (
-                      <>
-                        <Truck size={17} /> Update Fulfillment
-                      </>
-                    )}
+                    Order #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
                   </h3>
-                  {activeModalTab !== 'details' && (
-                    <span className="admin-order-num-pill">
-                      #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
-                    </span>
-                  )}
+                  {selectedInquiry.isDropship && <span className="badge-dropship-mini">Dropship</span>}
                 </div>
                 <div className="admin-modal-sub-row">
-                  {(() => {
-                    const badgeInfo = getOrderStatusDisplay(selectedInquiry.status);
-                    return (
-                      <span className={`admin-status-pill ${badgeInfo.pillClass}`}>
-                        <span className="admin-status-dot" style={{ background: badgeInfo.dotColor }} />
-                        {badgeInfo.label}
-                      </span>
-                    );
-                  })()}
-                  <span className="admin-modal-date-text">
-                    {new Date(selectedInquiry.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                  <span className="admin-modal-meta-text">
+                    <strong>{selectedInquiry.dropship_recipient_name || selectedInquiry.buyer_name || 'Customer'}</strong>
+                    {selectedInquiry.phone ? ` (${selectedInquiry.phone})` : ''}
+                    {selectedInquiry.dropship_recipient_city ? ` • ${selectedInquiry.dropship_recipient_city}` : ''}
+                    {` • ${(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)} Item(s)`}
+                    {selectedInquiry.total_amount ? ` • ₹${Number(selectedInquiry.total_amount).toLocaleString('en-IN')}` : ''}
                   </span>
-                  {selectedInquiry.isDropship && <span className="badge-dropship-mini">Direct Dropship</span>}
                 </div>
               </div>
 
               <div className="admin-modal-header-right">
+                {(() => {
+                  const badgeInfo = getOrderStatusDisplay(selectedInquiry.status);
+                  return (
+                    <span className={`admin-status-pill ${badgeInfo.pillClass}`}>
+                      <span className="admin-status-dot" style={{ background: badgeInfo.dotColor }} />
+                      {badgeInfo.label}
+                    </span>
+                  );
+                })()}
                 <button 
                   type="button" 
                   className="admin-modal-close-btn"
@@ -1001,7 +1006,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   title="Close"
                   aria-label="Close"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </div>
             </div>
@@ -1013,34 +1018,16 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                 className={`admin-modal-tab-btn ${activeModalTab === 'tracking' ? 'active' : ''}`}
                 onClick={() => setActiveModalTab('tracking')}
               >
-                <Truck size={14} /> Update Fulfillment
+                Fulfillment
               </button>
               <button
                 type="button"
                 className={`admin-modal-tab-btn ${activeModalTab === 'details' ? 'active' : ''}`}
                 onClick={() => setActiveModalTab('details')}
               >
-                <Layers size={14} /> Order Details & Items ({(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)})
+                Order Items ({(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)})
               </button>
             </div>
-
-            {/* Modal Context Strip (Shown on Fulfillment tab for quick reference) */}
-            {activeModalTab === 'tracking' && (
-              <div className="admin-modal-context-banner">
-                <div className="admin-context-pill">
-                  <User size={13} className="admin-context-icon" />
-                  <span><strong>{selectedInquiry.dropship_recipient_name || selectedInquiry.buyer_name || 'Customer'}</strong> {selectedInquiry.phone ? `(${selectedInquiry.phone})` : ''}</span>
-                </div>
-                <div className="admin-context-pill">
-                  <MapPin size={13} className="admin-context-icon" />
-                  <span>{selectedInquiry.dropship_recipient_city ? `${selectedInquiry.dropship_recipient_city}, ${selectedInquiry.dropship_recipient_state || ''}` : 'Direct Order'}</span>
-                </div>
-                <div className="admin-context-pill">
-                  <Package size={13} className="admin-context-icon" />
-                  <span><strong>{(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)} Item(s)</strong> {selectedInquiry.total_amount ? `• ₹${Number(selectedInquiry.total_amount).toLocaleString('en-IN')}` : ''}</span>
-                </div>
-              </div>
-            )}
 
             {/* Modal Body */}
             <div className="admin-modal-body">
@@ -1052,8 +1039,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   {/* Section 1: Status Picker */}
                   <div className="admin-form-section">
                     <div className="admin-section-header">
-                      <span className="admin-section-number">1</span>
-                      <span className="admin-section-title">SELECT ORDER STATUS</span>
+                      <span className="admin-section-title">Order Status</span>
                     </div>
                     <div className="admin-status-picker-grid">
                       {[
@@ -1061,7 +1047,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           id: 'needs_attention',
                           targetStatus: (selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'new',
                           label: 'Payment Received',
-                          sub: 'Payment captured via Gateway · Ready for QC & packaging',
                           color: '#d97706',
                           themeKey: 'amber',
                           isSelected: isNeedsAttentionStatus(formStatus)
@@ -1069,8 +1054,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         {
                           id: 'verified',
                           targetStatus: 'verified',
-                          label: 'In Fulfillment (QC & Packing)',
-                          sub: 'Quality check & packaging at Varanasi hub',
+                          label: 'In Fulfillment',
                           color: '#4f46e5',
                           themeKey: 'purple',
                           isSelected: isFulfillmentStatus(formStatus)
@@ -1078,8 +1062,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         {
                           id: 'dispatched',
                           targetStatus: 'dispatched',
-                          label: 'In Transit (Dispatched)',
-                          sub: 'Dispatched with logistics carrier tracking AWB',
+                          label: 'Dispatched',
                           color: '#db2777',
                           themeKey: 'pink',
                           isSelected: isTransitStatus(formStatus)
@@ -1088,7 +1071,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           id: 'delivered',
                           targetStatus: 'delivered',
                           label: 'Delivered',
-                          sub: 'Package successfully handed to buyer',
                           color: '#059669',
                           themeKey: 'green',
                           isSelected: isDeliveredStatus(formStatus)
@@ -1097,7 +1079,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           id: 'cancelled',
                           targetStatus: 'cancelled',
                           label: 'Cancelled',
-                          sub: 'Order voided, cancelled or returned',
                           color: '#dc2626',
                           themeKey: 'red',
                           isSelected: formStatus === 'cancelled' || formStatus === 'rejected'
@@ -1109,12 +1090,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           className={`admin-status-card-opt opt-${st.themeKey} ${st.isSelected ? 'selected' : ''}`}
                           onClick={() => setFormStatus(st.targetStatus)}
                         >
-                          <div className="admin-status-card-top">
-                            <span className="admin-status-dot-sm" style={{ background: st.color }} />
-                            <span className="admin-status-card-name">{st.label}</span>
-                            {st.isSelected && <Check size={14} className="admin-status-check-icon" strokeWidth={2.5} />}
-                          </div>
-                          <span className="admin-status-card-sub">{st.sub}</span>
+                          <span className="admin-status-dot-sm" style={{ background: st.color }} />
+                          <span className="admin-status-card-name">{st.label}</span>
                         </button>
                       ))}
                     </div>
@@ -1123,15 +1100,14 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   {/* Section 2: Logistics & Tracking Details */}
                   <div className="admin-form-section">
                     <div className="admin-section-header">
-                      <span className="admin-section-number">2</span>
-                      <span className="admin-section-title">LOGISTICS & TRACKING DETAILS</span>
+                      <span className="admin-section-title">Logistics &amp; Tracking</span>
                     </div>
                     <div className="admin-form-grid-2col">
                       <div className="admin-form-field-wrap">
                         <label className="admin-field-label">Logistics Carrier</label>
                         <input
                           type="text"
-                          placeholder="e.g. Delhivery, DTDC, BlueDart"
+                          placeholder="Carrier name (e.g. BlueDart)"
                           value={formCarrier}
                           onChange={(e) => setFormCarrier(e.target.value)}
                           className="admin-form-input"
@@ -1141,7 +1117,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                             <button 
                               key={c} 
                               type="button" 
-                              className={`admin-tag-pill ${formCarrier === c ? 'active' : ''}`}
+                              className={`admin-tag-pill ${(formCarrier || '').toLowerCase() === c.toLowerCase() ? 'active' : ''}`}
                               onClick={() => setFormCarrier(c)}
                             >
                               {c}
@@ -1160,18 +1136,17 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                               rel="noreferrer" 
                               className="admin-preview-track-link"
                             >
-                              Test Carrier Link <ArrowUpRight size={11} />
+                              Track ↗
                             </a>
                           )}
                         </div>
                         <input
                           type="text"
-                          placeholder="e.g. 12893012930"
+                          placeholder="Tracking / AWB Number"
                           value={formTrackingNum}
                           onChange={(e) => setFormTrackingNum(e.target.value)}
                           className="admin-form-input"
                         />
-                        <span className="admin-form-hint">Shown to buyer on their live tracking dashboard</span>
                       </div>
                     </div>
                   </div>
@@ -1180,29 +1155,20 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   <div className="admin-form-section">
                     <div className="admin-section-header-flex">
                       <div className="admin-section-header">
-                        <span className="admin-section-number">3</span>
-                        <span className="admin-section-title">BUYER TRACKING NOTIFICATION NOTE</span>
+                        <span className="admin-section-title">Tracking Note</span>
                       </div>
                       <div className="admin-quick-templates">
-                        <button type="button" onClick={() => applyTemplate('paid')} className="admin-template-btn template-amber">
-                          <Sparkles size={11} className="template-icon" /> Payment Received
-                        </button>
-                        <button type="button" onClick={() => applyTemplate('verified')} className="admin-template-btn template-purple">
-                          <Sparkles size={11} className="template-icon" /> QC & Packing
-                        </button>
-                        <button type="button" onClick={() => applyTemplate('dispatched')} className="admin-template-btn template-pink">
-                          <Sparkles size={11} className="template-icon" /> Dispatched
-                        </button>
-                        <button type="button" onClick={() => applyTemplate('delivered')} className="admin-template-btn template-green">
-                          <Sparkles size={11} className="template-icon" /> Delivered
-                        </button>
+                        <button type="button" onClick={() => applyTemplate('paid')} className="admin-template-btn">Payment</button>
+                        <button type="button" onClick={() => applyTemplate('verified')} className="admin-template-btn">QC &amp; Packing</button>
+                        <button type="button" onClick={() => applyTemplate('dispatched')} className="admin-template-btn">Dispatched</button>
+                        <button type="button" onClick={() => applyTemplate('delivered')} className="admin-template-btn">Delivered</button>
                       </div>
                     </div>
                     <textarea
-                      placeholder="Add a message visible to the buyer on their live tracking dashboard..."
+                      placeholder="Optional note visible to customer on live tracking page..."
                       value={formMessage}
                       onChange={(e) => setFormMessage(e.target.value)}
-                      rows="3"
+                      rows="2"
                       className="admin-form-textarea"
                     />
                   </div>
@@ -1217,7 +1183,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         className="admin-btn-secondary"
                         title="Open Buyer Live Tracking Page"
                       >
-                        <ExternalLink size={14} /> <span>Live Tracking</span>
+                        <ExternalLink size={13} /> <span>Live Tracking</span>
                       </a>
                     </div>
                     <div className="admin-modal-footer-right">
@@ -1233,7 +1199,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         className="admin-btn-save-primary"
                         disabled={actionLoading}
                       >
-                        {actionLoading ? 'Saving...' : 'Save & Update Tracking'}
+                        {actionLoading ? 'Saving...' : 'Save Tracking'}
                       </button>
                     </div>
                   </div>
@@ -1255,7 +1221,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           <User size={13} /> SENDER (SHIP FROM)
                         </span>
                         {selectedInquiry.dropship_packing_preference && (
-                          <span className="admin-tag-pill" style={{ fontSize: '10px' }}>
+                          <span className="admin-tag-pill" style={{ fontSize: '12px' }}>
                             {selectedInquiry.dropship_packing_preference}
                           </span>
                         )}
@@ -1270,7 +1236,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       {modalCustomPricing.hasCustom && (
                         <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>
                               Customer Parcel Slip Price:
                             </span>
                             <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
@@ -1279,19 +1245,19 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           </div>
                           {modalCustomPricing.discount > 0 && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                              <span style={{ fontSize: '11px', color: '#dc2626' }}>
+                              <span style={{ fontSize: '12px', color: '#dc2626' }}>
                                 Slip Discount:
                               </span>
-                              <span style={{ fontSize: '11.5px', color: '#dc2626', fontFamily: 'ui-monospace, monospace' }}>
+                              <span style={{ fontSize: '12px', color: '#dc2626', fontFamily: 'ui-monospace, monospace' }}>
                                 -₹{modalCustomPricing.discount.toLocaleString('en-IN')}
                               </span>
                             </div>
                           )}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '2px' }}>
-                            <span style={{ fontSize: '10.5px', color: '#64748b' }}>
+                            <span style={{ fontSize: '12px', color: '#64748b' }}>
                               Net Printed on Invoice:
                             </span>
-                            <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#0f172a', fontFamily: 'ui-monospace, monospace' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a', fontFamily: 'ui-monospace, monospace' }}>
                               ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                             </span>
                           </div>
@@ -1504,11 +1470,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                         </td>
                                         <td style={{ textAlign: 'right' }}>
                                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                            <strong style={{ fontSize: '13px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                            <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
                                               ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                                             </strong>
                                             {modalCustomPricing.discount > 0 && (
-                                              <span style={{ fontSize: '10.5px', color: '#64748b' }}>
+                                              <span style={{ fontSize: '12px', color: '#64748b' }}>
                                                 (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
                                               </span>
                                             )}
@@ -1549,11 +1515,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                       </td>
                                       <td style={{ textAlign: 'right' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                          <strong style={{ fontSize: '13px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                          <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
                                             ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                                           </strong>
                                           {modalCustomPricing.discount > 0 && (
-                                            <span style={{ fontSize: '10.5px', color: '#64748b' }}>
+                                            <span style={{ fontSize: '12px', color: '#64748b' }}>
                                               (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
                                             </span>
                                           )}
@@ -1589,7 +1555,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         className="admin-btn-action-primary"
                         onClick={() => setActiveModalTab('tracking')}
                         title="Update status, enter tracking carrier & dispatch"
-                        style={{ padding: '8px 14px', fontSize: '13px' }}
+                        style={{ padding: '8px 14px', fontSize: '12px' }}
                       >
                         <Truck size={14} /> <span>Fulfill / Dispatch</span>
                       </button>
