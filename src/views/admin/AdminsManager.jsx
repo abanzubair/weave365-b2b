@@ -96,11 +96,11 @@ export default function AdminsManager({ adminData, user, toggleResellerDashboard
       <div className="dashtar-card" style={{ padding: '1.25rem 1.5rem', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.5rem)', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ShieldCheck size={22} style={{ color: '#2563eb' }} />
               Administrator Accounts & Security
             </h2>
-            <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '4px 0 0 0' }}>
+            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: '4px 0 0 0' }}>
               Manage privileged admin personnel, security access, and direct Reseller Dashboard / Storefront toggles.
             </p>
           </div>
@@ -121,7 +121,7 @@ export default function AdminsManager({ adminData, user, toggleResellerDashboard
             </div>
             <div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Logged-In Session</div>
-              <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                 {user?.email || 'Admin'}
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function AdminsManager({ adminData, user, toggleResellerDashboard
             </div>
             <div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Security Privilege</div>
-              <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                 Full Read & Write Master Access
               </div>
             </div>
@@ -161,11 +161,11 @@ export default function AdminsManager({ adminData, user, toggleResellerDashboard
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 16px', fontSize: '0.6875rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin User</th>
-                <th style={{ padding: '12px 16px', fontSize: '0.6875rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email Address</th>
-                <th style={{ padding: '12px 16px', fontSize: '0.6875rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
-                <th style={{ padding: '12px 16px', fontSize: '0.6875rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reseller Dashboard</th>
-                <th style={{ padding: '12px 16px', fontSize: '0.6875rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin User</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email Address</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reseller Dashboard</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -185,14 +185,14 @@ export default function AdminsManager({ adminData, user, toggleResellerDashboard
                   <tr key={adm.id || adm.email} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#f1f5f9', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#334155', fontSize: '0.8125rem' }}>
+                        <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#f1f5f9', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>
                           {(adm.full_name || adm.email || 'A').charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.875rem' }}>
                             {adm.full_name || adm.email.split('@')[0]}
                             {isCurrentUser && (
-                              <span style={{ marginLeft: '6px', fontSize: '0.6875rem', fontWeight: 600, color: '#2563eb', background: '#eff6ff', padding: '1px 6px', borderRadius: '4px', border: '1px solid #bfdbfe' }}>
+                              <span style={{ marginLeft: '6px', fontSize: '0.75rem', fontWeight: 600, color: '#2563eb', background: '#eff6ff', padding: '1px 6px', borderRadius: '4px', border: '1px solid #bfdbfe' }}>
                                 You
                               </span>
                             )}

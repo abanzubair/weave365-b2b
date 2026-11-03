@@ -327,7 +327,7 @@
 }
 
 .admin-user-title {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #1f2937;
   white-space: nowrap;
@@ -336,7 +336,7 @@
 }
 
 .admin-user-sub {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #6b7280;
   white-space: nowrap;
   overflow: hidden;
@@ -1930,14 +1930,14 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-page-title {
-  font-size: 26px !important;
-  font-weight: 700 !important;
+  font-size: clamp(1.25rem, 2.5vw, 1.625rem);
+  font-weight: 700;
   color: #111827;
   margin: 0 0 4px 0;
   line-height: 1.2;
 }
 .pipeline-page-subtitle {
-  font-size: 14.5px;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
@@ -1955,7 +1955,7 @@ button.card-gradient-purple:hover,
   border-radius: 8px;
   background: #ffffff;
   color: #374151;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
@@ -1981,7 +1981,7 @@ button.card-gradient-purple:hover,
   gap: 5px;
 }
 .pipeline-field-label {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2016,7 +2016,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #ffffff;
-  font-size: 13.5px;
+  font-size: 0.875rem;
   color: #111827;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -2063,7 +2063,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #ffffff;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
   cursor: pointer;
@@ -2107,7 +2107,7 @@ button.card-gradient-purple:hover,
   border-radius: 8px;
   background: #ffffff;
   color: #374151;
-  font-size: 16px;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.15s ease;
   box-sizing: border-box;
@@ -2126,7 +2126,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #e5e7eb;
   background: #ffffff;
   color: #6b7280;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -2166,7 +2166,7 @@ button.card-gradient-purple:hover,
   flex-wrap: wrap;
 }
 .pipeline-active-filter-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
@@ -2181,7 +2181,7 @@ button.card-gradient-purple:hover,
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #374151;
   font-weight: 500;
 }
@@ -2202,7 +2202,7 @@ button.card-gradient-purple:hover,
   background: none;
   border: none;
   padding: 0 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #ef4444;
   font-weight: 600;
   cursor: pointer;
@@ -2215,7 +2215,7 @@ button.card-gradient-purple:hover,
 
 /* Empty State */
 .pipeline-empty-cell {
-  padding: 48px 16px !important;
+  padding: 48px 16px;
   text-align: center;
 }
 .pipeline-empty-state {
@@ -2230,13 +2230,13 @@ button.card-gradient-purple:hover,
   margin-bottom: 4px;
 }
 .pipeline-empty-title {
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 600;
   color: #111827;
   margin: 0;
 }
 .pipeline-empty-hint {
-  font-size: 13px;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0 0 8px 0;
 }
@@ -2249,7 +2249,7 @@ button.card-gradient-purple:hover,
   color: #ffffff;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease;
@@ -2313,7 +2313,7 @@ button.card-gradient-purple:hover,
 
 /* S.No tabular figures */
 .pipeline-sno-num {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -2335,19 +2335,19 @@ button.card-gradient-purple:hover,
   line-height: 1.25;
 }
 .pipeline-timing-primary {
-  font-size: 12.5px;
+  font-size: 0.75rem;
   color: #0f172a;
   font-weight: 600;
   white-space: nowrap;
 }
 .pipeline-timing-secondary {
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 400;
   white-space: nowrap;
 }
 .pipeline-joined-sub {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 400;
   line-height: 1.2;
@@ -2364,7 +2364,7 @@ button.card-gradient-purple:hover,
   background: #ecfdf5;
   color: #047857;
   border: 1px solid #a7f3d0;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -2410,7 +2410,7 @@ button.card-gradient-purple:hover,
   white-space: nowrap;
 }
 .pipeline-buyer-name {
-  font-size: 13.5px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   overflow: hidden;
@@ -2420,7 +2420,7 @@ button.card-gradient-purple:hover,
   max-width: 260px;
 }
 .pipeline-buyer-biz-tag {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #b45309;
   overflow: hidden;
@@ -2432,7 +2432,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: #64748b;
   line-height: 1.3;
   overflow: hidden;
@@ -2462,7 +2462,7 @@ button.card-gradient-purple:hover,
   color: #cbd5e1;
   font-weight: 700;
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 .pipeline-buyer-sub-text {
   overflow: hidden;
@@ -2478,7 +2478,7 @@ button.card-gradient-purple:hover,
   align-items: center;
   padding: 2px 7.5px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -2521,7 +2521,7 @@ button.card-gradient-purple:hover,
 /* Items Column - Minimal Dash & Chips */
 .pipeline-empty-dash {
   color: #cbd5e1;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   padding-left: 6px;
   user-select: none;
@@ -2532,7 +2532,7 @@ button.card-gradient-purple:hover,
   gap: 4px;
   padding: 2.5px 7px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
@@ -2590,7 +2590,7 @@ button.card-gradient-purple:hover,
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   color: #334155 !important;
-  font-size: 11.5px !important;
+  font-size: 0.75rem !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
@@ -2721,7 +2721,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-action-row-inline .pipeline-switch-label {
-  font-size: 11px !important;
+  font-size: 0.75rem !important;
   font-weight: 600 !important;
   color: #64748b !important;
   line-height: 1 !important;
@@ -2763,7 +2763,7 @@ button.card-gradient-purple:hover,
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   color: #334155 !important;
-  font-size: 11px !important;
+  font-size: 0.75rem !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
@@ -2905,7 +2905,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-action-sub-row .pipeline-switch-label {
-  font-size: 10px !important;
+  font-size: 0.75rem !important;
   font-weight: 600 !important;
   color: #64748b !important;
   line-height: 1 !important;
@@ -2927,7 +2927,7 @@ button.card-gradient-purple:hover,
   top: 0 !important;
   z-index: 10 !important;
   background-color: #ffffff !important;
-  font-size: 11.5px !important;
+  font-size: 0.75rem !important;
   font-weight: 700 !important;
   color: #64748b !important;
   text-transform: uppercase !important;
@@ -2946,7 +2946,7 @@ button.card-gradient-purple:hover,
   padding: 9.5px 12px !important;
   vertical-align: middle !important;
   border-bottom: 1px solid #f1f5f9 !important;
-  font-size: 13.5px !important;
+  font-size: 0.875rem !important;
 }
 
 /* First and last column padding alignment for pipeline tables */
@@ -2982,7 +2982,7 @@ button.card-gradient-purple:hover,
   color: #166534;
   border: 1px solid #bbf7d0;
   border-radius: 6px;
-  font-size: 11.5px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
   max-width: 200px;
@@ -3020,7 +3020,7 @@ button.card-gradient-purple:hover,
   align-items: center;
   padding: 5px 12px;
   border-radius: 9px !important;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -3043,7 +3043,7 @@ button.card-gradient-purple:hover,
   justify-content: center;
   padding: 5px 12px;
   border-radius: 9px !important;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3082,7 +3082,7 @@ button.card-gradient-purple:hover,
   gap: 6px;
   padding: 6px 12px;
   border-radius: 9px !important;
-  font-size: 13.5px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3141,7 +3141,7 @@ button.card-gradient-purple:hover,
 
 .pipeline-items-cell .admin-list-link-btn {
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   gap: 5px;
   line-height: 1.25;
 }
@@ -3178,7 +3178,7 @@ button.card-gradient-purple:hover,
   gap: 5px;
   padding: 3.5px 8px;
   border-radius: 9px !important;
-  font-size: 11.5px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
   max-width: 190px;
@@ -3264,7 +3264,7 @@ button.card-gradient-purple:hover,
 
 .pipeline-no-social {
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   padding-left: 2px;
 }
@@ -3284,7 +3284,7 @@ button.card-gradient-purple:hover,
   gap: 4px;
   padding: 2.5px 7px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.25;
   white-space: nowrap;
@@ -3295,7 +3295,7 @@ button.card-gradient-purple:hover,
 }
 
 .acquisition-badge .attr-icon {
-  font-size: 11px;
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 
@@ -3336,7 +3336,7 @@ button.card-gradient-purple:hover,
 }
 
 .acquisition-landing-path {
-  font-size: 10.5px;
+  font-size: 0.75rem;
   color: #64748b;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   overflow: hidden;
@@ -3400,7 +3400,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-user-list-modal .admin-modal-title {
-  font-size: 17px;
+  font-size: clamp(1rem, 2vw, 1.125rem);
   font-weight: 700;
   color: #0f172a;
   margin: 0;
@@ -3410,7 +3410,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-user-list-modal .admin-modal-header-meta {
-  font-size: 12.5px;
+  font-size: 0.75rem;
   color: #64748b;
   display: flex;
   align-items: center;
@@ -3429,7 +3429,7 @@ button.card-gradient-purple:hover,
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   color: #64748b;
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1;
   width: 28px;
   height: 28px;
@@ -3461,7 +3461,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-user-list-count {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #94a3b8;
   letter-spacing: 0.02em;
@@ -3480,7 +3480,7 @@ button.card-gradient-purple:hover,
   gap: 5px;
   padding: 5px 10px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
@@ -3563,7 +3563,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-user-list-modal .admin-user-item-title {
-  font-size: 13.5px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   line-height: 1.35;
@@ -3593,7 +3593,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   flex-wrap: wrap;
 }
@@ -3629,11 +3629,11 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .admin-pricing-label {
-  font-size: 10.5px;
+  font-size: 0.75rem;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -3664,11 +3664,11 @@ button.card-gradient-purple:hover,
   }
 
   .admin-user-list-modal .admin-modal-title {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .admin-user-list-modal .admin-modal-header-meta {
-    font-size: 11.5px;
+    font-size: 0.75rem;
     gap: 4px;
     line-height: 1.35;
   }
@@ -3676,7 +3676,7 @@ button.card-gradient-purple:hover,
   .admin-user-list-modal .admin-modal-close-btn {
     width: 30px;
     height: 30px;
-    font-size: 19px;
+    font-size: 1.125rem;
   }
 
   .admin-user-list-modal .admin-user-list-toolbar {
@@ -3686,12 +3686,12 @@ button.card-gradient-purple:hover,
   }
 
   .admin-user-list-count {
-    font-size: 11px;
+    font-size: 0.75rem;
   }
 
   .admin-user-list-btn {
     padding: 6px 9px;
-    font-size: 11.5px;
+    font-size: 0.75rem;
     min-height: 32px;
   }
 
@@ -3727,7 +3727,7 @@ button.card-gradient-purple:hover,
   }
 
   .admin-user-list-modal .admin-user-item-title {
-    font-size: 13.5px;
+    font-size: 0.875rem;
     line-height: 1.35;
     white-space: normal;
     display: -webkit-box;
@@ -3739,14 +3739,14 @@ button.card-gradient-purple:hover,
   }
 
   .admin-user-list-modal .admin-user-item-meta {
-    font-size: 11.5px;
+    font-size: 0.75rem;
     gap: 5px;
     flex-wrap: wrap;
   }
 
   .admin-meta-code {
     white-space: nowrap;
-    font-size: 11px;
+    font-size: 0.75rem;
     background: #f1f5f9;
     padding: 1px 5px;
     border-radius: 4px;
@@ -3768,18 +3768,18 @@ button.card-gradient-purple:hover,
     display: flex;
     align-items: baseline;
     gap: 4px;
-    font-size: 11.5px;
+    font-size: 0.75rem;
   }
 
   .admin-pricing-label {
-    font-size: 10px;
+    font-size: 0.75rem;
     color: #94a3b8;
     text-transform: uppercase;
     font-weight: 500;
   }
 
   .admin-pricing-val {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
     color: #0f172a;
   }
@@ -3790,7 +3790,7 @@ button.card-gradient-purple:hover,
   text-align: center;
   padding: 32px 0;
   color: #9ca3af;
-  font-size: 14px;
+  font-size: 0.875rem;
   margin: 0;
 }
 
@@ -3844,7 +3844,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-user-item-title {
-  font-size: 16.5px;
+  font-size: 1rem;
   font-weight: 700;
   color: #111827;
   margin: 0;
@@ -3865,7 +3865,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 13px;
+  font-size: 0.875rem;
   color: #6b7280;
   flex-wrap: wrap;
 }
@@ -3876,7 +3876,7 @@ button.card-gradient-purple:hover,
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .admin-user-item-qty {
@@ -3891,7 +3891,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 18px;
-  font-size: 13px;
+  font-size: 0.875rem;
   color: #4b5563;
   margin-top: 2px;
   padding-top: 6px;
@@ -3916,7 +3916,7 @@ button.card-gradient-purple:hover,
   color: #374151;
   padding: 8px 18px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3936,7 +3936,7 @@ button.card-gradient-purple:hover,
   max-width: 215px;
 }
 .pipeline-buyer-cell strong {
-  font-size: 14.5px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #111827;
   line-height: 1.25;
@@ -3945,7 +3945,7 @@ button.card-gradient-purple:hover,
   white-space: nowrap;
 }
 .pipeline-buyer-business {
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #b45309;
   line-height: 1.25;
@@ -3954,7 +3954,7 @@ button.card-gradient-purple:hover,
   white-space: nowrap;
 }
 .pipeline-buyer-location {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #6b7280;
   line-height: 1.3;
   overflow: hidden;
@@ -3962,7 +3962,7 @@ button.card-gradient-purple:hover,
   white-space: nowrap;
 }
 .pipeline-buyer-email {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #2563eb;
   font-weight: 500;
   text-decoration: none;
@@ -3975,7 +3975,7 @@ button.card-gradient-purple:hover,
   text-decoration: underline;
 }
 .pipeline-buyer-phone {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #16a34a;
   text-decoration: none;
   font-weight: 600;
@@ -3990,7 +3990,7 @@ button.card-gradient-purple:hover,
 
 /* Date cell */
 .pipeline-date-cell {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #374151;
   font-weight: 500;
   white-space: nowrap;
@@ -3998,7 +3998,7 @@ button.card-gradient-purple:hover,
 
 /* Type label */
 .pipeline-type-label {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #374151;
   text-transform: capitalize;
   font-weight: 500;
@@ -4007,7 +4007,7 @@ button.card-gradient-purple:hover,
 /* Muted placeholder */
 .pipeline-muted {
   color: #d1d5db;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* Action cell */
@@ -4042,7 +4042,7 @@ button.card-gradient-purple:hover,
   border: none;
   border-radius: 0;
   box-shadow: none;
-  font-size: 13px;
+  font-size: 0.875rem;
   color: #6b7280;
 }
 .pipeline-pagination-info {
@@ -4073,7 +4073,7 @@ button.card-gradient-purple:hover,
   border-radius: 6px;
   background: #ffffff;
   color: #374151;
-  font-size: 12.5px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -4093,7 +4093,7 @@ button.card-gradient-purple:hover,
 .pipeline-page-ellipsis {
   padding: 0 4px;
   color: #9ca3af;
-  font-size: 13px;
+  font-size: 0.875rem;
   user-select: none;
 }
 .pipeline-page-nav-btn {
@@ -4103,7 +4103,7 @@ button.card-gradient-purple:hover,
   border-radius: 6px;
   background: #ffffff;
   color: #374151;
-  font-size: 12.5px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -4133,7 +4133,7 @@ button.card-gradient-purple:hover,
 }
 .pipeline-footer-summary {
   padding: 14px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #6b7280;
   border-top: 1px solid #f3f4f6;
 }
@@ -13558,7 +13558,7 @@ button.card-gradient-purple:hover,
 
   .pipeline-header-btn {
     padding: 7px 11px;
-    font-size: 12.5px;
+    font-size: 0.75rem;
     font-weight: 500;
     gap: 5px;
     border-radius: 7px;
@@ -13683,10 +13683,10 @@ button.card-gradient-purple:hover,
     margin-bottom: 14px;
   }
   .pipeline-page-title {
-    font-size: 22px !important;
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
   }
   .pipeline-page-subtitle {
-    font-size: 13px;
+    font-size: 0.875rem;
   }
   .pipeline-header-actions {
     width: 100%;
@@ -13697,7 +13697,7 @@ button.card-gradient-purple:hover,
     flex: 1;
     justify-content: center;
     padding: 8px 10px;
-    font-size: 12.5px;
+    font-size: 0.75rem;
   }
 
   /* 3. Toolbar & Filters on mobile */
@@ -13713,7 +13713,7 @@ button.card-gradient-purple:hover,
     flex: 1 1 100% !important;
   }
   .pipeline-search-input {
-    font-size: 14px !important; /* Prevents auto-zoom on iOS */
+    font-size: 0.875rem !important; /* Prevents auto-zoom on iOS */
     height: 40px !important;
   }
   .pipeline-filters {
@@ -13732,7 +13732,7 @@ button.card-gradient-purple:hover,
   .pipeline-filter-select {
     width: 100%;
     min-width: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     height: 38px;
     padding: 0 8px;
   }
@@ -13753,7 +13753,7 @@ button.card-gradient-purple:hover,
     width: 100%;
     justify-content: center;
     height: 36px;
-    font-size: 12.5px;
+    font-size: 0.75rem;
   }
 
   /* 4. Active Filter Badges */
@@ -13762,7 +13762,7 @@ button.card-gradient-purple:hover,
     margin-bottom: 10px;
   }
   .pipeline-active-filter-pill {
-    font-size: 11px;
+    font-size: 0.75rem;
     padding: 3px 8px;
   }
 
@@ -13777,12 +13777,12 @@ button.card-gradient-purple:hover,
     min-width: 880px;
   }
   .pipeline-table thead th {
-    font-size: 11px !important;
+    font-size: 0.75rem;
     padding: 8px 10px !important;
   }
   .pipeline-table tbody td {
     padding: 8px 10px !important;
-    font-size: 12.5px !important;
+    font-size: 0.875rem;
   }
   .pipeline-table th:first-child,
   .pipeline-table td:first-child {
@@ -13805,18 +13805,18 @@ button.card-gradient-purple:hover,
     min-width: 110px;
   }
   .pipeline-buyer-name {
-    font-size: 13px;
+    font-size: 0.875rem;
     max-width: 180px;
   }
   .pipeline-buyer-sub-row {
-    font-size: 11px;
+    font-size: 0.75rem;
   }
   .pipeline-timing-primary {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .pipeline-timing-secondary,
   .pipeline-joined-sub {
-    font-size: 10.5px;
+    font-size: 0.75rem;
   }
 
   /* 6. Pagination Bar on mobile */
@@ -13827,7 +13827,7 @@ button.card-gradient-purple:hover,
     padding: 12px 2px 6px 2px;
   }
   .pipeline-pagination-info {
-    font-size: 12px;
+    font-size: 0.75rem;
     text-align: center;
     justify-content: center;
   }
@@ -13842,13 +13842,13 @@ button.card-gradient-purple:hover,
   .pipeline-page-number {
     min-width: 28px;
     height: 28px;
-    font-size: 11.5px;
+    font-size: 0.75rem;
     padding: 0 4px;
   }
   .pipeline-page-nav-btn {
     height: 28px;
     padding: 0 8px;
-    font-size: 11.5px;
+    font-size: 0.75rem;
   }
 
   /* 7. Account Detail Modal on mobile */
@@ -13863,7 +13863,7 @@ button.card-gradient-purple:hover,
     gap: 10px;
   }
   .pipeline-modal-title {
-    font-size: 16px;
+    font-size: 1rem;
   }
   .pipeline-modal-body {
     padding: 12px 14px 16px;
@@ -13905,7 +13905,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #fecaca;
   color: #dc2626;
   border-radius: 999px;
-  font-size: 10.5px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -13951,7 +13951,7 @@ button.card-gradient-purple:hover,
 
 .pipeline-modal-title {
   margin: 0;
-  font-size: 18px;
+  font-size: clamp(1rem, 2vw, 1.125rem);
   font-weight: 600;
   color: #0f172a;
   letter-spacing: -0.01em;
@@ -13965,7 +13965,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-role-tag {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2.5px 8.5px;
   border-radius: 9999px;
@@ -13991,7 +13991,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-active-tag {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #15803d;
   background: #f0fdf4;
@@ -14004,7 +14004,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-locked-tag {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #b91c1c;
   background: #fef2f2;
@@ -14017,7 +14017,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-modal-meta {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   margin: 0;
   display: flex;
@@ -14033,7 +14033,7 @@ button.card-gradient-purple:hover,
 
 .pipeline-modal-meta code {
   font-family: inherit;
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: #64748b;
 }
 
@@ -14082,7 +14082,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   height: 30px;
   padding: 0 11px;
@@ -14156,7 +14156,7 @@ button.card-gradient-purple:hover,
 
 .pipeline-detail-card-title {
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -14167,7 +14167,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-detail-card-sub {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 400;
 }
@@ -14191,7 +14191,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-detail-label {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #64748b;
   text-transform: uppercase;
@@ -14199,7 +14199,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-detail-val {
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #0f172a;
   word-break: break-word;
@@ -14225,7 +14225,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-modal-acq-path {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: #64748b;
   font-family: monospace;
   background: #f8fafc;
@@ -14259,7 +14259,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-switch-title {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #475569;
   text-transform: uppercase;
@@ -14267,7 +14267,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-switch-hint {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: #94a3b8;
 }
 
@@ -14309,13 +14309,13 @@ button.card-gradient-purple:hover,
 }
 
 .role-chip-name {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #1e293b;
 }
 
 .role-chip-sub {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: #64748b;
   line-height: 1.2;
 }
@@ -14337,7 +14337,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #475569;
   cursor: pointer;
@@ -14355,7 +14355,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #b45309;
   background: #fef3c7;
@@ -14376,7 +14376,7 @@ button.card-gradient-purple:hover,
 }
 
 .pipeline-switch-inline-msg {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -14400,7 +14400,7 @@ button.card-gradient-purple:hover,
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #475569;
   cursor: pointer;
@@ -14422,7 +14422,7 @@ button.card-gradient-purple:hover,
   background: #0f172a;
   color: #ffffff;
   border: none;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
