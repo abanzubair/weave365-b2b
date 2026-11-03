@@ -1221,7 +1221,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           <User size={13} /> SENDER (SHIP FROM)
                         </span>
                         {selectedInquiry.dropship_packing_preference && (
-                          <span className="admin-tag-pill" style={{ fontSize: '12px' }}>
+                          <span className="admin-tag-pill" style={{ fontSize: '0.75rem' }}>
                             {selectedInquiry.dropship_packing_preference}
                           </span>
                         )}
@@ -1236,28 +1236,28 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       {modalCustomPricing.hasCustom && (
                         <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
                               Customer Parcel Slip Price:
                             </span>
-                            <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                            <strong style={{ fontSize: '0.875rem', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
                               ₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')}
                             </strong>
                           </div>
                           {modalCustomPricing.discount > 0 && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                              <span style={{ fontSize: '12px', color: '#dc2626' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#dc2626' }}>
                                 Slip Discount:
                               </span>
-                              <span style={{ fontSize: '12px', color: '#dc2626', fontFamily: 'ui-monospace, monospace' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#dc2626', fontFamily: 'ui-monospace, monospace' }}>
                                 -₹{modalCustomPricing.discount.toLocaleString('en-IN')}
                               </span>
                             </div>
                           )}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '2px' }}>
-                            <span style={{ fontSize: '12px', color: '#64748b' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                               Net Printed on Invoice:
                             </span>
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a', fontFamily: 'ui-monospace, monospace' }}>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a', fontFamily: 'ui-monospace, monospace' }}>
                               ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                             </span>
                           </div>
@@ -1460,7 +1460,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                       <tr style={{ background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
                                         <td colSpan="4">
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>
+                                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
                                               Customer Parcel Slip Value
                                             </span>
                                             <span className="admin-slip-price-pill" style={{ margin: 0 }}>
@@ -1470,11 +1470,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                         </td>
                                         <td style={{ textAlign: 'right' }}>
                                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                            <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                            <strong style={{ fontSize: '0.875rem', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
                                               ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                                             </strong>
                                             {modalCustomPricing.discount > 0 && (
-                                              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                                              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                                                 (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
                                               </span>
                                             )}
@@ -1505,7 +1505,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                     <tr style={{ background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
                                       <td colSpan="4">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>
+                                          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
                                             Customer Parcel Slip Value
                                           </span>
                                           <span className="admin-slip-price-pill" style={{ margin: 0 }}>
@@ -1515,11 +1515,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                       </td>
                                       <td style={{ textAlign: 'right' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                          <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                          <strong style={{ fontSize: '0.875rem', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
                                             ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                                           </strong>
                                           {modalCustomPricing.discount > 0 && (
-                                            <span style={{ fontSize: '12px', color: '#64748b' }}>
+                                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                                               (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
                                             </span>
                                           )}
@@ -1555,7 +1555,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         className="admin-btn-action-primary"
                         onClick={() => setActiveModalTab('tracking')}
                         title="Update status, enter tracking carrier & dispatch"
-                        style={{ padding: '8px 14px', fontSize: '12px' }}
+                        style={{ padding: '0.5rem 0.875rem', fontSize: '0.875rem' }}
                       >
                         <Truck size={14} /> <span>Fulfill / Dispatch</span>
                       </button>

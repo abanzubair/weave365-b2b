@@ -569,19 +569,38 @@
   overflow: hidden;
 }
 
-/* Hover states apply strictly to interactive button cards (e.g. order filters) */
-button.dashtar-gradient-card:hover,
-.dashtar-gradient-card.active {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px -2px rgba(0, 0, 0, 0.06);
-}
-
+/* Interactive button cards setup */
 button.dashtar-gradient-card {
   font-family: inherit;
   text-align: left;
   cursor: pointer;
   background-clip: padding-box;
   width: 100%;
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1),
+              box-shadow 0.15s cubic-bezier(0.2, 0, 0, 1),
+              border-color 0.15s ease;
+}
+
+/* Hover & Active states */
+button.dashtar-gradient-card:hover,
+.dashtar-gradient-card.active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px -2px rgba(0, 0, 0, 0.06);
+}
+
+/* Tactile press down click feedback */
+button.dashtar-gradient-card:active {
+  transform: scale(0.97) translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+
+button.dashtar-gradient-card:active .gradient-icon-wrap {
+  transform: scale(0.92);
+  transition: transform 0.06s ease;
 }
 
 /* Static dashboard cards: no hover lift, default cursor */
@@ -589,7 +608,7 @@ div.dashtar-gradient-card {
   cursor: default;
 }
 div.dashtar-gradient-card:hover {
-  transform: none !important;
+  transform: none;
 }
 
 /* Luminous, distinct modern gradients with clear color contrast */
@@ -674,6 +693,7 @@ button.card-gradient-purple:hover,
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 4px;
   border: 1px solid rgba(255, 255, 255, 0.9);
+  transition: transform 0.15s ease;
 }
 
 .gradient-card-val-block {
@@ -6360,8 +6380,24 @@ button.card-gradient-purple:hover,
 .admin-tracking-container-refined {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 1.125rem;
   width: 100%;
+}
+
+/* Fluid rem typography for Metric/KPI cards in Order page */
+.admin-tracking-container-refined .gradient-card-large-val {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.admin-tracking-container-refined .gradient-card-label-span {
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.01em;
 }
 
 /* 1. KPI Stats Summary Strip */
@@ -6373,17 +6409,17 @@ button.card-gradient-purple:hover,
 }
 
 .admin-order-kpi-card {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 14px !important;
-  padding: 14px 18px !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 10px !important;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   cursor: pointer;
-  text-align: left !important;
+  text-align: left;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   outline: none;
@@ -6392,25 +6428,25 @@ button.card-gradient-purple:hover,
 }
 
 .admin-order-kpi-card:hover {
-  border-color: #cbd5e1 !important;
-  background: #f8fafc !important;
+  border-color: #cbd5e1;
+  background: #f8fafc;
   transform: translateY(-1px);
 }
 
 .admin-order-kpi-card.active {
-  border-color: #0f172a !important;
-  background: #ffffff !important;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  border-color: #0f172a;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .admin-order-kpi-icon-wrap {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 8px !important;
-  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .stat-neutral { background: #f1f5f9; color: #475569; }
@@ -6429,7 +6465,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-order-kpi-label {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   color: #64748b;
   letter-spacing: 0.5px;
@@ -6440,7 +6476,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-order-kpi-value {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
@@ -6474,7 +6510,7 @@ button.card-gradient-purple:hover,
 
 .admin-channel-pill {
   padding: 6px 13px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #64748b;
   background: transparent;
@@ -6516,7 +6552,7 @@ button.card-gradient-purple:hover,
 .admin-select-refined {
   padding: 0 12px;
   height: 38px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #334155;
   background: #ffffff;
@@ -6550,7 +6586,7 @@ button.card-gradient-purple:hover,
   width: 100%;
   height: 38px;
   padding: 0 30px 0 32px;
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #0f172a;
   background: #ffffff;
   border: 1px solid #cbd5e1;
@@ -6587,7 +6623,7 @@ button.card-gradient-purple:hover,
   gap: 4px;
   padding: 0 12px;
   height: 38px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
   background: #f8fafc;
@@ -6625,7 +6661,7 @@ button.card-gradient-purple:hover,
   .admin-channel-pill {
     text-align: center;
     padding: 7px 8px;
-    font-size: 12px;
+    font-size: 0.875rem;
   }
 
   .admin-toolbar-right {
@@ -6643,7 +6679,7 @@ button.card-gradient-purple:hover,
 
   .admin-input-refined {
     height: 38px;
-    font-size: 12px;
+    font-size: 0.875rem;
     border-radius: 8px;
   }
 
@@ -6662,7 +6698,7 @@ button.card-gradient-purple:hover,
   .admin-select-refined {
     width: 100%;
     height: 38px;
-    font-size: 12px;
+    font-size: 0.875rem;
     border-radius: 8px;
   }
 
@@ -6670,7 +6706,7 @@ button.card-gradient-purple:hover,
     height: 38px;
     padding: 0 12px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 }
 
@@ -6695,7 +6731,7 @@ button.card-gradient-purple:hover,
   border-collapse: collapse;
   table-layout: fixed;
   text-align: left;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 
 .admin-orders-table thead tr {
@@ -6705,7 +6741,7 @@ button.card-gradient-purple:hover,
 
 .admin-orders-table th {
   padding: 10px 12px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -6761,13 +6797,13 @@ button.card-gradient-purple:hover,
 .admin-date-primary {
   font-weight: 600;
   color: #0f172a;
-  font-size: 12px;
+  font-size: 0.875rem;
   white-space: nowrap;
   line-height: 1.25;
 }
 
 .admin-date-time {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   font-weight: 500;
   white-space: nowrap;
@@ -6776,7 +6812,7 @@ button.card-gradient-purple:hover,
 
 .admin-source-badge {
   display: inline-block;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 1px 6px;
   border-radius: 4px;
@@ -6816,7 +6852,7 @@ button.card-gradient-purple:hover,
 
 .admin-order-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
   background: #f8fafc;
@@ -6851,7 +6887,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-reseller-ref {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   font-weight: 500;
   white-space: nowrap;
@@ -6876,7 +6912,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-recipient-name {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
@@ -6906,7 +6942,7 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   min-width: 0;
   overflow: hidden;
@@ -6935,7 +6971,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-sender-subtext {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
@@ -7021,7 +7057,7 @@ button.card-gradient-purple:hover,
   border-radius: 6px;
   background: #e2e8f0;
   color: #475569;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   border: 1.5px solid #ffffff;
   margin-right: -4px;
@@ -7038,7 +7074,7 @@ button.card-gradient-purple:hover,
 
 .admin-item-sku {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
@@ -7047,7 +7083,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-item-desc {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
@@ -7055,14 +7091,14 @@ button.card-gradient-purple:hover,
 }
 
 .admin-item-total-qty {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
 }
 
 .admin-item-styles-count {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   white-space: nowrap;
 }
@@ -7071,7 +7107,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 1.5px 6px;
   border-radius: 4px;
@@ -7086,7 +7122,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-text-muted-subtle {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
 }
 
@@ -7100,7 +7136,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-carrier-title {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
@@ -7118,7 +7154,7 @@ button.card-gradient-purple:hover,
 
 .admin-carrier-awb {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7128,7 +7164,7 @@ button.card-gradient-purple:hover,
 
 .admin-unassigned-badge {
   display: inline-block;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   background: #f1f5f9;
   padding: 2px 7px;
@@ -7144,7 +7180,7 @@ button.card-gradient-purple:hover,
   gap: 5px;
   padding: 3px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.15px;
   width: fit-content;
@@ -7271,7 +7307,7 @@ button.card-gradient-purple:hover,
   max-width: 86px;
   height: 25px;
   padding: 0 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #1e293b;
   background: #ffffff;
@@ -7322,7 +7358,7 @@ button.card-gradient-purple:hover,
   flex: 1;
   height: 25px;
   padding: 0 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #334155;
   background: #ffffff;
@@ -7411,14 +7447,14 @@ button.card-gradient-purple:hover,
 }
 
 .admin-empty-title {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 4px;
 }
 
 .admin-empty-sub {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #64748b;
   margin: 0;
 }
@@ -7479,7 +7515,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-modal-title {
-  font-size: 16px;
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
   font-weight: 700;
   color: #0f172a;
   margin: 0;
@@ -7488,7 +7524,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-order-num-pill {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
   background: #f1f5f9;
@@ -7500,12 +7536,12 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
 }
 
 .admin-modal-meta-text {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #64748b;
   line-height: 1.3;
 }
@@ -7517,7 +7553,7 @@ button.card-gradient-purple:hover,
 
 .admin-modal-date-text {
   color: #64748b;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .badge-dropship-mini {
@@ -7526,7 +7562,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #e2e8f0;
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -7576,7 +7612,7 @@ button.card-gradient-purple:hover,
   justify-content: center;
   padding: 6px 14px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   border: 1px solid transparent;
   background: transparent;
@@ -7648,7 +7684,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-section-title {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #475569;
   letter-spacing: 0.04em;
@@ -7699,7 +7735,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-status-card-name {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #334155;
   white-space: nowrap;
@@ -7777,7 +7813,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   padding: 2.5px 8px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   background: #f8fafc;
   color: #475569;
@@ -7807,7 +7843,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-field-label {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
 }
@@ -7815,7 +7851,7 @@ button.card-gradient-purple:hover,
 .admin-form-input {
   width: 100%;
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #0f172a;
   background: #ffffff;
   border: 1px solid #cbd5e1;
@@ -7831,7 +7867,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-preview-track-link {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #2563eb;
   text-decoration: none;
@@ -7850,7 +7886,7 @@ button.card-gradient-purple:hover,
 
 .admin-tag-pill {
   padding: 2.5px 7px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   background: #f8fafc;
   color: #475569;
@@ -7887,7 +7923,7 @@ button.card-gradient-purple:hover,
 .admin-form-textarea {
   width: 100%;
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: 0.875rem;
   line-height: 1.45;
   color: #0f172a;
   background: #ffffff;
@@ -7939,7 +7975,7 @@ button.card-gradient-purple:hover,
   gap: 5px;
   padding: 6px 12px;
   height: 32px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
   background: #ffffff;
@@ -7964,7 +8000,7 @@ button.card-gradient-purple:hover,
   gap: 6px;
   padding: 7px 14px;
   height: 34px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #15803d;
   background: #dcfce7;
@@ -7989,7 +8025,7 @@ button.card-gradient-purple:hover,
   gap: 6px;
   padding: 7px 16px;
   height: 34px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #ffffff;
   background: #0f172a;
@@ -8035,7 +8071,7 @@ button.card-gradient-purple:hover,
   }
 
   .admin-modal-tab-btn {
-    font-size: 12px;
+    font-size: 0.875rem;
     padding: 6px 10px;
   }
 
@@ -8088,7 +8124,7 @@ button.card-gradient-purple:hover,
 
   .admin-modal-footer-right button,
   .admin-modal-footer-left a {
-    font-size: 12px;
+    font-size: 0.875rem;
   }
 }
 
@@ -8138,7 +8174,7 @@ button.card-gradient-purple:hover,
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #64748b;
   letter-spacing: 0.5px;
@@ -8146,20 +8182,20 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-name {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
 }
 
 .admin-inspect-detail {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #475569;
   margin: 0;
   line-height: 1.4;
 }
 
 .admin-inspect-pin {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #0f172a;
   margin: 2px 0 0;
@@ -8178,7 +8214,7 @@ button.card-gradient-purple:hover,
 .admin-inspect-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 
 .admin-inspect-table thead tr {
@@ -8187,7 +8223,7 @@ button.card-gradient-purple:hover,
 
 .admin-inspect-table th {
   padding: 9px 12px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -8216,7 +8252,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-subtotal-label {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #475569;
   letter-spacing: -0.1px;
@@ -8225,13 +8261,13 @@ button.card-gradient-purple:hover,
 .admin-inspect-subtotal-units {
   display: inline-block;
   margin-left: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #94a3b8;
 }
 
 .admin-inspect-subtotal-amount {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #1e293b;
   font-variant-numeric: tabular-nums;
@@ -8258,20 +8294,20 @@ button.card-gradient-purple:hover,
   border: 1px solid #a7f3d0;
   padding: 2.5px 8px;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: 0.4px;
 }
 
 .admin-inspect-coupon-label {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #059669;
 }
 
 .admin-inspect-coupon-amount {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #059669;
   font-variant-numeric: tabular-nums;
@@ -8284,13 +8320,13 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-shipping-label {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #475569;
 }
 
 .admin-inspect-shipping-amount {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #1e293b;
   font-variant-numeric: tabular-nums;
@@ -8310,7 +8346,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-total-label {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.1px;
@@ -8321,7 +8357,7 @@ button.card-gradient-purple:hover,
   align-items: center;
   padding: 2.5px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -8331,7 +8367,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-total-amount {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.3px;
@@ -8369,13 +8405,13 @@ button.card-gradient-purple:hover,
 
 .admin-sku-code {
   font-family: monospace;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #1e293b;
 }
 
 .admin-color-tag {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #2563eb;
   font-weight: 600;
 }
