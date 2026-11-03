@@ -6838,11 +6838,13 @@ button.card-gradient-purple:hover,
 .admin-order-id-col {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: flex-start;
+  gap: 3px;
   min-width: 0;
 }
 
-.admin-id-copy-row {
+.admin-id-copy-row,
+.admin-id-actions-row {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -6860,8 +6862,9 @@ button.card-gradient-purple:hover,
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
-  max-width: none;
+  max-width: fit-content;
   flex-shrink: 0;
+  display: inline-block;
 }
 
 .admin-btn-icon-subtle {

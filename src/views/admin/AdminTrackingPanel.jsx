@@ -712,17 +712,17 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     {/* Order ID */}
                     <td>
                       <div className="admin-order-id-col">
-                        <div className="admin-id-copy-row">
-                          <code className="admin-order-code" title={inquiry.order_number || inquiry.id}>
-                            {inquiry.order_number || inquiry.id.substring(0, 8)}
-                          </code>
+                        <code className="admin-order-code" title={inquiry.order_number || inquiry.id}>
+                          {inquiry.order_number || inquiry.id.substring(0, 8)}
+                        </code>
+                        <div className="admin-id-actions-row">
                           <button 
                             type="button" 
                             onClick={() => handleCopy(inquiry.order_number || inquiry.id, inquiry.id)}
                             className="admin-btn-icon-subtle"
                             title="Copy Order ID"
                           >
-                            {copyFeedback[inquiry.id] ? <Check size={11} style={{ color: '#15803d' }} /> : <Copy size={11} />}
+                            {copyFeedback[inquiry.id] ? <Check size={12} style={{ color: '#15803d' }} /> : <Copy size={12} />}
                           </button>
                           <a 
                             href={`/order-tracking/${encodeURIComponent(inquiry.order_number || inquiry.id)}`}
@@ -731,14 +731,14 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                             className="admin-btn-icon-subtle"
                             title="Open Buyer Tracking Page"
                           >
-                            <ExternalLink size={11} />
+                            <ExternalLink size={12} />
                           </a>
+                          {inquiry.reseller_order_id && (
+                            <span className="admin-reseller-ref" title={`Ref: #${inquiry.reseller_order_id}`}>
+                              Ref: #{inquiry.reseller_order_id}
+                            </span>
+                          )}
                         </div>
-                        {inquiry.reseller_order_id && (
-                          <span className="admin-reseller-ref" title={`Ref: #${inquiry.reseller_order_id}`}>
-                            Ref: #{inquiry.reseller_order_id}
-                          </span>
-                        )}
                       </div>
                     </td>
 
