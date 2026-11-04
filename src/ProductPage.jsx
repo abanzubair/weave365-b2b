@@ -1338,6 +1338,22 @@ export function ProductDetail({
       // 2. Try Database Insert FIRST to act as a lock
       const { supabase, isSupabaseConfigured } = await import('./supabaseClient.js');
       if (isSupabaseConfigured && supabase) {
+        // Enforce 10 downloads per 24 hours per user
+        if (!priceAccess?.isAdmin) {
+          const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const { count, error: countErr } = await supabase
+            .from('download_logs')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .gte('downloaded_at', since24h);
+
+          if (!countErr && typeof count === 'number' && count >= 10) {
+            setToastMessage('Daily limit reached: Maximum 10 catalogue downloads per 24 hours');
+            setTimeout(() => setToastMessage(''), 4000);
+            return;
+          }
+        }
+
         const { error } = await supabase.from('download_logs').insert({
           user_id: userId,
           product_id: productId
@@ -1345,8 +1361,15 @@ export function ProductDetail({
 
         if (error) {
           console.warn('Database rate limit blocked download:', error);
+          const isDailyCap =
+            String(error.message || '').toLowerCase().includes('daily download limit') ||
+            String(error.details || '').toLowerCase().includes('daily download limit') ||
+            String(error.message || '').includes('10');
+          const limitMsg = isDailyCap
+            ? 'Daily limit reached: Maximum 10 catalogue downloads per 24 hours'
+            : 'Limit reached: 1 download per product per day';
           localStorage.setItem(localKey, 'true'); // Sync local storage
-          setToastMessage('Limit reached: 1 download per product per day');
+          setToastMessage(limitMsg);
           setTimeout(() => setToastMessage(''), 4000);
           return; // Finally block will set isDownloading(false)
         }
@@ -1707,6 +1730,7 @@ export function ProductDetail({
             <div
               className="catalog-main-image"
               ref={mainImageRef}
+              onContextMenu={(e) => e.preventDefault()}
               onTouchStart={handleMainTouchStart}
               onTouchEnd={handleMainTouchEnd}
             >
@@ -1732,6 +1756,9 @@ export function ProductDetail({
                     decoding="sync"
                     width={600}
                     height={800}
+                    draggable={false}
+                    data-protect-image="true"
+                    onContextMenu={(e) => e.preventDefault()}
                     onError={(e) => {
                       const raw = getOriginalImageUrl(selectedImage || product.images[0]);
                       if (e.target.src !== raw && raw) {
@@ -1782,6 +1809,7 @@ export function ProductDetail({
               className="vertical-thumbs"
               ref={thumbsRef}
               style={galleryStyle}
+              onContextMenu={(e) => e.preventDefault()}
               onMouseEnter={() => setHeroLoaded(true)}
               onTouchStart={() => setHeroLoaded(true)}
               onMouseDown={handleThumbsMouseDown}
@@ -1812,6 +1840,9 @@ export function ProductDetail({
                     fetchPriority="low"
                     width={64}
                     height={85}
+                    draggable={false}
+                    data-protect-image="true"
+                    onContextMenu={(e) => e.preventDefault()}
                     onError={(e) => {
                       const raw = getOriginalImageUrl(image);
                       if (e.target.src !== raw && raw) {
@@ -3242,7 +3273,7 @@ export function ProductDetail({
       <Newsletter />
 
       {zoomImage && (
-        <div className="modal-backdrop zoom-backdrop" onClick={() => setZoomImage(null)}>
+        <div className="modal-backdrop zoom-backdrop" onClick={() => setZoomImage(null)} onContextMenu={(e) => e.preventDefault()}>
           <button type="button" className="icon-button modal-close zoom-close-btn" onClick={() => setZoomImage(null)}>
             <X size={24} />
           </button>
@@ -3286,6 +3317,9 @@ export function ProductDetail({
             src={getOptimizedImageUrl(zoomImage, 'zoom')}
             alt="Zoomed view"
             className="zoom-modal-img"
+            draggable={false}
+            data-protect-image="true"
+            onContextMenu={(e) => e.preventDefault()}
             onClick={(e) => e.stopPropagation()}
             onError={(e) => {
               const raw = getOriginalImageUrl(zoomImage);

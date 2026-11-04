@@ -901,6 +901,48 @@ create policy "Allow users to insert own download logs"
 create index if not exists download_logs_user_product_date_idx 
   on public.download_logs (user_id, product_id, downloaded_at);
 
+create index if not exists download_logs_user_downloaded_at_idx
+  on public.download_logs (user_id, downloaded_at desc);
+
+-- Function & Trigger: Strictly enforce server-side cap of 10 downloads per user per 24 hours
+create or replace function public.check_user_daily_download_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_count integer;
+  v_is_admin boolean;
+begin
+  -- Administrators are exempt from the daily cap
+  v_is_admin := public.is_admin();
+  if v_is_admin then
+    return new;
+  end if;
+
+  -- Count catalogue downloads by this user in the past 24 hours
+  select count(*)
+  into v_count
+  from public.download_logs
+  where user_id = new.user_id
+    and downloaded_at >= (now() - interval '24 hours');
+
+  if v_count >= 10 then
+    raise exception 'Daily download limit reached. Maximum 10 catalogue downloads per 24 hours.'
+      using errcode = 'P0001';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_check_user_daily_download_limit on public.download_logs;
+create trigger trg_check_user_daily_download_limit
+  before insert on public.download_logs
+  for each row
+  execute function public.check_user_daily_download_limit();
+
 -- Migration: Add drive_folder_url to vendor_profiles if it doesn't exist
 alter table public.vendor_profiles add column if not exists drive_folder_url text;
 

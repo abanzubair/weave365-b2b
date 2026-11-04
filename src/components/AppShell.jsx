@@ -135,6 +135,52 @@ export function AppShell({ children }) {
     }
   }, [navigate]);
 
+  // Protect catalogue & product imagery from casual right-click saving, drag-saving, and browser selection
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      const target = e.target;
+      if (!target) return;
+      const isProtected =
+        target.tagName === 'IMG' ||
+        target.hasAttribute?.('data-protect-image') ||
+        target.closest?.('.product-card') ||
+        target.closest?.('.card-media') ||
+        target.closest?.('.catalog-main-image') ||
+        target.closest?.('.zoom-modal') ||
+        target.closest?.('.zoom-backdrop') ||
+        target.closest?.('.vertical-thumbs') ||
+        target.closest?.('.variation-drawer') ||
+        target.closest?.('[data-protect-image="true"]');
+
+      if (isProtected) {
+        e.preventDefault();
+      }
+    };
+
+    const handleDragStart = (e) => {
+      const target = e.target;
+      if (!target) return;
+      if (
+        target.tagName === 'IMG' ||
+        target.closest?.('.card-media') ||
+        target.closest?.('.catalog-main-image') ||
+        target.closest?.('.zoom-modal') ||
+        target.closest?.('.vertical-thumbs') ||
+        target.closest?.('[data-protect-image="true"]')
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu, { capture: true });
+    document.addEventListener('dragstart', handleDragStart, { capture: true });
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu, { capture: true });
+      document.removeEventListener('dragstart', handleDragStart, { capture: true });
+    };
+  }, []);
+
   // Initialize global country pricing & currency conversion
   useEffect(() => {
     useCountryCurrency.getState().initCountryCurrency();

@@ -14,6 +14,37 @@
   overflow: hidden !important;
 }
 
+/* ==========================================================================
+   Catalogue & Product Image Protection
+   Disables casual image dragging, browser image selection, context menu,
+   and mobile touch-callout across all catalogue, product, and thumbnail imagery.
+   ========================================================================== */
+.product-card .card-media img,
+.image-button img,
+.catalog-main-image img,
+.vertical-thumbs img,
+.zoom-modal-img,
+.zoom-modal img,
+.variation-drawer img,
+.catalog-grid img,
+.catalogue-container img,
+.rt-prod-thumb-img,
+.compact-prod-thumb,
+.clean-photo-thumb-img,
+.dev-item-thumb,
+.vendor-card-img,
+img.catalogue-image,
+img.product-image,
+[data-protect-image="true"] {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+  -webkit-touch-callout: none !important;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

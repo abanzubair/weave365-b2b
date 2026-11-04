@@ -268,6 +268,22 @@ export const ProductCard = memo(function ProductCard({
 
       const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
       if (isSupabaseConfigured && supabase) {
+        // Enforce 10 downloads per 24 hours per user
+        if (!priceAccess?.isAdmin) {
+          const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const { count, error: countErr } = await supabase
+            .from('download_logs')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .gte('downloaded_at', since24h);
+
+          if (!countErr && typeof count === 'number' && count >= 10) {
+            handleClose();
+            triggerToast('Daily limit reached: Maximum 10 catalogue downloads per 24 hours');
+            return;
+          }
+        }
+
         const { error } = await supabase.from('download_logs').insert({
           user_id: userId,
           product_id: productId
@@ -275,9 +291,16 @@ export const ProductCard = memo(function ProductCard({
 
         if (error) {
           console.warn('Database rate limit blocked download:', error);
+          const isDailyCap =
+            String(error.message || '').toLowerCase().includes('daily download limit') ||
+            String(error.details || '').toLowerCase().includes('daily download limit') ||
+            String(error.message || '').includes('10');
+          const limitMsg = isDailyCap
+            ? 'Daily limit reached: Maximum 10 catalogue downloads per 24 hours'
+            : 'Limit reached: 1 download per product per day';
           localStorage.setItem(localKey, 'true');
           handleClose();
-          triggerToast('Limit reached: 1 download per product per day');
+          triggerToast(limitMsg);
           return;
         }
       }
@@ -440,7 +463,7 @@ export const ProductCard = memo(function ProductCard({
 
   return (
     <article className="product-card" ref={cardRef}>
-      <div className="card-media">
+      <div className="card-media" onContextMenu={(e) => e.preventDefault()}>
 
         <AppLink
           to="product"
@@ -448,6 +471,7 @@ export const ProductCard = memo(function ProductCard({
           navigate={navigate}
           className="image-button"
           aria-label={`View details for ${product.title}`}
+          onContextMenu={(e) => e.preventDefault()}
         >
           {isVisible ? (
             <img
@@ -460,6 +484,9 @@ export const ProductCard = memo(function ProductCard({
               decoding="async"
               width={300}
               height={400}
+              draggable={false}
+              data-protect-image="true"
+              onContextMenu={(e) => e.preventDefault()}
               onError={(e) => {
                 const fallback = getOriginalImageUrl(rawImage);
                 if (e.currentTarget.src !== fallback && fallback) {
@@ -478,6 +505,8 @@ export const ProductCard = memo(function ProductCard({
               decoding="async"
               width={300}
               height={400}
+              draggable={false}
+              data-protect-image="true"
             />
           )}
           <noscript>
@@ -486,6 +515,8 @@ export const ProductCard = memo(function ProductCard({
               alt={descriptiveAlt}
               width={300}
               height={400}
+              draggable={false}
+              data-protect-image="true"
             />
           </noscript>
         </AppLink>
