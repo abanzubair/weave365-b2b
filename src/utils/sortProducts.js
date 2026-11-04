@@ -38,6 +38,8 @@ export function sortByStockDateDesc(products) {
   });
 }
 
+import { isProductMatchingCategory } from './categoryHelpers.js';
+
 /**
  * Fast O(N) lookup for the top active product in a specific category.
  * Matches the first product rendered on the frontend grid.
@@ -48,10 +50,9 @@ export function sortByStockDateDesc(products) {
  */
 export function getTopProductForCategory(products, categoryName) {
   if (!Array.isArray(products) || !categoryName) return null;
-  const targetCategory = String(categoryName).toLowerCase().trim();
   const categoryProducts = products.filter((p) => {
     if (p.isArchived) return false;
-    return String(p.category || '').toLowerCase().trim() === targetCategory;
+    return isProductMatchingCategory(p, categoryName);
   });
   if (categoryProducts.length === 0) return null;
   const sorted = sortByStockDateDesc(categoryProducts);

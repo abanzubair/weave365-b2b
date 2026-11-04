@@ -6,7 +6,7 @@ import { Catalog } from '../../src/CatalogPage.jsx';
 import { useStorefront } from '../../src/store/useStorefront.js';
 import { useAppNavigate } from '../../src/hooks/useAppNavigate.js';
 import { getBuyerAccess } from '../../src/utils/buyerAccess.js';
-import { checkProductPriceInRange } from '../../src/storefrontShared.jsx';
+import { checkProductPriceInRange, isProductMatchingCategory } from '../../src/storefrontShared.jsx';
 import { sortByStockDateDesc } from '../../src/utils/sortProducts.js';
 import { upsertCart, persistCart, persistFavorites } from '../../src/utils/cartHelpers.js';
 const defaultCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
@@ -230,12 +230,7 @@ export default function CatalogueClient({
       const searchTerms = searchTerm.split(/\s+/).filter(Boolean);
       const matchesSearch = searchTerms.every((term) => text.includes(term));
 
-      const matchesCategory =
-        activeCategory === 'All' ||
-        (activeCategory === 'New Arrivals' && product.isNew) ||
-        (activeCategory === 'Bestsellers' && product.isTopSeller) ||
-        product.fabric === activeCategory ||
-        product.category === activeCategory;
+      const matchesCategory = isProductMatchingCategory(product, activeCategory);
 
       const matchesPrice = checkProductPriceInRange(product, activePriceRange, priceAccess);
       const matchesFabric =

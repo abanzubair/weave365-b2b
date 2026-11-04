@@ -25,7 +25,7 @@ import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
-import { checkProductPriceInRange } from '../storefrontShared.jsx';
+import { checkProductPriceInRange, isProductMatchingCategory } from '../storefrontShared.jsx';
 import '../styles/catalogPage.css';
 import '../styles/newArrivals.css';
 
@@ -199,7 +199,7 @@ export function NewArrivalsPage({
   const filteredProducts = useMemo(() => {
     return baseNewArrivals.filter(product => {
       // Category Filter
-      if (category !== 'All' && product.category !== category) return false;
+      if (category !== 'All' && !isProductMatchingCategory(product, category)) return false;
 
       // Fabric Filter
       if (fabric !== 'All' && (!product.fabric || product.fabric.trim().toLowerCase() !== fabric.trim().toLowerCase())) return false;

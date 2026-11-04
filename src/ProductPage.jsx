@@ -65,6 +65,7 @@ import {
   formatWeight,
   getLocalizedPrice,
   roundCurrency,
+  isSareeProduct,
 } from './storefrontShared.jsx';
 import { useCountryCurrency } from './store/useCountryCurrency.js';
 import { Newsletter } from './components/Newsletter.jsx';
@@ -955,7 +956,7 @@ export function ProductDetail({
   const moqUnitPlural = isSoldAsPc ? 'Pieces' : 'Sets';
   const moqMultiplier = isSoldAsPc ? 1 : totalColors;
 
-  const isSaree = String(product.category || '').toLowerCase() === 'saree';
+  const isSaree = isSareeProduct(product);
   const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
   const longDescriptionSections = useMemo(() => {
     const sections = [
@@ -1360,7 +1361,7 @@ export function ProductDetail({
       const zip = new JSZip();
 
       // Construct and add the product details text file
-      const isSaree = String(product.category || '').toLowerCase() === 'saree';
+      const isSaree = isSareeProduct(product);
       const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
       const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
 

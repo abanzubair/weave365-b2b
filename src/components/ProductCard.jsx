@@ -29,6 +29,7 @@ import {
   customerPrice,
   formatMoney,
   getLocalizedPrice,
+  isSareeProduct,
 } from '../storefrontShared.jsx';
 import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import {
@@ -288,7 +289,7 @@ export const ProductCard = memo(function ProductCard({
       const saveAs = fileSaverModule?.saveAs || fileSaverModule?.default || fileSaverModule;
       const zip = new JSZip();
 
-      const isSaree = String(product.category || '').toLowerCase() === 'saree';
+      const isSaree = isSareeProduct(product);
       const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
       const isWholesaler = priceAccess?.priceGroup === 'wholesale';
       const shippingLine = isWholesaler ? 'Included: GST (Free Shipping in India)' : 'Included: Free Shipping in India (Including GST)';

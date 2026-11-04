@@ -20,6 +20,10 @@ import {
   roundCurrency,
   formatCurrency,
 } from './utils/priceUtils.js';
+import {
+  isProductMatchingCategory,
+  isSareeProduct,
+} from './utils/categoryHelpers.js';
 
 export {
   formatMoney,
@@ -36,6 +40,8 @@ export {
   calculateLocalizedHybridCartTotals,
   roundCurrency,
   formatCurrency,
+  isProductMatchingCategory,
+  isSareeProduct,
 };
 
 
