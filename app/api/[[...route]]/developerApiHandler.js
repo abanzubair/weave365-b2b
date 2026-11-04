@@ -2248,13 +2248,13 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         });
 
         for (const item of items) {
-          const itemSku = String(item.sku || item.variant_code || item.id || '').trim().toLowerCase();
+          const itemSku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim().toLowerCase();
           const baseSku = itemSku.includes('-') ? itemSku.split('-')[0].trim() : itemSku;
           if (!authorizedSkuSet.has(itemSku) && !authorizedSkuSet.has(baseSku)) {
             return Response.json({
               status: 'error',
               code: 'UNAUTHORIZED_PRODUCT',
-              message: `Product SKU '${item.sku || item.id}' is not authorized for this account.`,
+              message: `Product SKU '${item.sku || item.product_id || item.id}' is not authorized for this account.`,
             }, { status: 403, headers: cors });
           }
         }
@@ -2262,7 +2262,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
       // Normalize items array with full catalog metadata
       const normalizedItems = items.map((item) => {
-        const sku = String(item.sku || item.variant_code || item.id || '').trim();
+        const sku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim();
         const skuLower = sku.toLowerCase();
         const baseSku = skuLower.includes('-') ? skuLower.split('-')[0].trim() : skuLower;
         const itemColor = String(item.color || item.title || '').trim();
