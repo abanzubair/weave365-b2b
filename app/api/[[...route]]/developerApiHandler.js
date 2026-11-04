@@ -946,7 +946,14 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
       const orderStatus = o.status || 'payment_pending';
       const isPaid = ['payment_received', 'verified', 'processing', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase());
-      const siteUrl = 'https://www.weave365.com';
+      const requestOrigin = request?.headers?.get('origin');
+      const requestHost = request?.headers?.get('host');
+      let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+      if (requestOrigin && (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1'))) {
+        siteUrl = requestOrigin;
+      } else if (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1'))) {
+        siteUrl = `http://${requestHost}`;
+      }
 
       return {
         id: o.id,
@@ -1738,6 +1745,233 @@ export async function handleVerifySubscription(request, supabase) {
  * Handles verifying and settling wholesale order payment.
  * Transitions order status from 'payment_pending' to 'payment_received'.
  */
+export async function handleInitiateOrderPayment(request, supabase, corsHeaders = defaultCorsHeaders) {
+  try {
+    const body = await request.json();
+    const orderId = String(body?.order_id || body?.id || body?.order_number || '').trim();
+    if (!orderId) {
+      return Response.json({
+        success: false,
+        status: 'error',
+        code: 'MISSING_ORDER_ID',
+        message: 'order_id or id is required.',
+      }, { status: 400, headers: corsHeaders });
+    }
+
+    let order = null;
+    const { data: apiOrd } = await supabase
+      .from('api_orders')
+      .select('*')
+      .or(`id.eq.${orderId},reseller_order_id.eq.${orderId}`)
+      .maybeSingle();
+
+    if (apiOrd) {
+      order = apiOrd;
+    } else {
+      const { data: ord } = await supabase
+        .from('orders')
+        .select('*')
+        .or(`id.eq.${orderId},order_number.eq.${orderId}`)
+        .maybeSingle();
+      if (ord) {
+        order = ord;
+      }
+    }
+
+    if (!order) {
+      return Response.json({
+        success: false,
+        status: 'error',
+        code: 'ORDER_NOT_FOUND',
+        message: `Order '${orderId}' was not found.`,
+      }, { status: 404, headers: corsHeaders });
+    }
+
+    const currentStatus = String(order.status || '').toLowerCase();
+    if (currentStatus === 'paid' || currentStatus === 'payment_received') {
+      return Response.json({
+        success: false,
+        status: 'already_paid',
+        message: 'This wholesale order has already been paid and verified.',
+      }, { status: 400, headers: corsHeaders });
+    }
+
+    // Calculate exact wholesale amount due
+    let totalWholesaleAmount = 0;
+    const items = Array.isArray(order.items) ? order.items : [];
+    items.forEach((it) => {
+      const wp = Number(it.wholesale_price || (it.selling_price && it.price && it.price < it.selling_price ? it.price : 0) || it.price || 0);
+      const qty = Math.max(1, parseInt(it.quantity || 1, 10));
+      totalWholesaleAmount += wp * qty;
+    });
+
+    if (totalWholesaleAmount <= 0 && order.shipping_notes) {
+      const dueMatch = order.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+      if (dueMatch) {
+        totalWholesaleAmount = Number(dueMatch[1].replace(/,/g, '')) || 0;
+      }
+    }
+    if (totalWholesaleAmount <= 0 && order.total_amount && Number(order.total_amount) > 0) {
+      totalWholesaleAmount = Number(order.total_amount);
+    }
+
+    // Check expedited shipping
+    const isExpedited = order.message && /Shipping:\s*Expedited/i.test(order.message);
+    let shippingFee = 0;
+    if (isExpedited) {
+      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i);
+      shippingFee = feeMatch ? Number(feeMatch[1].replace(/,/g, '')) : 150;
+    }
+    totalWholesaleAmount += shippingFee;
+
+    if (totalWholesaleAmount <= 0) {
+      return Response.json({
+        success: false,
+        status: 'error',
+        code: 'INVALID_AMOUNT',
+        message: 'Order total wholesale amount could not be determined.',
+      }, { status: 400, headers: corsHeaders });
+    }
+
+    const requestOrigin = request.headers.get('origin');
+    const requestHost = request.headers.get('host');
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+    if (requestOrigin && (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1'))) {
+      siteUrl = requestOrigin;
+    } else if (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1'))) {
+      siteUrl = `http://${requestHost}`;
+    }
+
+    const returnUrl = body?.return_url || `${siteUrl}/order-tracking/${order.id}`;
+    const cleanId = order.id.replace(/-/g, '').slice(0, 12);
+
+    const requestedGateway = String(body?.gateway || '').toLowerCase();
+    const phonepeEnabled = process.env.NEXT_PUBLIC_PHONEPE_ENABLED === 'true';
+    const gateway = (requestedGateway === 'cashfree' || requestedGateway === 'phonepe')
+      ? requestedGateway
+      : (phonepeEnabled ? 'phonepe' : 'cashfree');
+
+    if (gateway === 'phonepe') {
+      const pp = getPhonePeConfig();
+      if (!pp.clientId || !pp.clientSecret) {
+        return Response.json({
+          success: false,
+          error: 'PhonePe credentials are not configured on the server.',
+        }, { status: 500, headers: corsHeaders });
+      }
+
+      const merchantOrderId = `PP_ORD_${cleanId}_${Date.now().toString().slice(-6)}`;
+      const amountPaise = Math.round(totalWholesaleAmount * 100);
+      const sep = returnUrl.includes('?') ? '&' : '?';
+      const redirectCallbackUrl = `${returnUrl}${sep}pp_order_id=${merchantOrderId}&order_id=${order.id}`;
+
+      const ppRes = await phonepeFetch(pp, '/checkout/v2/pay', {
+        method: 'POST',
+        body: JSON.stringify({
+          merchantOrderId,
+          amount: amountPaise,
+          expireAfter: 1200,
+          paymentFlow: {
+            type: 'PG_CHECKOUT',
+            message: `Weave365 Wholesale Invoice #${(order.order_number || order.id).slice(0, 8)}`,
+            merchantUrls: {
+              redirectUrl: redirectCallbackUrl,
+            },
+          },
+          metaInfo: { udf1: order.id, udf2: 'wholesale_api_order' },
+        }),
+      });
+
+      const ppData = await ppRes.json().catch(() => ({}));
+      if (!ppRes.ok || !ppData.redirectUrl) {
+        return Response.json({
+          success: false,
+          error: ppData.message || 'Failed to initialize PhonePe payment session.',
+          details: ppData,
+        }, { status: ppRes.status || 500, headers: corsHeaders });
+      }
+
+      return Response.json({
+        success: true,
+        gateway: 'phonepe',
+        redirect_url: ppData.redirectUrl,
+        order_id: merchantOrderId,
+        amount: totalWholesaleAmount,
+      }, { status: 200, headers: corsHeaders });
+    } else {
+      const cf = getCashfreeConfig();
+      if (!cf.appId || !cf.secretKey) {
+        return Response.json({
+          success: false,
+          error: 'Cashfree credentials are not configured on the server.',
+        }, { status: 500, headers: corsHeaders });
+      }
+
+      const cfOrderId = `CF_ORD_${cleanId}_${Date.now().toString().slice(-6)}`;
+      const sep = returnUrl.includes('?') ? '&' : '?';
+      const redirectCallbackUrl = `${returnUrl}${sep}cf_order_id={order_id}&order_id=${order.id}`;
+      const customerPhone = (order.recipient_phone || order.phone || order.sender_phone || '').replace(/[^0-9]/g, '').slice(-10) || '9999999999';
+
+      const cfReqBody = {
+        order_id: cfOrderId,
+        order_amount: totalWholesaleAmount,
+        order_currency: 'INR',
+        customer_details: {
+          customer_id: order.user_id || `CUST_${cleanId}`,
+          customer_name: (order.sender_name || order.buyer_name || order.recipient_name || 'Reseller').slice(0, 50),
+          customer_phone: customerPhone.length === 10 ? customerPhone : '9999999999',
+          customer_email: order.recipient_email || order.email || 'support@weave365.com',
+        },
+        order_meta: {
+          return_url: redirectCallbackUrl,
+          notify_url: `${siteUrl}/api/cashfree/webhook`,
+        },
+        order_tags: {
+          order_id: order.id,
+        },
+        order_note: `Weave365 Wholesale Order #${order.order_number || order.id.slice(0, 8)}`,
+      };
+
+      const cfRes = await fetch(`${cf.baseUrl}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-id': cf.appId,
+          'x-client-secret': cf.secretKey,
+          'x-api-version': cf.apiVersion,
+        },
+        body: JSON.stringify(cfReqBody),
+      });
+
+      const cfData = await cfRes.json();
+      if (!cfRes.ok || !cfData.payment_session_id) {
+        return Response.json({
+          success: false,
+          error: cfData.message || 'Failed to initialize Cashfree payment order.',
+          details: cfData,
+        }, { status: cfRes.status || 500, headers: corsHeaders });
+      }
+
+      return Response.json({
+        success: true,
+        gateway: 'cashfree',
+        payment_session_id: cfData.payment_session_id,
+        order_id: cfOrderId,
+        environment: cf.env,
+        amount: totalWholesaleAmount,
+      }, { status: 200, headers: corsHeaders });
+    }
+  } catch (err) {
+    console.error('[handleInitiateOrderPayment] Error:', err);
+    return Response.json({
+      success: false,
+      status: 'error',
+      code: 'GATEWAY_ERROR',
+      message: err.message || 'Payment initiation failed',
+    }, { status: 500, headers: corsHeaders });
+  }
+}
+
 export async function handleVerifyOrderPayment(request, supabase, corsHeaders = defaultCorsHeaders) {
   try {
     const body = await request.json();
@@ -1750,8 +1984,67 @@ export async function handleVerifyOrderPayment(request, supabase, corsHeaders = 
       }, { status: 400, headers: corsHeaders });
     }
 
-    const paymentMethod = String(body?.payment_method || 'instant_payment_link').trim();
-    const paymentReference = String(body?.payment_reference || body?.payment_id || `SETTLE-${Date.now().toString(36).toUpperCase()}`).trim();
+    const gateway = String(body?.gateway || '').toLowerCase();
+    const ppOrderId = String(body?.pp_order_id || body?.merchant_order_id || '').trim();
+    const cfOrderId = String(body?.cf_order_id || body?.payment_id || '').trim();
+
+    let paymentMethod = String(body?.payment_method || (ppOrderId ? 'phonepe' : cfOrderId ? 'cashfree' : 'instant_payment_link')).trim();
+    let paymentReference = String(body?.payment_reference || ppOrderId || cfOrderId || `SETTLE-${Date.now().toString(36).toUpperCase()}`).trim();
+
+    // 1. Verify with PhonePe if pp_order_id is provided
+    if (ppOrderId || gateway === 'phonepe') {
+      const pp = getPhonePeConfig();
+      if (pp.clientId && pp.clientSecret && ppOrderId) {
+        try {
+          const status = await fetchOrderStatus(pp, ppOrderId);
+          if (status.ok && status.data?.state === 'COMPLETED') {
+            paymentMethod = 'phonepe';
+            paymentReference = status.data?.paymentDetails?.[0]?.transactionId || ppOrderId;
+          } else if (status.data?.state === 'FAILED') {
+            return Response.json({
+              status: 'failed',
+              message: 'PhonePe payment failed or was declined.',
+            }, { status: 400, headers: corsHeaders });
+          } else if (status.data?.state === 'PENDING') {
+            return Response.json({
+              status: 'pending',
+              message: 'PhonePe payment is still processing.',
+            }, { status: 202, headers: corsHeaders });
+          }
+        } catch (ppErr) {
+          console.warn('[handleVerifyOrderPayment] PhonePe verification query warning:', ppErr);
+        }
+      }
+    }
+
+    // 2. Verify with Cashfree if cf_order_id is provided
+    if (cfOrderId || gateway === 'cashfree') {
+      const cf = getCashfreeConfig();
+      if (cf.appId && cf.secretKey && cfOrderId) {
+        try {
+          const cfRes = await fetch(`${cf.baseUrl}/orders/${encodeURIComponent(cfOrderId)}`, {
+            method: 'GET',
+            headers: {
+              'x-client-id': cf.appId,
+              'x-client-secret': cf.secretKey,
+              'x-api-version': cf.apiVersion,
+            },
+          });
+          const cfData = await cfRes.json();
+          if (cfData?.order_status === 'PAID') {
+            paymentMethod = 'cashfree';
+            paymentReference = cfOrderId;
+          } else if (cfData?.order_status === 'FAILED' || cfData?.order_status === 'CANCELLED') {
+            return Response.json({
+              status: 'failed',
+              message: 'Cashfree payment failed or was cancelled.',
+            }, { status: 400, headers: corsHeaders });
+          }
+        } catch (cfErr) {
+          console.warn('[handleVerifyOrderPayment] Cashfree verification query warning:', cfErr);
+        }
+      }
+    }
 
     let updatedOrder = null;
 
@@ -1845,8 +2138,11 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
   const endpoint = pathSegments[1] || '';
 
-  // 0. Public or Session-Based Order Payment Verification (invoked from order tracking payment link)
-  if (endpoint === 'verify-order-payment' || endpoint === 'pay-order') {
+  // 0. Public or Session-Based Order Payment Verification & Initiation (invoked from order tracking payment link)
+  if (endpoint === 'initiate-order-payment' || endpoint === 'pay-order' || endpoint === 'initiate-payment') {
+    return handleInitiateOrderPayment(request, supabase, defaultCorsHeaders);
+  }
+  if (endpoint === 'verify-order-payment') {
     return handleVerifyOrderPayment(request, supabase, defaultCorsHeaders);
   }
 
@@ -1879,8 +2175,11 @@ export async function handleDeveloperApiPost(request, pathSegments) {
   // 2. Route: POST /api/v1/orders (Automated Reseller Order Placement & Payment Verification)
   if (endpoint === 'orders' || endpoint === 'order') {
     // 2a. Payment Verification Subroute: POST /api/v1/orders/verify-payment or POST /api/v1/orders/pay
-    if (pathSegments[2] === 'verify-payment' || pathSegments[2] === 'pay') {
+    if (pathSegments[2] === 'verify-payment') {
       return handleVerifyOrderPayment(request, supabase, cors);
+    }
+    if (pathSegments[2] === 'initiate-payment' || pathSegments[2] === 'pay') {
+      return handleInitiateOrderPayment(request, supabase, cors);
     }
 
     // Backend enforcement of Admin-Controlled Order API Access Toggle
@@ -2061,7 +2360,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           selling_price: finalSellingPrice,
           custom_billed_price: finalSellingPrice,
           dropship_billed_price: finalSellingPrice,
-          price: finalSellingPrice,
+          price: wholesalePrice > 0 ? wholesalePrice : finalSellingPrice,
+          unit_price: wholesalePrice > 0 ? wholesalePrice : finalSellingPrice,
           image: imageSrc || undefined,
         };
       });
@@ -2217,7 +2517,14 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         throw new Error('Database insert failed');
       }
 
-      const siteUrl = 'https://www.weave365.com';
+      const requestOrigin = request.headers.get('origin');
+      const requestHost = request.headers.get('host');
+      let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+      if (requestOrigin && (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1'))) {
+        siteUrl = requestOrigin;
+      } else if (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1'))) {
+        siteUrl = `http://${requestHost}`;
+      }
       const paymentLink = `${siteUrl}/order-tracking/${insertedOrder.id}?pay=1`;
 
       // Dispatch automated wholesale invoice & payment link email to reseller website owner
@@ -2264,7 +2571,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           parcel_declared_value: customerOrderAmount,
           cod_amount_to_collect: codAmountToCollect,
         },
-        message: 'Wholesale order received. An invoice and instant payment link has been emailed to your reseller account. Order fulfillment begins upon payment confirmation.',
+        message: 'Order received. An invoice and instant payment link has been emailed to your reseller account. Order fulfillment begins upon payment confirmation.',
         tracking_url: `${siteUrl}/order-tracking/${encodeURIComponent(insertedOrder.order_number || insertedOrder.id)}`,
         estimated_dispatch: '24-48 Business Hours after payment confirmation',
         order: {

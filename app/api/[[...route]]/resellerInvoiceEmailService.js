@@ -1,14 +1,14 @@
 /**
  * @file app/api/[[...route]]/resellerInvoiceEmailService.js
- * @description Wholesale Reseller Order Invoice & Payment Link Email Service.
- * Dispatches an automated, minimal B2B invoice email to the reseller / API user
+ * @description Reseller Order Invoice & Payment Link Email Service.
+ * Dispatches an automated, minimal, mobile-responsive invoice email to the reseller / API user
  * when an order is created, containing line items and a direct payment link.
  */
 
 export const runtime = 'edge';
 
 /**
- * Renders the clean, minimal HTML invoice email.
+ * Renders the clean, minimal, mobile-responsive HTML invoice email.
  */
 export function renderResellerInvoiceEmailHtml({
   orderNumber,
@@ -30,7 +30,7 @@ export function renderResellerInvoiceEmailHtml({
     minute: '2-digit',
   });
 
-  const itemsRows = (items || []).map((it, idx) => {
+  const itemsRows = (items || []).map((it) => {
     const title = it.product_title || it.title || 'Handloom Banarasi Saree';
     const sku = it.sku || it.code || 'N/A';
     const color = it.color || 'Standard';
@@ -40,42 +40,91 @@ export function renderResellerInvoiceEmailHtml({
 
     return `
       <tr style="border-bottom: 1px solid #f1f5f9;">
-        <td style="padding: 12px 8px; font-size: 13px; color: #0f172a;">
-          <div style="font-weight: 600;">${title}</div>
-          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">SKU: ${sku} &middot; Color: ${color}</div>
+        <td style="padding: 12px 0; vertical-align: top;">
+          <div style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.35;">${title}</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
+            Code: <span style="font-family: monospace; font-weight: 600; color: #334155;">${sku}</span> &middot; Color: ${color}
+          </div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+            Qty: ${qty} &times; ₹${unitPrice.toLocaleString('en-IN')}
+          </div>
         </td>
-        <td style="padding: 12px 8px; font-size: 13px; color: #334155; text-align: center;">${qty}</td>
-        <td style="padding: 12px 8px; font-size: 13px; color: #334155; text-align: right;">₹${unitPrice.toLocaleString('en-IN')}</td>
-        <td style="padding: 12px 8px; font-size: 13px; font-weight: 600; color: #0f172a; text-align: right;">₹${lineTotal}</td>
+        <td align="right" style="padding: 12px 0; vertical-align: top; white-space: nowrap; font-size: 13px; font-weight: 700; color: #0f172a;">
+          ₹${lineTotal}
+        </td>
       </tr>
     `;
   }).join('');
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wholesale Order Invoice - Weave 365</title>
+  <title>Order Invoice #${orderNumber} - Weave 365</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-outer-td {
+        padding: 12px 8px !important;
+      }
+      .email-card-cell {
+        padding: 20px 16px !important;
+      }
+      .email-header-cell {
+        padding: 16px 16px 14px 16px !important;
+      }
+      .email-footer-cell {
+        padding: 16px 16px 24px 16px !important;
+      }
+      .stack-col {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 14px !important;
+      }
+      .mobile-btn {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+        padding: 12px 20px !important;
+      }
+      .cta-inner-box {
+        padding: 16px 14px !important;
+      }
+      .header-badge {
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+      }
+    }
+  </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 32px 16px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; width: 100%;">
     <tr>
-      <td align="center">
+      <td align="center" class="email-outer-td" style="padding: 24px 12px;">
         <!-- Main Card Container -->
-        <table role="presentation" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 580px; width: 100%; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
           <!-- Header Banner -->
           <tr>
-            <td style="padding: 28px 32px 20px 32px; border-bottom: 1px solid #f1f5f9;">
-              <table role="presentation" width="100%">
+            <td class="email-header-cell" style="padding: 22px 28px 18px 28px; border-bottom: 1px solid #f1f5f9;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td>
+                  <td style="vertical-align: middle;">
                     <div style="font-size: 18px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em;">Weave 365</div>
-                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">B2B Wholesale Procurement</div>
+                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">B2B Order Notification</div>
                   </td>
-                  <td align="right">
-                    <span style="display: inline-block; background-color: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 9999px;">
+                  <td align="right" style="vertical-align: middle;">
+                    <span class="header-badge" style="display: inline-block; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 9999px; white-space: nowrap;">
                       Payment Pending
                     </span>
                   </td>
@@ -86,92 +135,86 @@ export function renderResellerInvoiceEmailHtml({
 
           <!-- Invoice Overview & Call to Action -->
           <tr>
-            <td style="padding: 28px 32px 16px 32px;">
-              <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 600; color: #0f172a;">Wholesale Order Invoice</h1>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #475569; line-height: 1.5;">
-                An order was submitted via your Developer API. Please review the itemized wholesale invoice below and complete payment to confirm fulfillment and release your order to the warehouse dispatch queue.
+            <td class="email-card-cell" style="padding: 24px 28px 16px 28px;">
+              <h1 style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: #0f172a; letter-spacing: -0.01em;">Order Invoice</h1>
+              <p style="margin: 0 0 18px 0; font-size: 13px; color: #64748b; line-height: 1.5;">
+                An order was submitted via your Developer API. Complete payment below to confirm fulfillment and release your order for Varanasi quality check &amp; dispatch.
               </p>
 
               <!-- Payment CTA Box -->
-              <table role="presentation" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 24px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 22px;">
                 <tr>
-                  <td style="padding: 20px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;">Total Wholesale Amount Due</div>
-                    <div style="font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 14px;">₹${formattedTotal}</div>
-                    <div>
-                      <a href="${paymentLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">
-                        Pay ₹${formattedTotal} &amp; Confirm Order &rarr;
+                  <td class="cta-inner-box" style="padding: 20px; text-align: center;">
+                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 4px;">Amount Due</div>
+                    <div style="font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.02em;">₹${formattedTotal}</div>
+                    <div style="margin-bottom: 8px;">
+                      <a href="${paymentLink}" target="_blank" class="mobile-btn" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">
+                        Pay ₹${formattedTotal} &rarr;
                       </a>
                     </div>
-                    <div style="font-size: 11px; color: #64748b; margin-top: 10px;">
-                      Secure instant payment via UPI, PhonePe, Cards, or NetBanking.
+                    <div style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                      Instant payment via UPI, PhonePe, Cards, or NetBanking.
                     </div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Order Metadata Grid -->
-              <table role="presentation" width="100%" style="margin-bottom: 24px;">
+              <!-- Order Metadata (Stacks cleanly on mobile) -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 18px;">
                 <tr>
-                  <td width="50%" style="vertical-align: top; padding-right: 12px;">
-                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Order Details</div>
+                  <td class="stack-col" width="50%" style="vertical-align: top; padding-right: 12px; padding-bottom: 10px;">
+                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Order Details</div>
                     <div style="font-size: 13px; color: #0f172a; font-weight: 600;">#${orderNumber}</div>
-                    ${resellerOrderId ? `<div style="font-size: 12px; color: #475569;">Reseller Ref: ${resellerOrderId}</div>` : ''}
-                    <div style="font-size: 12px; color: #64748b;">${dateStr}</div>
+                    ${resellerOrderId ? `<div style="font-size: 12px; color: #475569; margin-top: 2px;">Ref: ${resellerOrderId}</div>` : ''}
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">${dateStr}</div>
                   </td>
-                  <td width="50%" style="vertical-align: top; padding-left: 12px;">
-                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Delivery Destination</div>
-                    <div style="font-size: 13px; color: #0f172a; font-weight: 600;">${recipientName || 'B2B Partner Consignee'}</div>
-                    <div style="font-size: 12px; color: #475569; line-height: 1.4;">${shippingAddress || 'India'}</div>
+                  <td class="stack-col" width="50%" style="vertical-align: top; padding-left: 12px; padding-bottom: 10px;">
+                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Delivery Destination</div>
+                    <div style="font-size: 13px; color: #0f172a; font-weight: 600;">${recipientName || 'Consignee'}</div>
+                    <div style="font-size: 12px; color: #475569; line-height: 1.45; margin-top: 2px;">${shippingAddress || 'India'}</div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Items Table -->
-              <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Consignment Items</div>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom: 20px;">
-                <thead>
-                  <tr style="border-bottom: 2px solid #e2e8f0; background-color: #f8fafc;">
-                    <th align="left" style="padding: 8px; font-size: 11px; text-transform: uppercase; color: #475569;">Item</th>
-                    <th align="center" style="padding: 8px; font-size: 11px; text-transform: uppercase; color: #475569;">Qty</th>
-                    <th align="right" style="padding: 8px; font-size: 11px; text-transform: uppercase; color: #475569;">Rate</th>
-                    <th align="right" style="padding: 8px; font-size: 11px; text-transform: uppercase; color: #475569;">Total</th>
-                  </tr>
-                </thead>
+              <!-- Ordered Items Header & List -->
+              <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">
+                Ordered Items (${items.length || 1})
+              </div>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom: 16px;">
                 <tbody>
                   ${itemsRows}
                 </tbody>
               </table>
 
-              <!-- Financial Summary Table -->
-              <table role="presentation" width="100%" style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-bottom: 24px;">
+              <!-- Price Breakdown -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top: 1px solid #e2e8f0; padding-top: 10px; margin-bottom: 20px;">
                 <tr>
-                  <td style="font-size: 13px; color: #475569; padding: 4px 0;">Wholesale Subtotal</td>
-                  <td align="right" style="font-size: 13px; color: #0f172a; font-weight: 600; padding: 4px 0;">₹${formattedTotal}</td>
+                  <td style="font-size: 12px; color: #64748b; padding: 4px 0;">Items Subtotal</td>
+                  <td align="right" style="font-size: 12px; color: #0f172a; font-weight: 600; padding: 4px 0;">₹${formattedTotal}</td>
                 </tr>
                 <tr>
-                  <td style="font-size: 13px; color: #475569; padding: 4px 0;">Packaging &amp; Warehouse Dispatch</td>
-                  <td align="right" style="font-size: 13px; color: #10b981; font-weight: 600; padding: 4px 0;">Included</td>
+                  <td style="font-size: 12px; color: #64748b; padding: 4px 0;">Shipping &amp; Delivery</td>
+                  <td align="right" style="font-size: 12px; color: #16a34a; font-weight: 600; padding: 4px 0;">FREE (Standard)</td>
                 </tr>
                 <tr style="border-top: 1px solid #e2e8f0;">
-                  <td style="font-size: 14px; color: #0f172a; font-weight: 700; padding: 10px 0 0 0;">Total Payable</td>
-                  <td align="right" style="font-size: 16px; color: #0f172a; font-weight: 800; padding: 10px 0 0 0;">₹${formattedTotal}</td>
+                  <td style="font-size: 13px; color: #0f172a; font-weight: 700; padding: 10px 0 0 0;">Amount Due</td>
+                  <td align="right" style="font-size: 15px; color: #0f172a; font-weight: 800; padding: 10px 0 0 0;">₹${formattedTotal}</td>
                 </tr>
               </table>
 
               <!-- Status Note -->
-              <div style="background-color: #f1f5f9; border-radius: 6px; padding: 12px 16px; font-size: 12px; color: #475569; line-height: 1.5;">
-                <strong>Next Step:</strong> Until payment is received, this order status remains <strong>Payment Pending</strong>. Upon successful payment verification, it will automatically update to <strong>Payment Received</strong> and enter the Varanasi quality inspection and packaging queue.
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #64748b; line-height: 1.45;">
+                <strong style="color: #0f172a;">Status:</strong> Payment pending. Upon payment, your order will automatically update to <strong>Payment Received</strong> and enter the Varanasi quality inspection and packaging queue.
               </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 20px 32px 28px 32px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8; line-height: 1.5; text-align: center;">
-              Need support with your consignment? Reply directly to this email or message our wholesale desk on WhatsApp at 
-              <a href="https://wa.me/${supportWhatsApp.replace(/\D/g, '')}" style="color: #0f172a; text-decoration: underline;">+91 99191 01369</a>.<br>
-              &copy; ${new Date().getFullYear()} Weave 365. Handloom Saree Procurement Network, Varanasi.
+            <td class="email-footer-cell" style="padding: 18px 28px 24px 28px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8; line-height: 1.5; text-align: center;">
+              Need support? Reply directly to this email or message on WhatsApp at 
+              <a href="https://wa.me/${supportWhatsApp.replace(/\D/g, '')}" style="color: #0f172a; font-weight: 600; text-decoration: underline;">+91 99191 01369</a>.<br>
+              &copy; ${new Date().getFullYear()} Weave 365 &middot; Varanasi.
             </td>
           </tr>
         </table>
@@ -184,7 +227,7 @@ export function renderResellerInvoiceEmailHtml({
 }
 
 /**
- * Dispatches the wholesale invoice and payment link email via Resend.
+ * Dispatches the order invoice and payment link email via Resend.
  */
 export async function sendResellerInvoiceEmail({
   order,
@@ -238,7 +281,7 @@ export async function sendResellerInvoiceEmail({
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: `Weave 365 Wholesale <${fromEmail}>`,
+        from: `Weave 365 <${fromEmail}>`,
         to: targetEmail,
         reply_to: replyToEmail,
         subject,
@@ -279,4 +322,3 @@ export async function sendResellerInvoiceEmail({
     return { success: false, error: err.message };
   }
 }
-

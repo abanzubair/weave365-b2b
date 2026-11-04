@@ -3,7 +3,7 @@
  * Purpose: Allows buyers to track their order status, see shipping carrier details,
  * custom tracking messages from the admin, and ordered items.
  */
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { 
   Truck, 
   Compass, 
@@ -39,6 +39,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [copied, setCopied] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentSuccessMsg, setPaymentSuccessMsg] = useState('');
+  const autoTriggeredRef = useRef(false);
 
   const handleCopyId = () => {
     const idToCopy = order?.order_number || order?.id;
@@ -118,7 +119,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       // Resolve title
       const title = item.product_title || item.title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
 
-      // Resolve price (handling unit_price, price, total_price, or catalog prices)
+      // Resolve price (handling wholesale_price, unit_price, price, total_price, or catalog prices)
       const qty = Math.max(1, parseInt(item.quantity || 1, 10));
       const setSize = matchedProduct?.totalColors || matchedProduct?.variants?.length || 1;
       const isUnder999 = String(matchedProduct?.category || '').toLowerCase() === 'under 999';
@@ -128,12 +129,30 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       const mrpPrice = Number(matchedVariant?.prices?.mrp || matchedVariant?.prices?.offer || matchedProduct?.price || 0);
       const recordedPrice = Number(item.unit_price ?? item.price ?? 0);
 
-      let unitPrice = recordedPrice;
-      // If recordedPrice was saved as wholesale mrp (or 0) but item was ordered as single-piece,
-      // resolve to b2rPrice (the single-piece price shown to buyers on the storefront product page)
-      if (isSinglePiece && b2rPrice > 0 && (recordedPrice <= mrpPrice || recordedPrice === 0)) {
+      // Price on Label (Customer billed price / courier slip declared value)
+      const labelUnitPrice = Number(
+        item.selling_price ||
+        item.custom_billed_price ||
+        item.dropship_billed_price ||
+        item.customer_price ||
+        (order?.is_dropship && order?.dropship_billed_price ? order.dropship_billed_price : 0)
+      );
+
+      // Actual Product Price owed by dropshipper / reseller to Weave 365 (B2C / B2R price from catalog)
+      let unitPrice = 0;
+      if (item.wholesale_price && Number(item.wholesale_price) > 0) {
+        unitPrice = Number(item.wholesale_price);
+      } else if (order?.is_dropship || labelUnitPrice > 0) {
+        if (recordedPrice > 0 && labelUnitPrice > 0 && recordedPrice < labelUnitPrice) {
+          unitPrice = recordedPrice;
+        } else {
+          unitPrice = (b2rPrice > 0) ? b2rPrice : (mrpPrice || recordedPrice || 0);
+        }
+      } else if (isSinglePiece && b2rPrice > 0 && (recordedPrice <= mrpPrice || recordedPrice === 0)) {
         unitPrice = b2rPrice;
-      } else if (!unitPrice) {
+      } else if (recordedPrice > 0) {
+        unitPrice = recordedPrice;
+      } else {
         unitPrice = (isSinglePiece && b2rPrice > 0) ? b2rPrice : (mrpPrice || b2rPrice || 0);
       }
 
@@ -145,6 +164,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
         title,
         imageSrc,
         unitPrice,
+        labelUnitPrice: labelUnitPrice > 0 ? labelUnitPrice : unitPrice,
         qty,
         totalPrice,
       };
@@ -153,29 +173,46 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   // Robust Total Order Value calculation
   const totalOrderValue = useMemo(() => {
+    const wholesaleSum = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
+    const labelSum = resolvedItems.reduce((acc, it) => acc + (((it.labelUnitPrice || it.unitPrice) * it.qty) || 0), 0);
+
     // 1. Explicit positive order.total_amount
     if (order?.total_amount !== undefined && order?.total_amount !== null && Number(order.total_amount) > 0) {
-      return Number(order.total_amount);
+      const explicitAmt = Number(order.total_amount);
+      if (wholesaleSum > 0 && labelSum > wholesaleSum && Math.round(explicitAmt) === Math.round(labelSum)) {
+        return wholesaleSum;
+      }
+      return explicitAmt;
     }
 
-    // 2. Parse from message if available (e.g. "Total: ₹1,491" or "Total: ₹ 1491")
-    if (order?.message) {
-      const match = order.message.match(/Total:\s*₹?\s*([0-9.,]+)/i);
+    // 2. Parse from message or shipping_notes if available
+    const combinedNotes = `${order?.shipping_notes || ''} ${order?.message || ''}`;
+    if (combinedNotes) {
+      const dueMatch = combinedNotes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+      if (dueMatch) {
+        const parsed = Number(dueMatch[1].replace(/,/g, ''));
+        if (parsed > 0) return parsed;
+      }
+      const match = combinedNotes.match(/Total:\s*₹?\s*([0-9.,]+)/i);
       if (match) {
         const parsed = Number(match[1].replace(/,/g, ''));
-        if (parsed > 0) return parsed;
+        if (parsed > 0 && (!labelSum || parsed <= wholesaleSum || Math.round(parsed) !== Math.round(labelSum))) {
+          return parsed;
+        }
       }
     }
 
     // 3. Sum of resolved item totals
-    const sum = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
-    return sum || 0;
-  }, [order?.total_amount, order?.message, resolvedItems]);
+    return wholesaleSum || 0;
+  }, [order?.total_amount, order?.message, order?.shipping_notes, resolvedItems]);
 
   // Complete Amount Breakup calculation (Subtotal, Coupon Discount, Shipping, Total)
   const amountBreakdown = useMemo(() => {
     const totalQuantity = resolvedItems.reduce((acc, it) => acc + (Number(it.qty) || 1), 0);
     let itemsSubtotal = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
+    const totalLabelPrice = resolvedItems.reduce((acc, it) => acc + (((it.labelUnitPrice || it.unitPrice) * it.qty) || 0), 0);
+    const hasLabelPrice = totalLabelPrice > 0 && totalLabelPrice > itemsSubtotal;
+    const resellerMargin = hasLabelPrice ? Math.max(0, totalLabelPrice - itemsSubtotal) : 0;
 
     let couponDiscount = Number(order?.coupon_discount || 0);
     let couponCode = order?.coupon_code || '';
@@ -243,6 +280,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     return {
       totalQuantity,
       itemsSubtotal,
+      totalLabelPrice,
+      hasLabelPrice,
+      resellerMargin,
       couponDiscount,
       couponCode,
       shippingFee,
@@ -437,8 +477,24 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           } else if (!trackingOrder) {
             const found = apiData || inqData;
             if (found) {
+              let totalWholesale = 0;
+              if (Array.isArray(found.items)) {
+                totalWholesale = found.items.reduce((acc, it) => {
+                  const wp = Number(it.wholesale_price || (it.selling_price && it.price && it.price < it.selling_price ? it.price : 0) || it.price || 0);
+                  return acc + (wp * (it.quantity || 1));
+                }, 0);
+              }
+              if (found.shipping_notes) {
+                const dueMatch = found.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+                if (dueMatch) {
+                  const parsedDue = Number(dueMatch[1].replace(/,/g, ''));
+                  if (parsedDue > 0) totalWholesale = parsedDue;
+                }
+              }
+
               trackingOrder = {
                 ...found,
+                total_amount: totalWholesale > 0 ? totalWholesale : found.total_amount,
                 buyer_name: found.recipient_name || found.buyer_name,
                 phone: found.recipient_phone || found.phone,
                 email: found.recipient_email || found.email,
@@ -628,35 +684,133 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     setIsProcessingPayment(true);
     setPaymentSuccessMsg('');
     try {
-      const res = await fetch('/api/v1/verify-order-payment', {
+      const returnUrl = `${window.location.origin}/order-tracking/${encodeURIComponent(order.order_number || order.id)}`;
+      const res = await fetch('/api/v1/initiate-order-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           order_id: order.id,
-          payment_method: 'online_instant',
-          payment_reference: `PAY-${Date.now().toString(36).toUpperCase()}`,
+          return_url: returnUrl,
         }),
       });
+
       const data = await res.json();
-      if (res.ok && data.status === 'success') {
-        setPaymentSuccessMsg('Payment confirmed! Your order is verified and released for Varanasi quality check & dispatch.');
-        setOrder(prev => ({
-          ...prev,
-          status: 'payment_received',
-          updated_at: new Date().toISOString(),
-        }));
-      } else {
-        alert(data.message || 'Payment verification failed. Please try again or contact support.');
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Failed to initialize payment gateway.');
+      }
+
+      if (data.gateway === 'phonepe' && data.redirect_url) {
+        window.location.assign(data.redirect_url);
+        return;
+      }
+
+      if (data.gateway === 'cashfree' && data.payment_session_id) {
+        const { load: loadCashfree } = await import('@cashfreepayments/cashfree-js');
+        const envMode = (data.environment || 'SANDBOX').toLowerCase() === 'production' ? 'production' : 'sandbox';
+        const cashfree = await loadCashfree({ mode: envMode });
+        if (!cashfree) throw new Error('Cashfree Payment Gateway SDK failed to initialize.');
+
+        const checkoutResult = await cashfree.checkout({
+          paymentSessionId: data.payment_session_id,
+          redirectTarget: '_modal',
+          appearance: { width: '650px', height: '780px' },
+        });
+
+        if (checkoutResult?.error) {
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        if (checkoutResult?.redirect) {
+          return;
+        }
+
+        const verifyRes = await fetch('/api/v1/verify-order-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: order.id,
+            gateway: 'cashfree',
+            cf_order_id: data.order_id,
+          }),
+        });
+        const vData = await verifyRes.json();
+        if (vData?.status === 'success') {
+          setPaymentSuccessMsg('Payment confirmed! Your order is verified and released for Varanasi quality check & dispatch.');
+          setOrder(prev => ({
+            ...prev,
+            status: 'payment_received',
+            updated_at: new Date().toISOString(),
+          }));
+        } else {
+          alert(vData?.message || 'Payment completed but verification pending. Please refresh in a moment.');
+        }
       }
     } catch (e) {
-      console.error('Payment verification error:', e);
-      alert('Unable to process payment right now. Please try again.');
+      console.error('Payment gateway initiation error:', e);
+      alert(e.message || 'Unable to connect to payment gateway right now. Please try again.');
     } finally {
       setIsProcessingPayment(false);
     }
   };
+
+  // Handle URL callbacks from payment gateways (PhonePe / Cashfree) and auto-payment link (?pay=1)
+  useEffect(() => {
+    if (!order?.id || typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const ppOrderId = params.get('pp_order_id');
+    const cfOrderId = params.get('cf_order_id');
+    const payFlag = params.get('pay');
+
+    // 1. Returning from PhonePe or Cashfree redirect
+    if ((ppOrderId || cfOrderId) && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      setIsProcessingPayment(true);
+      fetch('/api/v1/verify-order-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: order.id,
+          gateway: ppOrderId ? 'phonepe' : 'cashfree',
+          pp_order_id: ppOrderId,
+          cf_order_id: cfOrderId,
+        }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.status === 'success') {
+            setPaymentSuccessMsg('Payment confirmed! Your order is verified and released for Varanasi quality check & dispatch.');
+            setOrder(prev => ({
+              ...prev,
+              status: 'payment_received',
+              updated_at: new Date().toISOString(),
+            }));
+            try {
+              const cleanUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
+            } catch {}
+          } else {
+            console.warn('Payment verification pending or failed:', data);
+          }
+        })
+        .catch(err => console.error('Verification error:', err))
+        .finally(() => setIsProcessingPayment(false));
+      return;
+    }
+
+    // 2. Opened via invoice payment link (?pay=1) -> prompt / auto-launch payment gateway
+    const isPending = ['payment_pending', 'pending_payment', 'new'].includes((order.status || '').toLowerCase());
+    if (payFlag === '1' && isPending && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      const timer = setTimeout(() => {
+        handlePayWholesaleOrder();
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [order?.id, order?.status]);
 
   const getStatusMessage = () => {
     if (
@@ -688,7 +842,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       case 'payment_pending':
       case 'pending_payment':
       case 'new':
-        return 'Payment pending confirmation. Please complete wholesale invoice payment via the button below to confirm your order and release it for Varanasi quality check & dispatch.';
+        return 'Payment pending. Please complete payment to confirm your order and release it for Varanasi quality check & dispatch.';
       default:
         return 'Order received. Our team will verify and update your order status shortly.';
     }
@@ -842,52 +996,49 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               })}
             </div>
 
-            {/* Wholesale Payment Pending Action Card */}
+            {/* Payment Pending Action Card */}
             {(currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new') && (
               <div className="order-payment-pending-panel" style={{
-                background: '#fffbeb',
-                border: '1px solid #fde68a',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
                 borderRadius: '10px',
-                padding: '20px 24px',
+                padding: '16px 20px',
                 marginBottom: '20px',
                 display: 'flex',
-                flexDirection: 'column',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
                 gap: '12px'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#b45309' }}>
-                      Action Required &middot; Wholesale Invoice
-                    </div>
-                    <div style={{ fontSize: '16px', fontWeight: '700', color: '#78350f', marginTop: '2px' }}>
-                      Wholesale Amount Due: {formatMoney(order.total_amount || amountBreakdown.finalTotal, { currency: orderCurrency })}
-                    </div>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b' }}>
+                    Action Required
                   </div>
-                  <button
-                    type="button"
-                    disabled={isProcessingPayment}
-                    onClick={handlePayWholesaleOrder}
-                    style={{
-                      background: '#0f172a',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '10px 22px',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      cursor: isProcessingPayment ? 'not-allowed' : 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {isProcessingPayment ? 'Verifying Payment...' : `Pay ${formatMoney(order.total_amount || amountBreakdown.finalTotal, { currency: orderCurrency })} & Confirm Order →`}
-                  </button>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>
+                    Amount Due: {formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })}
+                  </div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#92400e', lineHeight: 1.5 }}>
-                  This wholesale order was placed via the Developer API. Complete invoice settlement above or via the payment link emailed to your registered reseller account to immediately release this consignment to the Varanasi inspection &amp; packaging queue.
-                </div>
+                <button
+                  type="button"
+                  disabled={isProcessingPayment}
+                  onClick={handlePayWholesaleOrder}
+                  style={{
+                    background: '#0f172a',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '10px 22px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: isProcessingPayment ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  {isProcessingPayment ? 'Connecting to Gateway...' : `Pay ${formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })} →`}
+                </button>
               </div>
             )}
 
@@ -1039,10 +1190,22 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                             <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
                           )}
                           <span className="item-meta-item">Qty: {item.qty}</span>
+                          {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
+                            <span className="item-meta-item" style={{ color: '#64748b' }}>
+                              Price on Label: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}</strong>
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="tracking-item-price">
-                        {item.totalPrice ? formatMoney(item.totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: orderCurrency }) : 'Wholesale Direct')}
+                        <div>
+                          <strong>{item.totalPrice ? formatMoney(item.totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: orderCurrency }) : 'Direct')}</strong>
+                          {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', textAlign: 'right' }}>
+                              Label: {formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1052,12 +1215,34 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 <div className="tracking-amount-breakup-card">
                   <div className="tracking-breakup-row">
                     <span className="tracking-breakup-label">
-                      Items Subtotal ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
+                      Actual Product Price ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
                     </span>
                     <span className="tracking-breakup-val">
                       {formatMoney(amountBreakdown.itemsSubtotal, { currency: orderCurrency })}
                     </span>
                   </div>
+
+                  {amountBreakdown.hasLabelPrice && (
+                    <>
+                      <div className="tracking-breakup-row" style={{ color: '#475569' }}>
+                        <span className="tracking-breakup-label">
+                          Price on Label (Parcel Slip Value)
+                        </span>
+                        <span className="tracking-breakup-val">
+                          {formatMoney(amountBreakdown.totalLabelPrice, { currency: orderCurrency })}
+                        </span>
+                      </div>
+
+                      <div className="tracking-breakup-row" style={{ color: '#166534' }}>
+                        <span className="tracking-breakup-label">
+                          Your Reseller Margin
+                        </span>
+                        <span className="tracking-breakup-val" style={{ fontWeight: '600', color: '#166534' }}>
+                          +{formatMoney(amountBreakdown.resellerMargin, { currency: orderCurrency })}
+                        </span>
+                      </div>
+                    </>
+                  )}
 
                   {amountBreakdown.couponDiscount > 0 && (
                     <div className="tracking-breakup-row tracking-coupon-row">
@@ -1092,7 +1277,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   <div className="tracking-breakup-divider" />
 
                   <div className="tracking-breakup-row tracking-total-row">
-                    <span className="tracking-total-label">Total Paid</span>
+                    <span className="tracking-total-label">
+                      {currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new' ? 'Amount Due' : 'Total Paid'}
+                    </span>
                     <strong className="tracking-total-amount">
                       {formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })}
                     </strong>
