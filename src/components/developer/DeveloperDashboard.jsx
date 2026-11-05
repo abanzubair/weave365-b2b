@@ -2481,7 +2481,7 @@ export function DeveloperDashboard({
           {activeDevTab === 'keys' && (
             <div className="dev-card dev-keys-unified-card">
               {/* Card Header with Title, Store, and Action Chips */}
-              <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div className="dev-card-head">
                 <div className="dev-card-title">
                   <KeyRound size={16} />
                   <h3>API Credentials &amp; Quota</h3>
@@ -2491,14 +2491,13 @@ export function DeveloperDashboard({
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="dev-card-head-actions">
                   <span className="dev-studio-brand-pill">
-                    Store: {apiKey?.client_name || 'B2B Partner'}
+                    Store:&nbsp;{apiKey?.client_name || 'B2B Partner'}
                   </span>
                   <button
                     type="button"
-                    className="dev-action-chip"
-                    style={{ height: '30px', fontSize: '0.75rem', gap: '5px', cursor: 'pointer' }}
+                    className="dev-action-chip dev-key-action-chip"
                     onClick={handleRegenerateKey}
                     title="Generate a new API secret key"
                   >
@@ -2507,8 +2506,7 @@ export function DeveloperDashboard({
                   </button>
                   <button
                     type="button"
-                    className="dev-action-chip"
-                    style={{ height: '30px', fontSize: '0.75rem', gap: '5px', color: '#dc2626', borderColor: '#fecaca', background: '#ffffff', cursor: 'pointer' }}
+                    className="dev-action-chip dev-key-action-chip danger"
                     onClick={handleDeleteApiKey}
                     title="Permanently revoke and delete this API key"
                   >
@@ -2527,7 +2525,7 @@ export function DeveloperDashboard({
                       {!apiKey?.is_active ? (
                         <span style={{ color: '#dc2626', fontWeight: 600 }}>⚠️ Inactive: Incoming requests with this key will return 403 Forbidden</span>
                       ) : (
-                        <>Pass in HTTP header: <code>X-API-Key: &lt;your_key&gt;</code></>
+                        <>Pass in HTTP header: <code className="dev-header-code-pill">X-API-Key:&nbsp;&lt;your_key&gt;</code></>
                       )}
                     </span>
                   </div>

@@ -1095,8 +1095,16 @@
   color: #475569;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.625rem;
   border-radius: 0.375rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.4;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dev-card-head {
@@ -1105,6 +1113,49 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dev-card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dev-key-action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dev-key-action-chip:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.dev-key-action-chip.danger {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #ffffff;
+}
+
+.dev-key-action-chip.danger:hover {
+  background: #fef2f2;
+  border-color: #f87171;
 }
 
 .dev-card-title {
@@ -1157,16 +1208,21 @@
 .dev-cred-desc {
   font-size: 0.875rem;
   color: #64748b;
+  line-height: 1.5;
 }
 
-.dev-cred-desc code {
+.dev-cred-desc code,
+.dev-header-code-pill {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background: #f1f5f9;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   color: #0f172a;
   border: 1px solid #e2e8f0;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .dev-cred-input-wrap {
@@ -3011,7 +3067,7 @@
     padding: 4px 0;
   }
 
-  .dev-action-chip {
+  .dev-curator-actions .dev-action-chip {
     height: 38px;
     padding: 0 8px;
     font-size: 0.75rem;
@@ -5972,6 +6028,46 @@
     padding: 0.5rem 0.75rem;
     white-space: nowrap;
     border-radius: 0.375rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .dev-card-head {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 0.875rem 1rem !important;
+  }
+
+  .dev-card-head-actions {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .dev-studio-brand-pill {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dev-key-action-chip {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dev-cred-desc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.5;
+  }
+
+  .dev-header-code-pill {
+    white-space: nowrap !important;
+    display: inline-block !important;
   }
 }
 
