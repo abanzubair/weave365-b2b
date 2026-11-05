@@ -1317,7 +1317,6 @@ export function Account({
                                             <span className="routing-name">{recipientName}</span>
                                             <span className="routing-sub">
                                               {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
-                                              {recipientPhone ? ` · ${recipientPhone}` : ''}
                                             </span>
                                           </div>
                                           {isDropshipOrder && (
