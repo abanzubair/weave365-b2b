@@ -676,7 +676,7 @@ export function Admin({
     const rawOrders = (adminData.optional.orders || [])
       .filter(o => {
         const s = String(o.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'draft' && s !== 'unpaid';
       })
       .map(o => {
         const deliveryAddr = Array.isArray(o.order_delivery_addresses) ? o.order_delivery_addresses[0] : o.order_delivery_addresses;
@@ -727,7 +727,7 @@ export function Admin({
     const rawApiOrders = (adminData.optional.api_orders || [])
       .filter(a => {
         const s = String(a.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'draft' && s !== 'unpaid';
       })
       .map(a => ({
       ...a,

@@ -6780,6 +6780,7 @@ button.card-gradient-purple:hover,
   vertical-align: middle;
   box-sizing: border-box;
   line-height: 1.35;
+  overflow: hidden;
 }
 
 .admin-order-row.is-dropship-row {
@@ -6841,6 +6842,24 @@ button.card-gradient-purple:hover,
   align-items: flex-start;
   gap: 3px;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admin-order-code-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-reseller-ref-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .admin-id-copy-row,
@@ -6849,6 +6868,7 @@ button.card-gradient-purple:hover,
   align-items: center;
   gap: 4px;
   min-width: 0;
+  max-width: 100%;
   flex-wrap: nowrap;
 }
 
@@ -6890,12 +6910,15 @@ button.card-gradient-purple:hover,
 }
 
 .admin-reseller-ref {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #64748b;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
 }
 
 /* Recipient & Destination Column */
@@ -7209,7 +7232,8 @@ button.card-gradient-purple:hover,
 .admin-status-pill.pill-paid,
 .admin-status-pill.pill-payment_received,
 .admin-status-pill.pill-new,
-.admin-status-pill.pill-pending_payment {
+.admin-status-pill.pill-pending_payment,
+.admin-status-pill.pill-payment_pending {
   background: #fffbeb;
   color: #b45309;
   border: 1px solid #fde68a;
@@ -7218,7 +7242,8 @@ button.card-gradient-purple:hover,
 .admin-status-pill.pill-paid .admin-status-dot,
 .admin-status-pill.pill-payment_received .admin-status-dot,
 .admin-status-pill.pill-new .admin-status-dot,
-.admin-status-pill.pill-pending_payment .admin-status-dot {
+.admin-status-pill.pill-pending_payment .admin-status-dot,
+.admin-status-pill.pill-payment_pending .admin-status-dot {
   background: #d97706;
 }
 
@@ -7571,6 +7596,17 @@ button.card-gradient-purple:hover,
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.badge-reseller-ref-modal {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .admin-modal-header-right {

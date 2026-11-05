@@ -96,7 +96,7 @@ function getCarrierTrackingUrl(carrier = '', awb = '') {
 // Status classification helpers
 export function isNeedsAttentionStatus(status) {
   const s = String(status || '').toLowerCase().trim();
-  return s === 'new' || s === 'paid' || s === 'unfulfilled' || s === 'payment_received' || s === 'payment received';
+  return s === 'new' || s === 'paid' || s === 'unfulfilled' || s === 'payment_received' || s === 'payment received' || s === 'payment_pending' || s === 'pending_payment';
 }
 
 export function isFulfillmentStatus(status) {
@@ -126,7 +126,7 @@ export function getOrderStatusDisplay(status) {
   }
   if (s === 'pending_payment' || s === 'payment_pending') {
     return {
-      label: 'Pending Payment',
+      label: 'Payment Pending',
       pillClass: 'pill-needs_attention',
       dotColor: '#d97706',
       category: 'needs_attention'
@@ -381,7 +381,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     let allOrders = [...inquiries]
       .filter(i => {
         const s = String(i.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'draft' && s !== 'unpaid';
       })
       .map(i => ({
         ...i,
@@ -734,11 +734,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           >
                             <ExternalLink size={12} />
                           </a>
-                          {inquiry.reseller_order_id && (
-                            <span className="admin-reseller-ref" title={`Ref: #${inquiry.reseller_order_id}`}>
-                              Ref: #{inquiry.reseller_order_id}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </td>
@@ -978,6 +973,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     Order #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
                   </h3>
                   {selectedInquiry.isDropship && <span className="badge-dropship-mini">Dropship</span>}
+                  {selectedInquiry.reseller_order_id && (
+                    <span className="badge-reseller-ref-modal" title={`Reseller Reference: #${selectedInquiry.reseller_order_id}`}>
+                      Ref: #{selectedInquiry.reseller_order_id}
+                    </span>
+                  )}
                 </div>
                 <div className="admin-modal-sub-row">
                   <span className="admin-modal-meta-text">
@@ -1233,6 +1233,14 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       <p className="admin-inspect-detail">Phone: {selectedInquiry.dropship_sender_phone || selectedInquiry.phone || 'N/A'}</p>
                       {selectedInquiry.dropship_sender_address && (
                         <p className="admin-inspect-detail">{selectedInquiry.dropship_sender_address}</p>
+                      )}
+                      {selectedInquiry.reseller_order_id && (
+                        <p className="admin-inspect-detail" style={{ marginTop: '4px' }}>
+                          <span style={{ color: '#64748b' }}>Reseller Reference:</span>{' '}
+                          <code style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '1px 5px', borderRadius: '4px', color: '#1e293b', fontWeight: 600 }}>
+                            #{selectedInquiry.reseller_order_id}
+                          </code>
+                        </p>
                       )}
                       {modalCustomPricing.hasCustom && (
                         <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>

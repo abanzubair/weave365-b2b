@@ -448,6 +448,12 @@
   color: var(--gold-dark, #805d31);
 }
 
+.account-orders-filter-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .account-segmented-pills {
   display: inline-flex;
   background: var(--surface-soft, #f3f4f6);
@@ -484,21 +490,21 @@
 }
 
 .account-minimal-order-card {
-  border: 1px solid var(--line, #e5e5e5);
-  border-radius: 10px;
-  padding: 20px 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px 20px;
   background: #ffffff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .account-minimal-order-card:hover {
-  border-color: rgba(183, 134, 70, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  border-color: #d1d5db;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
 }
 
 .account-minimal-order-card.is-dropship {
-  border-color: rgba(183, 134, 70, 0.25);
-  background: #fffdfa;
+  border-color: #e5e7eb;
+  background: #ffffff;
 }
 
 .order-card-top-bar {
@@ -506,162 +512,186 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   border-bottom: 1px solid #f3f4f6;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .order-ref-group {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
-}
-
-.order-ref-id-row {
-  display: inline-flex;
-  align-items: center;
-  min-width: 0;
-}
-
-.order-ref-meta-row {
-  display: inline-flex;
-  align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .order-ref-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: var(--ink, #1a1a1a);
-  letter-spacing: 0.02em;
+  color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
-.order-ref-short {
-  display: none;
-}
-
-.order-ref-full {
-  display: inline;
+.order-ref-dot {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .order-date-text {
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.order-badge-dropship {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7.5px;
+  background: #fef3c7;
+  color: #78350f;
+  border-radius: 4px;
+  border: 1px solid #fcd34d;
+  letter-spacing: 0.01em;
 }
 
 .order-status-pill {
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5.5px;
+  font-size: 12px;
+  font-weight: 600;
   padding: 3.5px 10px;
   border-radius: 999px;
+  text-transform: capitalize;
   line-height: 1.3;
 }
 
-.order-dropship-info-box {
-  background: #fdfaf3;
-  border: 1px solid #fef3c7;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 13.5px;
-  color: #92400e;
-  margin-bottom: 14px;
-  display: grid;
-  gap: 5px;
-  line-height: 1.45;
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
+/* Dropship specifications box */
+.order-dropship-spec-box {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+
+.dropship-spec-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.dropship-spec-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.dropship-spec-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.dropship-spec-meta {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  line-height: 1.35;
+}
+
+/* Items list with image preview */
 .order-items-list {
   display: grid;
-  gap: 9px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .order-item-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 14.5px;
   gap: 12px;
 }
 
-.order-item-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
-
-.order-item-bullet {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--gold, #b78646);
+.order-item-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 7px;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
   flex-shrink: 0;
 }
 
 .order-item-details {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
   flex: 1;
-  flex-wrap: wrap;
 }
 
 .order-item-title {
+  font-size: 14px;
   font-weight: 600;
-  color: var(--ink, #1a1a1a);
+  color: #0f172a;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .order-item-meta-pills {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
-.order-item-color-pill,
-.order-item-qty-pill {
-  font-size: 12px;
-  color: #4b5563;
-  background: #f4f4f5;
-  padding: 2px 7.5px;
+.order-item-pill {
+  font-size: 11.5px;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 1.5px 7px;
   border-radius: 4px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.order-item-qty-pill {
-  font-weight: 600;
-  color: #1a1a1a;
-  background: #e4e4e7;
-}
-
-.order-item-variant {
-  color: #6b7280;
-  font-size: 13.5px;
-}
-
-.order-item-qty {
-  color: #374151;
   font-weight: 600;
 }
 
+.order-item-sku {
+  font-size: 11.5px;
+  color: #334155;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Bottom bar: Total & Actions */
 .order-card-bottom-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid #f3f4f6;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .order-total-block {
@@ -671,16 +701,17 @@
 }
 
 .order-total-label {
-  font-size: 13px;
-  color: #6b7280;
-  text-transform: uppercase;
+  font-size: 12px;
+  color: #475569;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .order-total-value {
   font-size: 17px;
-  font-weight: 700;
-  color: var(--ink, #1a1a1a);
+  font-weight: 800;
+  color: #0f172a;
 }
 
 .order-card-actions {
@@ -693,39 +724,42 @@
 .order-track-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  font-size: 13.5px;
+  gap: 5px;
+  padding: 7px 15px;
+  font-size: 13px;
   font-weight: 600;
   color: #ffffff;
-  background: var(--ink, #1a1a1a);
-  border: none;
-  border-radius: 6px;
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  border-radius: 7px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .order-track-btn:hover {
-  background: var(--gold-dark, #805d31);
+  background: #1e293b;
+  border-color: #1e293b;
 }
 
 .order-copy-link-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 14px;
+  padding: 7px 13px;
   font-size: 13px;
   font-weight: 600;
-  color: #b45309;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 6px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 7px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .order-copy-link-btn:hover {
-  background: #fef3c7;
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 /* ───────────────────────────────────────────────────────────────────
@@ -1461,6 +1495,24 @@
     font-size: 11.5px;
   }
 
+  .account-orders-filter-bar {
+    margin-bottom: 14px;
+    width: 100%;
+  }
+
+  .account-orders-filter-bar .account-segmented-pills {
+    width: 100%;
+    display: flex;
+  }
+
+  .account-orders-filter-bar .segmented-pill {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
   /* Order Cards Stack & Individual Card */
   .account-orders-stack {
     gap: 12px;
@@ -1533,39 +1585,41 @@
   }
 
   .order-item-row {
-    align-items: flex-start;
-    padding: 4px 0;
+    align-items: center;
+    gap: 10px;
   }
 
-  .order-item-left {
-    align-items: flex-start;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .order-item-bullet {
-    margin-top: 6px;
+  .order-item-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
   }
 
   .order-item-details {
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
-    width: 100%;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
   }
 
   .order-item-title {
-    font-size: 13.5px;
-    line-height: 1.4;
-    word-break: break-word;
+    font-size: 13px;
+    line-height: 1.35;
+    white-space: normal;
   }
 
   .order-item-meta-pills {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
-    margin-top: 2px;
+  }
+
+  .order-dropship-spec-box {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 12px;
   }
 
   /* Bottom bar on mobile */
@@ -1580,11 +1634,11 @@
   }
 
   .order-total-label {
-    font-size: 12px;
+    font-size: 11.5px;
   }
 
   .order-total-value {
-    font-size: 16px;
+    font-size: 15.5px;
   }
 
   .order-card-actions {
@@ -1592,22 +1646,17 @@
   }
 
   .order-track-btn {
-    padding: 7px 14px;
-    font-size: 13px;
-    min-height: 36px;
+    padding: 6.5px 12px;
+    font-size: 12.5px;
+    min-height: 34px;
     border-radius: 6px;
   }
 
   .order-copy-link-btn {
-    padding: 7px 12px;
-    font-size: 12.5px;
-    min-height: 36px;
+    padding: 6.5px 11px;
+    font-size: 12px;
+    min-height: 34px;
     border-radius: 6px;
-  }
-
-  .order-dropship-info-box {
-    padding: 10px 12px;
-    font-size: 12.5px;
   }
 
   /* Pending orders (draft cart) mobile optimizations */

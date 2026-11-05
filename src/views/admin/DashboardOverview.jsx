@@ -48,13 +48,13 @@ export default function DashboardOverview({
     const orders = (adminData.optional.orders || [])
       .filter(o => {
         const s = String(o.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'draft' && s !== 'unpaid';
       })
       .map(o => ({ ...o, _sourceTable: 'orders' }));
     const apiOrders = (adminData.optional.api_orders || [])
       .filter(o => {
         const s = String(o.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'draft' && s !== 'unpaid';
       })
       .map(o => ({ ...o, _sourceTable: 'api_orders' }));
     const sorted = [...orders, ...apiOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
