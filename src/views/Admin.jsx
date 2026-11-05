@@ -82,6 +82,7 @@ const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'orders', label: 'Orders' },
   { key: 'api_orders', label: 'API Orders' },
+  { key: 'addresses', label: 'Addresses' },
   { key: 'download_logs', label: 'Download Logs' },
   { key: 'site_analytics', label: 'Site Analytics' },
   { key: 'blog_posts', label: 'Blog Posts' },
@@ -672,13 +673,31 @@ export function Admin({
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
 
   const enquiryRows = useMemo(() => {
-    const rawInquiries = (adminData.optional.inquiries || []).map(i => ({ ...i, _sourceTable: 'inquiries' }));
+    const profileMap = new Map((adminData.profiles || []).map(p => [p.id, p]));
+    const defaultAddressMap = new Map();
+    (adminData.optional.addresses || []).forEach(addr => {
+      if (addr.is_default || !defaultAddressMap.has(addr.user_id)) {
+        defaultAddressMap.set(addr.user_id, addr);
+      }
+    });
+
+    const rawInquiries = (adminData.optional.inquiries || []).map(i => {
+      const p = profileMap.get(i.user_id);
+      return {
+        ...i,
+        _sourceTable: 'inquiries',
+        account_email: i.email || p?.email || null,
+        account_name: p?.full_name || p?.business_name || null,
+      };
+    });
+
     const rawOrders = (adminData.optional.orders || [])
       .filter(o => {
         const s = String(o.status || '').toLowerCase().trim();
         return s !== 'draft' && s !== 'unpaid';
       })
       .map(o => {
+        const p = profileMap.get(o.user_id);
         const deliveryAddr = Array.isArray(o.order_delivery_addresses) ? o.order_delivery_addresses[0] : o.order_delivery_addresses;
         const dropshipSender = Array.isArray(o.order_dropship_senders) ? o.order_dropship_senders[0] : o.order_dropship_senders;
         const fulfillments = Array.isArray(o.order_fulfillments) ? o.order_fulfillments : [];
@@ -698,6 +717,8 @@ export function Admin({
         return {
           ...o,
           _sourceTable: 'orders',
+          account_email: o.email || p?.email || null,
+          account_name: p?.full_name || p?.business_name || null,
           order_delivery_addresses: deliveryAddr,
           order_dropship_senders: dropshipSender,
           order_items: normalizedItems,
@@ -724,30 +745,81 @@ export function Admin({
           tracking_message: latestFulfillment?.tracking_message || o.tracking_message,
         };
       });
+
     const rawApiOrders = (adminData.optional.api_orders || [])
       .filter(a => {
         const s = String(a.status || '').toLowerCase().trim();
         return s !== 'draft' && s !== 'unpaid';
       })
-      .map(a => ({
-      ...a,
-      _sourceTable: 'api_orders',
-      is_dropship: true,
-      buyer_name: a.recipient_name || a.buyer_name,
-      phone: a.recipient_phone || a.phone,
-      email: a.recipient_email || a.email,
-      pincode: a.recipient_pincode || a.pincode,
-      dropship_sender_name: a.sender_name || a.dropship_sender_name,
-      dropship_sender_phone: a.sender_phone || a.dropship_sender_phone,
-      dropship_recipient_name: a.recipient_name,
-      dropship_recipient_phone: a.recipient_phone,
-      dropship_recipient_address: a.recipient_address,
-      dropship_recipient_city: a.recipient_city,
-      dropship_recipient_state: a.recipient_state,
-      dropship_recipient_pincode: a.recipient_pincode,
-      dropship_packing_preference: a.packing_preference,
-      message: a.shipping_notes || a.message,
-    }));
+      .map(a => {
+        const p = profileMap.get(a.user_id);
+        const defaultAddr = a.user_id ? defaultAddressMap.get(a.user_id) : null;
+        const customDispatchAddr = p?.qualification?.dispatch_address || null;
+
+        let extractedNoteEmail = null;
+        let explicitSenderAddress = null;
+        if (a.shipping_notes) {
+          const match = a.shipping_notes.match(/(?:Dispatched to|email[:\s]+)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+          if (match) extractedNoteEmail = match[1];
+
+          const addrMatch = a.shipping_notes.match(/\[Sender Address:\s*({[^}]+})\]/i);
+          if (addrMatch) {
+            try {
+              explicitSenderAddress = JSON.parse(addrMatch[1]);
+            } catch (_) {}
+          }
+        }
+
+        const senderName = a.sender_name || customDispatchAddr?.name || customDispatchAddr?.full_name || defaultAddr?.full_name || p?.business_name || p?.full_name || 'Reseller';
+        const senderPhone = a.sender_phone || customDispatchAddr?.phone || customDispatchAddr?.phone_number || defaultAddr?.phone_number || p?.whatsapp || p?.phone || '';
+
+        const senderLine1 = explicitSenderAddress?.address || explicitSenderAddress?.address_line1 || customDispatchAddr?.address_line1 || defaultAddr?.address_line1 || '';
+        const senderLine2 = explicitSenderAddress?.address_line2 || customDispatchAddr?.address_line2 || defaultAddr?.address_line2 || '';
+        const fullSenderStreet = [senderLine1, senderLine2].filter(Boolean).join(', ');
+
+        const senderCity = explicitSenderAddress?.city || customDispatchAddr?.city || defaultAddr?.city || p?.city || '';
+        const senderState = explicitSenderAddress?.state || customDispatchAddr?.state || defaultAddr?.state || p?.state || '';
+        const senderPincode = explicitSenderAddress?.pincode || customDispatchAddr?.pincode || defaultAddr?.pincode || p?.pincode || '';
+
+        const dropshipSenderObj = {
+          sender_name: senderName,
+          sender_phone: senderPhone,
+          sender_address: fullSenderStreet,
+          address_line1: senderLine1,
+          address_line2: senderLine2,
+          city: senderCity,
+          state: senderState,
+          pincode: senderPincode,
+          packing_preference: a.packing_preference || 'Standard Protective Wholesale Packaging',
+        };
+
+        return {
+          ...a,
+          _sourceTable: 'api_orders',
+          account_email: p?.email || extractedNoteEmail || a.client_email || a.email || null,
+          account_name: p?.full_name || p?.business_name || null,
+          is_dropship: true,
+          buyer_name: a.recipient_name || a.buyer_name,
+          phone: a.recipient_phone || a.phone,
+          email: a.recipient_email || a.email,
+          pincode: a.recipient_pincode || a.pincode,
+          dropship_sender_name: senderName,
+          dropship_sender_phone: senderPhone,
+          dropship_sender_address: fullSenderStreet,
+          dropship_sender_city: senderCity,
+          dropship_sender_state: senderState,
+          dropship_sender_pincode: senderPincode,
+          order_dropship_senders: dropshipSenderObj,
+          dropship_recipient_name: a.recipient_name,
+          dropship_recipient_phone: a.recipient_phone,
+          dropship_recipient_address: a.recipient_address,
+          dropship_recipient_city: a.recipient_city,
+          dropship_recipient_state: a.recipient_state,
+          dropship_recipient_pincode: a.recipient_pincode,
+          dropship_packing_preference: a.packing_preference,
+          message: a.shipping_notes || a.message,
+        };
+      });
 
     const combined = [...rawInquiries, ...rawOrders, ...rawApiOrders];
     combined.sort((a, b) => {
@@ -756,7 +828,7 @@ export function Admin({
       return timeB - timeA;
     });
     return combined;
-  }, [adminData.optional.inquiries, adminData.optional.orders, adminData.optional.api_orders]);
+  }, [adminData.optional.inquiries, adminData.optional.orders, adminData.optional.api_orders, adminData.optional.addresses, adminData.profiles]);
 
   const newOrdersCount = useMemo(() => {
     return enquiryRows.filter(i => {
@@ -1087,6 +1159,7 @@ export function Admin({
               {activeTab === 'tracking' && (
                 <AdminTrackingPanel
                   inquiries={enquiryRows}
+                  profiles={adminData.profiles}
                   products={products}
                   loadAdminData={loadAdminData}
                   loading={isDataLoading}

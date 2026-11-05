@@ -6,7 +6,7 @@
  * blind dropship dispatch label generation with an impeccable, quiet, scan-first interface.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { 
   Truck, 
   Search, 
@@ -93,6 +93,18 @@ function getCarrierTrackingUrl(carrier = '', awb = '') {
   return null;
 }
 
+// Clean packaging preference short label
+export function getShortPackagingLabel(pref) {
+  if (!pref) return '';
+  const p = String(pref).toLowerCase().trim();
+  if (p.includes('blind')) return 'Blind Pack';
+  if (p.includes('standard') || p.includes('wholesale')) return 'Standard Pack';
+  if (p.includes('custom') || p.includes('branded')) return 'Custom Pack';
+  if (p.includes('protective')) return 'Protective Pack';
+  if (pref.length <= 14) return pref;
+  return pref.split(' ')[0] + ' Pack';
+}
+
 // Status classification helpers
 export function isNeedsAttentionStatus(status) {
   const s = String(status || '').toLowerCase().trim();
@@ -172,7 +184,7 @@ export function getOrderStatusDisplay(status) {
   };
 }
 
-export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminData, loading = false }) {
+export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [], loadAdminData, loading = false }) {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('tracking'); // 'tracking' | 'details'
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,6 +193,27 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   const [dateSortOrder, setDateSortOrder] = useState('desc'); // 'desc' = latest at top, 'asc' = oldest at top
   const [actionLoading, setActionLoading] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState({});
+
+  const profileMap = useMemo(() => {
+    return new Map((profiles || []).map(p => [p.id, p]));
+  }, [profiles]);
+
+  const resolveAccountEmail = useCallback((inquiry) => {
+    if (!inquiry) return null;
+    if (inquiry.account_email) return inquiry.account_email;
+    if (inquiry.user_id && profileMap.has(inquiry.user_id)) {
+      const p = profileMap.get(inquiry.user_id);
+      if (p?.email) return p.email;
+    }
+    if (inquiry._sourceTable !== 'api_orders' && inquiry.email) {
+      return inquiry.email;
+    }
+    if (inquiry.shipping_notes) {
+      const match = inquiry.shipping_notes.match(/(?:Dispatched to|email[:\s]+)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+      if (match) return match[1];
+    }
+    return inquiry.client_email || null;
+  }, [profileMap]);
 
   // Form State for editing order tracking
   const [formStatus, setFormStatus] = useState('verified');
@@ -433,17 +466,22 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
     const q = searchQuery.toLowerCase().trim();
     if (q) {
-      result = result.filter(i => 
-        (i.id && i.id.toLowerCase().includes(q)) ||
-        (i.reseller_order_id && String(i.reseller_order_id).toLowerCase().includes(q)) ||
-        (i.buyer_name && i.buyer_name.toLowerCase().includes(q)) ||
-        (i.dropship_sender_name && i.dropship_sender_name.toLowerCase().includes(q)) ||
-        (i.dropship_recipient_name && i.dropship_recipient_name.toLowerCase().includes(q)) ||
-        (i.phone && i.phone.toLowerCase().includes(q)) ||
-        (i.email && i.email.toLowerCase().includes(q)) ||
-        (i.tracking_number && i.tracking_number.toLowerCase().includes(q)) ||
-        (i.items && i.items.some(it => String(it.sku || it.variant_code || '').toLowerCase().includes(q)))
-      );
+      result = result.filter(i => {
+        const accEmail = resolveAccountEmail(i);
+        return (
+          (i.id && i.id.toLowerCase().includes(q)) ||
+          (i.reseller_order_id && String(i.reseller_order_id).toLowerCase().includes(q)) ||
+          (i.buyer_name && i.buyer_name.toLowerCase().includes(q)) ||
+          (i.dropship_sender_name && i.dropship_sender_name.toLowerCase().includes(q)) ||
+          (i.dropship_recipient_name && i.dropship_recipient_name.toLowerCase().includes(q)) ||
+          (i.phone && i.phone.toLowerCase().includes(q)) ||
+          (i.email && i.email.toLowerCase().includes(q)) ||
+          (i.account_email && i.account_email.toLowerCase().includes(q)) ||
+          (accEmail && accEmail.toLowerCase().includes(q)) ||
+          (i.tracking_number && i.tracking_number.toLowerCase().includes(q)) ||
+          (i.items && i.items.some(it => String(it.sku || it.variant_code || '').toLowerCase().includes(q)))
+        );
+      });
     }
 
     // Sort by date latest at top (descending) by default, or ascending if toggled
@@ -767,11 +805,19 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                             </>
                           )}
                         </div>
-                        {isDropship && (
-                          <div className="admin-sender-subtext">
-                            via <strong>{inquiry.dropship_sender_name || inquiry.business_name || 'Reseller Store'}</strong>
-                          </div>
-                        )}
+                        {(() => {
+                          const accountEmail = resolveAccountEmail(inquiry);
+                          if (!accountEmail && !inquiry.dropship_sender_name && !inquiry.business_name) return null;
+                          const displaySender = accountEmail || inquiry.dropship_sender_name || inquiry.business_name || 'Account';
+                          return (
+                            <div 
+                              className="admin-sender-subtext"
+                              title={accountEmail ? `Account: ${accountEmail}${inquiry.dropship_sender_name ? ` · Sender Label: ${inquiry.dropship_sender_name}` : ''}` : undefined}
+                            >
+                              via <strong>{displaySender}</strong>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </td>
 
@@ -970,7 +1016,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
               <div className="admin-modal-header-left">
                 <div className="admin-modal-title-row">
                   <h3 className="admin-modal-title">
-                    Order #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
+                    Order #{selectedInquiry.order_number || (selectedInquiry.id ? selectedInquiry.id.substring(0, 8) : '')}
                   </h3>
                   {selectedInquiry.isDropship && <span className="badge-dropship-mini">Dropship</span>}
                   {selectedInquiry.reseller_order_id && (
@@ -982,10 +1028,10 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                 <div className="admin-modal-sub-row">
                   <span className="admin-modal-meta-text">
                     <strong>{selectedInquiry.dropship_recipient_name || selectedInquiry.buyer_name || 'Customer'}</strong>
-                    {selectedInquiry.phone ? ` (${selectedInquiry.phone})` : ''}
-                    {selectedInquiry.dropship_recipient_city ? ` • ${selectedInquiry.dropship_recipient_city}` : ''}
-                    {` • ${(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)} Item(s)`}
-                    {selectedInquiry.total_amount ? ` • ₹${Number(selectedInquiry.total_amount).toLocaleString('en-IN')}` : ''}
+                    {(selectedInquiry.dropship_recipient_phone || selectedInquiry.phone) ? ` · ${selectedInquiry.dropship_recipient_phone || selectedInquiry.phone}` : ''}
+                    {selectedInquiry.dropship_recipient_city ? ` · ${selectedInquiry.dropship_recipient_city}` : ''}
+                    {` · ${(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)} Item${(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1) > 1 ? 's' : ''}`}
+                    {selectedInquiry.total_amount ? ` · ₹${Number(selectedInquiry.total_amount).toLocaleString('en-IN')}` : ''}
                   </span>
                 </div>
               </div>
@@ -1014,20 +1060,24 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
             {/* Modal Tab Switcher */}
             <div className="admin-modal-tabs-strip">
-              <button
-                type="button"
-                className={`admin-modal-tab-btn ${activeModalTab === 'tracking' ? 'active' : ''}`}
-                onClick={() => setActiveModalTab('tracking')}
-              >
-                Fulfillment
-              </button>
-              <button
-                type="button"
-                className={`admin-modal-tab-btn ${activeModalTab === 'details' ? 'active' : ''}`}
-                onClick={() => setActiveModalTab('details')}
-              >
-                Order Items ({(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)})
-              </button>
+              <div className="admin-modal-tabs-segmented">
+                <button
+                  type="button"
+                  className={`admin-modal-tab-btn ${activeModalTab === 'tracking' ? 'active' : ''}`}
+                  onClick={() => setActiveModalTab('tracking')}
+                >
+                  <Truck size={14} />
+                  <span>Fulfillment</span>
+                </button>
+                <button
+                  type="button"
+                  className={`admin-modal-tab-btn ${activeModalTab === 'details' ? 'active' : ''}`}
+                  onClick={() => setActiveModalTab('details')}
+                >
+                  <ShoppingBag size={14} />
+                  <span>Order Items ({(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)})</span>
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}
@@ -1184,7 +1234,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         className="admin-btn-secondary"
                         title="Open Buyer Live Tracking Page"
                       >
-                        <ExternalLink size={13} /> <span>Live Tracking</span>
+                        <ExternalLink size={14} /> <span>Live Tracking</span>
                       </a>
                     </div>
                     <div className="admin-modal-footer-right">
@@ -1210,6 +1260,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
               {/* TAB 2: Full Order & Items Inspection (Impeccable Layout) */}
               {activeModalTab === 'details' && (() => {
                 const modalCustomPricing = getDropshipCustomPricing(selectedInquiry);
+                const modalAccountEmail = resolveAccountEmail(selectedInquiry);
                 return (
                 <div className="admin-order-full-inspection">
                   
@@ -1219,56 +1270,62 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     <div className="admin-inspect-card">
                       <div className="admin-inspect-card-top-row">
                         <span className="admin-inspect-header">
-                          <User size={13} /> SENDER (SHIP FROM)
+                          <User size={13} /> SENDER
                         </span>
                         {selectedInquiry.dropship_packing_preference && (
-                          <span className="admin-tag-pill" style={{ fontSize: '0.75rem' }}>
-                            {selectedInquiry.dropship_packing_preference}
+                          <span className="admin-inspect-pack-badge" title={`Packaging: ${selectedInquiry.dropship_packing_preference}`}>
+                            {getShortPackagingLabel(selectedInquiry.dropship_packing_preference)}
                           </span>
                         )}
                       </div>
                       <strong className="admin-inspect-name">
                         {selectedInquiry.dropship_sender_name || selectedInquiry.business_name || 'Weave365 Wholesale Partner'}
                       </strong>
-                      <p className="admin-inspect-detail">Phone: {selectedInquiry.dropship_sender_phone || selectedInquiry.phone || 'N/A'}</p>
+                      <p className="admin-inspect-detail">
+                        <span className="admin-inspect-label">Phone:</span>{' '}
+                        {selectedInquiry.dropship_sender_phone || selectedInquiry.phone || 'N/A'}
+                      </p>
                       {selectedInquiry.dropship_sender_address && (
                         <p className="admin-inspect-detail">{selectedInquiry.dropship_sender_address}</p>
                       )}
+                      {(selectedInquiry.dropship_sender_city || selectedInquiry.dropship_sender_pincode) && (
+                        <p className="admin-inspect-pin">
+                          {[
+                            selectedInquiry.dropship_sender_city,
+                            selectedInquiry.dropship_sender_state,
+                          ].filter(Boolean).join(', ')}
+                          {selectedInquiry.dropship_sender_pincode ? ` - ${selectedInquiry.dropship_sender_pincode}` : ''}
+                        </p>
+                      )}
+                      {modalAccountEmail && (
+                        <p className="admin-inspect-detail">
+                          <span className="admin-inspect-label">Account:</span>{' '}
+                          <strong className="admin-inspect-account-text">{modalAccountEmail}</strong>
+                        </p>
+                      )}
                       {selectedInquiry.reseller_order_id && (
-                        <p className="admin-inspect-detail" style={{ marginTop: '4px' }}>
-                          <span style={{ color: '#64748b' }}>Reseller Reference:</span>{' '}
-                          <code style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '1px 5px', borderRadius: '4px', color: '#1e293b', fontWeight: 600 }}>
+                        <p className="admin-inspect-detail">
+                          <span className="admin-inspect-label">Ref ID:</span>{' '}
+                          <code className="admin-inspect-mono-tag">
                             #{selectedInquiry.reseller_order_id}
                           </code>
                         </p>
                       )}
                       {modalCustomPricing.hasCustom && (
-                        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
-                              Customer Parcel Slip Price:
-                            </span>
-                            <strong style={{ fontSize: '0.875rem', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
-                              ₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')}
-                            </strong>
+                        <div className="admin-inspect-slip-price-box">
+                          <div className="admin-inspect-slip-price-row">
+                            <span className="admin-inspect-slip-price-label">Parcel Slip Price:</span>
+                            <strong className="admin-inspect-slip-price-val">₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')}</strong>
                           </div>
                           {modalCustomPricing.discount > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                              <span style={{ fontSize: '0.75rem', color: '#dc2626' }}>
-                                Slip Discount:
-                              </span>
-                              <span style={{ fontSize: '0.75rem', color: '#dc2626', fontFamily: 'ui-monospace, monospace' }}>
-                                -₹{modalCustomPricing.discount.toLocaleString('en-IN')}
-                              </span>
+                            <div className="admin-inspect-slip-price-row discount">
+                              <span>Discount:</span>
+                              <span>-₹{modalCustomPricing.discount.toLocaleString('en-IN')}</span>
                             </div>
                           )}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '2px' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                              Net Printed on Invoice:
-                            </span>
-                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a', fontFamily: 'ui-monospace, monospace' }}>
-                              ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
-                            </span>
+                          <div className="admin-inspect-slip-price-row net">
+                            <span>Printed on Slip:</span>
+                            <strong>₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}</strong>
                           </div>
                         </div>
                       )}
@@ -1277,20 +1334,35 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     {/* Ship To */}
                     <div className="admin-inspect-card highlighted">
                       <div className="admin-inspect-card-top-row">
-                        <span className="admin-inspect-header" style={{ color: '#0f172a' }}>
-                          <MapPin size={13} /> RECIPIENT (DELIVER TO)
+                        <span className="admin-inspect-header primary">
+                          <MapPin size={13} /> RECIPIENT
                         </span>
+                        {selectedInquiry.dropship_recipient_phone && (
+                          <a 
+                            href={`https://wa.me/${String(selectedInquiry.dropship_recipient_phone).replace(/\D/g, '')}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="admin-wa-icon-link-sm"
+                            title="Chat on WhatsApp"
+                          >
+                            <MessageCircle size={12} />
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
                       </div>
                       <strong className="admin-inspect-name">
                         {selectedInquiry.dropship_recipient_name || selectedInquiry.buyer_name || 'Customer'}
                       </strong>
-                      <p className="admin-inspect-detail">Phone: {selectedInquiry.dropship_recipient_phone || selectedInquiry.phone || 'N/A'}</p>
+                      <p className="admin-inspect-detail">
+                        <span className="admin-inspect-label">Phone:</span>{' '}
+                        {selectedInquiry.dropship_recipient_phone || selectedInquiry.phone || 'N/A'}
+                      </p>
                       <p className="admin-inspect-detail">
                         {selectedInquiry.dropship_recipient_address || getParsedAddress(selectedInquiry.message) || 'Address in order notes'}
                       </p>
                       {(selectedInquiry.dropship_recipient_city || selectedInquiry.dropship_recipient_pincode) && (
                         <p className="admin-inspect-pin">
-                          {selectedInquiry.dropship_recipient_city} {selectedInquiry.dropship_recipient_state} - {selectedInquiry.dropship_recipient_pincode || selectedInquiry.pincode}
+                          {selectedInquiry.dropship_recipient_city} {selectedInquiry.dropship_recipient_state ? `, ${selectedInquiry.dropship_recipient_state}` : ''} - {selectedInquiry.dropship_recipient_pincode || selectedInquiry.pincode}
                         </p>
                       )}
                     </div>
@@ -1303,14 +1375,16 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       : (Array.isArray(selectedInquiry.items) ? selectedInquiry.items : []);
                     return (
                       <div className="admin-inspect-items-wrap">
-                        <div className="admin-section-header">
-                          <span className="admin-section-title">ORDERED ITEMS ({inspectItems.length || 1})</span>
+                        <div className="admin-inspect-items-header">
+                          <span className="admin-inspect-items-title">
+                            Items <span className="admin-inspect-items-count">({inspectItems.length || 1})</span>
+                          </span>
                         </div>
                         <table className="admin-inspect-table">
                           <thead>
                             <tr>
                               <th>Item</th>
-                              <th>SKU / Variant</th>
+                              <th>SKU</th>
                               <th>Color</th>
                               <th style={{ textAlign: 'center' }}>Qty</th>
                               <th style={{ textAlign: 'right' }}>Price</th>
@@ -1335,7 +1409,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                         className="admin-inspect-item-img"
                                         onError={(e) => { e.target.src = fallbackProductImage; }}
                                       />
-                                      <span className="admin-inspect-item-title">{resolved.title}</span>
+                                      <div className="admin-inspect-item-text">
+                                        <span className="admin-inspect-item-title">{resolved.title}</span>
+                                      </div>
                                     </a>
                                   </td>
                                   <td><code className="admin-sku-code">{resolved.sku}</code></td>
@@ -1385,8 +1461,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                               const netItems = Math.max(0, itemsSubtotal - couponDiscount);
                               const diff = finalTotal - netItems;
 
-                              // Heuristic for orders where shipping_speed was not saved to DB:
-                              // If diff is a clean positive multiple of ₹150 (the exact expedited rate in India: ₹150, ₹300, ₹450, etc.)
                               if (!isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
                                 isExpedited = true;
                                 explicitShippingFee = Math.round(diff);
@@ -1466,24 +1540,24 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                       </td>
                                     </tr>
                                     {modalCustomPricing.hasCustom && (
-                                      <tr style={{ background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
+                                      <tr className="admin-inspect-slip-row">
                                         <td colSpan="4">
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
-                                              Customer Parcel Slip Value
+                                          <div className="admin-inspect-slip-title-wrap">
+                                            <span className="admin-inspect-slip-heading">
+                                              Parcel Slip Value
                                             </span>
-                                            <span className="admin-slip-price-pill" style={{ margin: 0 }}>
-                                              Printed on Bill &amp; Slip
+                                            <span className="admin-slip-price-pill">
+                                              Printed on Slip
                                             </span>
                                           </div>
                                         </td>
                                         <td style={{ textAlign: 'right' }}>
-                                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                            <strong style={{ fontSize: '0.875rem', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                          <div className="admin-inspect-slip-amount-wrap">
+                                            <strong className="admin-inspect-slip-amount">
                                               ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                                             </strong>
                                             {modalCustomPricing.discount > 0 && (
-                                              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                              <span className="admin-inspect-slip-subtext">
                                                 (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
                                               </span>
                                             )}
@@ -1511,24 +1585,24 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                     </td>
                                   </tr>
                                   {modalCustomPricing.hasCustom && (
-                                    <tr style={{ background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
+                                    <tr className="admin-inspect-slip-row">
                                       <td colSpan="4">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
-                                            Customer Parcel Slip Value
+                                        <div className="admin-inspect-slip-title-wrap">
+                                          <span className="admin-inspect-slip-heading">
+                                            Parcel Slip Value
                                           </span>
-                                          <span className="admin-slip-price-pill" style={{ margin: 0 }}>
-                                            Printed on Bill &amp; Slip
+                                          <span className="admin-slip-price-pill">
+                                            Printed on Slip
                                           </span>
                                         </div>
                                       </td>
                                       <td style={{ textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                          <strong style={{ fontSize: '0.875rem', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                        <div className="admin-inspect-slip-amount-wrap">
+                                          <strong className="admin-inspect-slip-amount">
                                             ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
                                           </strong>
                                           {modalCustomPricing.discount > 0 && (
-                                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                            <span className="admin-inspect-slip-subtext">
                                               (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
                                             </span>
                                           )}
@@ -1564,7 +1638,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         className="admin-btn-action-primary"
                         onClick={() => setActiveModalTab('tracking')}
                         title="Update status, enter tracking carrier & dispatch"
-                        style={{ padding: '0.5rem 0.875rem', fontSize: '0.875rem' }}
                       >
                         <Truck size={14} /> <span>Fulfill / Dispatch</span>
                       </button>

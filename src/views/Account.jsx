@@ -380,28 +380,67 @@ export function Account({
 
       const rawOrders = (ordersRes.data || []).map(o => ({ ...o, _sourceTable: 'orders' }));
       const rawInquiries = (inquiriesRes.data || []).map(i => ({ ...i, _sourceTable: 'inquiries' }));
-      const rawApiOrders = (!apiOrdersRes?.error && apiOrdersRes?.data) ? apiOrdersRes.data.map(a => ({
-        ...a,
-        _sourceTable: 'api_orders',
-        is_dropship: true,
-        order_number: a.order_number || (a.reseller_order_id ? (String(a.reseller_order_id).startsWith('API-') ? a.reseller_order_id : `API-${a.reseller_order_id}`) : a.id),
-        buyer_name: a.recipient_name || a.buyer_name,
-        phone: a.recipient_phone || a.phone,
-        email: a.recipient_email || a.email,
-        pincode: a.recipient_pincode || a.pincode,
-        dropship_sender_name: a.sender_name || a.dropship_sender_name,
-        dropship_sender_phone: a.sender_phone || a.dropship_sender_phone,
-        dropship_recipient_name: a.recipient_name,
-        dropship_recipient_phone: a.recipient_phone,
-        dropship_recipient_address: a.recipient_address,
-        dropship_recipient_city: a.recipient_city,
-        dropship_recipient_state: a.recipient_state,
-        dropship_recipient_pincode: a.recipient_pincode,
-        dropship_packing_preference: a.packing_preference,
-        order_items: Array.isArray(a.items) ? a.items : [],
-        items: Array.isArray(a.items) ? a.items : [],
-        message: a.shipping_notes || a.message,
-      })) : [];
+      const rawApiOrders = (!apiOrdersRes?.error && apiOrdersRes?.data) ? apiOrdersRes.data.map(a => {
+        let parsedItems = [];
+        if (Array.isArray(a.items)) {
+          parsedItems = a.items;
+        } else if (typeof a.items === 'string') {
+          try {
+            parsedItems = JSON.parse(a.items);
+          } catch (_) {
+            parsedItems = [];
+          }
+        }
+
+        let explicitSenderAddress = null;
+        if (a.shipping_notes) {
+          const addrMatch = a.shipping_notes.match(/\[Sender Address:\s*({[^}]+})\]/i);
+          if (addrMatch) {
+            try {
+              explicitSenderAddress = JSON.parse(addrMatch[1]);
+            } catch (_) {}
+          }
+        }
+
+        const userDefaultAddr = addresses.find(ad => ad.is_default) || addresses[0] || null;
+        const customDispatchAddr = buyerProfile?.qualification?.dispatch_address || null;
+
+        const senderName = a.sender_name || customDispatchAddr?.name || customDispatchAddr?.full_name || userDefaultAddr?.full_name || buyerProfile?.business_name || buyerProfile?.full_name || 'Reseller';
+        const senderPhone = a.sender_phone || customDispatchAddr?.phone || customDispatchAddr?.phone_number || userDefaultAddr?.phone_number || buyerProfile?.whatsapp || '';
+        const senderLine1 = explicitSenderAddress?.address || customDispatchAddr?.address_line1 || userDefaultAddr?.address_line1 || '';
+        const senderLine2 = explicitSenderAddress?.address_line2 || customDispatchAddr?.address_line2 || userDefaultAddr?.address_line2 || '';
+        const fullSenderStreet = [senderLine1, senderLine2].filter(Boolean).join(', ');
+        const senderCity = explicitSenderAddress?.city || customDispatchAddr?.city || userDefaultAddr?.city || buyerProfile?.city || '';
+        const senderState = explicitSenderAddress?.state || customDispatchAddr?.state || userDefaultAddr?.state || buyerProfile?.state || '';
+        const senderPincode = explicitSenderAddress?.pincode || customDispatchAddr?.pincode || userDefaultAddr?.pincode || buyerProfile?.pincode || '';
+
+        return {
+          ...a,
+          _sourceTable: 'api_orders',
+          is_dropship: true,
+          order_number: a.order_number || (a.reseller_order_id ? (String(a.reseller_order_id).startsWith('API-') ? a.reseller_order_id : `API-${a.reseller_order_id}`) : a.id),
+          buyer_name: a.recipient_name || a.buyer_name,
+          phone: a.recipient_phone || a.phone,
+          email: a.recipient_email || a.email,
+          pincode: a.recipient_pincode || a.pincode,
+          dropship_sender_name: senderName,
+          dropship_sender_phone: senderPhone,
+          dropship_sender_address: fullSenderStreet,
+          dropship_sender_city: senderCity,
+          dropship_sender_state: senderState,
+          dropship_sender_pincode: senderPincode,
+          dropship_recipient_name: a.recipient_name,
+          dropship_recipient_phone: a.recipient_phone,
+          dropship_recipient_address: a.recipient_address,
+          dropship_recipient_city: a.recipient_city,
+          dropship_recipient_state: a.recipient_state,
+          dropship_recipient_pincode: a.recipient_pincode,
+          dropship_packing_preference: a.packing_preference,
+          order_items: parsedItems,
+          items: parsedItems,
+          message: a.shipping_notes || a.message,
+        };
+      }) : [];
 
       const combined = [...rawOrders, ...rawInquiries, ...rawApiOrders];
 
@@ -1213,9 +1252,13 @@ export function Account({
                                   <div className="dropship-spec-col">
                                     <span className="dropship-spec-label">Sender (Ship From)</span>
                                     <span className="dropship-spec-name">{senderName}</span>
-                                    {senderPhone && (
-                                      <span className="dropship-spec-meta">Ph: {senderPhone}</span>
+                                    {order.dropship_sender_address && (
+                                      <span className="dropship-spec-meta">{order.dropship_sender_address}</span>
                                     )}
+                                    <span className="dropship-spec-meta">
+                                      {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}
+                                      {senderPhone ? ` · Ph: ${senderPhone}` : ''}
+                                    </span>
                                   </div>
                                 </div>
                               )}
@@ -1914,7 +1957,7 @@ export function Account({
                 </div>
               </div>
             ) : (
-              <DeveloperDashboard user={user} buyerProfile={buyerProfile} navigate={navigate} />
+              <DeveloperDashboard user={user} buyerProfile={buyerProfile} setBuyerProfile={setBuyerProfile} navigate={navigate} />
             )}
           </div>
         )}

@@ -142,15 +142,19 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
   const recipientCityStatePin = [recipientCity, recipientState, recipientPincode].filter(Boolean).join(', ');
 
   // 2. Sender Details (Ship From)
-  const senderName = dropshipSender?.sender_name || inquiry.dropship_sender_name || inquiry.business_name || 'Meher Sarees';
-  const senderPhone = dropshipSender?.sender_phone || inquiry.dropship_sender_phone || '+91 8893591205';
+  const senderName = dropshipSender?.sender_name || inquiry.dropship_sender_name || inquiry.business_name || 'Weave 365 Partner';
+  const senderPhone = dropshipSender?.sender_phone || inquiry.dropship_sender_phone || inquiry.phone || '';
   const senderGstin = dropshipSender?.gstin || inquiry.dropship_sender_gstin || '';
   
-  const senderLine1 = dropshipSender?.address_line1 || dropshipSender?.sender_address || inquiry.dropship_sender_address || 'Address Line 1';
-  const senderLine2 = dropshipSender?.address_line2 || (dropshipSender?.sender_address ? '' : 'Address Line 2');
-  const senderCityStatePin = dropshipSender?.city 
-    ? [dropshipSender.city, dropshipSender.state, dropshipSender.pincode].filter(Boolean).join(', ')
-    : 'City, State, Pincode';
+  const rawSenderLine1 = dropshipSender?.address_line1 || dropshipSender?.sender_address || inquiry.dropship_sender_address || '';
+  const rawSenderLine2 = dropshipSender?.address_line2 || '';
+  const senderCity = dropshipSender?.city || inquiry.dropship_sender_city || '';
+  const senderState = dropshipSender?.state || inquiry.dropship_sender_state || '';
+  const senderPincode = dropshipSender?.pincode || inquiry.dropship_sender_pincode || '';
+
+  const senderCityStatePin = [senderCity, senderState, senderPincode].filter(Boolean).join(', ') || (rawSenderLine1 ? '' : 'Varanasi, Uttar Pradesh, 221001');
+  const senderLine1 = rawSenderLine1 || 'Varanasi Logistics Center';
+  const senderLine2 = rawSenderLine2;
 
   // 3. Logistics & Package Info
   const carrier = inquiry.tracking_carrier || 'Courier Name';

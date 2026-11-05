@@ -7002,6 +7002,9 @@ button.card-gradient-purple:hover,
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 240px;
+  display: inline-block;
+  vertical-align: bottom;
 }
 
 .admin-sender-subtext strong {
@@ -7507,14 +7510,14 @@ button.card-gradient-purple:hover,
 
 .admin-modal-card {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   width: 100%;
-  max-width: 640px;
+  max-width: 46rem;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1.25rem 1.5625rem -0.3125rem rgba(0, 0, 0, 0.08), 0 0.5rem 0.625rem -0.375rem rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
 }
 
@@ -7522,17 +7525,17 @@ button.card-gradient-purple:hover,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;
-  gap: 12px;
+  gap: 0.75rem;
   flex-shrink: 0;
 }
 
 .admin-modal-header-left {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0.25rem;
   min-width: 0;
   flex: 1;
 }
@@ -7540,16 +7543,16 @@ button.card-gradient-purple:hover,
 .admin-modal-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .admin-modal-title {
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  font-size: 1.125rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.3;
   letter-spacing: -0.01em;
 }
 
@@ -7558,22 +7561,22 @@ button.card-gradient-purple:hover,
   font-weight: 600;
   color: #64748b;
   background: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
 }
 
 .admin-modal-sub-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
+  gap: 0.375rem;
+  font-size: 0.875rem;
   color: #64748b;
 }
 
 .admin-modal-meta-text {
   font-size: 0.875rem;
   color: #64748b;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .admin-modal-meta-text strong {
@@ -7590,8 +7593,8 @@ button.card-gradient-purple:hover,
   background: #f1f5f9;
   color: #475569;
   border: 1px solid #e2e8f0;
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -7602,8 +7605,8 @@ button.card-gradient-purple:hover,
   background: #eff6ff;
   color: #2563eb;
   border: 1px solid #bfdbfe;
-  padding: 1px 7px;
-  border-radius: 4px;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.75rem;
   font-weight: 600;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -7612,7 +7615,7 @@ button.card-gradient-purple:hover,
 .admin-modal-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -7620,9 +7623,9 @@ button.card-gradient-purple:hover,
   background: transparent;
   border: 1px solid #e2e8f0;
   color: #64748b;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -7636,23 +7639,31 @@ button.card-gradient-purple:hover,
   border-color: #cbd5e1;
 }
 
-/* Modal Tab Strip */
+/* Modal Tab Strip - Modern Segmented Control */
 .admin-modal-tabs-strip {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 18px;
+  padding: 0.5rem 1.25rem;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
 
+.admin-modal-tabs-segmented {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  gap: 0.25rem;
+}
+
 .admin-modal-tab-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 6px 14px;
-  border-radius: 6px;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 600;
   border: 1px solid transparent;
@@ -7665,18 +7676,17 @@ button.card-gradient-purple:hover,
 
 .admin-modal-tab-btn:hover {
   color: #0f172a;
-  background: #f1f5f9;
 }
 
 .admin-modal-tab-btn.active {
   background: #ffffff;
   color: #0f172a;
-  border-color: #cbd5e1;
+  border-color: #e2e8f0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .admin-modal-body {
-  padding: 16px 18px;
+  padding: 1.25rem;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
@@ -7986,9 +7996,10 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-  padding-top: 12px;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #f8fafc;
   border-top: 1px solid #e2e8f0;
   flex-wrap: nowrap;
   width: 100%;
@@ -7998,7 +8009,7 @@ button.card-gradient-purple:hover,
 .admin-modal-footer-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -8006,22 +8017,22 @@ button.card-gradient-purple:hover,
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
 .admin-btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  height: 32px;
+  gap: 0.375rem;
+  padding: 0 0.875rem;
+  height: 2.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
@@ -8035,18 +8046,42 @@ button.card-gradient-purple:hover,
   border-color: #94a3b8;
 }
 
+.admin-btn-action-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.875rem;
+  height: 2.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.admin-btn-action-primary:hover {
+  background: #1e293b;
+  border-color: #1e293b;
+}
+
 .admin-btn-action-wa {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  height: 34px;
+  gap: 0.375rem;
+  padding: 0 0.875rem;
+  height: 2.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #15803d;
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 0.5rem;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.15s ease;
@@ -8055,31 +8090,36 @@ button.card-gradient-purple:hover,
 }
 
 .admin-btn-action-wa:hover {
-  background: #16a34a;
-  color: #ffffff;
-  border-color: #16a34a;
+  background: #d1fae5;
+  border-color: #86efac;
+  color: #14532d;
 }
 
 .admin-btn-save-primary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  height: 34px;
+  gap: 0.375rem;
+  padding: 0 1rem;
+  height: 2.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #ffffff;
   background: #0f172a;
   border: 1px solid #0f172a;
-  border-radius: 6px;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
   box-sizing: border-box;
 }
 
-.admin-btn-save-primary:hover {
+.admin-btn-save-primary:hover:not(:disabled) {
   background: #1e293b;
+}
+
+.admin-btn-save-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Responsive Mobile Layout (<= 640px) - Floating window like desktop */
@@ -8169,87 +8209,212 @@ button.card-gradient-purple:hover,
   }
 }
 
-/* Inspection Tab (Impeccable Layout) */
+/* Inspection Tab (Modern, Clean & Minimal) */
 .admin-order-full-inspection {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 1rem;
 }
 
 .admin-address-inspection-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 0.75rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .admin-address-inspection-grid {
     grid-template-columns: 1fr;
   }
 }
 
 .admin-inspect-card {
-  padding: 14px 16px;
+  padding: 1rem;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 0.625rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.375rem;
+  transition: border-color 0.15s ease;
 }
 
 .admin-inspect-card.highlighted {
   background: #ffffff;
   border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .admin-inspect-card-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 2px;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: nowrap;
 }
 
 .admin-inspect-header {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.375rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: #64748b;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.admin-inspect-header.primary {
+  color: #0f172a;
+}
+
+.admin-inspect-pack-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.admin-wa-icon-link-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #15803d;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.admin-wa-icon-link-sm:hover {
+  background: #d1fae5;
+  border-color: #86efac;
 }
 
 .admin-inspect-name {
   font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
+  line-height: 1.3;
 }
 
 .admin-inspect-detail {
   font-size: 0.875rem;
   color: #475569;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
+}
+
+.admin-inspect-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.admin-inspect-account-text {
+  color: #0f172a;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.admin-inspect-mono-tag {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
 }
 
 .admin-inspect-pin {
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #0f172a;
-  margin: 2px 0 0;
+  margin: 0.25rem 0 0;
 }
 
+/* Sender Custom Parcel Slip Price Box */
+.admin-inspect-slip-price-box {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-inspect-slip-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #166534;
+}
+
+.admin-inspect-slip-price-row.discount {
+  color: #dc2626;
+}
+
+.admin-inspect-slip-price-row.net {
+  color: #0f172a;
+  padding-top: 0.125rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+}
+
+.admin-inspect-slip-price-label {
+  font-weight: 600;
+}
+
+.admin-inspect-slip-price-val {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875rem;
+}
+
+/* Items Wrap & Header */
 .admin-inspect-items-wrap {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 0.625rem;
+  padding: 1rem;
+}
+
+.admin-inspect-items-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-inspect-items-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-inspect-items-count {
+  font-weight: 600;
+  color: #94a3b8;
 }
 
 .admin-inspect-table {
@@ -8263,45 +8428,93 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-table th {
-  padding: 9px 12px;
+  padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .admin-inspect-table td {
-  padding: 10px 12px;
+  padding: 0.75rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 
-.admin-inspect-total-row td {
-  background: #f8fafc;
-  padding: 12px;
-  border-top: 2px solid #e2e8f0;
+.admin-inspect-item-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
 }
 
-/* Order Details Inspection Summary Rows */
+.admin-inspect-item-cell:hover .admin-inspect-item-title {
+  color: #2563eb;
+}
+
+.admin-inspect-item-img {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f8fafc;
+}
+
+.admin-inspect-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.admin-inspect-item-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.admin-sku-code {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+.admin-color-tag {
+  font-size: 0.75rem;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Summary Rows */
 .admin-inspect-summary-subtotal td {
-  padding: 11px 14px 6px;
-  border-top: 1.5px solid #e2e8f0;
+  padding: 0.75rem 0.75rem 0.375rem;
+  border-top: 1px solid #e2e8f0;
   border-bottom: none;
   background: #ffffff;
 }
 
 .admin-inspect-subtotal-label {
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #475569;
-  letter-spacing: -0.1px;
 }
 
 .admin-inspect-subtotal-units {
   display: inline-block;
-  margin-left: 6px;
+  margin-left: 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
   color: #94a3b8;
@@ -8315,7 +8528,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-summary-coupon td {
-  padding: 6px 14px 8px;
+  padding: 0.375rem 0.75rem;
   border-bottom: none;
   background: #ffffff;
 }
@@ -8323,22 +8536,21 @@ button.card-gradient-purple:hover,
 .admin-inspect-coupon-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .admin-inspect-coupon-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
   background: #ecfdf5;
   color: #065f46;
   border: 1px solid #a7f3d0;
-  padding: 2.5px 8px;
-  border-radius: 5px;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.75rem;
-  font-weight: 700;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing: 0.4px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, monospace;
 }
 
 .admin-inspect-coupon-label {
@@ -8355,7 +8567,7 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-summary-shipping td {
-  padding: 6px 14px 8px;
+  padding: 0.375rem 0.75rem;
   border-bottom: none;
   background: #ffffff;
 }
@@ -8374,8 +8586,8 @@ button.card-gradient-purple:hover,
 }
 
 .admin-inspect-summary-total td {
-  padding: 12px 14px;
-  border-top: 1.5px solid #cbd5e1;
+  padding: 0.75rem;
+  border-top: 1px solid #cbd5e1;
   border-bottom: none;
   background: #f8fafc;
 }
@@ -8383,78 +8595,81 @@ button.card-gradient-purple:hover,
 .admin-inspect-total-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .admin-inspect-total-label {
   font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
-  letter-spacing: -0.1px;
 }
 
 .admin-inspect-payment-pill {
   display: inline-flex;
   align-items: center;
-  padding: 2.5px 8px;
-  border-radius: 4px;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   background: #f1f5f9;
   color: #475569;
   border: 1px solid #e2e8f0;
 }
 
 .admin-inspect-total-amount {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 800;
   color: #0f172a;
-  letter-spacing: -0.3px;
   font-variant-numeric: tabular-nums;
 }
 
-.admin-inspect-item-cell {
+/* Customer Parcel Slip Value Row */
+.admin-inspect-slip-row td {
+  padding: 0.625rem 0.75rem;
+  background: #f0fdf4;
+  border-top: 1px solid #bbf7d0;
+  border-bottom: none;
+}
+
+.admin-inspect-slip-title-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  gap: 0.5rem;
 }
 
-.admin-inspect-item-cell:hover .admin-inspect-item-title {
-  color: #2563eb;
-  text-decoration: underline;
-}
-
-.admin-inspect-item-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #e2e8f0;
-}
-
-.admin-inspect-item-title {
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.admin-sku-code {
-  font-family: monospace;
+.admin-inspect-slip-heading {
   font-size: 0.875rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-weight: 600;
+  color: #166534;
 }
 
-.admin-color-tag {
+.admin-slip-price-pill {
   font-size: 0.75rem;
-  color: #2563eb;
   font-weight: 600;
+  color: #15803d;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.admin-inspect-slip-amount-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.admin-inspect-slip-amount {
+  font-size: 1rem;
+  color: #166534;
+  font-family: ui-monospace, monospace;
+}
+
+.admin-inspect-slip-subtext {
+  font-size: 0.75rem;
+  color: #15803d;
 }
 
 /* ==============================

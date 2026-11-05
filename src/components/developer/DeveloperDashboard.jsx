@@ -61,6 +61,7 @@ import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { fetchProducts } from '../../productData.js';
 import { storeConfig } from '../../config.js';
+import { DispatchLabelCard } from './DispatchLabelCard.jsx';
 import '../../styles/developerDashboard.css';
 
 export const BUSINESS_TYPES = [
@@ -884,6 +885,8 @@ export function PlanSelectionCard({
 export function DeveloperDashboard({
   user,
   buyerProfile,
+  onProfileUpdate,
+  setBuyerProfile,
   apiKeyRecord: initialKeyRecord,
   isAdminMode = false,
   onAdminUpdate,
@@ -2660,6 +2663,14 @@ export function DeveloperDashboard({
           </div>
         </div>
       </div>
+
+      {/* 5.1. Dispatch Shipping Label & Sender Address (Ship From) */}
+      <DispatchLabelCard
+        user={user}
+        buyerProfile={buyerProfile}
+        onProfileUpdate={onProfileUpdate || setBuyerProfile}
+        isAdminMode={isAdminMode}
+      />
 
       {/* 6. Curated Catalog Selection & Storefront Sync */}
       <div className={`dev-card dev-curator-card ${isCuratorGridOpen ? 'open' : ''}`} id="catalog-curator">

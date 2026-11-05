@@ -661,8 +661,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   // Status mapping and step calculation
   const steps = [
-    { label: 'Payment Received', icon: CreditCard, key: 'payment_received' },
-    { label: 'Quality Check & Packing', icon: PackageCheck, key: 'verified' },
+    { label: 'Paid', icon: CreditCard, key: 'payment_received' },
+    { label: 'Packing', icon: PackageCheck, key: 'verified' },
     { label: 'Dispatched', icon: Truck, key: 'dispatched' },
     { label: 'Delivered', icon: Gift, key: 'delivered' }
   ];
@@ -945,7 +945,14 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   <strong className="tracking-short-id">
                     {order.order_number ? `#${order.order_number}` : `#${String(order.id).substring(0, 8)}`}
                   </strong>
-                  <code className="tracking-full-id">{order.order_number || order.id}</code>
+                  {order.is_dropship && (
+                    <span className="tracking-dropship-tag">Dropship</span>
+                  )}
+                  {order.reseller_order_id && (
+                    <span className="tracking-ref-tag" title={`Ref: #${order.reseller_order_id}`}>
+                      Ref: #{order.reseller_order_id}
+                    </span>
+                  )}
                   <button 
                     type="button"
                     onClick={handleCopyId}
@@ -988,7 +995,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     className={`tracking-step-node ${isCompleted && !isActive ? 'completed' : ''} ${isActive ? 'active' : ''}`}
                   >
                     <div className="tracking-step-icon-wrap">
-                      {isCompleted && !isActive ? <Check size={16} strokeWidth={2.5} /> : <StepIcon size={16} />}
+                      {isCompleted && !isActive ? <Check size={14} strokeWidth={2.5} /> : <StepIcon size={14} />}
                     </div>
                     <span className="tracking-step-label">{step.label}</span>
                   </div>
@@ -1001,20 +1008,20 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div className="order-payment-pending-panel" style={{
                 background: '#f8fafc',
                 border: '1px solid #e2e8f0',
-                borderRadius: '10px',
-                padding: '16px 20px',
-                marginBottom: '20px',
+                borderRadius: '0.625rem',
+                padding: '1rem 1.25rem',
+                marginBottom: '1.25rem',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '12px'
+                gap: '0.75rem'
               }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b' }}>
                     Action Required
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>
+                  <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#0f172a', marginTop: '0.25rem' }}>
                     Amount Due: {formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })}
                   </div>
                 </div>
@@ -1026,18 +1033,19 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     background: '#0f172a',
                     color: '#ffffff',
                     border: 'none',
-                    padding: '10px 22px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: '600',
+                    padding: '0 1.25rem',
+                    height: '2.25rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
                     cursor: isProcessingPayment ? 'not-allowed' : 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '0.375rem',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {isProcessingPayment ? 'Connecting to Gateway...' : `Pay ${formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })} →`}
+                  {isProcessingPayment ? 'Connecting...' : `Pay ${formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })} →`}
                 </button>
               </div>
             )}
@@ -1046,12 +1054,12 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div style={{
                 background: '#f0fdf4',
                 border: '1px solid #bbf7d0',
-                borderRadius: '10px',
-                padding: '16px 20px',
-                marginBottom: '20px',
+                borderRadius: '0.625rem',
+                padding: '1rem 1.25rem',
+                marginBottom: '1.25rem',
                 color: '#166534',
-                fontSize: '13px',
-                fontWeight: '600',
+                fontSize: '0.875rem',
+                fontWeight: 600,
               }}>
                 ✓ {paymentSuccessMsg}
               </div>
@@ -1062,7 +1070,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div className="status-header-row">
                 <div className="status-title-group">
                   <span className="status-pulse-dot" />
-                  <span className="status-title">Latest Status Update</span>
+                  <span className="status-title">Latest Update</span>
                 </div>
                 <span className="status-date">
                   Updated: {new Date(order.updated_at || order.created_at).toLocaleDateString('en-IN', {
@@ -1082,7 +1090,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div className="details-card">
                 <div className="details-card-header">
                   <span className="details-card-title">
-                    <Truck size={14} /> SHIPPING & FULFILLMENT
+                    <Truck size={13} /> SHIPPING
                   </span>
                 </div>
                 {order.tracking_carrier ? (
@@ -1102,7 +1110,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     </div>
                     {order.tracking_number ? (
                       <p className="carrier-awb-line">
-                        AWB / Tracking ID: <strong>{order.tracking_number}</strong>
+                        AWB: <strong>{order.tracking_number}</strong>
                       </p>
                     ) : (
                       <p className="carrier-sub-hint">Tracking AWB is being synchronized.</p>
@@ -1111,10 +1119,10 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 ) : (
                   <div className="carrier-pending-box">
                     <p className="carrier-status-note">
-                      Order is undergoing quality inspection at our Varanasi fulfillment center.
+                      Order is undergoing inspection at Varanasi fulfillment hub.
                     </p>
                     <span className="carrier-pending-pill">
-                      Carrier AWB will be updated upon dispatch
+                      AWB updated upon dispatch
                     </span>
                   </div>
                 )}
@@ -1124,7 +1132,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div className="details-card">
                 <div className="details-card-header">
                   <span className="details-card-title">
-                    <MapPin size={14} /> DELIVERY DESTINATION
+                    <MapPin size={13} /> DESTINATION
                   </span>
                 </div>
                 <div className="recipient-info-box">
@@ -1147,7 +1155,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   )}
                   {order.is_dropship && (
                     <div className="dropship-parcel-sender">
-                      Parcel Sender: <strong>{order.dropship_sender_name || 'Partner Store'}</strong>
+                      Sender: <strong>{order.dropship_sender_name || 'Partner Store'}</strong>
                     </div>
                   )}
                 </div>
@@ -1159,7 +1167,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div className="tracking-items-section">
                 <div className="tracking-items-header">
                   <h3 className="tracking-items-title">
-                    Ordered Items ({resolvedItems.length})
+                    Items ({resolvedItems.length})
                   </h3>
                 </div>
 
@@ -1184,7 +1192,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         <div className="tracking-item-name">{item.title}</div>
                         <div className="tracking-item-meta">
                           {(item.variant_code || item.sku) && (
-                            <span className="item-meta-item">Code: <code>{item.variant_code || item.sku}</code></span>
+                            <span className="item-meta-item">SKU: <code>{item.variant_code || item.sku}</code></span>
                           )}
                           {item.color && (
                             <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
@@ -1192,7 +1200,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                           <span className="item-meta-item">Qty: {item.qty}</span>
                           {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
                             <span className="item-meta-item" style={{ color: '#64748b' }}>
-                              Price on Label: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}</strong>
+                              Slip Price: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}</strong>
                             </span>
                           )}
                         </div>
@@ -1201,8 +1209,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         <div>
                           <strong>{item.totalPrice ? formatMoney(item.totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: orderCurrency }) : 'Direct')}</strong>
                           {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
-                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', textAlign: 'right' }}>
-                              Label: {formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}
+                            <div className="item-slip-subtext">
+                              Slip: {formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}
                             </div>
                           )}
                         </div>
@@ -1215,7 +1223,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 <div className="tracking-amount-breakup-card">
                   <div className="tracking-breakup-row">
                     <span className="tracking-breakup-label">
-                      Actual Product Price ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
+                      Items Subtotal ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
                     </span>
                     <span className="tracking-breakup-val">
                       {formatMoney(amountBreakdown.itemsSubtotal, { currency: orderCurrency })}
@@ -1226,7 +1234,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     <>
                       <div className="tracking-breakup-row" style={{ color: '#475569' }}>
                         <span className="tracking-breakup-label">
-                          Price on Label (Parcel Slip Value)
+                          Parcel Slip Price
                         </span>
                         <span className="tracking-breakup-val">
                           {formatMoney(amountBreakdown.totalLabelPrice, { currency: orderCurrency })}
@@ -1235,9 +1243,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
                       <div className="tracking-breakup-row" style={{ color: '#166534' }}>
                         <span className="tracking-breakup-label">
-                          Your Reseller Margin
+                          Reseller Margin
                         </span>
-                        <span className="tracking-breakup-val" style={{ fontWeight: '600', color: '#166534' }}>
+                        <span className="tracking-breakup-val" style={{ fontWeight: 600, color: '#166534' }}>
                           +{formatMoney(amountBreakdown.resellerMargin, { currency: orderCurrency })}
                         </span>
                       </div>
@@ -1264,13 +1272,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     <span className="tracking-breakup-label">
                       Shipping &amp; Delivery
                       {amountBreakdown.isExpedited && (
-                        <span className="tracking-shipping-badge">Expedited Air</span>
+                        <span className="tracking-shipping-badge">Expedited</span>
                       )}
                     </span>
                     <span className={`tracking-breakup-val ${amountBreakdown.shippingFee === 0 ? 'tracking-free-shipping' : ''}`}>
                       {amountBreakdown.shippingFee > 0
                         ? `+${formatMoney(amountBreakdown.shippingFee, { currency: orderCurrency })}`
-                        : 'FREE (Standard)'}
+                        : 'FREE'}
                     </span>
                   </div>
 
