@@ -96,7 +96,7 @@ function getCarrierTrackingUrl(carrier = '', awb = '') {
 // Status classification helpers
 export function isNeedsAttentionStatus(status) {
   const s = String(status || '').toLowerCase().trim();
-  return s === 'new' || s === 'paid' || s === 'unfulfilled';
+  return s === 'new' || s === 'paid' || s === 'unfulfilled' || s === 'payment_received' || s === 'payment received';
 }
 
 export function isFulfillmentStatus(status) {
@@ -116,7 +116,7 @@ export function isDeliveredStatus(status) {
 
 export function getOrderStatusDisplay(status) {
   const s = String(status || 'new').toLowerCase().trim();
-  if (s === 'paid' || s === 'new' || s === 'unfulfilled') {
+  if (s === 'paid' || s === 'new' || s === 'unfulfilled' || s === 'payment_received' || s === 'payment received') {
     return {
       label: s === 'unfulfilled' ? 'Needs Attention' : 'Payment Received',
       pillClass: 'pill-needs_attention',
@@ -124,7 +124,7 @@ export function getOrderStatusDisplay(status) {
       category: 'needs_attention'
     };
   }
-  if (s === 'pending_payment') {
+  if (s === 'pending_payment' || s === 'payment_pending') {
     return {
       label: 'Pending Payment',
       pillClass: 'pill-needs_attention',
@@ -341,9 +341,10 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     } else if (type === 'delivered') {
       setFormMessage('Shipment successfully delivered! Thank you for ordering with us.');
       setFormStatus('delivered');
-    } else if (type === 'needs_attention' || type === 'new' || type === 'paid') {
+    } else if (type === 'needs_attention' || type === 'new' || type === 'paid' || type === 'payment_received') {
       setFormMessage('Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.');
-      setFormStatus((selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'new');
+      const orig = (selectedInquiry?.status || '').toLowerCase();
+      setFormStatus(orig === 'paid' ? 'paid' : (orig === 'payment_received' ? 'payment_received' : 'payment_received'));
     }
   };
 
@@ -380,7 +381,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     let allOrders = [...inquiries]
       .filter(i => {
         const s = String(i.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
       })
       .map(i => ({
         ...i,
@@ -1045,7 +1046,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       {[
                         {
                           id: 'needs_attention',
-                          targetStatus: (selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'new',
+                          targetStatus: (selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'payment_received',
                           label: 'Payment Received',
                           color: '#d97706',
                           themeKey: 'amber',

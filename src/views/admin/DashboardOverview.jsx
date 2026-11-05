@@ -48,12 +48,18 @@ export default function DashboardOverview({
     const orders = (adminData.optional.orders || [])
       .filter(o => {
         const s = String(o.status || '').toLowerCase().trim();
-        return s !== 'pending_payment' && s !== 'draft' && s !== 'unpaid';
+        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
       })
       .map(o => ({ ...o, _sourceTable: 'orders' }));
-    const sorted = orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const apiOrders = (adminData.optional.api_orders || [])
+      .filter(o => {
+        const s = String(o.status || '').toLowerCase().trim();
+        return s !== 'pending_payment' && s !== 'payment_pending' && s !== 'draft' && s !== 'unpaid';
+      })
+      .map(o => ({ ...o, _sourceTable: 'api_orders' }));
+    const sorted = [...orders, ...apiOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     return sorted;
-  }, [adminData.optional.orders]);
+  }, [adminData.optional.orders, adminData.optional.api_orders]);
 
   // Price Calculation helper (returns raw amount in INR)
   const getOrderAmountInINR = (row) => {
@@ -100,6 +106,8 @@ export default function DashboardOverview({
     const status = String(row.status || '').toLowerCase().trim();
     return (
       status === 'paid' ||
+      status === 'payment_received' ||
+      status === 'payment received' ||
       status === 'verified' ||
       status === 'payment verified' ||
       status === 'processing & qc' ||
@@ -342,14 +350,14 @@ export default function DashboardOverview({
   const pendingOrdersCount = useMemo(() => {
     return enquiryRows.filter(e => {
       const s = String(e.status || '').toLowerCase().trim();
-      return s === 'payment verified' || s === 'verified' || s === 'paid';
+      return s === 'payment verified' || s === 'verified' || s === 'paid' || s === 'payment_received' || s === 'payment received';
     }).length;
   }, [enquiryRows]);
 
   const pendingOrdersAmount = useMemo(() => {
     const rows = enquiryRows.filter(e => {
       const s = String(e.status || '').toLowerCase().trim();
-      return s === 'payment verified' || s === 'verified' || s === 'paid';
+      return s === 'payment verified' || s === 'verified' || s === 'paid' || s === 'payment_received' || s === 'payment received';
     });
     return rows.reduce((sum, r) => sum + getOrderAmountInINR(r), 0);
   }, [enquiryRows]);

@@ -334,20 +334,20 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                         fontWeight: '700',
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
-                        background: inq.status === 'payment_received' || inq.status === 'completed' || inq.status === 'delivered'
+                        background: inq.status === 'payment_received' || inq.status === 'paid' || inq.status === 'completed' || inq.status === 'delivered'
                           ? '#dcfce7'
-                          : inq.status === 'payment_pending' || inq.status === 'new'
+                          : inq.status === 'payment_pending' || inq.status === 'pending_payment' || inq.status === 'new'
                             ? '#fef3c7'
                             : '#f3f4f6',
-                        color: inq.status === 'payment_received' || inq.status === 'completed' || inq.status === 'delivered'
+                        color: inq.status === 'payment_received' || inq.status === 'paid' || inq.status === 'completed' || inq.status === 'delivered'
                           ? '#166534'
-                          : inq.status === 'payment_pending' || inq.status === 'new'
+                          : inq.status === 'payment_pending' || inq.status === 'pending_payment' || inq.status === 'new'
                             ? '#92400e'
                             : '#374151',
                       }}>
-                        {inq.status === 'payment_pending' || inq.status === 'new'
+                        {inq.status === 'payment_pending' || inq.status === 'pending_payment' || inq.status === 'new'
                           ? 'Payment Pending'
-                          : inq.status === 'payment_received'
+                          : (inq.status === 'payment_received' || inq.status === 'paid')
                             ? 'Payment Received'
                             : (inq.status?.replace('_', ' ') || 'Verified')}
                       </span>

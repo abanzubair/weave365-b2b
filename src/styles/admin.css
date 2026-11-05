@@ -7207,6 +7207,7 @@ button.card-gradient-purple:hover,
 /* 1. Amber / Gold Theme - Card 2: Needs Attention / Payment Received / Pending Payment */
 .admin-status-pill.pill-needs_attention,
 .admin-status-pill.pill-paid,
+.admin-status-pill.pill-payment_received,
 .admin-status-pill.pill-new,
 .admin-status-pill.pill-pending_payment {
   background: #fffbeb;
@@ -7215,6 +7216,7 @@ button.card-gradient-purple:hover,
 }
 .admin-status-pill.pill-needs_attention .admin-status-dot,
 .admin-status-pill.pill-paid .admin-status-dot,
+.admin-status-pill.pill-payment_received .admin-status-dot,
 .admin-status-pill.pill-new .admin-status-dot,
 .admin-status-pill.pill-pending_payment .admin-status-dot {
   background: #d97706;

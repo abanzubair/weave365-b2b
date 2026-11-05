@@ -75,21 +75,42 @@ function getStatusBadgeStyle(status) {
   switch (s) {
     case 'delivered':
     case 'done':
+    case 'completed':
       return { backgroundColor: '#eafaf1', color: '#2e7d32', border: '1px solid rgba(46, 125, 50, 0.2)' };
     case 'dispatched':
-      return { backgroundColor: '#e3f2fd', color: '#1565c0', border: '1px solid rgba(21, 101, 192, 0.2)' };
+    case 'in_transit':
+    case 'shipped':
+      return { backgroundColor: '#fdf2f8', color: '#be185d', border: '1px solid #fbcfe8' };
     case 'paid':
-      return { backgroundColor: '#eafaf1', color: '#2e7d32', border: '1px solid rgba(46, 125, 50, 0.2)' };
+    case 'payment_received':
+    case 'payment received':
+      return { backgroundColor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' };
     case 'verified':
     case 'processing':
+    case 'qc':
+    case 'in_fulfillment':
     case 'active':
-      return { backgroundColor: '#fff8e1', color: '#b78646', border: '1px solid rgba(183, 134, 70, 0.2)' };
+      return { backgroundColor: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe' };
+    case 'pending_payment':
+    case 'payment_pending':
+      return { backgroundColor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' };
     case 'cancelled':
     case 'rejected':
       return { backgroundColor: '#ffebee', color: '#c62828', border: '1px solid rgba(198, 40, 40, 0.2)' };
     default:
       return { backgroundColor: '#f5f5f5', color: '#616161', border: '1px solid rgba(97, 97, 97, 0.2)' };
   }
+}
+
+function isOrderDropship(order) {
+  if (!order) return false;
+  if (order.is_dropship || order.isDropship) return true;
+  if (order._sourceTable === 'api_orders') return true;
+  if (order.inquiry_type === 'reseller_api_order') return true;
+  if (Array.isArray(order.order_dropship_senders) && order.order_dropship_senders.length > 0) return true;
+  if (order.order_dropship_senders && typeof order.order_dropship_senders === 'object' && Object.keys(order.order_dropship_senders).length > 0) return true;
+  if (order.dropship_sender_name || order.dropship_recipient_name) return true;
+  return false;
 }
 
 export function Account({
@@ -332,20 +353,56 @@ export function Account({
     if (!user?.id || !isSupabaseConfigured) return;
     setOrdersLoading(true);
     try {
-      const [ordersRes, inquiriesRes] = await Promise.all([
+      const queries = [
         supabase
           .from('orders')
           .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
           .eq('user_id', user.id),
         supabase.from('inquiries').select('*').eq('user_id', user.id)
-      ]);
-      if (ordersRes.error) throw ordersRes.error;
-      if (inquiriesRes.error) throw inquiriesRes.error;
-
-      const combined = [
-        ...(ordersRes.data || []).map(o => ({ ...o, _sourceTable: 'orders' })),
-        ...(inquiriesRes.data || []).map(i => ({ ...i, _sourceTable: 'inquiries' }))
       ];
+
+      try {
+        queries.push(
+          supabase
+            .from('api_orders')
+            .select('*')
+            .eq('user_id', user.id)
+        );
+      } catch (e) {
+        // Safe catch if api_orders is unavailable
+      }
+
+      const results = await Promise.allSettled(queries);
+      const ordersRes = results[0]?.status === 'fulfilled' ? results[0].value : { data: [], error: results[0]?.reason };
+      const inquiriesRes = results[1]?.status === 'fulfilled' ? results[1].value : { data: [], error: results[1]?.reason };
+      const apiOrdersRes = results[2]?.status === 'fulfilled' ? results[2].value : { data: [], error: results[2]?.reason };
+
+      const rawOrders = (ordersRes.data || []).map(o => ({ ...o, _sourceTable: 'orders' }));
+      const rawInquiries = (inquiriesRes.data || []).map(i => ({ ...i, _sourceTable: 'inquiries' }));
+      const rawApiOrders = (!apiOrdersRes?.error && apiOrdersRes?.data) ? apiOrdersRes.data.map(a => ({
+        ...a,
+        _sourceTable: 'api_orders',
+        is_dropship: true,
+        order_number: a.order_number || (a.reseller_order_id ? `API-${a.reseller_order_id}` : a.id),
+        buyer_name: a.recipient_name || a.buyer_name,
+        phone: a.recipient_phone || a.phone,
+        email: a.recipient_email || a.email,
+        pincode: a.recipient_pincode || a.pincode,
+        dropship_sender_name: a.sender_name || a.dropship_sender_name,
+        dropship_sender_phone: a.sender_phone || a.dropship_sender_phone,
+        dropship_recipient_name: a.recipient_name,
+        dropship_recipient_phone: a.recipient_phone,
+        dropship_recipient_address: a.recipient_address,
+        dropship_recipient_city: a.recipient_city,
+        dropship_recipient_state: a.recipient_state,
+        dropship_recipient_pincode: a.recipient_pincode,
+        dropship_packing_preference: a.packing_preference,
+        order_items: Array.isArray(a.items) ? a.items : [],
+        items: Array.isArray(a.items) ? a.items : [],
+        message: a.shipping_notes || a.message,
+      })) : [];
+
+      const combined = [...rawOrders, ...rawInquiries, ...rawApiOrders];
 
       combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setPlacedOrders(combined);
@@ -542,7 +599,7 @@ export function Account({
   }, [placedOrders]);
 
 
-  const orderHistoryList = useMemo(() => {
+  const allPaidOrdersList = useMemo(() => {
     const UNPAID_STATUSES = ['pending_payment', 'draft', 'unpaid', 'failed', 'cancelled', 'payment_pending'];
     return (placedOrders || []).filter(o => {
       if (o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry') return false;
@@ -551,6 +608,21 @@ export function Account({
       return true;
     });
   }, [placedOrders]);
+
+  const dropshipOrdersList = useMemo(() => {
+    return allPaidOrdersList.filter(o => isOrderDropship(o));
+  }, [allPaidOrdersList]);
+
+  const directOrdersList = useMemo(() => {
+    return allPaidOrdersList.filter(o => !isOrderDropship(o));
+  }, [allPaidOrdersList]);
+
+  // If buyer has only dropship orders and no direct wholesale orders, automatically focus the Dropshipping orders tab
+  useEffect(() => {
+    if (orderSubTab === 'history' && directOrdersList.length === 0 && dropshipOrdersList.length > 0) {
+      setOrderSubTab('dropship');
+    }
+  }, [directOrdersList.length, dropshipOrdersList.length, orderSubTab]);
 
   if (!user) {
     return (
@@ -712,7 +784,7 @@ export function Account({
         >
           {accountLocked ? <Lock size={15} /> : <ClipboardList size={16} />}
           <span>Orders</span>
-          {placedOrders.length > 0 && <span className="nav-count">{placedOrders.length}</span>}
+          {allPaidOrdersList.length > 0 && <span className="nav-count">{allPaidOrdersList.length}</span>}
         </button>
         <button 
           type="button" 
@@ -783,7 +855,14 @@ export function Account({
                   className={`account-order-subtab-btn ${orderSubTab === 'history' ? 'active' : ''}`}
                   onClick={() => setOrderSubTab('history')}
                 >
-                  Order History {orderHistoryList.length > 0 && <span className="subtab-badge">({orderHistoryList.length})</span>}
+                  Order History {directOrdersList.length > 0 && <span className="subtab-badge">({directOrdersList.length})</span>}
+                </button>
+                <button
+                  type="button"
+                  className={`account-order-subtab-btn ${orderSubTab === 'dropship' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('dropship')}
+                >
+                  Dropshipping orders {dropshipOrdersList.length > 0 && <span className="subtab-badge">({dropshipOrdersList.length})</span>}
                 </button>
                 <button
                   type="button"
@@ -957,25 +1036,43 @@ export function Account({
                   (() => {
                     const currentList = orderSubTab === 'enquiry'
                       ? enquiriesList
-                      : orderHistoryList;
+                      : orderSubTab === 'dropship'
+                        ? dropshipOrdersList
+                        : directOrdersList;
 
                     if (currentList.length === 0) {
                       const emptyTitle = orderSubTab === 'enquiry'
                         ? 'No inquiries yet'
-                        : 'No order history yet';
+                        : orderSubTab === 'dropship'
+                          ? 'No dropshipping orders yet'
+                          : 'No direct orders yet';
 
                       const emptyDesc = orderSubTab === 'enquiry'
                         ? 'Once you submit a wholesale or custom sourcing inquiry, your live updates will appear here.'
-                        : 'Your placed wholesale orders and live tracking updates will appear here.';
+                        : orderSubTab === 'dropship'
+                          ? 'When you fulfill and dispatch blind dropship orders to your customers, they will appear here with live tracking.'
+                          : 'Your placed direct wholesale orders and live tracking updates will appear here.';
 
                       return (
                         <div className="account-empty-state">
                           <ClipboardList size={36} strokeWidth={1.5} />
                           <h3 className="account-empty-title">{emptyTitle}</h3>
                           <p className="account-empty-desc">{emptyDesc}</p>
-                          <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
-                            Browse Wholesale Catalogue
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '14px' }}>
+                            {orderSubTab === 'history' && dropshipOrdersList.length > 0 && (
+                              <button type="button" className="secondary-button" onClick={() => setOrderSubTab('dropship')}>
+                                View Dropshipping orders ({dropshipOrdersList.length}) →
+                              </button>
+                            )}
+                            {orderSubTab === 'dropship' && directOrdersList.length > 0 && (
+                              <button type="button" className="secondary-button" onClick={() => setOrderSubTab('history')}>
+                                View Direct Orders ({directOrdersList.length}) →
+                              </button>
+                            )}
+                            <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
+                              Browse Wholesale Catalogue
+                            </button>
+                          </div>
                         </div>
                       );
                     }
@@ -1000,7 +1097,7 @@ export function Account({
                             : (orderItemsList.length > 0
                               ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
                               : 0);
-                          const isDropshipOrder = Boolean(order.is_dropship);
+                          const isDropshipOrder = isOrderDropship(order);
                           const displayRef = order.order_number || order.id;
 
                           return (
@@ -1033,14 +1130,22 @@ export function Account({
                                   className="order-status-pill"
                                   style={statusStyle}
                                 >
-                                  {order.status || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received')}
+                                  {order.status === 'payment_received' 
+                                    ? 'Payment Received' 
+                                    : order.status === 'pending_payment'
+                                      ? 'Pending Payment'
+                                      : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
                                 </span>
                               </div>
 
                               {isDropshipOrder && (
                                 <div className="order-dropship-info-box">
-                                  <div><strong>Sender Label:</strong> {dropshipSender?.sender_name || order.dropship_sender_name || order.business_name || 'Reseller'} {(dropshipSender?.sender_phone || order.dropship_sender_phone) ? `(${dropshipSender?.sender_phone || order.dropship_sender_phone})` : ''}</div>
-                                  <div><strong>Deliver To:</strong> {deliveryAddr?.recipient_name || order.dropship_recipient_name || order.buyer_name} ({deliveryAddr?.phone || order.dropship_recipient_phone || 'N/A'}) — {deliveryAddr?.city || order.dropship_recipient_city} {(deliveryAddr?.pincode || order.dropship_recipient_pincode) ? `(${deliveryAddr?.pincode || order.dropship_recipient_pincode})` : ''}</div>
+                                  <div>
+                                    <strong>Sender Label:</strong> {dropshipSender?.sender_name || order.dropship_sender_name || order.sender_name || order.business_name || 'Reseller'} {(dropshipSender?.sender_phone || order.dropship_sender_phone || order.sender_phone) ? `(${dropshipSender?.sender_phone || order.dropship_sender_phone || order.sender_phone})` : ''}
+                                  </div>
+                                  <div>
+                                    <strong>Deliver To:</strong> {deliveryAddr?.recipient_name || order.dropship_recipient_name || order.recipient_name || order.buyer_name} ({deliveryAddr?.phone || order.dropship_recipient_phone || order.recipient_phone || 'N/A'}) — {deliveryAddr?.city || order.dropship_recipient_city || order.recipient_city || 'City'}{deliveryAddr?.pincode || order.dropship_recipient_pincode || order.recipient_pincode ? ` (${deliveryAddr?.pincode || order.dropship_recipient_pincode || order.recipient_pincode})` : ''}
+                                  </div>
                                 </div>
                               )}
 
