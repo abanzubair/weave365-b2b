@@ -46,7 +46,11 @@ import {
   Check,
   Share2,
   User,
-  Upload
+  Upload,
+  List,
+  LayoutGrid,
+  ChevronDown,
+  ChevronUp
 } from '../components/icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
@@ -239,6 +243,8 @@ export function Account({
   const [placedOrders, setPlacedOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [copiedTrackingId, setCopiedTrackingId] = useState(null);
+  const [orderViewMode, setOrderViewMode] = useState('ledger');
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
 
   const copyCustomerTrackingLink = (orderRef) => {
     if (typeof window === 'undefined') return;
@@ -1141,6 +1147,27 @@ export function Account({
                                 Direct Orders ({directOrdersList.length})
                               </button>
                             </div>
+
+                            <div className="account-orders-view-toggle">
+                              <button
+                                type="button"
+                                className={`view-toggle-pill ${orderViewMode === 'ledger' ? 'active' : ''}`}
+                                onClick={() => setOrderViewMode('ledger')}
+                                title="Modern B2B Order Ledger"
+                              >
+                                <List size={13} />
+                                <span>Ledger</span>
+                              </button>
+                              <button
+                                type="button"
+                                className={`view-toggle-pill ${orderViewMode === 'cards' ? 'active' : ''}`}
+                                onClick={() => setOrderViewMode('cards')}
+                                title="2-Column Balanced Card Grid"
+                              >
+                                <LayoutGrid size={13} />
+                                <span>Cards</span>
+                              </button>
+                            </div>
                           </div>
                         )}
 
@@ -1176,180 +1203,440 @@ export function Account({
                               </button>
                             </div>
                           </div>
-                        ) : (
-                          <div className="account-orders-stack">
-                        {currentList.map((order) => {
-                          const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric'
-                          });
-                          const statusStyle = getStatusBadgeStyle(order.status);
-                          const deliveryAddr = Array.isArray(order.order_delivery_addresses) ? order.order_delivery_addresses[0] : order.order_delivery_addresses;
-                          const dropshipSender = Array.isArray(order.order_dropship_senders) ? order.order_dropship_senders[0] : order.order_dropship_senders;
-                          const orderItemsList = (Array.isArray(order.order_items) && order.order_items.length > 0)
-                            ? order.order_items
-                            : (Array.isArray(order.items) ? order.items : []);
+                        ) : orderViewMode === 'ledger' ? (
+                          /* ─────────────────────────────────────────────────────────────
+                             APPROACH 1: B2B ORDER LEDGER TABLE
+                             Distributes information across 6 structured columns,
+                             perfectly balancing wide displays without empty voids.
+                             ───────────────────────────────────────────────────────────── */
+                          <div className="account-orders-ledger">
+                            <div className="orders-ledger-header">
+                              <div className="ledger-th col-order">Order Reference</div>
+                              <div className="ledger-th col-product">Products</div>
+                              <div className="ledger-th col-routing">Fulfillment & Delivery</div>
+                              <div className="ledger-th col-total">Total</div>
+                              <div className="ledger-th col-status">Status</div>
+                              <div className="ledger-th col-actions">Actions</div>
+                            </div>
 
-                          const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
-                            ? Number(order.total_amount)
-                            : (orderItemsList.length > 0
-                              ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
-                              : 0);
-                          const isDropshipOrder = isOrderDropship(order);
-                          const displayRef = order.order_number || order.id;
-                          const senderName = dropshipSender?.sender_name || order.dropship_sender_name || order.sender_name || order.business_name || 'Reseller';
-                          const senderPhone = dropshipSender?.sender_phone || order.dropship_sender_phone || order.sender_phone || '';
-                          const recipientName = deliveryAddr?.recipient_name || order.dropship_recipient_name || order.recipient_name || order.buyer_name || 'Customer';
-                          const recipientPhone = deliveryAddr?.phone || order.dropship_recipient_phone || order.recipient_phone || '';
-                          const recipientCity = deliveryAddr?.city || order.dropship_recipient_city || order.recipient_city || '';
-                          const recipientPincode = deliveryAddr?.pincode || order.dropship_recipient_pincode || order.recipient_pincode || '';
+                            <div className="orders-ledger-body">
+                              {currentList.map((order) => {
+                                const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric'
+                                });
+                                const statusStyle = getStatusBadgeStyle(order.status);
+                                const deliveryAddr = Array.isArray(order.order_delivery_addresses) ? order.order_delivery_addresses[0] : order.order_delivery_addresses;
+                                const dropshipSender = Array.isArray(order.order_dropship_senders) ? order.order_dropship_senders[0] : order.order_dropship_senders;
+                                const orderItemsList = (Array.isArray(order.order_items) && order.order_items.length > 0)
+                                  ? order.order_items
+                                  : (Array.isArray(order.items) ? order.items : []);
 
-                          return (
-                            <div 
-                              key={order.id} 
-                              className={`account-minimal-order-card ${isDropshipOrder ? 'is-dropship' : ''}`}
-                            >
-                              {/* TOP BAR */}
-                              <div className="order-card-top-bar">
-                                <div className="order-ref-group">
-                                  <span className="order-ref-code" title={displayRef}>
-                                    #{displayRef}
-                                  </span>
-                                  <span className="order-ref-dot">·</span>
-                                  <span className="order-date-text">{orderDate}</span>
-                                  {isDropshipOrder && (
-                                    <span className="order-badge-dropship">
-                                      Dropship
-                                    </span>
-                                  )}
-                                </div>
-                                <span 
-                                  className="order-status-pill"
-                                  style={statusStyle}
-                                >
-                                  <span className="status-dot" />
-                                  {order.status === 'payment_received' 
-                                    ? 'Payment Received' 
-                                    : (order.status === 'pending_payment' || order.status === 'payment_pending')
-                                      ? 'Payment Pending'
-                                      : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
-                                </span>
-                              </div>
+                                const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
+                                  ? Number(order.total_amount)
+                                  : (orderItemsList.length > 0
+                                    ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
+                                    : 0);
+                                const isDropshipOrder = isOrderDropship(order);
+                                const displayRef = order.order_number || order.id;
+                                const senderName = dropshipSender?.sender_name || order.dropship_sender_name || order.sender_name || order.business_name || 'Reseller';
+                                const senderPhone = dropshipSender?.sender_phone || order.dropship_sender_phone || order.sender_phone || '';
+                                const recipientName = deliveryAddr?.recipient_name || order.dropship_recipient_name || order.recipient_name || order.buyer_name || 'Customer';
+                                const recipientPhone = deliveryAddr?.phone || order.dropship_recipient_phone || order.recipient_phone || '';
+                                const recipientCity = deliveryAddr?.city || order.dropship_recipient_city || order.recipient_city || '';
+                                const recipientPincode = deliveryAddr?.pincode || order.dropship_recipient_pincode || order.recipient_pincode || '';
+                                const recipientAddress = deliveryAddr?.address_line1 || deliveryAddr?.address || order.dropship_recipient_address || '';
 
-                              {/* DROPSHIP SENDER & RECIPIENT */}
-                              {isDropshipOrder && (
-                                <div className="order-dropship-spec-box">
-                                  <div className="dropship-spec-col">
-                                    <span className="dropship-spec-label">Deliver To</span>
-                                    <span className="dropship-spec-name">{recipientName}</span>
-                                    <span className="dropship-spec-meta">
-                                      {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
-                                      {recipientPhone ? ` · ${recipientPhone}` : ''}
-                                    </span>
-                                  </div>
+                                const primaryItem = orderItemsList[0] || {};
+                                const primaryThumb = resolveOrderItemImage(primaryItem);
+                                const isExpanded = expandedOrderId === order.id;
 
-                                  <div className="dropship-spec-col">
-                                    <span className="dropship-spec-label">Sender (Ship From)</span>
-                                    <span className="dropship-spec-name">{senderName}</span>
-                                    {order.dropship_sender_address && (
-                                      <span className="dropship-spec-meta">{order.dropship_sender_address}</span>
-                                    )}
-                                    <span className="dropship-spec-meta">
-                                      {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}
-                                      {senderPhone ? ` · Ph: ${senderPhone}` : ''}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* ITEMS LIST */}
-                              <div className="order-items-list">
-                                {orderItemsList.map((item, idx) => {
-                                  const itemThumb = resolveOrderItemImage(item);
-                                  return (
-                                    <div key={idx} className="order-item-row">
-                                      <img
-                                        src={getOptimizedImageUrl(itemThumb, 'thumbnail')}
-                                        alt={item.product_title || item.title || 'Saree'}
-                                        className="order-item-thumb"
-                                        loading="lazy"
-                                        onError={(e) => {
-                                          const fallback = getOriginalImageUrl(itemThumb);
-                                          if (e.currentTarget.src !== fallback && fallback) {
-                                            e.currentTarget.src = fallback;
-                                          } else {
-                                            e.currentTarget.src = fallbackProductImage;
-                                          }
-                                        }}
-                                      />
-                                      <div className="order-item-details">
-                                        <span className="order-item-title">
-                                          {item.product_title || item.title || 'Banarasi Saree'}
+                                return (
+                                  <div key={order.id} className={`orders-ledger-item-wrap ${isExpanded ? 'is-expanded' : ''}`}>
+                                    <div className={`orders-ledger-row ${isDropshipOrder ? 'is-dropship' : ''}`}>
+                                      {/* COL 1: ORDER REF */}
+                                      <div className="ledger-td col-order">
+                                        <span className="order-ref-code" title={displayRef}>
+                                          #{displayRef}
                                         </span>
-                                        <div className="order-item-meta-pills">
-                                          {item.color && (
-                                            <span className="order-item-pill">{item.color}</span>
-                                          )}
-                                          <span className="order-item-pill">Qty {item.quantity || 1}</span>
-                                          {(item.sku || item.variant_code) && (
-                                            <span className="order-item-sku">#{item.sku || item.variant_code}</span>
+                                        <span className="order-date-text">{orderDate}</span>
+                                        {isDropshipOrder ? (
+                                          <span className="order-badge-dropship">Dropship</span>
+                                        ) : (
+                                          <span className="order-badge-direct">Direct Wholesale</span>
+                                        )}
+                                      </div>
+
+                                      {/* COL 2: PRODUCTS */}
+                                      <div className="ledger-td col-product">
+                                        <div className="ledger-product-cell">
+                                          <img
+                                            src={getOptimizedImageUrl(primaryThumb, 'thumbnail')}
+                                            alt={primaryItem?.product_title || primaryItem?.title || 'Saree'}
+                                            className="order-item-thumb"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                              const fallback = getOriginalImageUrl(primaryThumb);
+                                              if (e.currentTarget.src !== fallback && fallback) {
+                                                e.currentTarget.src = fallback;
+                                              } else {
+                                                e.currentTarget.src = fallbackProductImage;
+                                              }
+                                            }}
+                                          />
+                                          <div className="order-item-details">
+                                            <span className="order-item-title" title={primaryItem?.product_title || primaryItem?.title || 'Banarasi Saree'}>
+                                              {primaryItem?.product_title || primaryItem?.title || 'Banarasi Saree'}
+                                            </span>
+                                            <div className="order-item-meta-pills">
+                                              {primaryItem?.color && <span className="order-item-pill">{primaryItem.color}</span>}
+                                              <span className="order-item-pill">Qty {primaryItem?.quantity || 1}</span>
+                                              {(primaryItem?.sku || primaryItem?.variant_code) && (
+                                                <span className="order-item-sku">#{primaryItem.sku || primaryItem.variant_code}</span>
+                                              )}
+                                              {orderItemsList.length > 1 && (
+                                                <button
+                                                  type="button"
+                                                  className="order-more-items-pill"
+                                                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                                                >
+                                                  +{orderItemsList.length - 1} more
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* COL 3: ROUTING & DELIVERY */}
+                                      <div className="ledger-td col-routing">
+                                        <div className="ledger-routing-block">
+                                          <div className="routing-line">
+                                            <span className="routing-role-label">To:</span>
+                                            <span className="routing-name">{recipientName}</span>
+                                            <span className="routing-sub">
+                                              {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
+                                              {recipientPhone ? ` · ${recipientPhone}` : ''}
+                                            </span>
+                                          </div>
+                                          {isDropshipOrder && (
+                                            <div className="routing-line sender-line">
+                                              <span className="routing-role-label">From:</span>
+                                              <span className="routing-name">{senderName}</span>
+                                              <span className="routing-sub">
+                                                {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}
+                                              </span>
+                                            </div>
                                           )}
                                         </div>
                                       </div>
+
+                                      {/* COL 4: TOTAL */}
+                                      <div className="ledger-td col-total">
+                                        <span className="ledger-total-value">
+                                          {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                                        </span>
+                                        <span className="ledger-items-count">
+                                          {orderItemsList.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} items
+                                        </span>
+                                      </div>
+
+                                      {/* COL 5: STATUS */}
+                                      <div className="ledger-td col-status">
+                                        <span className="order-status-pill" style={statusStyle}>
+                                          <span className="status-dot" />
+                                          {order.status === 'payment_received' 
+                                            ? 'Payment Received' 
+                                            : (order.status === 'pending_payment' || order.status === 'payment_pending')
+                                              ? 'Payment Pending'
+                                              : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
+                                        </span>
+                                      </div>
+
+                                      {/* COL 6: ACTIONS */}
+                                      <div className="ledger-td col-actions">
+                                        <div className="ledger-actions-group">
+                                          {isDropshipOrder && (
+                                            <button
+                                              type="button"
+                                              className="order-copy-link-btn"
+                                              onClick={() => copyCustomerTrackingLink(displayRef)}
+                                              title="Copy tracking link for your customer"
+                                            >
+                                              {copiedTrackingId === displayRef ? (
+                                                <>
+                                                  <Check size={13} style={{ color: '#059669' }} />
+                                                  <span style={{ color: '#059669' }}>Copied</span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <Share2 size={13} />
+                                                  <span>Customer Link</span>
+                                                </>
+                                              )}
+                                            </button>
+                                          )}
+                                          <button 
+                                            type="button" 
+                                            className="order-track-btn"
+                                            onClick={() => navigate('order-tracking', displayRef)}
+                                          >
+                                            <span>Track Order</span>
+                                            <ArrowUpRight size={13} />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="order-expand-toggle-btn"
+                                            onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                                            title={isExpanded ? 'Collapse details' : 'Expand full details'}
+                                          >
+                                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                          </button>
+                                        </div>
+                                      </div>
                                     </div>
-                                  );
-                                })}
-                              </div>
 
-                              {/* BOTTOM BAR */}
-                              <div className="order-card-bottom-bar">
-                                <div className="order-total-block">
-                                  <span className="order-total-label">Total</span>
-                                  <span className="order-total-value">
-                                    {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
-                                  </span>
-                                </div>
-
-                                <div className="order-card-actions">
-                                  {isDropshipOrder && (
-                                    <button
-                                      type="button"
-                                      className="order-copy-link-btn"
-                                      onClick={() => copyCustomerTrackingLink(displayRef)}
-                                      title="Copy tracking link for your customer"
-                                    >
-                                      {copiedTrackingId === displayRef ? (
-                                        <>
-                                          <Check size={13} style={{ color: '#059669' }} />
-                                          <span style={{ color: '#059669' }}>Copied</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Share2 size={13} />
-                                          <span>Customer Link</span>
-                                        </>
-                                      )}
-                                    </button>
-                                  )}
-                                  <button 
-                                    type="button" 
-                                    className="order-track-btn"
-                                    onClick={() => navigate('order-tracking', displayRef)}
-                                  >
-                                    <span>Track Order</span>
-                                    <ArrowUpRight size={13} />
-                                  </button>
-                                </div>
-                              </div>
+                                    {/* EXPANDED ACCORDION DRAWER */}
+                                    {isExpanded && (
+                                      <div className="orders-ledger-expand-panel">
+                                        <div className="expand-panel-grid">
+                                          <div className="expand-panel-col">
+                                            <h4 className="expand-col-heading">Delivery Address</h4>
+                                            <p className="expand-addr-text">
+                                              <strong>{recipientName}</strong><br />
+                                              {recipientAddress && <>{recipientAddress}<br /></>}
+                                              {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}<br />
+                                              {recipientPhone && <>Phone: {recipientPhone}</>}
+                                            </p>
+                                          </div>
+                                          {isDropshipOrder && (
+                                            <div className="expand-panel-col">
+                                              <h4 className="expand-col-heading">Sender (Ship From)</h4>
+                                              <p className="expand-addr-text">
+                                                <strong>{senderName}</strong><br />
+                                                {order.dropship_sender_address && <>{order.dropship_sender_address}<br /></>}
+                                                {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}<br />
+                                                {senderPhone && <>Phone: {senderPhone}</>}
+                                              </p>
+                                            </div>
+                                          )}
+                                          <div className="expand-panel-col">
+                                            <h4 className="expand-col-heading">All Order Items ({orderItemsList.length})</h4>
+                                            <div className="expand-items-list">
+                                              {orderItemsList.map((it, iIdx) => {
+                                                const itThumb = resolveOrderItemImage(it);
+                                                return (
+                                                  <div key={iIdx} className="expand-item-row">
+                                                    <img
+                                                      src={getOptimizedImageUrl(itThumb, 'thumbnail')}
+                                                      alt={it.product_title || it.title || 'Saree'}
+                                                      className="expand-item-thumb"
+                                                      loading="lazy"
+                                                    />
+                                                    <div className="expand-item-info">
+                                                      <span className="expand-item-title">{it.product_title || it.title || 'Banarasi Saree'}</span>
+                                                      <span className="expand-item-meta">
+                                                        {it.color ? `${it.color} · ` : ''}Qty {it.quantity || 1}
+                                                        {(it.unit_price || it.price) ? ` · ${formatMoney(it.unit_price || it.price)}` : ''}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
-                );
-              })()
+                          </div>
+                        ) : (
+                          /* ─────────────────────────────────────────────────────────────
+                             APPROACH 2: 2-COLUMN BALANCED CARD GRID
+                             Cards sit in a clean 2-column grid (~770px wide each)
+                             rather than spanning across the full 1600px width.
+                             ───────────────────────────────────────────────────────────── */
+                          <div className="account-orders-grid">
+                            {currentList.map((order) => {
+                              const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              });
+                              const statusStyle = getStatusBadgeStyle(order.status);
+                              const deliveryAddr = Array.isArray(order.order_delivery_addresses) ? order.order_delivery_addresses[0] : order.order_delivery_addresses;
+                              const dropshipSender = Array.isArray(order.order_dropship_senders) ? order.order_dropship_senders[0] : order.order_dropship_senders;
+                              const orderItemsList = (Array.isArray(order.order_items) && order.order_items.length > 0)
+                                ? order.order_items
+                                : (Array.isArray(order.items) ? order.items : []);
+
+                              const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
+                                ? Number(order.total_amount)
+                                : (orderItemsList.length > 0
+                                  ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
+                                  : 0);
+                              const isDropshipOrder = isOrderDropship(order);
+                              const displayRef = order.order_number || order.id;
+                              const senderName = dropshipSender?.sender_name || order.dropship_sender_name || order.sender_name || order.business_name || 'Reseller';
+                              const senderPhone = dropshipSender?.sender_phone || order.dropship_sender_phone || order.sender_phone || '';
+                              const recipientName = deliveryAddr?.recipient_name || order.dropship_recipient_name || order.recipient_name || order.buyer_name || 'Customer';
+                              const recipientPhone = deliveryAddr?.phone || order.dropship_recipient_phone || order.recipient_phone || '';
+                              const recipientCity = deliveryAddr?.city || order.dropship_recipient_city || order.recipient_city || '';
+                              const recipientPincode = deliveryAddr?.pincode || order.dropship_recipient_pincode || order.recipient_pincode || '';
+
+                              return (
+                                <div 
+                                  key={order.id} 
+                                  className={`account-minimal-order-card ${isDropshipOrder ? 'is-dropship' : ''}`}
+                                >
+                                  {/* TOP BAR */}
+                                  <div className="order-card-top-bar">
+                                    <div className="order-ref-group">
+                                      <span className="order-ref-code" title={displayRef}>
+                                        #{displayRef}
+                                      </span>
+                                      <span className="order-ref-dot">·</span>
+                                      <span className="order-date-text">{orderDate}</span>
+                                      {isDropshipOrder ? (
+                                        <span className="order-badge-dropship">
+                                          Dropship
+                                        </span>
+                                      ) : (
+                                        <span className="order-badge-direct">
+                                          Direct
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span 
+                                      className="order-status-pill"
+                                      style={statusStyle}
+                                    >
+                                      <span className="status-dot" />
+                                      {order.status === 'payment_received' 
+                                        ? 'Payment Received' 
+                                        : (order.status === 'pending_payment' || order.status === 'payment_pending')
+                                          ? 'Payment Pending'
+                                          : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
+                                    </span>
+                                  </div>
+
+                                  {/* DROPSHIP SENDER & RECIPIENT */}
+                                  {isDropshipOrder && (
+                                    <div className="order-dropship-spec-box">
+                                      <div className="dropship-spec-col">
+                                        <span className="dropship-spec-label">Deliver To</span>
+                                        <span className="dropship-spec-name">{recipientName}</span>
+                                        <span className="dropship-spec-meta">
+                                          {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
+                                          {recipientPhone ? ` · ${recipientPhone}` : ''}
+                                        </span>
+                                      </div>
+
+                                      <div className="dropship-spec-col">
+                                        <span className="dropship-spec-label">Sender (Ship From)</span>
+                                        <span className="dropship-spec-name">{senderName}</span>
+                                        {order.dropship_sender_address && (
+                                          <span className="dropship-spec-meta">{order.dropship_sender_address}</span>
+                                        )}
+                                        <span className="dropship-spec-meta">
+                                          {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}
+                                          {senderPhone ? ` · Ph: ${senderPhone}` : ''}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* ITEMS LIST */}
+                                  <div className="order-items-list">
+                                    {orderItemsList.map((item, idx) => {
+                                      const itemThumb = resolveOrderItemImage(item);
+                                      return (
+                                        <div key={idx} className="order-item-row">
+                                          <img
+                                            src={getOptimizedImageUrl(itemThumb, 'thumbnail')}
+                                            alt={item.product_title || item.title || 'Saree'}
+                                            className="order-item-thumb"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                              const fallback = getOriginalImageUrl(itemThumb);
+                                              if (e.currentTarget.src !== fallback && fallback) {
+                                                e.currentTarget.src = fallback;
+                                              } else {
+                                                e.currentTarget.src = fallbackProductImage;
+                                              }
+                                            }}
+                                          />
+                                          <div className="order-item-details">
+                                            <span className="order-item-title">
+                                              {item.product_title || item.title || 'Banarasi Saree'}
+                                            </span>
+                                            <div className="order-item-meta-pills">
+                                              {item.color && (
+                                                <span className="order-item-pill">{item.color}</span>
+                                              )}
+                                              <span className="order-item-pill">Qty {item.quantity || 1}</span>
+                                              {(item.sku || item.variant_code) && (
+                                                <span className="order-item-sku">#{item.sku || item.variant_code}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* BOTTOM BAR */}
+                                  <div className="order-card-bottom-bar">
+                                    <div className="order-total-block">
+                                      <span className="order-total-label">Total</span>
+                                      <span className="order-total-value">
+                                        {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                                      </span>
+                                    </div>
+
+                                    <div className="order-card-actions">
+                                      {isDropshipOrder && (
+                                        <button
+                                          type="button"
+                                          className="order-copy-link-btn"
+                                          onClick={() => copyCustomerTrackingLink(displayRef)}
+                                          title="Copy tracking link for your customer"
+                                        >
+                                          {copiedTrackingId === displayRef ? (
+                                            <>
+                                              <Check size={13} style={{ color: '#059669' }} />
+                                              <span style={{ color: '#059669' }}>Copied</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Share2 size={13} />
+                                              <span>Customer Link</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      )}
+                                      <button 
+                                        type="button" 
+                                        className="order-track-btn"
+                                        onClick={() => navigate('order-tracking', displayRef)}
+                                      >
+                                        <span>Track Order</span>
+                                        <ArrowUpRight size={13} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
                 )}
               </div>
             )}
@@ -1922,17 +2209,17 @@ export function Account({
                 }}>
                   <Code2 size={22} strokeWidth={1.8} />
                 </div>
-                <h3 className="account-empty-title" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink, #1a1a1a)', margin: '0 0 8px' }}>
+                <h3 className="account-empty-title" style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--ink, #1a1a1a)', margin: '0 0 8px' }}>
                   Developer API
                 </h3>
-                <p className="account-empty-desc" style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 20px', lineHeight: '1.6' }}>
+                <p className="account-empty-desc" style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0 0 20px', lineHeight: '1.6' }}>
                   Developer API keys, webhooks, and catalogue endpoints are available exclusively for Business & Reseller accounts.
                 </p>
                 <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
                   <button
                     type="button"
                     className="primary-button"
-                    style={{ padding: '10px 24px', fontSize: '13.5px', borderRadius: '8px', fontWeight: 600 }}
+                    style={{ padding: '10px 24px', fontSize: '0.875rem', borderRadius: '8px', fontWeight: 600 }}
                     onClick={() => handleSelectTab('profile')}
                   >
                     Switch to Business Account
@@ -1945,7 +2232,7 @@ export function Account({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '5px',
-                      fontSize: '12.5px',
+                      fontSize: '0.75rem',
                       color: 'var(--gold-dark, #805d31)',
                       textDecoration: 'none',
                       fontWeight: 500,

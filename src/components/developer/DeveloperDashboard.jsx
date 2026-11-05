@@ -230,8 +230,8 @@ export function ConfirmActionModal({
 /**
  * Quiet, elegant card displaying storefront registration and developer activation details.
  */
-function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copiedField, copyToClipboard, tierInfo }) {
-  const [isCollapsed, setIsCollapsed] = useState(!isAdminMode);
+function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copiedField, copyToClipboard, tierInfo, defaultExpanded = false }) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultExpanded ? false : !isAdminMode);
 
   // Extract all data fields with intelligent fallbacks
   const clientName = apiKey?.client_name || apiKey?.profiles?.business_name || buyerProfile?.business_name || 'N/A';
@@ -290,7 +290,7 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
           </div>
           <div className="dev-activation-title-group">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#0f172a' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>
                 Storefront &amp; Registration Profile
               </h3>
               {clientName !== 'N/A' && (
@@ -901,6 +901,7 @@ export function DeveloperDashboard({
   const [copiedField, setCopiedField] = useState(null);
   const [usageStats, setUsageStats] = useState({ usage: [], totalMonth: initialKeyRecord?.monthTotal ?? 0 });
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce');
+  const [activeDevTab, setActiveDevTab] = useState('keys');
 
   // Subscription Plan & Gateway State
   const [planModalOpen, setPlanModalOpen] = useState(false);
@@ -1702,6 +1703,44 @@ export function DeveloperDashboard({
       })
     : '30 Days from Activation';
 
+  // Navigation Tabs for Google AI Studio Layout (ultra-minimal clean list without tags or subheadings)
+  const devNavTabs = [
+    {
+      id: 'keys',
+      label: 'API Keys & Quota',
+      icon: KeyRound,
+    },
+    {
+      id: 'dispatch',
+      label: 'Dispatch Label',
+      icon: MapPin,
+    },
+    {
+      id: 'catalog',
+      label: 'Catalog Feed Sync',
+      icon: Layers,
+    },
+    ...(!isAdminMode
+      ? [
+          {
+            id: 'guides',
+            label: 'Platform Guides',
+            icon: Code2,
+          },
+          {
+            id: 'console',
+            label: 'API Test Console',
+            icon: Play,
+          },
+        ]
+      : []),
+    {
+      id: 'profile',
+      label: 'Storefront Profile',
+      icon: Building2,
+    },
+  ];
+
   // 1. Returning from PhonePe or Cashfree redirect, currently verifying
   if (verifyingSub) {
     return (
@@ -2314,10 +2353,10 @@ export function DeveloperDashboard({
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
             <AlertTriangle size={20} color="#dc2626" style={{ marginTop: '2px', flexShrink: 0 }} />
             <div>
-              <div style={{ fontWeight: 600, color: '#991b1b', fontSize: '0.95rem' }}>
+              <div style={{ fontWeight: 600, color: '#991b1b', fontSize: '1rem' }}>
                 Monthly API Quota Reached ({monthlyQuota.toLocaleString()} requests)
               </div>
-              <p style={{ margin: '3px 0 0', fontSize: '0.85rem', color: '#7f1d1d', lineHeight: '1.4' }}>
+              <p style={{ margin: '3px 0 0', fontSize: '0.875rem', color: '#7f1d1d', lineHeight: '1.4' }}>
                 Storefront API requests are currently paused and returning HTTP 429 rate limits. Quota resets in {daysInMonthLeft} {daysInMonthLeft === 1 ? 'day' : 'days'} (1st of next month), or contact support to upgrade to Growth Partner (10,000 req/mo) or Pro Scale (25,000 req/mo).
               </p>
             </div>
@@ -2397,283 +2436,325 @@ export function DeveloperDashboard({
         </div>
       </div>
 
-      {/* 1. Primary Hero: API Credentials */}
-      <div className="dev-card dev-credentials-card">
-        <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <div className="dev-card-title">
-            <KeyRound size={16} />
-            <h3>API Credentials</h3>
-            {!apiKey?.is_active && (
-              <span className="dev-metric-badge-suspended">
-                <AlertTriangle size={10} /> Key Suspended (403 Forbidden)
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              className="dev-action-chip"
-              style={{ height: '30px', fontSize: '0.75rem', gap: '5px', cursor: 'pointer' }}
-              onClick={handleRegenerateKey}
-              title="Generate a new API secret key"
-            >
-              <RefreshCw size={12} />
-              <span>Regenerate Key</span>
-            </button>
-            <button
-              type="button"
-              className="dev-action-chip"
-              style={{ height: '30px', fontSize: '0.75rem', gap: '5px', color: '#dc2626', borderColor: '#fecaca', background: '#ffffff', cursor: 'pointer' }}
-              onClick={handleDeleteApiKey}
-              title="Permanently revoke and delete this API key"
-            >
-              <Trash2 size={12} />
-              <span>Revoke Key</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="dev-credentials-list">
-          <div className={`dev-cred-row ${!apiKey?.is_active ? 'suspended' : ''}`}>
-            <div className="dev-cred-info">
-              <span className="dev-cred-name">API Secret Key</span>
-              <span className="dev-cred-desc">
-                {!apiKey?.is_active ? (
-                  <span style={{ color: '#dc2626', fontWeight: 600 }}>⚠️ Inactive: Incoming requests with this key will return 403 Forbidden</span>
-                ) : (
-                  <>Pass in HTTP header: <code>X-API-Key: &lt;your_key&gt;</code></>
-                )}
-              </span>
-            </div>
-            <div className="dev-cred-input-wrap">
-              <input
-                type={showKeySecret && revealedKey ? 'text' : 'password'}
-                readOnly
-                value={showKeySecret && revealedKey ? revealedKey : (apiKey?.key_prefix || '••••••••••••••••••••••••••••••••')}
-                className="dev-cred-input"
-                autoComplete="off"
-                spellCheck="false"
-              />
-              <button
-                type="button"
-                className="dev-icon-btn"
-                onClick={handleToggleReveal}
-                disabled={revealingKey}
-                title={showKeySecret ? 'Hide Key' : 'Reveal Key'}
-                aria-label={showKeySecret ? 'Hide Key' : 'Reveal Key'}
-              >
-                {revealingKey ? (
-                  <RefreshCw size={16} className="spin-icon" />
-                ) : showKeySecret ? (
-                  <EyeOff size={16} />
-                ) : (
-                  <Eye size={16} />
-                )}
-              </button>
-              <button
-                type="button"
-                className="dev-copy-btn"
-                onClick={handleCopyKey}
-                disabled={copyingKey}
-                title="Copy full API Key"
-              >
-                {copiedField === 'api-key' ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copiedField === 'api-key' ? 'Copied' : (copyingKey ? 'Fetching...' : 'Copy')}</span>
-              </button>
-            </div>
+      {/* Google AI Studio Inspired Studio Layout */}
+      <div className="dev-studio-container">
+        {/* Left Sidebar Navigation */}
+        <aside className="dev-studio-sidebar">
+          <div className="dev-studio-sidebar-header">
+            <span className="dev-studio-brand-title">Developer Studio</span>
           </div>
 
-          <div className="dev-cred-row">
-            <div className="dev-cred-info">
-              <span className="dev-cred-name">Base API URL</span>
-              <span className="dev-cred-desc">Production Cloudflare Edge endpoint</span>
-            </div>
-            <div className="dev-cred-input-wrap">
-              <input
-                type="text"
-                readOnly
-                value="https://www.weave365.com/api/v1"
-                className="dev-cred-input"
-              />
-              <button
-                type="button"
-                className="dev-copy-btn"
-                onClick={() => copyToClipboard('https://www.weave365.com/api/v1', 'base-url')}
-              >
-                {copiedField === 'base-url' ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copiedField === 'base-url' ? 'Copied' : 'Copy'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Unified Overview & Usage Metrics Bar (Consolidated 4-Metric Strip) */}
-      <div className="dev-unified-stats-bar">
-        {/* Tile 1: Subscription */}
-        <div className="dev-stat-tile">
-          <div className="dev-stat-tile-head">
-            <span className="dev-stat-tile-label">Subscription</span>
-            <CreditCard size={15} className="dev-stat-tile-icon" />
-          </div>
-          <div className="dev-stat-tile-value">
-            {apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled
-              ? 'Pro Scale'
-              : 'Growth Partner'}
-          </div>
-          <div className="dev-stat-tile-meta">
-            <strong>{apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled ? '₹499/mo' : '₹299/mo'}</strong> • {isSubscriptionExpired ? 'Expired' : `Renews ${formattedValidUntil}`}
-          </div>
-        </div>
-
-        {/* Tile 2: Monthly Quota */}
-        <div className="dev-stat-tile">
-          <div className="dev-stat-tile-head">
-            <span className="dev-stat-tile-label">Monthly Quota</span>
-            <Activity size={15} className="dev-stat-tile-icon" />
-          </div>
-          <div className="dev-stat-tile-value">
-            {currentMonthUsed.toLocaleString()} <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: '#64748b' }}>/ {monthlyQuota.toLocaleString()} req</span>
-          </div>
-          <div className="dev-progress-bar-wrap" style={{ margin: '2px 0' }}>
-            <div
-              className={`dev-progress-bar ${!apiKey?.is_active ? 'disabled' : usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
-              style={{
-                transform: `scaleX(${usagePercent / 100})`,
-                background: !apiKey?.is_active ? '#cbd5e1' : undefined,
-              }}
-            />
-          </div>
-          <div className="dev-stat-tile-meta">
-            {!apiKey?.is_active ? 'Paused' : `${remainingQuota.toLocaleString()} remaining • Resets in ${daysInMonthLeft}d`}
-          </div>
-        </div>
-
-        {/* Tile 3: Rate Limit */}
-        <div className="dev-stat-tile">
-          <div className="dev-stat-tile-head">
-            <span className="dev-stat-tile-label">Rate Limit</span>
-            <Zap size={15} className="dev-stat-tile-icon" />
-          </div>
-          <div className="dev-stat-tile-value">
-            {!apiKey?.is_active ? 0 : (apiKey?.rate_limit_rps || 1)}{' '}
-            <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: '#64748b' }}>
-              {!apiKey?.is_active ? 'req/s (Blocked)' : 'req / sec'}
-            </span>
-          </div>
-          <div className="dev-stat-tile-meta">
-            {!apiKey?.is_active
-              ? 'Requests return 403 Forbidden'
-              : `Burst allowance: ${Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent`}
-          </div>
-        </div>
-
-        {/* Tile 4: Capabilities */}
-        <div className="dev-stat-tile">
-          <div className="dev-stat-tile-head">
-            <span className="dev-stat-tile-label">Order Routing</span>
-            <ShieldCheck size={15} className="dev-stat-tile-icon" />
-          </div>
-          <div className="dev-stat-tile-value">
-            {apiKey?.orders_enabled && apiKey?.is_active
-              ? 'Automated'
-              : !apiKey?.is_active
-                ? 'Suspended'
-                : 'Manual Only'}
-          </div>
-          <div className="dev-stat-tile-meta">
-            {apiKey?.orders_enabled && apiKey?.is_active
-              ? 'POST /orders active (Pro)'
-              : 'Upgrade to Pro for automated orders'}
-          </div>
-        </div>
-      </div>
-
-      {/* 5. API Permissions & Integration Status */}
-      <div className="dev-card">
-        <div className="dev-card-head">
-          <div className="dev-card-title">
-            <Shield size={16} style={{ color: apiKey?.is_active ? '#64748b' : '#ef4444' }} />
-            <h3>API Permissions &amp; Endpoint Access</h3>
-            {!apiKey?.is_active && (
-              <span className="dev-metric-badge-suspended">
-                <AlertTriangle size={10} /> Suspended
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="dev-permissions-grid">
-          <div className="dev-permission-item">
-            <div className="dev-permission-head">
-              <span className="dev-permission-title">Wholesale Catalog</span>
-              <span className={`dev-permission-status ${apiKey?.is_active ? 'active' : 'suspended'}`}>
-                <span className="dev-permission-dot" />
-                {apiKey?.is_active ? 'Active' : 'Suspended'}
-              </span>
-            </div>
-            <div className="dev-permission-foot">
-              <span className="dev-permission-endpoint">GET /catalog, /products/:sku</span>
-              {!apiKey?.is_active && <span className="dev-permission-note" style={{ color: '#dc2626' }}>403 Blocked</span>}
-            </div>
-          </div>
-
-          <div className="dev-permission-item">
-            <div className="dev-permission-head">
-              <span className="dev-permission-title">Live Stock Status</span>
-              <span className={`dev-permission-status ${apiKey?.is_active ? 'active' : 'suspended'}`}>
-                <span className="dev-permission-dot" />
-                {apiKey?.is_active ? 'Active' : 'Suspended'}
-              </span>
-            </div>
-            <div className="dev-permission-foot">
-              <span className="dev-permission-endpoint">GET /stock-status</span>
-              {!apiKey?.is_active && <span className="dev-permission-note" style={{ color: '#dc2626' }}>403 Blocked</span>}
-            </div>
-          </div>
-
-          <div className="dev-permission-item">
-            <div className="dev-permission-head">
-              <span className="dev-permission-title">Order Placement</span>
-              {isAdminMode ? (
+          <nav className="dev-studio-nav" aria-label="Developer Dashboard Sections">
+            {devNavTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeDevTab === tab.id;
+              return (
                 <button
+                  key={tab.id}
                   type="button"
-                  onClick={() => handleAdminToggleOrdersChange(!apiKey?.orders_enabled)}
-                  disabled={!apiKey?.is_active}
-                  className={`dev-permission-toggle-btn ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : !apiKey?.is_active ? 'suspended' : 'disabled'}`}
-                  title={!apiKey?.is_active ? 'Cannot enable Order API: API key is suspended' : 'Toggle Order API Access'}
+                  className={`dev-studio-tab-item ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveDevTab(tab.id)}
                 >
-                  <span className="dev-permission-dot" />
-                  {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Enabled' : (!apiKey?.is_active ? 'Suspended' : 'Disabled')}
+                  <Icon size={16} className="dev-studio-tab-icon" />
+                  <span className="dev-studio-tab-label">{tab.label}</span>
                 </button>
-              ) : (
-                <span className={`dev-permission-status ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : !apiKey?.is_active ? 'suspended' : 'disabled'}`}>
-                  <span className="dev-permission-dot" />
-                  {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Active' : (!apiKey?.is_active ? 'Suspended' : 'Disabled')}
-                </span>
-              )}
-            </div>
-            <div className="dev-permission-foot">
-              <span className="dev-permission-endpoint">POST /orders</span>
-              {!apiKey?.is_active ? (
-                <span className="dev-permission-note" style={{ color: '#dc2626' }}>API suspended</span>
-              ) : !apiKey?.orders_enabled && !isAdminMode ? (
-                <span className="dev-permission-note" style={{ color: '#b45309', fontWeight: '600' }}>Requires Pro Plan (₹499)</span>
-              ) : null}
-            </div>
+              );
+            })}
+          </nav>
+
+          <div className="dev-studio-sidebar-footer">
+            <a
+              href="/developer-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dev-studio-docs-link"
+            >
+              <BookOpen size={14} />
+              <span>API Documentation ↗</span>
+            </a>
           </div>
-        </div>
-      </div>
+        </aside>
 
-      {/* 5.1. Dispatch Shipping Label & Sender Address (Ship From) */}
-      <DispatchLabelCard
-        user={user}
-        buyerProfile={buyerProfile}
-        onProfileUpdate={onProfileUpdate || setBuyerProfile}
-        isAdminMode={isAdminMode}
-      />
+        {/* Right Main Stage */}
+        <main className="dev-studio-main">
+          {/* TAB 1: API Keys & Quota (Single Unified Card consolidating Credentials, Quotas & Permissions) */}
+          {activeDevTab === 'keys' && (
+            <div className="dev-card dev-keys-unified-card">
+              {/* Card Header with Title, Store, and Action Chips */}
+              <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div className="dev-card-title">
+                  <KeyRound size={16} />
+                  <h3>API Credentials &amp; Quota</h3>
+                  {!apiKey?.is_active && (
+                    <span className="dev-metric-badge-suspended">
+                      <AlertTriangle size={10} /> Suspended
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="dev-studio-brand-pill">
+                    Store: {apiKey?.client_name || 'B2B Partner'}
+                  </span>
+                  <button
+                    type="button"
+                    className="dev-action-chip"
+                    style={{ height: '30px', fontSize: '0.75rem', gap: '5px', cursor: 'pointer' }}
+                    onClick={handleRegenerateKey}
+                    title="Generate a new API secret key"
+                  >
+                    <RefreshCw size={12} />
+                    <span>Regenerate Key</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="dev-action-chip"
+                    style={{ height: '30px', fontSize: '0.75rem', gap: '5px', color: '#dc2626', borderColor: '#fecaca', background: '#ffffff', cursor: 'pointer' }}
+                    onClick={handleDeleteApiKey}
+                    title="Permanently revoke and delete this API key"
+                  >
+                    <Trash2 size={12} />
+                    <span>Revoke Key</span>
+                  </button>
+                </div>
+              </div>
 
-      {/* 6. Curated Catalog Selection & Storefront Sync */}
-      <div className={`dev-card dev-curator-card ${isCuratorGridOpen ? 'open' : ''}`} id="catalog-curator">
+              {/* Section 1: Credentials Rows */}
+              <div className="dev-credentials-list">
+                <div className={`dev-cred-row ${!apiKey?.is_active ? 'suspended' : ''}`}>
+                  <div className="dev-cred-info">
+                    <span className="dev-cred-name">API Secret Key</span>
+                    <span className="dev-cred-desc">
+                      {!apiKey?.is_active ? (
+                        <span style={{ color: '#dc2626', fontWeight: 600 }}>⚠️ Inactive: Incoming requests with this key will return 403 Forbidden</span>
+                      ) : (
+                        <>Pass in HTTP header: <code>X-API-Key: &lt;your_key&gt;</code></>
+                      )}
+                    </span>
+                  </div>
+                  <div className="dev-cred-input-wrap">
+                    <input
+                      type={showKeySecret && revealedKey ? 'text' : 'password'}
+                      readOnly
+                      value={showKeySecret && revealedKey ? revealedKey : (apiKey?.key_prefix || '••••••••••••••••••••••••••••••••')}
+                      className="dev-cred-input"
+                      autoComplete="off"
+                      spellCheck="false"
+                    />
+                    <button
+                      type="button"
+                      className="dev-icon-btn"
+                      onClick={handleToggleReveal}
+                      disabled={revealingKey}
+                      title={showKeySecret ? 'Hide Key' : 'Reveal Key'}
+                      aria-label={showKeySecret ? 'Hide Key' : 'Reveal Key'}
+                    >
+                      {revealingKey ? (
+                        <RefreshCw size={16} className="spin-icon" />
+                      ) : showKeySecret ? (
+                        <EyeOff size={16} />
+                      ) : (
+                        <Eye size={16} />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="dev-copy-btn"
+                      onClick={handleCopyKey}
+                      disabled={copyingKey}
+                      title="Copy full API Key"
+                    >
+                      {copiedField === 'api-key' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedField === 'api-key' ? 'Copied' : (copyingKey ? 'Fetching...' : 'Copy')}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="dev-cred-row">
+                  <div className="dev-cred-info">
+                    <span className="dev-cred-name">Base API URL</span>
+                    <span className="dev-cred-desc">Production Cloudflare Edge endpoint</span>
+                  </div>
+                  <div className="dev-cred-input-wrap">
+                    <input
+                      type="text"
+                      readOnly
+                      value="https://www.weave365.com/api/v1"
+                      className="dev-cred-input"
+                    />
+                    <button
+                      type="button"
+                      className="dev-copy-btn"
+                      onClick={() => copyToClipboard('https://www.weave365.com/api/v1', 'base-url')}
+                    >
+                      {copiedField === 'base-url' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedField === 'base-url' ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Unified Overview & Usage Metrics Bar (Consolidated 4-Metric Strip) */}
+              <div className="dev-unified-stats-bar in-card">
+                {/* Tile 1: Subscription */}
+                <div className="dev-stat-tile">
+                  <div className="dev-stat-tile-head">
+                    <span className="dev-stat-tile-label">Subscription</span>
+                    <CreditCard size={15} className="dev-stat-tile-icon" />
+                  </div>
+                  <div className="dev-stat-tile-value">
+                    {apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled
+                      ? 'Pro Scale'
+                      : 'Growth Partner'}
+                  </div>
+                  <div className="dev-stat-tile-meta">
+                    <strong>{apiKey?.subscription_plan === 'pro' || apiKey?.orders_enabled ? '₹499/mo' : '₹299/mo'}</strong> • {isSubscriptionExpired ? 'Expired' : `Renews ${formattedValidUntil}`}
+                  </div>
+                </div>
+
+                {/* Tile 2: Monthly Quota */}
+                <div className="dev-stat-tile">
+                  <div className="dev-stat-tile-head">
+                    <span className="dev-stat-tile-label">Monthly Quota</span>
+                    <Activity size={15} className="dev-stat-tile-icon" />
+                  </div>
+                  <div className="dev-stat-tile-value">
+                    {currentMonthUsed.toLocaleString()} <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#64748b' }}>/ {monthlyQuota.toLocaleString()} req</span>
+                  </div>
+                  <div className="dev-progress-bar-wrap" style={{ margin: '2px 0' }}>
+                    <div
+                      className={`dev-progress-bar ${!apiKey?.is_active ? 'disabled' : usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
+                      style={{
+                        transform: `scaleX(${usagePercent / 100})`,
+                        background: !apiKey?.is_active ? '#cbd5e1' : undefined,
+                      }}
+                    />
+                  </div>
+                  <div className="dev-stat-tile-meta">
+                    {!apiKey?.is_active ? 'Paused' : `${remainingQuota.toLocaleString()} remaining • Resets in ${daysInMonthLeft}d`}
+                  </div>
+                </div>
+
+                {/* Tile 3: Rate Limit */}
+                <div className="dev-stat-tile">
+                  <div className="dev-stat-tile-head">
+                    <span className="dev-stat-tile-label">Rate Limit</span>
+                    <Zap size={15} className="dev-stat-tile-icon" />
+                  </div>
+                  <div className="dev-stat-tile-value">
+                    {!apiKey?.is_active ? 0 : (apiKey?.rate_limit_rps || 1)}{' '}
+                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#64748b' }}>
+                      {!apiKey?.is_active ? 'req/s (Blocked)' : 'req / sec'}
+                    </span>
+                  </div>
+                  <div className="dev-stat-tile-meta">
+                    {!apiKey?.is_active
+                      ? 'Requests return 403 Forbidden'
+                      : `Burst allowance: ${Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent`}
+                  </div>
+                </div>
+
+                {/* Tile 4: Capabilities */}
+                <div className="dev-stat-tile">
+                  <div className="dev-stat-tile-head">
+                    <span className="dev-stat-tile-label">Order Routing</span>
+                    <ShieldCheck size={15} className="dev-stat-tile-icon" />
+                  </div>
+                  <div className="dev-stat-tile-value">
+                    {apiKey?.orders_enabled && apiKey?.is_active
+                      ? 'Automated'
+                      : !apiKey?.is_active
+                        ? 'Suspended'
+                        : 'Manual Only'}
+                  </div>
+                  <div className="dev-stat-tile-meta">
+                    {apiKey?.orders_enabled && apiKey?.is_active
+                      ? 'POST /orders active (Pro)'
+                      : 'Upgrade to Pro for automated orders'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: API Permissions & Endpoint Access */}
+              <div className="dev-card-subhead">
+                <Shield size={15} style={{ color: apiKey?.is_active ? '#64748b' : '#ef4444' }} />
+                <span className="dev-card-subhead-title">API Permissions &amp; Endpoint Access</span>
+              </div>
+              <div className="dev-permissions-grid in-card">
+                <div className="dev-permission-item">
+                  <div className="dev-permission-head">
+                    <span className="dev-permission-title">Wholesale Catalog</span>
+                    <span className={`dev-permission-status ${apiKey?.is_active ? 'active' : 'suspended'}`}>
+                      <span className="dev-permission-dot" />
+                      {apiKey?.is_active ? 'Active' : 'Suspended'}
+                    </span>
+                  </div>
+                  <div className="dev-permission-foot">
+                    <span className="dev-permission-endpoint">GET /catalog, /products/:sku</span>
+                    {!apiKey?.is_active && <span className="dev-permission-note" style={{ color: '#dc2626' }}>403 Blocked</span>}
+                  </div>
+                </div>
+
+                <div className="dev-permission-item">
+                  <div className="dev-permission-head">
+                    <span className="dev-permission-title">Live Stock Status</span>
+                    <span className={`dev-permission-status ${apiKey?.is_active ? 'active' : 'suspended'}`}>
+                      <span className="dev-permission-dot" />
+                      {apiKey?.is_active ? 'Active' : 'Suspended'}
+                    </span>
+                  </div>
+                  <div className="dev-permission-foot">
+                    <span className="dev-permission-endpoint">GET /stock-status</span>
+                    {!apiKey?.is_active && <span className="dev-permission-note" style={{ color: '#dc2626' }}>403 Blocked</span>}
+                  </div>
+                </div>
+
+                <div className="dev-permission-item">
+                  <div className="dev-permission-head">
+                    <span className="dev-permission-title">Order Placement</span>
+                    {isAdminMode ? (
+                      <button
+                        type="button"
+                        onClick={() => handleAdminToggleOrdersChange(!apiKey?.orders_enabled)}
+                        disabled={!apiKey?.is_active}
+                        className={`dev-permission-toggle-btn ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : !apiKey?.is_active ? 'suspended' : 'disabled'}`}
+                        title={!apiKey?.is_active ? 'Cannot enable Order API: API key is suspended' : 'Toggle Order API Access'}
+                      >
+                        <span className="dev-permission-dot" />
+                        {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Enabled' : (!apiKey?.is_active ? 'Suspended' : 'Disabled')}
+                      </button>
+                    ) : (
+                      <span className={`dev-permission-status ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : !apiKey?.is_active ? 'suspended' : 'disabled'}`}>
+                        <span className="dev-permission-dot" />
+                        {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Active' : (!apiKey?.is_active ? 'Suspended' : 'Disabled')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="dev-permission-foot">
+                    <span className="dev-permission-endpoint">POST /orders</span>
+                    {!apiKey?.is_active ? (
+                      <span className="dev-permission-note" style={{ color: '#dc2626' }}>API suspended</span>
+                    ) : !apiKey?.orders_enabled && !isAdminMode ? (
+                      <span className="dev-permission-note" style={{ color: '#b45309', fontWeight: '600' }}>Requires Pro Plan (₹499)</span>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+  {/* TAB 2: Dispatch Label */}
+  {activeDevTab === 'dispatch' && (
+    <DispatchLabelCard
+      user={user}
+      buyerProfile={buyerProfile}
+      onProfileUpdate={onProfileUpdate || setBuyerProfile}
+      isAdminMode={isAdminMode}
+    />
+  )}
+
+  {/* TAB 3: Curated Catalog Selection & Storefront Sync */}
+  {activeDevTab === 'catalog' && (
+    <div className={`dev-card dev-curator-card ${isCuratorGridOpen ? 'open' : ''}`} id="catalog-curator">
         <div
           className="dev-card-head"
           style={{
@@ -2689,7 +2770,7 @@ export function DeveloperDashboard({
             <ShoppingBag size={16} style={{ color: '#64748b' }} />
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#0f172a' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>
                   Curated Catalog Sync
                 </h3>
                 <span className={`dev-quiet-status-tag ${selectedSkus.length > 0 ? 'active' : 'inactive'}`}>
@@ -2916,10 +2997,11 @@ export function DeveloperDashboard({
           </div>
         )}
       </div>
+    )}
 
-      {/* 6. Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) - Reseller User Mode Only */}
-      {!isAdminMode && (
-        <div className="dev-card">
+    {/* TAB 4: Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) - Reseller User Mode Only */}
+    {activeDevTab === 'guides' && !isAdminMode && (
+      <div className="dev-card">
           <div className="dev-card-head">
             <div className="dev-card-title">
               <Code2 size={18} />
@@ -2980,7 +3062,7 @@ export function DeveloperDashboard({
                 <div className="dev-plat-intro">
                   <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet:</h4>
                   <p>
-                    Paste this snippet into your theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It will automatically query Weave365 every 2 hours and sync stock status for all products matching your SKU numbers.
+                    Paste this snippet into your child theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It automatically queries Weave365 hourly and updates inventory status for all products matching your catalog SKUs.
                   </p>
                 </div>
                 <div className="dev-code-block-wrap">
@@ -2994,25 +3076,35 @@ function sync_weave365_inventory() {
     
     $response = wp_remote_get($url, [
         'headers' => ['X-API-Key' => $api_key],
-        'timeout' => 20
+        'timeout' => 25,
+        'sslverify' => true,
     ]);
     
-    if (is_wp_error($response)) return;
-    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+        return;
+    }
     
-    if (!empty($body['stock_map'])) {
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (!empty($body['stock_map']) && is_array($body['stock_map'])) {
         foreach ($body['stock_map'] as $sku => $data) {
-            $product_id = wc_get_product_id_by_sku($sku);
+            $product_id = wc_get_product_id_by_sku((string)$sku);
             if ($product_id) {
                 $product = wc_get_product($product_id);
-                $is_available = !empty($data['is_available']);
-                $product->set_stock_status($is_available ? 'instock' : 'outofstock');
-                $product->save();
+                if ($product) {
+                    $is_available = !empty($data['is_available']);
+                    $product->set_stock_status($is_available ? 'instock' : 'outofstock');
+                    if ($product->get_manage_stock()) {
+                        $product->set_stock_quantity($is_available ? 5 : 0);
+                    }
+                    $product->save();
+                    wc_delete_product_transients($product_id);
+                }
             }
         }
     }
 }
 
+// Schedule hourly background inventory sync
 if (!wp_next_scheduled('weave365_cron_stock_sync')) {
     wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
 }`}
@@ -3020,7 +3112,46 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                   <button
                     type="button"
                     className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===\nadd_action('weave365_cron_stock_sync', 'sync_weave365_inventory');\nfunction sync_weave365_inventory() {\n    $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n    $response = wp_remote_get('https://www.weave365.com/api/v1/stock-status', ['headers' => ['X-API-Key' => $api_key], 'timeout' => 20]);\n    if (is_wp_error($response)) return;\n    $body = json_decode(wp_remote_retrieve_body($response), true);\n    if (!empty($body['stock_map'])) {\n        foreach ($body['stock_map'] as $sku => $data) {\n            $id = wc_get_product_id_by_sku($sku);\n            if ($id) {\n                $p = wc_get_product($id);\n                $p->set_stock_status(!empty($data['is_available']) ? 'instock' : 'outofstock');\n                $p->save();\n            }\n        }\n    }\n}\nif (!wp_next_scheduled('weave365_cron_stock_sync')) { wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync'); }`, 'woo-code')}
+                    onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
+add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
+
+function sync_weave365_inventory() {
+    $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
+    $url = 'https://www.weave365.com/api/v1/stock-status';
+    
+    $response = wp_remote_get($url, [
+        'headers' => ['X-API-Key' => $api_key],
+        'timeout' => 25,
+        'sslverify' => true,
+    ]);
+    
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+        return;
+    }
+    
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (!empty($body['stock_map']) && is_array($body['stock_map'])) {
+        foreach ($body['stock_map'] as $sku => $data) {
+            $product_id = wc_get_product_id_by_sku((string)$sku);
+            if ($product_id) {
+                $product = wc_get_product($product_id);
+                if ($product) {
+                    $is_available = !empty($data['is_available']);
+                    $product->set_stock_status($is_available ? 'instock' : 'outofstock');
+                    if ($product->get_manage_stock()) {
+                        $product->set_stock_quantity($is_available ? 5 : 0);
+                    }
+                    $product->save();
+                    wc_delete_product_transients($product_id);
+                }
+            }
+        }
+    }
+}
+
+if (!wp_next_scheduled('weave365_cron_stock_sync')) {
+    wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
+}`, 'woo-code')}
                   >
                     {copiedField === 'woo-code' ? <Check size={14} /> : <Copy size={14} />} Copy PHP Snippet
                   </button>
@@ -3033,7 +3164,7 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                 <div className="dev-plat-intro">
                   <h4 className="dev-plat-title">Shopify Automated Integration:</h4>
                   <p>
-                    Use any Shopify data-sync app (e.g. <strong>Matrixify</strong> or <strong>Stock Sync</strong>). Provide your dedicated Shopify-formatted feed URL below:
+                    Use any Shopify inventory sync app (such as <strong>Matrixify</strong> or <strong>Stock Sync</strong>). Provide your dedicated Shopify-formatted JSON feed URL below:
                   </p>
                 </div>
                 <div className="dev-shopify-box">
@@ -3042,13 +3173,13 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                     <input
                       type="text"
                       readOnly
-                      value={`https://www.weave365.com/api/v1/catalog?format=shopify`}
+                      value="https://www.weave365.com/api/v1/catalog?format=shopify"
                       className="dev-feed-input"
                     />
                     <button
                       type="button"
                       className="dev-feed-copy-btn"
-                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog?format=shopify`, 'shopify-url')}
+                      onClick={() => copyToClipboard('https://www.weave365.com/api/v1/catalog?format=shopify', 'shopify-url')}
                     >
                       {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
                       <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
@@ -3057,15 +3188,15 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                   <div className="dev-shopify-steps">
                     <div className="dev-step-item">
                       <span className="dev-step-num">1</span>
-                      <div className="dev-step-text">In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, choose <em>New Scheduled Feed</em>.</div>
+                      <div className="dev-step-text">In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, select <em>New Scheduled Feed / Import</em>.</div>
                     </div>
                     <div className="dev-step-item">
                       <span className="dev-step-num">2</span>
-                      <div className="dev-step-text">Set Source URL to the URL above and add Header <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
+                      <div className="dev-step-text">Set Feed URL to the URL above and add Custom Header: <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
                     </div>
                     <div className="dev-step-item">
                       <span className="dev-step-num">3</span>
-                      <div className="dev-step-text">Set schedule to <em>Every 2 hours</em> for automated inventory sync.</div>
+                      <div className="dev-step-text">Set import frequency to <em>Hourly</em> or <em>Every 2 hours</em> for automated inventory sync.</div>
                     </div>
                   </div>
                 </div>
@@ -3081,32 +3212,105 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                 <div className="dev-code-block-wrap">
                   <pre>
                     {`<?php
-// PrestaShop 1.7 / 8.x Stock Synchronizer
+// === Weave365 PrestaShop 1.7 / 8.x Stock Synchronizer ===
 require_once dirname(__FILE__) . '/config/config.inc.php';
 
 $apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
-$ch = curl_init('https://www.weave365.com/api/v1/stock-status');
-curl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: $apiKey"]);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$url = 'https://www.weave365.com/api/v1/stock-status';
+
+$ch = curl_init($url);
+curl_setopt_array($ch, [
+    CURLOPT_HTTPHEADER => ["X-API-Key: $apiKey"],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 25,
+    CURLOPT_SSL_VERIFYPEER => true,
+]);
+
 $res = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
-$data = json_decode($res, true);
-if (!empty($data['stock_map'])) {
-    foreach ($data['stock_map'] as $sku => $item) {
-        $id_product = (int)Db::getInstance()->getValue('SELECT id_product FROM '._DB_PREFIX_.'product WHERE reference = "'.pSQL($sku).'"');
-        if ($id_product) {
-            $qty = !empty($item['is_available']) ? 5 : 0;
-            StockAvailable::setQuantity($id_product, 0, $qty);
+if ($http_code === 200 && $res) {
+    $data = json_decode($res, true);
+    if (!empty($data['stock_map']) && is_array($data['stock_map'])) {
+        $count = 0;
+        foreach ($data['stock_map'] as $sku => $item) {
+            $is_available = !empty($item['is_available']);
+            $qty = $is_available ? 5 : 0;
+            
+            // 1. Check standard product reference
+            $id_product = (int)Db::getInstance()->getValue(
+                'SELECT id_product FROM ' . _DB_PREFIX_ . 'product WHERE reference = "' . pSQL($sku) . '"'
+            );
+            if ($id_product > 0) {
+                StockAvailable::setQuantity($id_product, 0, $qty);
+                $count++;
+            } else {
+                // 2. Check product combinations / variant attributes
+                $comb = Db::getInstance()->getRow(
+                    'SELECT id_product, id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE reference = "' . pSQL($sku) . '"'
+                );
+                if (!empty($comb['id_product'])) {
+                    StockAvailable::setQuantity((int)$comb['id_product'], (int)$comb['id_product_attribute'], $qty);
+                    $count++;
+                }
+            }
         }
+        echo "Successfully synced stock for {$count} products from Weave365.\\n";
     }
-    echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";
 }`}
                   </pre>
                   <button
                     type="button"
                     className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`<?php\n// PrestaShop 1.7 / 8.x Stock Synchronizer\nrequire_once dirname(__FILE__) . '/config/config.inc.php';\n\n$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n$ch = curl_init('https://www.weave365.com/api/v1/stock-status');\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: $apiKey"]);\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n$res = curl_exec($ch);\ncurl_close($ch);\n\n$data = json_decode($res, true);\nif (!empty($data['stock_map'])) {\n    foreach ($data['stock_map'] as $sku => $item) {\n        $id_product = (int)Db::getInstance()->getValue('SELECT id_product FROM '._DB_PREFIX_.'product WHERE reference = "'.pSQL($sku).'"');\n        if ($id_product) {\n            $qty = !empty($item['is_available']) ? 5 : 0;\n            StockAvailable::setQuantity($id_product, 0, $qty);\n        }\n    }\n    echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";\n}`, 'prestashop-code')}
+                    onClick={() => copyToClipboard(`<?php
+// === Weave365 PrestaShop 1.7 / 8.x Stock Synchronizer ===
+require_once dirname(__FILE__) . '/config/config.inc.php';
+
+$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
+$url = 'https://www.weave365.com/api/v1/stock-status';
+
+$ch = curl_init($url);
+curl_setopt_array($ch, [
+    CURLOPT_HTTPHEADER => ["X-API-Key: $apiKey"],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 25,
+    CURLOPT_SSL_VERIFYPEER => true,
+]);
+
+$res = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($http_code === 200 && $res) {
+    $data = json_decode($res, true);
+    if (!empty($data['stock_map']) && is_array($data['stock_map'])) {
+        $count = 0;
+        foreach ($data['stock_map'] as $sku => $item) {
+            $is_available = !empty($item['is_available']);
+            $qty = $is_available ? 5 : 0;
+            
+            // 1. Check standard product reference
+            $id_product = (int)Db::getInstance()->getValue(
+                'SELECT id_product FROM ' . _DB_PREFIX_ . 'product WHERE reference = "' . pSQL($sku) . '"'
+            );
+            if ($id_product > 0) {
+                StockAvailable::setQuantity($id_product, 0, $qty);
+                $count++;
+            } else {
+                // 2. Check product combinations / variant attributes
+                $comb = Db::getInstance()->getRow(
+                    'SELECT id_product, id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE reference = "' . pSQL($sku) . '"'
+                );
+                if (!empty($comb['id_product'])) {
+                    StockAvailable::setQuantity((int)$comb['id_product'], (int)$comb['id_product_attribute'], $qty);
+                    $count++;
+                }
+            }
+        }
+        echo "Successfully synced stock for {$count} products from Weave365.\\n";
+    }
+}`, 'prestashop-code')}
                   >
                     {copiedField === 'prestashop-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'prestashop-code' ? 'Copied' : 'Copy PHP Snippet'}
                   </button>
@@ -3121,36 +3325,80 @@ if (!empty($data['stock_map'])) {
                 </div>
                 <div className="dev-code-block-wrap">
                   <pre>
-                    {`# 1. Fetch Complete Wholesale Catalog
-curl -X GET "https://www.weave365.com/api/v1/catalog" \\
+                    {`# 1. Fetch Complete Wholesale Catalog (Paginated: page=1, limit=50)
+curl -X GET "https://www.weave365.com/api/v1/catalog?page=1&limit=50" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
 
 # 2. Fetch Lightweight Stock Availability Map
 curl -X GET "https://www.weave365.com/api/v1/stock-status" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
 
-# 3. Place Automated Order via API (Pro Tier)
+# 3. Query Specific Product by SKU
+curl -X GET "https://www.weave365.com/api/v1/products/602008" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 4. Place Automated Dropship Order via API (Pro Tier)
 curl -X POST "https://www.weave365.com/api/v1/orders" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "reseller_order_id": "ORD-101",
-    "reseller_email": "reseller@example.com",
     "customer": {
       "name": "Priya Sharma",
-      "phone": "+919876543210",
+      "phone": "9876543210",
       "pincode": "560038",
       "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
       "city": "Bengaluru",
       "state": "Karnataka"
     },
-    "items": [{ "sku": "102001", "color": "Copper", "quantity": 1, "customer_price": 2899 }]
+    "items": [
+      {
+        "sku": "602008",
+        "color": "Green",
+        "quantity": 1,
+        "selling_price": 1149
+      }
+    ]
   }'`}
                   </pre>
                   <button
                     type="button"
                     className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog\ncurl -X GET "https://www.weave365.com/api/v1/catalog" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 2. Fetch Lightweight Stock Availability Map\ncurl -X GET "https://www.weave365.com/api/v1/stock-status" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 3. Place Automated Order via API (Pro Tier)\ncurl -X POST "https://www.weave365.com/api/v1/orders" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "reseller_order_id": "ORD-101",\n    "reseller_email": "reseller@example.com",\n    "customer": {\n      "name": "Priya Sharma",\n      "phone": "+919876543210",\n      "pincode": "560038",\n      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",\n      "city": "Bengaluru",\n      "state": "Karnataka"\n    },\n    "items": [{ "sku": "102001", "color": "Copper", "quantity": 1, "customer_price": 2899 }]\n  }'`, 'curl-code')}
+                    onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog (Paginated: page=1, limit=50)
+curl -X GET "https://www.weave365.com/api/v1/catalog?page=1&limit=50" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 2. Fetch Lightweight Stock Availability Map
+curl -X GET "https://www.weave365.com/api/v1/stock-status" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 3. Query Specific Product by SKU
+curl -X GET "https://www.weave365.com/api/v1/products/602008" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 4. Place Automated Dropship Order via API (Pro Tier)
+curl -X POST "https://www.weave365.com/api/v1/orders" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "reseller_order_id": "ORD-101",
+    "customer": {
+      "name": "Priya Sharma",
+      "phone": "9876543210",
+      "pincode": "560038",
+      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka"
+    },
+    "items": [
+      {
+        "sku": "602008",
+        "color": "Green",
+        "quantity": 1,
+        "selling_price": 1149
+      }
+    ]
+  }'`, 'curl-code')}
                   >
                     {copiedField === 'curl-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}
                   </button>
@@ -3161,29 +3409,106 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
             {activePlatformTab === 'javascript' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">Node.js / Fetch Example:</h4>
+                  <h4 className="dev-plat-title">JavaScript / Node.js SDK Examples:</h4>
                 </div>
                 <div className="dev-code-block-wrap">
                   <pre>
                     {`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
+const baseUrl = 'https://www.weave365.com/api/v1';
 
-async function fetchWeave365Catalog() {
-  const response = await fetch('https://www.weave365.com/api/v1/catalog', {
-    headers: {
-      'X-API-Key': apiKey,
-    },
+// 1. Fetch Paginated Catalog Feed
+async function getCatalog(page = 1, limit = 50) {
+  const res = await fetch(\`\${baseUrl}/catalog?page=\${page}&limit=\${limit}\`, {
+    headers: { 'X-API-Key': apiKey },
   });
-  const data = await response.json();
-  console.log('Total Products Synced:', data.total_products);
+  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
+  const data = await res.json();
+  console.log(\`Synced \${data.page_products} of \${data.total_products} products\`);
   return data.products;
 }
 
-fetchWeave365Catalog();`}
+// 2. Fetch Real-Time Stock Availability Map
+async function getStockStatus() {
+  const res = await fetch(\`\${baseUrl}/stock-status\`, {
+    headers: { 'X-API-Key': apiKey },
+  });
+  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
+  const data = await res.json();
+  console.log(\`Stock map updated for \${data.total_items} items\`);
+  return data.stock_map;
+}
+
+// 3. Place Automated Dropship Order (Pro Tier)
+async function createOrder(orderPayload) {
+  const res = await fetch(\`\${baseUrl}/orders\`, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderPayload),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(\`Order placement failed: \${err.message || res.statusText}\`);
+  }
+  const result = await res.json();
+  console.log('Order created successfully:', result.order_id);
+  return result;
+}
+
+// Example usage:
+fetchStockStatus();`}
                   </pre>
                   <button
                     type="button"
                     className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';\n\nasync function fetchWeave365Catalog() {\n  const response = await fetch('https://www.weave365.com/api/v1/catalog', {\n    headers: {\n      'X-API-Key': apiKey,\n    },\n  });\n  const data = await response.json();\n  console.log('Total Products Synced:', data.total_products);\n  return data.products;\n}\n\nfetchWeave365Catalog();`, 'js-code')}
+                    onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
+const baseUrl = 'https://www.weave365.com/api/v1';
+
+// 1. Fetch Paginated Catalog Feed
+async function getCatalog(page = 1, limit = 50) {
+  const res = await fetch(\`\${baseUrl}/catalog?page=\${page}&limit=\${limit}\`, {
+    headers: { 'X-API-Key': apiKey },
+  });
+  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
+  const data = await res.json();
+  console.log(\`Synced \${data.page_products} of \${data.total_products} products\`);
+  return data.products;
+}
+
+// 2. Fetch Real-Time Stock Availability Map
+async function getStockStatus() {
+  const res = await fetch(\`\${baseUrl}/stock-status\`, {
+    headers: { 'X-API-Key': apiKey },
+  });
+  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
+  const data = await res.json();
+  console.log(\`Stock map updated for \${data.total_items} items\`);
+  return data.stock_map;
+}
+
+// 3. Place Automated Dropship Order (Pro Tier)
+async function createOrder(orderPayload) {
+  const res = await fetch(\`\${baseUrl}/orders\`, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderPayload),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(\`Order placement failed: \${err.message || res.statusText}\`);
+  }
+  const result = await res.json();
+  console.log('Order created successfully:', result.order_id);
+  return result;
+}
+
+// Example usage:
+fetchStockStatus();`, 'js-code')}
                   >
                     {copiedField === 'js-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'js-code' ? 'Copied' : 'Copy JavaScript'}
                   </button>
@@ -3194,8 +3519,8 @@ fetchWeave365Catalog();`}
         </div>
       )}
 
-      {/* 7. Interactive Live API Test Console - Reseller User Mode Only */}
-      {!isAdminMode && (
+      {/* TAB 5: Interactive Live API Test Console - Reseller User Mode Only */}
+      {activeDevTab === 'console' && !isAdminMode && (
         <div className="dev-card">
           <div className="dev-card-head">
             <div className="dev-card-title">
@@ -3261,16 +3586,21 @@ fetchWeave365Catalog();`}
         </div>
       )}
 
-      {/* 8. Storefront & Registration Parameters (Clean collapsible reference at bottom) */}
-      <UserActivationInfoCard
-        apiKey={apiKey}
-        user={user}
-        buyerProfile={buyerProfile}
-        isAdminMode={isAdminMode}
-        copiedField={copiedField}
-        copyToClipboard={copyToClipboard}
-        tierInfo={tierInfo}
-      />
+      {/* TAB 6: Storefront & Registration Parameters */}
+      {activeDevTab === 'profile' && (
+        <UserActivationInfoCard
+          apiKey={apiKey}
+          user={user}
+          buyerProfile={buyerProfile}
+          isAdminMode={isAdminMode}
+          copiedField={copiedField}
+          copyToClipboard={copyToClipboard}
+          tierInfo={tierInfo}
+          defaultExpanded={true}
+        />
+      )}
+        </main>
+      </div>
 
       {/* Subscription Renewal / Upgrade Modal */}
       {planModalOpen && (

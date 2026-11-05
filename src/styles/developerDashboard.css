@@ -12,13 +12,21 @@
   flex-direction: column;
   gap: 1.25rem;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1600px;
   margin: 0 auto;
   font-family: var(--font-inter, var(--font-body)) !important;
   color: var(--ink, #0f172a);
   min-width: 0;
   box-sizing: border-box;
   overflow-x: hidden;
+}
+
+/* Allow parent container to expand to 1600px when Developer Dashboard is mounted */
+.account-page-minimal:has(.dev-dashboard-container),
+.account-page-minimal.account-page-wide {
+  max-width: 1600px !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .api-manager-container {
@@ -136,7 +144,7 @@
   color: #64748b;
   max-width: 520px;
   margin: 0 auto 1.5rem auto;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   line-height: 1.6;
 }
 
@@ -215,7 +223,7 @@
   padding: 10px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-family: inherit;
   color: #0f172a;
   background: #ffffff;
@@ -235,7 +243,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   border-radius: 8px;
   background: #18181b;
@@ -257,7 +265,7 @@
 
 .dev-form-footnote {
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   margin: 0;
 }
@@ -298,7 +306,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--gold-dark, #805d31);
   text-decoration: none;
@@ -327,7 +335,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #475569;
 }
 
@@ -356,7 +364,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #475569;
   cursor: pointer;
 }
@@ -421,7 +429,7 @@
 }
 
 .dev-header-title {
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   color: var(--ink, #0f172a);
@@ -487,7 +495,7 @@
   align-items: center;
   gap: 5px;
   color: #64748b;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   text-decoration: none;
   background: #f8fafc;
   border: 1px solid #edf2f7;
@@ -534,7 +542,7 @@
   height: 36px;
   box-sizing: border-box;
   padding: 0 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
@@ -627,7 +635,7 @@
 
 .dev-alert-content strong {
   color: #0f172a;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
@@ -786,7 +794,7 @@
 
 .dev-page-header-desc {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   line-height: 1.4;
 }
@@ -805,7 +813,7 @@
   height: 32px;
   padding: 0 12px;
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   background: #ffffff;
   color: #334155;
@@ -829,7 +837,7 @@
   height: 32px;
   padding: 0 13px;
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   background: #0f172a;
   color: #ffffff;
@@ -883,7 +891,7 @@
 }
 
 .dev-stat-tile-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -895,7 +903,7 @@
 }
 
 .dev-stat-tile-value {
-  font-size: 1.1875rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
@@ -1022,12 +1030,12 @@
 .dev-metric-footer {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
 }
 
 .dev-metric-subtext {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   margin: 0.5rem 0 0 0;
 }
@@ -1039,6 +1047,56 @@
   border: 1px solid var(--line, #e2e8f0);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   overflow: hidden;
+}
+
+/* Unified Single-Card Layout for API Keys & Quota */
+.dev-keys-unified-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dev-keys-unified-card .dev-credentials-list {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dev-keys-unified-card .dev-unified-stats-bar.in-card {
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-bottom: 1px solid #f1f5f9;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.dev-card-subhead {
+  padding: 1rem 1.5rem 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dev-card-subhead-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: -0.01em;
+}
+
+.dev-keys-unified-card .dev-permissions-grid.in-card {
+  padding: 0.5rem 1.5rem 1.25rem;
+  background: transparent;
+}
+
+.dev-studio-brand-pill {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
 }
 
 .dev-card-head {
@@ -1060,7 +1118,7 @@
 }
 
 .dev-card-title h3 {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   margin: 0;
   color: #0f172a;
@@ -1091,13 +1149,13 @@
 }
 
 .dev-cred-name {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
 }
 
 .dev-cred-desc {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
 }
 
@@ -1108,7 +1166,7 @@
   border-radius: 4px;
   color: #0f172a;
   border: 1px solid #e2e8f0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .dev-cred-input-wrap {
@@ -1173,7 +1231,7 @@
   border: none;
   border-radius: 8px;
   padding: 0 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -1237,7 +1295,7 @@
 }
 
 .dev-plat-title {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 0.35rem 0;
@@ -1255,7 +1313,7 @@
   background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #0f172a;
   border: 1px solid #e2e8f0;
 }
@@ -1290,7 +1348,7 @@
   color: #ffffff;
   border-radius: 6px;
   padding: 6px 12px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
@@ -1356,7 +1414,7 @@
   border: none;
   border-radius: 8px;
   padding: 0 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -1411,7 +1469,7 @@
   background: #e2e8f0;
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #0f172a;
 }
 
@@ -1477,7 +1535,7 @@
   border: none !important;
   background: #ffffff !important;
   padding: 0 10px !important;
-  font-size: 0.8125rem !important;
+  font-size: 0.875rem !important;
   font-weight: 500;
   color: #0f172a !important;
   outline: none !important;
@@ -1490,7 +1548,7 @@
   max-height: 42px !important;
   box-sizing: border-box;
   padding: 0 18px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -1532,14 +1590,14 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 8px;
   margin-bottom: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #94a3b8;
 }
 
 .dev-test-output pre {
   margin: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   max-height: 280px;
   overflow-y: auto;
@@ -1642,7 +1700,7 @@
   border: 1px solid #0f172a;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -1663,7 +1721,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 8px 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -1726,7 +1784,7 @@
 }
 
 .admin-stat-value {
-  font-size: 1.625rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
@@ -1808,7 +1866,7 @@
   padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid #cbd5e1;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   background: #ffffff;
   color: #334155;
   cursor: pointer;
@@ -1845,7 +1903,7 @@
 
 .api-table th {
   padding: 12px 16px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -1894,7 +1952,7 @@
   display: block;
   color: #334155;
   font-weight: 500;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .api-user-name {
@@ -1904,7 +1962,7 @@
 
 .api-tier-tag {
   display: inline-block;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 4px;
@@ -1997,7 +2055,7 @@
   height: 26px;
   padding: 0 10px;
   border-radius: 9999px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
@@ -2147,7 +2205,7 @@
 .api-inspect-modal-content {
   background: #f8fafc;
   border-radius: 16px;
-  max-width: 1100px;
+  max-width: 1600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -2188,7 +2246,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 7px 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   color: #334155;
@@ -2215,7 +2273,7 @@
 }
 
 .api-inspect-select-label {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #64748b;
   white-space: nowrap;
@@ -2227,7 +2285,7 @@
   padding: 7px 12px;
   border-radius: 8px;
   border: 1px solid #cbd5e1;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   background: #ffffff;
   color: #0f172a;
   font-weight: 600;
@@ -2241,7 +2299,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 6px 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   color: #475569;
@@ -2278,7 +2336,7 @@
 }
 
 .dev-card-subtitle {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   margin: 3px 0 0 0;
   font-weight: 400;
@@ -2299,7 +2357,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   border-radius: 6px;
   border: none;
@@ -2367,7 +2425,7 @@
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
   cursor: pointer;
@@ -2387,7 +2445,7 @@
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
   color: #334155;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   padding: 6px 14px;
   border-radius: 20px;
@@ -2471,7 +2529,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
   cursor: pointer;
@@ -2483,7 +2541,7 @@
   height: 34px;
   box-sizing: border-box;
   padding: 0 12px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   border-radius: 7px;
   background: #ffffff;
@@ -2526,7 +2584,7 @@
 
 .dev-cat-chip {
   padding: 6px 14px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
@@ -2644,7 +2702,7 @@
   position: absolute;
   bottom: 8px;
   right: 8px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 5px;
@@ -2685,7 +2743,7 @@
 .dev-item-price {
   font-weight: 700;
   color: #0f172a;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .dev-item-title {
@@ -2745,7 +2803,7 @@
   border: 1px solid #a7f3d0;
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   animation: fadeIn 0.2s ease;
 }
@@ -2830,7 +2888,7 @@
   }
 
   .dev-metric-value {
-    font-size: 1.375rem;
+    font-size: 1.5rem;
   }
 
   /* Credentials List */
@@ -2841,7 +2899,7 @@
   }
 
   .dev-card-title h3 {
-    font-size: 0.9375rem;
+    font-size: 1rem;
   }
 
   .dev-credentials-list {
@@ -2874,7 +2932,7 @@
 
   .dev-cred-input {
     height: 42px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     padding: 0 10px;
   }
 
@@ -2886,7 +2944,7 @@
   .dev-copy-btn {
     height: 42px;
     padding: 0 12px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   /* Curated Catalog Selection */
@@ -2899,7 +2957,7 @@
 
   .dev-curator-all-status {
     min-width: 0;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .dev-curate-btn {
@@ -2980,7 +3038,7 @@
   }
 
   .dev-item-title {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     min-height: 2.4em;
     line-clamp: 2;
   }
@@ -3000,7 +3058,7 @@
   .dev-save-bar-info {
     justify-content: space-between;
     width: 100%;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .dev-save-selection-btn {
@@ -3017,7 +3075,7 @@
 
   .dev-plat-tab {
     padding: 10px 12px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .dev-platform-content {
@@ -3038,7 +3096,7 @@
 
   .dev-feed-input {
     height: 42px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .dev-feed-copy-btn {
@@ -3082,7 +3140,7 @@
     width: 100% !important;
     height: 42px !important;
     max-height: 42px !important;
-    font-size: 0.8125rem !important;
+    font-size: 0.875rem !important;
     padding: 0 10px !important;
     box-sizing: border-box !important;
   }
@@ -3091,7 +3149,7 @@
     width: 100% !important;
     height: 42px !important;
     max-height: 42px !important;
-    font-size: 0.8125rem !important;
+    font-size: 0.875rem !important;
     justify-content: center !important;
     box-sizing: border-box !important;
   }
@@ -3112,7 +3170,7 @@
   }
 
   .api-manager-subtitle {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .api-header-actions {
@@ -3126,7 +3184,7 @@
   .api-btn-secondary {
     justify-content: center;
     padding: 9px 12px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .admin-stats-grid {
@@ -3139,7 +3197,7 @@
   }
 
   .admin-stat-value {
-    font-size: 1.375rem;
+    font-size: 1.5rem;
   }
 
   .api-filter-bar {
@@ -3178,7 +3236,7 @@
 
   .api-action-btn {
     height: 32px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .api-wa-btn,
@@ -3251,7 +3309,7 @@
   .api-inspect-back-btn {
     height: 34px;
     padding: 0 12px;
-    font-size: 0.78125rem;
+    font-size: 0.75rem;
   }
 
   .mobile-only-inspect-close {
@@ -3282,7 +3340,7 @@
   .api-inspect-select {
     width: 100%;
     height: 38px;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .dev-admin-banner {
@@ -3336,11 +3394,11 @@
   }
 
   .dev-item-sku {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
   }
 
   .dev-item-price {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 }
 
@@ -3388,7 +3446,7 @@
 }
 
 .dev-activation-title-group h3 {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
   margin: 0;
@@ -3414,7 +3472,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 1px 6px;
   border-radius: 4px;
@@ -3482,7 +3540,7 @@
 }
 
 .dev-activation-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -3499,7 +3557,7 @@
 }
 
 .dev-activation-value {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #0f172a;
   white-space: nowrap;
@@ -3522,7 +3580,7 @@
   align-items: center;
   gap: 4px;
   color: #0f172a;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
@@ -3558,7 +3616,7 @@
   align-items: center;
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   background: #f1f5f9;
   color: #334155;
@@ -3722,7 +3780,7 @@
 }
 
 .dev-confirm-title {
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.3;
@@ -3774,7 +3832,7 @@
 }
 
 .dev-confirm-message {
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   color: #475569;
   line-height: 1.5;
   margin: 0 0 1rem 0;
@@ -3792,7 +3850,7 @@
 }
 
 .dev-confirm-verify-label {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #334155;
   font-weight: 500;
   display: flex;
@@ -3809,7 +3867,7 @@
   border-radius: 4px;
   font-weight: 700;
   border: 1px solid #fecaca;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   letter-spacing: 0.05em;
 }
 
@@ -3878,7 +3936,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   color: #475569;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   padding: 7px 14px;
   cursor: pointer;
@@ -3894,7 +3952,7 @@
   border: none;
   border-radius: 8px;
   color: #ffffff;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   padding: 7px 16px;
   cursor: pointer;
@@ -3965,7 +4023,7 @@
 }
 
 .dev-permission-title {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #1e293b;
   letter-spacing: -0.01em;
@@ -3975,7 +4033,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -4012,13 +4070,13 @@
 
 .dev-permission-endpoint {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: #64748b;
   line-height: 1.3;
 }
 
 .dev-permission-note {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 400;
   white-space: nowrap;
@@ -4028,7 +4086,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 999px;
@@ -4135,7 +4193,7 @@
 
 .dev-suspended-quiet-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #991b1b;
   background: #fef2f2;
@@ -4144,7 +4202,7 @@
 }
 
 .dev-suspended-quiet-desc {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   line-height: 1.4;
   margin: 0;
@@ -4162,7 +4220,7 @@
   min-height: 36px;
   padding: 0 14px;
   border-radius: 7px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
@@ -4252,7 +4310,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
@@ -4276,7 +4334,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #991b1b;
   margin-bottom: 12px;
 }
@@ -4329,7 +4387,7 @@
   background: #f8fafc;
   color: #0f172a;
   border: 1px solid #cbd5e1;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -4359,7 +4417,7 @@
 }
 
 .dev-api-request-title {
-  font-size: 1.625rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--ink, #0f172a);
   margin: 0 0 0.5rem 0;
@@ -4367,7 +4425,7 @@
 }
 
 .dev-api-request-subtitle {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: #64748b;
   margin: 0;
   line-height: 1.5;
@@ -4386,7 +4444,7 @@
 }
 
 .dev-group-label {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1e293b;
   display: flex;
@@ -4395,7 +4453,7 @@
 }
 
 .dev-group-caption {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   margin: -2px 0 4px 0;
   line-height: 1.4;
@@ -4448,7 +4506,7 @@
   padding: 12px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-family: inherit;
   color: #0f172a;
   background: #ffffff;
@@ -4503,7 +4561,7 @@
 }
 
 .dev-api-footnote {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   text-align: center;
   margin: 0;
@@ -4557,7 +4615,7 @@
 }
 
 .dev-after-body {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: #475569;
   line-height: 1.6;
   margin: 0 0 2rem 0;
@@ -4583,7 +4641,7 @@
   border-radius: 8px;
   background: #18181b;
   color: #ffffff;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   border: 1px solid #18181b;
   cursor: pointer;
@@ -4605,7 +4663,7 @@
   border-radius: 8px;
   background: #f1f5f9;
   color: #0f172a;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   border: 1px solid #cbd5e1;
   cursor: pointer;
@@ -4628,7 +4686,7 @@
   border-radius: 8px;
   background: #ffffff;
   color: #0f172a;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   border: 1px solid #cbd5e1;
   cursor: pointer;
@@ -4650,7 +4708,7 @@
   background: #fef3c7;
   border: 1px solid #fde68a;
   color: #92400e;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
 }
@@ -4692,7 +4750,7 @@
 
 .api-req-modal-header h3 {
   margin: 0;
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #0f172a;
   letter-spacing: -0.01em;
@@ -4734,7 +4792,7 @@
 }
 
 .api-req-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -4790,7 +4848,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   padding: 2px 8px;
@@ -4819,7 +4877,7 @@
 
 .dev-plan-title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.015em;
@@ -4827,7 +4885,7 @@
 
 .dev-plan-subtitle {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #64748b;
   line-height: 1.4;
 }
@@ -4903,7 +4961,7 @@
 }
 
 .dev-plan-badge-tag {
-  font-size: 0.65625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -4953,7 +5011,7 @@
 
 .dev-plan-name {
   margin: 0 0 0.15rem 0;
-  font-size: 1.1875rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.015em;
@@ -4961,7 +5019,7 @@
 
 .dev-plan-tagline {
   margin: 0;
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   color: #64748b;
   line-height: 1.35;
 }
@@ -4974,14 +5032,14 @@
 }
 
 .dev-plan-amount {
-  font-size: 1.875rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.03em;
 }
 
 .dev-plan-period {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #64748b;
 }
@@ -5003,7 +5061,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #334155;
   line-height: 1.35;
 }
@@ -5038,7 +5096,7 @@
 .dev-feat-pill {
   display: inline-flex;
   align-items: center;
-  font-size: 0.65625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 1px 5px;
   border-radius: 4px;
@@ -5074,7 +5132,7 @@
 }
 
 .dev-gateway-title-label {
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: 0.02em;
@@ -5165,13 +5223,13 @@
 
 .dev-gateway-title {
   color: #0f172a;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.25;
 }
 
 .dev-gateway-desc {
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
   color: #64748b;
   line-height: 1.3;
 }
@@ -5290,7 +5348,7 @@
   gap: 6px;
   padding: 6px 12px;
   border-radius: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   background: #eff6ff;
   color: #1d4ed8;
@@ -5326,7 +5384,7 @@
 }
 
 .dev-sub-value {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
 }
@@ -5395,7 +5453,7 @@
   background: rgba(0, 0, 0, 0.06);
   padding: 1px 4px;
   border-radius: 4px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .dev-btn-renew-hero {
@@ -5448,7 +5506,7 @@
    Dispatch Label & Ship From Address Card — Clean, Modern, Rem-based
    ========================================================================== */
 .dev-dispatch-card {
-  margin-top: 1.5rem;
+  margin-top: 0;
 }
 
 .dev-dispatch-body {
@@ -5708,5 +5766,214 @@
     grid-column: span 1;
   }
 }
+
+/* ==========================================================================
+   Google AI Studio Inspired Left-Sidebar Layout for Developer Dashboard
+   ========================================================================== */
+.dev-studio-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-top: 1.25rem;
+  width: 100%;
+  max-width: 1600px;
+  box-sizing: border-box;
+}
+
+.dev-studio-sidebar {
+  width: 15rem;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  position: sticky;
+  top: 1rem;
+}
+
+.dev-studio-sidebar-header {
+  padding: 0.5rem 0.625rem 0.375rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.dev-studio-brand-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.dev-studio-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.dev-studio-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  width: 100%;
+  color: #475569;
+}
+
+.dev-studio-tab-item:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.dev-studio-tab-item.active {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+.dev-studio-tab-icon {
+  flex-shrink: 0;
+  color: #64748b;
+  transition: color 0.12s ease;
+}
+
+.dev-studio-tab-item:hover .dev-studio-tab-icon {
+  color: #0f172a;
+}
+
+.dev-studio-tab-item.active .dev-studio-tab-icon {
+  color: #0f172a;
+}
+
+.dev-studio-tab-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.dev-studio-tab-item.active .dev-studio-tab-label {
+  font-weight: 600;
+}
+
+.dev-studio-sidebar-footer {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.dev-studio-docs-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.12s ease;
+}
+
+.dev-studio-docs-link:hover {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+/* Main Content Stage */
+.dev-studio-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Active Section Header on Main Stage */
+.dev-studio-section-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.dev-studio-section-info {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.dev-studio-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* Mobile & Tablet Responsive (< 880px) */
+@media (max-width: 879px) {
+  .dev-studio-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dev-studio-sidebar {
+    width: 100%;
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.375rem;
+    gap: 0.375rem;
+    border-radius: 0.625rem;
+  }
+
+  .dev-studio-nav {
+    flex-direction: row;
+    gap: 0.375rem;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .dev-studio-sidebar::-webkit-scrollbar,
+  .dev-studio-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dev-studio-sidebar-header,
+  .dev-studio-sidebar-footer {
+    display: none;
+  }
+
+  .dev-studio-tab-item {
+    width: auto;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    border-radius: 0.375rem;
+  }
+}
+
 
 
