@@ -6787,6 +6787,25 @@ button.card-gradient-purple:hover,
   background: #ffffff;
 }
 
+/* S.No Column */
+.admin-orders-table .admin-th-sno,
+.admin-orders-table .admin-td-sno {
+  width: 56px;
+  min-width: 50px;
+  text-align: center;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.admin-order-sno-num {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  line-height: 1.2;
+}
+
 /* Columns Details: Date & Source */
 .admin-order-date-col {
   display: flex;
@@ -7250,8 +7269,21 @@ button.card-gradient-purple:hover,
   background: #d97706;
 }
 
-/* 2. Indigo / Purple Theme - Card 3: In Fulfillment (QC & Packing) / Processing */
+/* 1.5 Blue Theme - Order Confirmed */
+.admin-status-pill.pill-confirmed,
+.admin-status-pill.pill-order_confirmed {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.admin-status-pill.pill-confirmed .admin-status-dot,
+.admin-status-pill.pill-order_confirmed .admin-status-dot {
+  background: #2563eb;
+}
+
+/* 2. Indigo / Purple Theme - Card 3: In Process / In Fulfillment (QC & Packing) */
 .admin-status-pill.pill-fulfillment,
+.admin-status-pill.pill-in_process,
 .admin-status-pill.pill-verified,
 .admin-status-pill.pill-processing,
 .admin-status-pill.pill-packing,
@@ -7261,6 +7293,7 @@ button.card-gradient-purple:hover,
   border: 1px solid #c7d2fe;
 }
 .admin-status-pill.pill-fulfillment .admin-status-dot,
+.admin-status-pill.pill-in_process .admin-status-dot,
 .admin-status-pill.pill-verified .admin-status-dot,
 .admin-status-pill.pill-processing .admin-status-dot,
 .admin-status-pill.pill-packing .admin-status-dot,
@@ -7742,10 +7775,10 @@ button.card-gradient-purple:hover,
   text-transform: uppercase;
 }
 
-/* Status Cards Grid (5-column single row on desktop) */
+/* Status Cards Grid (6-column single row on desktop) */
 .admin-status-picker-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 6px;
 }
 
@@ -7802,6 +7835,7 @@ button.card-gradient-purple:hover,
 
 /* Dots */
 .admin-status-card-opt.opt-amber .admin-status-dot-sm { background: #d97706; }
+.admin-status-card-opt.opt-blue .admin-status-dot-sm { background: #2563eb; }
 .admin-status-card-opt.opt-purple .admin-status-dot-sm { background: #4f46e5; }
 .admin-status-card-opt.opt-pink .admin-status-dot-sm { background: #db2777; }
 .admin-status-card-opt.opt-green .admin-status-dot-sm { background: #059669; }
@@ -7814,6 +7848,15 @@ button.card-gradient-purple:hover,
 }
 .admin-status-card-opt.opt-amber.selected .admin-status-card-name {
   color: #b45309;
+  font-weight: 600;
+}
+
+.admin-status-card-opt.opt-blue.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+.admin-status-card-opt.opt-blue.selected .admin-status-card-name {
+  color: #1d4ed8;
   font-weight: 600;
 }
 
@@ -7928,11 +7971,25 @@ button.card-gradient-purple:hover,
   text-decoration: underline;
 }
 
+.admin-carrier-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.admin-carrier-group-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .admin-quick-carrier-tags {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-top: 4px;
 }
 
 .admin-tag-pill {

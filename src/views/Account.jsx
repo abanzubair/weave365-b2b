@@ -85,10 +85,14 @@ function getStatusBadgeStyle(status) {
     case 'in_transit':
     case 'shipped':
       return { backgroundColor: '#fdf2f8', color: '#be185d', border: '1px solid #fbcfe8' };
+    case 'order_confirmed':
+    case 'confirmed':
+      return { backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' };
     case 'paid':
     case 'payment_received':
     case 'payment received':
       return { backgroundColor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' };
+    case 'in_process':
     case 'verified':
     case 'processing':
     case 'qc':
@@ -1347,9 +1351,15 @@ export function Account({
                                           <span className="status-dot" />
                                           {order.status === 'payment_received' 
                                             ? 'Payment Received' 
-                                            : (order.status === 'pending_payment' || order.status === 'payment_pending')
-                                              ? 'Payment Pending'
-                                              : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
+                                            : order.status === 'order_confirmed'
+                                              ? 'Order Confirmed'
+                                              : order.status === 'in_process'
+                                                ? 'In Process'
+                                                : order.status === 'shipped'
+                                                  ? 'Shipped'
+                                                  : (order.status === 'pending_payment' || order.status === 'payment_pending')
+                                                    ? 'Payment Pending'
+                                                    : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
                                         </span>
                                       </div>
 
@@ -1517,9 +1527,15 @@ export function Account({
                                       <span className="status-dot" />
                                       {order.status === 'payment_received' 
                                         ? 'Payment Received' 
-                                        : (order.status === 'pending_payment' || order.status === 'payment_pending')
-                                          ? 'Payment Pending'
-                                          : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
+                                        : order.status === 'order_confirmed'
+                                          ? 'Order Confirmed'
+                                          : order.status === 'in_process'
+                                            ? 'In Process'
+                                            : order.status === 'shipped'
+                                              ? 'Shipped'
+                                              : (order.status === 'pending_payment' || order.status === 'payment_pending')
+                                                ? 'Payment Pending'
+                                                : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
                                     </span>
                                   </div>
 

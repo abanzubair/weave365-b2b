@@ -108,10 +108,14 @@ export default function DashboardOverview({
       status === 'paid' ||
       status === 'payment_received' ||
       status === 'payment received' ||
+      status === 'order_confirmed' ||
+      status === 'confirmed' ||
+      status === 'in_process' ||
       status === 'verified' ||
       status === 'payment verified' ||
       status === 'processing & qc' ||
       status === 'processing' ||
+      status === 'shipped' ||
       status === 'dispatched' ||
       status === 'delivered'
     );
@@ -350,24 +354,30 @@ export default function DashboardOverview({
   const pendingOrdersCount = useMemo(() => {
     return enquiryRows.filter(e => {
       const s = String(e.status || '').toLowerCase().trim();
-      return s === 'payment verified' || s === 'verified' || s === 'paid' || s === 'payment_received' || s === 'payment received';
+      return s === 'payment verified' || s === 'verified' || s === 'paid' || s === 'payment_received' || s === 'payment received' || s === 'order_confirmed' || s === 'confirmed';
     }).length;
   }, [enquiryRows]);
 
   const pendingOrdersAmount = useMemo(() => {
     const rows = enquiryRows.filter(e => {
       const s = String(e.status || '').toLowerCase().trim();
-      return s === 'payment verified' || s === 'verified' || s === 'paid' || s === 'payment_received' || s === 'payment received';
+      return s === 'payment verified' || s === 'verified' || s === 'paid' || s === 'payment_received' || s === 'payment received' || s === 'order_confirmed' || s === 'confirmed';
     });
     return rows.reduce((sum, r) => sum + getOrderAmountInINR(r), 0);
   }, [enquiryRows]);
 
   const processingOrdersCount = useMemo(() => {
-    return enquiryRows.filter(e => String(e.status || '').toLowerCase().trim() === 'processing & qc').length;
+    return enquiryRows.filter(e => {
+      const s = String(e.status || '').toLowerCase().trim();
+      return s === 'processing & qc' || s === 'in_process' || s === 'processing';
+    }).length;
   }, [enquiryRows]);
 
   const completedOrdersCount = useMemo(() => {
-    return enquiryRows.filter(e => String(e.status || '').toLowerCase().trim() === 'delivered').length;
+    return enquiryRows.filter(e => {
+      const s = String(e.status || '').toLowerCase().trim();
+      return s === 'delivered' || s === 'done' || s === 'completed';
+    }).length;
   }, [enquiryRows]);
 
   // Weekly Sales Line Chart data: Plots dynamic smooth spline curve based on dates

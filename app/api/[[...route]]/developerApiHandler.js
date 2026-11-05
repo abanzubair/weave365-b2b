@@ -926,11 +926,15 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     const formatStatusLabel = (status) => {
       switch ((status || '').toLowerCase()) {
         case 'payment_pending': return 'Payment Pending';
-        case 'payment_received': return 'Payment Received / In QC';
+        case 'payment_received': return 'Payment Received';
         case 'new': return 'Payment Pending';
-        case 'verified': return 'Payment & Stock Verified';
-        case 'processing': return 'Packaging & Quality Check';
-        case 'dispatched': return 'Dispatched / In Transit';
+        case 'order_confirmed':
+        case 'confirmed': return 'Order Confirmed';
+        case 'in_process': return 'In Process';
+        case 'verified': return 'In Process';
+        case 'processing': return 'In Process';
+        case 'shipped': return 'Shipped';
+        case 'dispatched': return 'Shipped';
         case 'delivered': return 'Delivered';
         case 'cancelled': return 'Cancelled';
         default: return status || 'Payment Pending';
@@ -945,7 +949,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }
 
       const orderStatus = o.status || 'payment_pending';
-      const isPaid = ['payment_received', 'verified', 'processing', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase());
+      const isPaid = ['payment_received', 'order_confirmed', 'in_process', 'shipped', 'verified', 'processing', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase());
       const requestOrigin = request?.headers?.get('origin');
       const requestHost = request?.headers?.get('host');
       let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
@@ -970,7 +974,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
           tracking_number: o.tracking_number || null,
           tracking_message: o.tracking_message || null,
           tracking_url: `${siteUrl}/order-tracking/${o.id}`,
-          is_dispatched: ['dispatched', 'delivered'].includes((orderStatus).toLowerCase()),
+          is_dispatched: ['shipped', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase()),
         },
         customer: {
           name: o.dropship_recipient_name || o.buyer_name,

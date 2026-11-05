@@ -64,7 +64,7 @@ async function updateSupabaseOrderTracking(id, { status, trackingCarrier, tracki
     try {
       await supabase.from('order_fulfillments').insert({
         order_id: id,
-        tracking_carrier: trackingCarrier || 'Delhivery',
+        tracking_carrier: trackingCarrier || '',
         tracking_number: trackingNumber || '',
         tracking_message: trackingMessage || null,
         status: status === 'delivered' ? 'delivered' : 'dispatched',
@@ -81,16 +81,23 @@ async function updateSupabaseOrderTracking(id, { status, trackingCarrier, tracki
 // Carrier tracking link generator
 function getCarrierTrackingUrl(carrier = '', awb = '') {
   if (!awb) return null;
-  const c = carrier.toLowerCase();
+  const c = carrier.toLowerCase().trim();
   const cleanAwb = encodeURIComponent(awb.trim());
-  if (c.includes('delhivery')) return `https://www.delhivery.com/track/package/${cleanAwb}`;
-  if (c.includes('dtdc')) return `https://www.dtdc.in/`;
+
+  // Domestic carriers
+  if (c.includes('dtdc')) return `https://www.dtdc.in/tracking/shipment-tracking.asp`;
   if (c.includes('bluedart') || c.includes('blue dart')) return `https://www.bluedart.com/tracking`;
-  if (c.includes('dhl')) return `https://www.dhl.com/en/express/tracking.html?AWB=${cleanAwb}`;
-  if (c.includes('india post') || c.includes('speed post')) return `https://www.indiapost.gov.in/`;
+  if (c.includes('delhivery')) return `https://www.delhivery.com/track/package/${cleanAwb}`;
+  if (c.includes('ekart')) return `https://ekartlogistics.com/shipmenttrack/${cleanAwb}`;
   if (c.includes('shadowfax')) return `https://tracker.shadowfax.in/#/track?awb=${cleanAwb}`;
-  if (c.includes('trackon')) return `http://trackon.in/`;
-  return null;
+  if (c.includes('xpressbees') || c.includes('xpress bees')) return `https://www.xpressbees.com/track?awbNo=${cleanAwb}`;
+
+  // International carriers
+  if (c.includes('india post') || c.includes('itps') || c.includes('speed post')) return `https://www.indiapost.gov.in/`;
+  if (c.includes('aramex')) return `https://www.aramex.com/track/results?mode=0&ShipmentNumber=${cleanAwb}`;
+  if (c.includes('dhl')) return `https://www.dhl.com/en/express/tracking.html?AWB=${cleanAwb}`;
+
+  return `https://www.google.com/search?q=${encodeURIComponent(carrier + ' tracking ' + awb.trim())}`;
 }
 
 // Clean packaging preference short label
@@ -105,20 +112,43 @@ export function getShortPackagingLabel(pref) {
   return pref.split(' ')[0] + ' Pack';
 }
 
+export const DOMESTIC_CARRIERS = [
+  'DTDC',
+  'Blue Dart',
+  'Delhivery',
+  'Ekart',
+  'Shadowfax',
+  'Xpressbees'
+];
+
+export const INTERNATIONAL_CARRIERS = [
+  'India Post (ITPS)',
+  'Aramex',
+  "Blue Dart Int'l",
+  'DHL Express'
+];
+
+export const ALL_LOGISTIC_CARRIERS = [...DOMESTIC_CARRIERS, ...INTERNATIONAL_CARRIERS];
+
 // Status classification helpers
 export function isNeedsAttentionStatus(status) {
   const s = String(status || '').toLowerCase().trim();
   return s === 'new' || s === 'paid' || s === 'unfulfilled' || s === 'payment_received' || s === 'payment received' || s === 'payment_pending' || s === 'pending_payment';
 }
 
-export function isFulfillmentStatus(status) {
+export function isOrderConfirmedStatus(status) {
   const s = String(status || '').toLowerCase().trim();
-  return s === 'verified' || s === 'processing' || s === 'packing' || s === 'qc' || s === 'in_fulfillment';
+  return s === 'order_confirmed' || s === 'confirmed';
 }
 
-export function isTransitStatus(status) {
+export function isProcessStatus(status) {
   const s = String(status || '').toLowerCase().trim();
-  return s === 'dispatched' || s === 'in_transit' || s === 'shipped';
+  return s === 'in_process' || s === 'processing' || s === 'verified' || s === 'packing' || s === 'qc' || s === 'in_fulfillment' || s === 'active';
+}
+
+export function isShippedStatus(status) {
+  const s = String(status || '').toLowerCase().trim();
+  return s === 'shipped' || s === 'dispatched' || s === 'in_transit';
 }
 
 export function isDeliveredStatus(status) {
@@ -126,16 +156,17 @@ export function isDeliveredStatus(status) {
   return s === 'delivered' || s === 'done' || s === 'completed';
 }
 
+export function isCancelledStatus(status) {
+  const s = String(status || '').toLowerCase().trim();
+  return s === 'cancelled' || s === 'rejected';
+}
+
+// Backwards-compatible aliases
+export const isFulfillmentStatus = isProcessStatus;
+export const isTransitStatus = isShippedStatus;
+
 export function getOrderStatusDisplay(status) {
   const s = String(status || 'new').toLowerCase().trim();
-  if (s === 'paid' || s === 'new' || s === 'unfulfilled' || s === 'payment_received' || s === 'payment received') {
-    return {
-      label: s === 'unfulfilled' ? 'Needs Attention' : 'Payment Received',
-      pillClass: 'pill-needs_attention',
-      dotColor: '#d97706',
-      category: 'needs_attention'
-    };
-  }
   if (s === 'pending_payment' || s === 'payment_pending') {
     return {
       label: 'Payment Pending',
@@ -144,20 +175,36 @@ export function getOrderStatusDisplay(status) {
       category: 'needs_attention'
     };
   }
-  if (isFulfillmentStatus(s)) {
+  if (s === 'paid' || s === 'payment_received' || s === 'payment received' || s === 'new' || s === 'unfulfilled') {
     return {
-      label: s === 'processing' ? 'Processing' : 'In Fulfillment (QC)',
-      pillClass: 'pill-fulfillment',
-      dotColor: '#4f46e5',
-      category: 'in_fulfillment'
+      label: s === 'unfulfilled' ? 'Needs Attention' : 'Payment Received',
+      pillClass: 'pill-needs_attention',
+      dotColor: '#d97706',
+      category: 'payment_received'
     };
   }
-  if (isTransitStatus(s)) {
+  if (isOrderConfirmedStatus(s)) {
     return {
-      label: 'In Transit',
+      label: 'Order Confirmed',
+      pillClass: 'pill-confirmed',
+      dotColor: '#2563eb',
+      category: 'order_confirmed'
+    };
+  }
+  if (isProcessStatus(s)) {
+    return {
+      label: 'In Process',
+      pillClass: 'pill-fulfillment',
+      dotColor: '#4f46e5',
+      category: 'in_process'
+    };
+  }
+  if (isShippedStatus(s)) {
+    return {
+      label: 'Shipped',
       pillClass: 'pill-transit',
       dotColor: '#db2777',
-      category: 'in_transit'
+      category: 'shipped'
     };
   }
   if (isDeliveredStatus(s)) {
@@ -168,7 +215,7 @@ export function getOrderStatusDisplay(status) {
       category: 'delivered'
     };
   }
-  if (s === 'cancelled' || s === 'rejected') {
+  if (isCancelledStatus(s)) {
     return {
       label: 'Cancelled',
       pillClass: 'pill-cancelled',
@@ -216,7 +263,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
   }, [profileMap]);
 
   // Form State for editing order tracking
-  const [formStatus, setFormStatus] = useState('verified');
+  const [formStatus, setFormStatus] = useState('payment_received');
   const [formCarrier, setFormCarrier] = useState('');
   const [formTrackingNum, setFormTrackingNum] = useState('');
   const [formMessage, setFormMessage] = useState('');
@@ -226,7 +273,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
     setSelectedInquiry(inquiry);
     setActiveModalTab(defaultTab);
     setFormStatus(inquiry.status || 'new');
-    setFormCarrier(inquiry.tracking_carrier || 'Delhivery');
+    setFormCarrier(inquiry.tracking_carrier || '');
     setFormTrackingNum(inquiry.tracking_number || '');
     setFormMessage(inquiry.tracking_message || '');
   };
@@ -363,21 +410,26 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
 
   // Helper template filler for quick notification message
   const applyTemplate = (type) => {
-    if (type === 'verified') {
-      setFormMessage('Payment verified! Your order is currently undergoing quality inspection and careful packaging at our Varanasi hub before courier dispatch.');
-      setFormStatus('verified');
-    } else if (type === 'dispatched') {
+    if (type === 'payment_received' || type === 'paid' || type === 'needs_attention' || type === 'new') {
+      setFormMessage('Payment received successfully! Your order is queued for confirmation and processing at our Varanasi center.');
+      setFormStatus('payment_received');
+    } else if (type === 'order_confirmed' || type === 'confirmed') {
+      setFormMessage('Order confirmed! Our weaving and fulfillment team is reviewing your item details and scheduling dispatch.');
+      setFormStatus('order_confirmed');
+    } else if (type === 'in_process' || type === 'verified' || type === 'processing') {
+      setFormMessage('Your order is in process! Your handwoven pieces are currently undergoing quality inspection and careful packaging at our Varanasi hub.');
+      setFormStatus('in_process');
+    } else if (type === 'shipped' || type === 'dispatched' || type === 'in_transit') {
       const carrierStr = formCarrier ? ` via ${formCarrier}` : '';
       const trackingStr = formTrackingNum ? ` (Tracking AWB: ${formTrackingNum})` : '';
-      setFormMessage(`Package dispatched${carrierStr}${trackingStr}! Your shipment is in transit to your delivery destination.`);
-      setFormStatus('dispatched');
-    } else if (type === 'delivered') {
-      setFormMessage('Shipment successfully delivered! Thank you for ordering with us.');
+      setFormMessage(`Package shipped${carrierStr}${trackingStr}! Your shipment is on its way to your destination.`);
+      setFormStatus('shipped');
+    } else if (type === 'delivered' || type === 'done') {
+      setFormMessage('Shipment successfully delivered! Thank you for ordering with Weave 365.');
       setFormStatus('delivered');
-    } else if (type === 'needs_attention' || type === 'new' || type === 'paid' || type === 'payment_received') {
-      setFormMessage('Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.');
-      const orig = (selectedInquiry?.status || '').toLowerCase();
-      setFormStatus(orig === 'paid' ? 'paid' : (orig === 'payment_received' ? 'payment_received' : 'payment_received'));
+    } else if (type === 'cancelled' || type === 'rejected') {
+      setFormMessage('This order has been cancelled. Please reach out to our team if you need assistance.');
+      setFormStatus('cancelled');
     }
   };
 
@@ -443,8 +495,9 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
     const stats = {
       total: baseSet.length,
       newCount: baseSet.filter(i => isNeedsAttentionStatus(i.cleanStatus)).length,
-      inProgressCount: baseSet.filter(i => isFulfillmentStatus(i.cleanStatus)).length,
-      dispatchedCount: baseSet.filter(i => isTransitStatus(i.cleanStatus)).length,
+      confirmedCount: baseSet.filter(i => isOrderConfirmedStatus(i.cleanStatus)).length,
+      inProgressCount: baseSet.filter(i => isProcessStatus(i.cleanStatus)).length,
+      dispatchedCount: baseSet.filter(i => isShippedStatus(i.cleanStatus)).length,
       deliveredCount: baseSet.filter(i => isDeliveredStatus(i.cleanStatus)).length,
     };
 
@@ -453,12 +506,16 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
     if (statusFilter !== 'all') {
       if (statusFilter === 'new') {
         result = result.filter(i => isNeedsAttentionStatus(i.cleanStatus));
-      } else if (statusFilter === 'in_progress' || statusFilter === 'in_fulfillment') {
-        result = result.filter(i => isFulfillmentStatus(i.cleanStatus));
-      } else if (statusFilter === 'dispatched' || statusFilter === 'in_transit') {
-        result = result.filter(i => isTransitStatus(i.cleanStatus));
+      } else if (statusFilter === 'order_confirmed') {
+        result = result.filter(i => isOrderConfirmedStatus(i.cleanStatus));
+      } else if (statusFilter === 'in_progress' || statusFilter === 'in_process' || statusFilter === 'in_fulfillment') {
+        result = result.filter(i => isProcessStatus(i.cleanStatus));
+      } else if (statusFilter === 'dispatched' || statusFilter === 'shipped' || statusFilter === 'in_transit') {
+        result = result.filter(i => isShippedStatus(i.cleanStatus));
       } else if (statusFilter === 'delivered') {
         result = result.filter(i => isDeliveredStatus(i.cleanStatus));
+      } else if (statusFilter === 'cancelled') {
+        result = result.filter(i => isCancelledStatus(i.cleanStatus));
       } else {
         result = result.filter(i => i.cleanStatus === statusFilter.toLowerCase());
       }
@@ -495,7 +552,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
   }, [inquiries, searchQuery, statusFilter, typeFilter, dateSortOrder]);
 
   // Quick carrier suggestions
-  const carrierSuggestions = ['BlueDart', 'Delhivery', 'DTDC', 'DHL Express', 'India Post', 'Shadowfax'];
+  const carrierSuggestions = ALL_LOGISTIC_CARRIERS;
 
   if (loading) {
     return (
@@ -541,7 +598,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
           </div>
         </button>
 
-        {/* Card 3: In Fulfillment */}
+        {/* Card 3: In Process */}
         <button 
           type="button"
           className={`dashtar-gradient-card card-gradient-purple ${statusFilter === 'in_progress' ? 'active' : ''}`}
@@ -552,11 +609,11 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
           </div>
           <div className="gradient-card-val-block">
             <div className="gradient-card-large-val">{orderStats.inProgressCount}</div>
-            <span className="gradient-card-label-span">In Fulfillment</span>
+            <span className="gradient-card-label-span">In Process</span>
           </div>
         </button>
 
-        {/* Card 4: In Transit */}
+        {/* Card 4: Shipped */}
         <button 
           type="button"
           className={`dashtar-gradient-card card-gradient-pink ${statusFilter === 'dispatched' ? 'active' : ''}`}
@@ -567,7 +624,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
           </div>
           <div className="gradient-card-val-block">
             <div className="gradient-card-large-val">{orderStats.dispatchedCount}</div>
-            <span className="gradient-card-label-span">In Transit</span>
+            <span className="gradient-card-label-span">Shipped</span>
           </div>
         </button>
 
@@ -641,8 +698,9 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
               >
                 <option value="new">Status: Needs Attention ({orderStats.newCount})</option>
                 <option value="all">Status: Total Orders ({orderStats.total})</option>
-                <option value="in_progress">Status: In Fulfillment ({orderStats.inProgressCount})</option>
-                <option value="dispatched">Status: In Transit ({orderStats.dispatchedCount})</option>
+                <option value="order_confirmed">Status: Order Confirmed ({orderStats.confirmedCount})</option>
+                <option value="in_progress">Status: In Process ({orderStats.inProgressCount})</option>
+                <option value="dispatched">Status: Shipped ({orderStats.dispatchedCount})</option>
                 <option value="delivered">Status: Delivered ({orderStats.deliveredCount})</option>
                 <option value="cancelled">Status: Cancelled</option>
               </select>
@@ -672,6 +730,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
         <div className="admin-table-scroll-container">
           <table className="admin-orders-table">
             <colgroup>
+              <col style={{ width: '56px' }} />
               <col style={{ width: '120px' }} />
               <col style={{ width: '160px' }} />
               <col style={{ width: '235px' }} />
@@ -682,6 +741,14 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
             </colgroup>
             <thead>
               <tr>
+                <th 
+                  className="admin-th-col admin-th-sno" 
+                  style={{ width: '56px', textAlign: 'center', cursor: 'pointer', userSelect: 'none' }}
+                  onClick={() => setDateSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                  title={`Sort by Serial Number: currently ${dateSortOrder === 'desc' ? 'Descending (highest first)' : 'Ascending'}. Click to toggle.`}
+                >
+                  S.No.
+                </th>
                 <th 
                   className="admin-th-col admin-th-date"
                   style={{ width: '120px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
@@ -706,7 +773,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
               </tr>
             </thead>
             <tbody>
-              {filteredInquiries.map((inquiry) => {
+              {filteredInquiries.map((inquiry, index) => {
                 const parsedAddr = getParsedAddress(inquiry.message);
                 const addressText = inquiry.dropship_recipient_address 
                   ? `${inquiry.dropship_recipient_address}${inquiry.dropship_recipient_city ? `, ${inquiry.dropship_recipient_city}` : ''}${inquiry.dropship_recipient_state ? `, ${inquiry.dropship_recipient_state}` : ''}${inquiry.dropship_recipient_pincode ? ` - ${inquiry.dropship_recipient_pincode}` : ''}`
@@ -723,6 +790,13 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
 
                 return (
                   <tr key={inquiry.id} className={`admin-order-row ${isDropship ? 'is-dropship-row' : ''}`}>
+                    {/* S.No. (Descending) */}
+                    <td className="admin-td-sno">
+                      <span className="admin-order-sno-num">
+                        {dateSortOrder === 'asc' ? index + 1 : filteredInquiries.length - index}
+                      </span>
+                    </td>
+
                     {/* Date & Source */}
                     <td>
                       <div className="admin-order-date-col">
@@ -992,7 +1066,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
               })}
               {filteredInquiries.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="admin-empty-table-state">
+                  <td colSpan="8" className="admin-empty-table-state">
                     <div className="admin-empty-wrap">
                       <Package size={32} style={{ color: '#94a3b8', margin: '0 auto 8px' }} />
                       <p className="admin-empty-title">No orders found</p>
@@ -1095,28 +1169,36 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                     <div className="admin-status-picker-grid">
                       {[
                         {
-                          id: 'needs_attention',
-                          targetStatus: (selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'payment_received',
+                          id: 'payment_received',
+                          targetStatus: 'payment_received',
                           label: 'Payment Received',
                           color: '#d97706',
                           themeKey: 'amber',
                           isSelected: isNeedsAttentionStatus(formStatus)
                         },
                         {
-                          id: 'verified',
-                          targetStatus: 'verified',
-                          label: 'In Fulfillment',
-                          color: '#4f46e5',
-                          themeKey: 'purple',
-                          isSelected: isFulfillmentStatus(formStatus)
+                          id: 'order_confirmed',
+                          targetStatus: 'order_confirmed',
+                          label: 'Order Confirmed',
+                          color: '#2563eb',
+                          themeKey: 'blue',
+                          isSelected: isOrderConfirmedStatus(formStatus)
                         },
                         {
-                          id: 'dispatched',
-                          targetStatus: 'dispatched',
-                          label: 'Dispatched',
+                          id: 'in_process',
+                          targetStatus: 'in_process',
+                          label: 'In Process',
+                          color: '#4f46e5',
+                          themeKey: 'purple',
+                          isSelected: isProcessStatus(formStatus)
+                        },
+                        {
+                          id: 'shipped',
+                          targetStatus: 'shipped',
+                          label: 'Shipped',
                           color: '#db2777',
                           themeKey: 'pink',
-                          isSelected: isTransitStatus(formStatus)
+                          isSelected: isShippedStatus(formStatus)
                         },
                         {
                           id: 'delivered',
@@ -1132,7 +1214,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           label: 'Cancelled',
                           color: '#dc2626',
                           themeKey: 'red',
-                          isSelected: formStatus === 'cancelled' || formStatus === 'rejected'
+                          isSelected: isCancelledStatus(formStatus)
                         },
                       ].map(st => (
                         <button
@@ -1154,29 +1236,34 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                       <span className="admin-section-title">Logistics &amp; Tracking</span>
                     </div>
                     <div className="admin-form-grid-2col">
+                      {/* Left: Carrier input & Domestic carriers */}
                       <div className="admin-form-field-wrap">
                         <label className="admin-field-label">Logistics Carrier</label>
                         <input
                           type="text"
-                          placeholder="Carrier name (e.g. BlueDart)"
+                          placeholder="Select or enter carrier name..."
                           value={formCarrier}
                           onChange={(e) => setFormCarrier(e.target.value)}
                           className="admin-form-input"
                         />
-                        <div className="admin-quick-carrier-tags">
-                          {carrierSuggestions.map(c => (
-                            <button 
-                              key={c} 
-                              type="button" 
-                              className={`admin-tag-pill ${(formCarrier || '').toLowerCase() === c.toLowerCase() ? 'active' : ''}`}
-                              onClick={() => setFormCarrier(c)}
-                            >
-                              {c}
-                            </button>
-                          ))}
+                        <div className="admin-carrier-subgroup">
+                          <span className="admin-carrier-group-label">Domestic</span>
+                          <div className="admin-quick-carrier-tags">
+                            {DOMESTIC_CARRIERS.map(c => (
+                              <button 
+                                key={c} 
+                                type="button" 
+                                className={`admin-tag-pill ${(formCarrier || '').toLowerCase() === c.toLowerCase() ? 'active' : ''}`}
+                                onClick={() => setFormCarrier(c)}
+                              >
+                                {c}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
+                      {/* Right: AWB input & International carriers */}
                       <div className="admin-form-field-wrap">
                         <div className="admin-label-flex-row">
                           <label className="admin-field-label">AWB / Tracking Number</label>
@@ -1198,6 +1285,21 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           onChange={(e) => setFormTrackingNum(e.target.value)}
                           className="admin-form-input"
                         />
+                        <div className="admin-carrier-subgroup">
+                          <span className="admin-carrier-group-label">International</span>
+                          <div className="admin-quick-carrier-tags">
+                            {INTERNATIONAL_CARRIERS.map(c => (
+                              <button 
+                                key={c} 
+                                type="button" 
+                                className={`admin-tag-pill ${(formCarrier || '').toLowerCase() === c.toLowerCase() ? 'active' : ''}`}
+                                onClick={() => setFormCarrier(c)}
+                              >
+                                {c}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1209,9 +1311,10 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                         <span className="admin-section-title">Tracking Note</span>
                       </div>
                       <div className="admin-quick-templates">
-                        <button type="button" onClick={() => applyTemplate('paid')} className="admin-template-btn">Payment</button>
-                        <button type="button" onClick={() => applyTemplate('verified')} className="admin-template-btn">QC &amp; Packing</button>
-                        <button type="button" onClick={() => applyTemplate('dispatched')} className="admin-template-btn">Dispatched</button>
+                        <button type="button" onClick={() => applyTemplate('payment_received')} className="admin-template-btn">Payment Received</button>
+                        <button type="button" onClick={() => applyTemplate('order_confirmed')} className="admin-template-btn">Order Confirmed</button>
+                        <button type="button" onClick={() => applyTemplate('in_process')} className="admin-template-btn">In Process</button>
+                        <button type="button" onClick={() => applyTemplate('shipped')} className="admin-template-btn">Shipped</button>
                         <button type="button" onClick={() => applyTemplate('delivered')} className="admin-template-btn">Delivered</button>
                       </div>
                     </div>

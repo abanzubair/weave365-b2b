@@ -659,20 +659,22 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   const currentStatus = (order?.status || 'new').toLowerCase();
 
-  // Status mapping and step calculation
+  // Status mapping and step calculation (5-step customer-facing flow)
   const steps = [
-    { label: 'Paid', icon: CreditCard, key: 'payment_received' },
-    { label: 'Packing', icon: PackageCheck, key: 'verified' },
-    { label: 'Dispatched', icon: Truck, key: 'dispatched' },
+    { label: 'Payment Received', icon: CreditCard, key: 'payment_received' },
+    { label: 'Order Confirmed', icon: CheckCircle2, key: 'order_confirmed' },
+    { label: 'In Process', icon: PackageCheck, key: 'in_process' },
+    { label: 'Shipped', icon: Truck, key: 'shipped' },
     { label: 'Delivered', icon: Gift, key: 'delivered' }
   ];
 
   const getStepProgress = () => {
-    if (currentStatus === 'cancelled') return -1;
+    if (currentStatus === 'cancelled' || currentStatus === 'rejected') return -1;
     if (currentStatus === 'payment_pending' || currentStatus === 'pending_payment') return 0;
-    if (currentStatus === 'delivered' || currentStatus === 'done') return 4;
-    if (currentStatus === 'dispatched') return 3;
-    if (currentStatus === 'verified' || currentStatus === 'processing' || currentStatus === 'active') return 2;
+    if (currentStatus === 'delivered' || currentStatus === 'done' || currentStatus === 'completed') return 5;
+    if (currentStatus === 'shipped' || currentStatus === 'dispatched' || currentStatus === 'in_transit') return 4;
+    if (currentStatus === 'in_process' || currentStatus === 'verified' || currentStatus === 'processing' || currentStatus === 'active' || currentStatus === 'qc' || currentStatus === 'packing') return 3;
+    if (currentStatus === 'order_confirmed' || currentStatus === 'confirmed') return 2;
     if (currentStatus === 'payment_received' || currentStatus === 'paid' || currentStatus === 'new') return 1;
     return 0;
   };
@@ -827,18 +829,25 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
         return 'This order checkout has been cancelled. Please reach out to our team if you need assistance.';
       case 'delivered':
       case 'done':
+      case 'completed':
         return 'Your package has been successfully delivered. We hope you love your authentic Banarasi weaves!';
+      case 'shipped':
       case 'dispatched':
       case 'in_transit':
-      case 'shipped':
-        return 'Great news! Your handwoven saree shipment has been dispatched from our Varanasi center and is on its way to you.';
+        return 'Great news! Your handwoven saree shipment has been shipped from our Varanasi center and is on its way to you.';
+      case 'in_process':
       case 'verified':
       case 'processing':
       case 'active':
-        return 'Payment verified! Your order is currently undergoing quality inspection and careful packaging at our Varanasi hub before courier dispatch.';
+      case 'qc':
+      case 'packing':
+        return 'Your order is in process! Your pieces are currently undergoing master artisan quality inspection and protective packaging at our Varanasi hub.';
+      case 'order_confirmed':
+      case 'confirmed':
+        return 'Your order has been confirmed! Our Varanasi weaving and fulfillment team is reviewing all item specifications and dispatch schedules.';
       case 'payment_received':
       case 'paid':
-        return 'Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.';
+        return 'Payment received successfully! Your order is confirmed and queued for processing at our Varanasi center.';
       case 'payment_pending':
       case 'pending_payment':
       case 'new':
@@ -853,18 +862,39 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     if (!carrier || !number) return null;
     const c = carrier.toLowerCase().trim();
     const num = number.trim();
-    if (c.includes('delhivery')) {
-      return `https://www.delhivery.com/track/package/${num}`;
+    const cleanAwb = encodeURIComponent(num);
+
+    // Domestic carriers
+    if (c.includes('dtdc')) {
+      return `https://www.dtdc.in/tracking/shipment-tracking.asp`;
     }
     if (c.includes('bluedart') || c.includes('blue dart')) {
-      return `https://www.bluedart.com/`;
+      return `https://www.bluedart.com/tracking`;
     }
-    if (c.includes('dtdc')) {
-      return `https://www.dtdc.in/`;
+    if (c.includes('delhivery')) {
+      return `https://www.delhivery.com/track/package/${cleanAwb}`;
+    }
+    if (c.includes('ekart')) {
+      return `https://ekartlogistics.com/shipmenttrack/${cleanAwb}`;
+    }
+    if (c.includes('shadowfax')) {
+      return `https://tracker.shadowfax.in/#/track?awb=${cleanAwb}`;
+    }
+    if (c.includes('xpressbees') || c.includes('xpress bees')) {
+      return `https://www.xpressbees.com/track?awbNo=${cleanAwb}`;
+    }
+
+    // International carriers
+    if (c.includes('india post') || c.includes('itps') || c.includes('speed post')) {
+      return `https://www.indiapost.gov.in/`;
+    }
+    if (c.includes('aramex')) {
+      return `https://www.aramex.com/track/results?mode=0&ShipmentNumber=${cleanAwb}`;
     }
     if (c.includes('dhl')) {
-      return `https://www.dhl.com/en/express/tracking.html?AWB=${num}`;
+      return `https://www.dhl.com/en/express/tracking.html?AWB=${cleanAwb}`;
     }
+
     return `https://www.google.com/search?q=${encodeURIComponent(carrier + ' tracking ' + num)}`;
   };
 
@@ -980,7 +1010,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               <div className="tracking-step-line">
                 <div 
                   className="tracking-step-line-progress" 
-                  style={{ width: `${Math.max(0, (Math.min(stepProgress, 4) - 1) * 33.33)}%` }}
+                  style={{ width: `${Math.max(0, (Math.min(stepProgress, 5) - 1) * 25)}%` }}
                 />
               </div>
               {steps.map((step, idx) => {
