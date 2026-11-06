@@ -1222,7 +1222,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         <div className="tracking-item-name">{item.title}</div>
                         <div className="tracking-item-meta">
                           {(item.variant_code || item.sku) && (
-                            <span className="item-meta-item">SKU: <code>{item.variant_code || item.sku}</code></span>
+                            <span className="item-meta-item">SKU: <strong>{item.variant_code || item.sku}</strong></span>
                           )}
                           {item.color && (
                             <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
