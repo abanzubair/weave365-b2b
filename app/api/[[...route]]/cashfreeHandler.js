@@ -560,18 +560,52 @@ export async function handleWebhook(request) {
         // 0. Check if this is a Developer API Subscription Order (CF_SUB_*)
         if (cfOrderId.startsWith('CF_SUB_')) {
           try {
-            const { data: keyRecord } = await supabase
-              .from('api_keys')
-              .select('*')
-              .eq('last_payment_id', cfOrderId)
+            // Idempotency guard 1: Check if this payment was already recorded in the ledger
+            const { data: existingLedger } = await supabase
+              .from('api_subscription_payments')
+              .select('id')
+              .eq('gateway_order_id', cfOrderId)
+              .eq('status', 'completed')
               .maybeSingle();
 
+            if (existingLedger) {
+              console.log(`[Cashfree Webhook] Order ${cfOrderId} has already been fulfilled in ledger. Skipping duplicate credit.`);
+              return new Response('Subscription already active', { status: 200 });
+            }
+
+            // Lookup key record by order_tags.key_id or by last_payment_id (clean or pending:*)
+            let keyRecord = null;
+            const taggedKeyId = orderData?.order_tags?.key_id;
+            if (taggedKeyId) {
+              const { data: keyById } = await supabase
+                .from('api_keys')
+                .select('*')
+                .eq('id', taggedKeyId)
+                .maybeSingle();
+              keyRecord = keyById;
+            }
+
+            if (!keyRecord) {
+              const { data: keyByPayment } = await supabase
+                .from('api_keys')
+                .select('*')
+                .or(`last_payment_id.eq.${cfOrderId},last_payment_id.eq.pending:${cfOrderId}`)
+                .maybeSingle();
+              keyRecord = keyByPayment;
+            }
+
             if (keyRecord) {
+              // Idempotency guard 2: Check if key was already marked active with this exact fulfilled payment ID
+              if (keyRecord.subscription_status === 'active' && keyRecord.last_payment_id === cfOrderId) {
+                console.log(`[Cashfree Webhook] Key ${keyRecord.id} already active for order ${cfOrderId}. Skipping duplicate credit.`);
+                return new Response('Subscription already active', { status: 200 });
+              }
+
               const now = new Date();
               const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
               const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
               const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
-              const plan = keyRecord.subscription_plan || 'growth';
+              const plan = orderData?.order_tags?.plan || keyRecord.subscription_plan || 'growth';
               const isPro = plan === 'pro';
 
               await supabase

@@ -1367,13 +1367,26 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
     }, { status: 403, headers: cors });
   }
 
-  // 4. Verify that the request has been approved by Admin
-  if (keyRecord.approval_status && keyRecord.approval_status !== 'approved') {
+  // 4. Verify that the request has been approved by Admin (or key is already active / user is admin)
+  const isApproved = keyRecord.approval_status === 'approved'
+    || Boolean(keyRecord.is_active)
+    || keyRecord.subscription_status === 'active'
+    || adminEmails.includes(userEmail);
+
+  if (!isApproved) {
     return Response.json({
       success: false,
       code: 'APPROVAL_PENDING',
       error: 'Your API access request is currently under review. Plan payment will unlock once approved by Weave365 admin.',
     }, { status: 400, headers: cors });
+  }
+
+  // Self-heal: ensure approved flag is persisted if key was active without explicit approval_status
+  if (keyRecord.approval_status !== 'approved' && isApproved) {
+    try {
+      await supabase.from('api_keys').update({ approval_status: 'approved' }).eq('id', keyId);
+      keyRecord.approval_status = 'approved';
+    } catch { }
   }
 
   // 5. Verify that key is not suspended by Weave365 admin
@@ -1433,11 +1446,11 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
       }, { status: ppRes.status || 500, headers: cors });
     }
 
-    // Save gateway info on api_keys record
+    // Save gateway info on api_keys record (mark as pending so fulfillment is idempotent)
     try {
       await supabase.from('api_keys').update({
         payment_gateway: 'phonepe',
-        last_payment_id: merchantOrderId,
+        last_payment_id: `pending:${merchantOrderId}`,
         subscription_plan: planKey,
         subscription_amount: planAmount,
       }).eq('id', keyId);
@@ -1517,7 +1530,7 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
     try {
       await supabase.from('api_keys').update({
         payment_gateway: 'cashfree',
-        last_payment_id: cfOrderId,
+        last_payment_id: `pending:${cfOrderId}`,
         subscription_plan: planKey,
         subscription_amount: planAmount,
       }).eq('id', keyId);
@@ -1606,8 +1619,33 @@ export async function handleVerifySubscription(request, supabase) {
     }, { status: 403, headers: cors });
   }
 
-  // Idempotent shortcut: If webhook already activated the key for this order
-  if (keyRecord.subscription_status === 'active' && keyRecord.is_active && keyRecord.last_payment_id === order_id) {
+  const cleanOrderId = String(order_id || '').trim();
+
+  // Idempotency check 1: Has this order already been recorded as completed in the payment ledger?
+  const { data: existingPayment } = await supabase
+    .from('api_subscription_payments')
+    .select('id, gateway_order_id, period_end')
+    .eq('gateway_order_id', cleanOrderId)
+    .eq('status', 'completed')
+    .maybeSingle();
+
+  if (existingPayment) {
+    const { data: freshKey } = await supabase
+      .from('api_keys')
+      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
+      .eq('id', keyId)
+      .maybeSingle();
+
+    return Response.json({
+      success: true,
+      is_paid: true,
+      message: 'Subscription is already active!',
+      keyRecord: freshKey || keyRecord,
+    }, { status: 200, headers: cors });
+  }
+
+  // Idempotency check 2: If key is already active and marked with this exact fulfilled payment ID
+  if (keyRecord.subscription_status === 'active' && keyRecord.is_active && keyRecord.last_payment_id === cleanOrderId) {
     return Response.json({
       success: true,
       is_paid: true,

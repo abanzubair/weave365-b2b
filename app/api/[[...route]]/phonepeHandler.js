@@ -596,18 +596,53 @@ export async function handleWebhook(request) {
       if (merchantOrderId.startsWith('PP_SUB_')) {
         try {
           const supabase = getSupabaseAdmin();
-          const { data: keyRecord } = await supabase
-            .from('api_keys')
-            .select('*')
-            .eq('last_payment_id', merchantOrderId)
+
+          // Idempotency guard 1: Check if this payment was already recorded in the ledger
+          const { data: existingLedger } = await supabase
+            .from('api_subscription_payments')
+            .select('id')
+            .eq('gateway_order_id', merchantOrderId)
+            .eq('status', 'completed')
             .maybeSingle();
 
+          if (existingLedger) {
+            console.log(`[PhonePe Webhook] Order ${merchantOrderId} has already been fulfilled in ledger. Skipping duplicate credit.`);
+            return Response.json({ status: 'OK', subscription: 'already_active' }, { status: 200 });
+          }
+
+          // Lookup key record by metaInfo udf1 (keyId) or last_payment_id (clean or pending:*)
+          let keyRecord = null;
+          const taggedKeyId = payload.metaInfo?.udf1;
+          if (taggedKeyId) {
+            const { data: keyById } = await supabase
+              .from('api_keys')
+              .select('*')
+              .eq('id', taggedKeyId)
+              .maybeSingle();
+            keyRecord = keyById;
+          }
+
+          if (!keyRecord) {
+            const { data: keyByPayment } = await supabase
+              .from('api_keys')
+              .select('*')
+              .or(`last_payment_id.eq.${merchantOrderId},last_payment_id.eq.pending:${merchantOrderId}`)
+              .maybeSingle();
+            keyRecord = keyByPayment;
+          }
+
           if (keyRecord) {
+            // Idempotency guard 2: Check if key was already marked active with this exact fulfilled payment ID
+            if (keyRecord.subscription_status === 'active' && keyRecord.last_payment_id === merchantOrderId) {
+              console.log(`[PhonePe Webhook] Key ${keyRecord.id} already active for order ${merchantOrderId}. Skipping duplicate credit.`);
+              return Response.json({ status: 'OK', subscription: 'already_active' }, { status: 200 });
+            }
+
             const now = new Date();
             const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
             const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
             const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
-            const plan = keyRecord.subscription_plan || 'growth';
+            const plan = payload.metaInfo?.udf2 || keyRecord.subscription_plan || 'growth';
             const isPro = plan === 'pro';
 
             await supabase

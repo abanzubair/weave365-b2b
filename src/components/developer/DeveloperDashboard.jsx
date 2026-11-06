@@ -1674,7 +1674,7 @@ export function DeveloperDashboard({
 
   const hasKey = Boolean(apiKey?.id);
   const isKeyActive = Boolean(apiKey?.is_active);
-  const approvalStatus = apiKey?.approval_status || (isKeyActive ? 'approved' : 'none');
+  const approvalStatus = (apiKey?.approval_status === 'approved' || isKeyActive) ? 'approved' : (apiKey?.approval_status || 'none');
   const subscriptionStatus = apiKey?.subscription_status || (isKeyActive ? 'active' : 'inactive');
 
   const rawExpiresAt = apiKey?.subscription_expires_at

@@ -252,12 +252,13 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
             const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
             const { error } = await developerService.updateApiKey(keyId, {
               is_active: true,
+              approval_status: 'approved',
               subscription_status: 'active',
               subscription_started_at: now.toISOString(),
               subscription_expires_at: expiresAt,
             });
             if (error) throw error;
-            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
+            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, approval_status: 'approved', subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
           } catch (err) {
             alert('Failed to update status: ' + err.message);
           }
@@ -1515,13 +1516,14 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
                       const { error } = await developerService.updateApiKey(keyId, {
                         is_active: true,
+                        approval_status: 'approved',
                         subscription_status: 'active',
                         subscription_started_at: now.toISOString(),
                         subscription_expires_at: expiresAt,
                       });
                       if (error) throw error;
-                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
-                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true, subscription_status: 'active', subscription_expires_at: expiresAt } : null));
+                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, approval_status: 'approved', subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
+                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true, approval_status: 'approved', subscription_status: 'active', subscription_expires_at: expiresAt } : null));
                       alert('Key directly activated by Admin override.');
                     } catch (err) {
                       alert('Failed to activate key: ' + err.message);
