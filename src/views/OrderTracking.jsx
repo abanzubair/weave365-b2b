@@ -661,11 +661,11 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   // Status mapping and step calculation (5-step customer-facing flow)
   const steps = [
-    { label: 'Payment Received', icon: CreditCard, key: 'payment_received' },
-    { label: 'Order Confirmed', icon: CheckCircle2, key: 'order_confirmed' },
-    { label: 'In Process', icon: PackageCheck, key: 'in_process' },
-    { label: 'Shipped', icon: Truck, key: 'shipped' },
-    { label: 'Delivered', icon: Gift, key: 'delivered' }
+    { label: 'Payment Received', shortLabel: 'Paid', icon: CreditCard, key: 'payment_received' },
+    { label: 'Order Confirmed', shortLabel: 'Confirmed', icon: CheckCircle2, key: 'order_confirmed' },
+    { label: 'In Process', shortLabel: 'Processing', icon: PackageCheck, key: 'in_process' },
+    { label: 'Shipped', shortLabel: 'Shipped', icon: Truck, key: 'shipped' },
+    { label: 'Delivered', shortLabel: 'Delivered', icon: Gift, key: 'delivered' }
   ];
 
   const getStepProgress = () => {
@@ -820,7 +820,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       !order.tracking_message.toLowerCase().includes('screenshot') &&
       !order.tracking_message.toLowerCase().includes('finance team')
     ) {
-      return order.tracking_message;
+      return order.tracking_message.replace(/handwoven\s+/gi, '');
     }
 
     switch (currentStatus) {
@@ -834,14 +834,14 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       case 'shipped':
       case 'dispatched':
       case 'in_transit':
-        return 'Great news! Your handwoven saree shipment has been shipped from our Varanasi center and is on its way to you.';
+        return 'Great news! Your saree shipment has been shipped from our Varanasi center and is on its way to you.';
       case 'in_process':
       case 'verified':
       case 'processing':
       case 'active':
       case 'qc':
       case 'packing':
-        return 'Your order is in process! Your pieces are currently undergoing master artisan quality inspection and protective packaging at our Varanasi hub.';
+        return 'Your order is in process! Your pieces are currently undergoing quality inspection and careful packaging at our Varanasi hub.';
       case 'order_confirmed':
       case 'confirmed':
         return 'Your order has been confirmed! Our Varanasi weaving and fulfillment team is reviewing all item specifications and dispatch schedules.';
@@ -947,8 +947,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           <div style={{ color: '#ef4444', display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
             <AlertCircle size={40} />
           </div>
-          <h3 style={{ color: 'var(--ink)', fontSize: 'var(--h5-size)', marginBottom: '0.75rem', fontWeight: 600 }}>Tracking Unavailable</h3>
-          <p style={{ color: 'var(--muted)', fontSize: 'var(--body-size)', maxWidth: '460px', margin: '0 auto 1.5rem', lineHeight: 1.6, fontWeight: 400 }}>{error}</p>
+          <h3 style={{ color: 'var(--ink)', fontSize: '1.125rem', marginBottom: '0.75rem', fontWeight: 600 }}>Tracking Unavailable</h3>
+          <p style={{ color: 'var(--muted)', fontSize: '0.875rem', maxWidth: '460px', margin: '0 auto 1.5rem', lineHeight: 1.6, fontWeight: 400 }}>{error}</p>
           <form onSubmit={handleLookupSubmit} className="lookup-form-wrap" style={{ maxWidth: '400px' }}>
             <div className="lookup-input-group">
               <input 
@@ -971,18 +971,10 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             {/* Header Meta Strip */}
             <div className="tracking-meta-header">
               <div className="tracking-meta-left">
-                <div className="tracking-id-display-row">
+                <div className="tracking-id-group">
                   <strong className="tracking-short-id">
                     {order.order_number ? `#${order.order_number}` : `#${String(order.id).substring(0, 8)}`}
                   </strong>
-                  {order.is_dropship && (
-                    <span className="tracking-dropship-tag">Dropship</span>
-                  )}
-                  {order.reseller_order_id && (
-                    <span className="tracking-ref-tag" title={`Ref: #${order.reseller_order_id}`}>
-                      Ref: #{order.reseller_order_id}
-                    </span>
-                  )}
                   <button 
                     type="button"
                     onClick={handleCopyId}
@@ -993,6 +985,18 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     <span>{copied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
+                {(order.is_dropship || order.reseller_order_id) && (
+                  <div className="tracking-meta-tags">
+                    {order.is_dropship && (
+                      <span className="tracking-dropship-tag">Dropship</span>
+                    )}
+                    {order.reseller_order_id && (
+                      <span className="tracking-ref-tag" title={`Ref: #${order.reseller_order_id}`}>
+                        Ref: #{order.reseller_order_id}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="tracking-meta-right">
                 <span className="tracking-date-val">
@@ -1005,8 +1009,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               </div>
             </div>
 
-            {/* Step Progress Timeline */}
-            <div className="tracking-steps-container">
+            {/* Desktop Step Progress Timeline */}
+            <div className="tracking-steps-container tracking-steps-desktop">
               <div className="tracking-step-line">
                 <div 
                   className="tracking-step-line-progress" 
@@ -1033,6 +1037,58 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               })}
             </div>
 
+            {/* Mobile Vertical Timeline */}
+            <div className="tracking-steps-vertical">
+              {steps.map((step, idx) => {
+                const stepNum = idx + 1;
+                const isCompleted = stepProgress >= stepNum;
+                const isActive = stepProgress === stepNum;
+                const StepIcon = step.icon;
+                const isLast = idx === steps.length - 1;
+
+                return (
+                  <div 
+                    key={idx} 
+                    className={`vertical-step-row ${isCompleted && !isActive ? 'completed' : ''} ${isActive ? 'active' : ''} ${isLast ? 'last' : ''}`}
+                  >
+                    <div className="vertical-step-rail">
+                      <div className="vertical-step-icon-wrap">
+                        {isCompleted && !isActive ? (
+                          <Check size={13} strokeWidth={2.5} />
+                        ) : (
+                          <StepIcon size={13} />
+                        )}
+                      </div>
+                      {!isLast && <div className="vertical-step-line" />}
+                    </div>
+
+                    <div className="vertical-step-content">
+                      <div className="vertical-step-header">
+                        <span className="vertical-step-title">{step.label}</span>
+                        {isActive && (
+                          <span className="vertical-active-badge">Active</span>
+                        )}
+                      </div>
+
+                      {isActive && (
+                        <div className="vertical-step-active-box">
+                          <p className="vertical-active-message">{getStatusMessage()}</p>
+                          <span className="vertical-active-time">
+                            Updated: {new Date(order.updated_at || order.created_at).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Payment Pending Action Card */}
             {(currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new') && (
               <div className="order-payment-pending-panel" style={{
@@ -1048,7 +1104,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 gap: '0.75rem'
               }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#334155' }}>
                     Action Required
                   </div>
                   <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#0f172a', marginTop: '0.25rem' }}>
@@ -1095,8 +1151,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               </div>
             )}
 
-            {/* Status Update Alert Box */}
-            <div className="status-update-panel">
+            {/* Status Update Alert Box (Desktop) */}
+            <div className="status-update-panel tracking-status-desktop">
               <div className="status-header-row">
                 <div className="status-title-group">
                   <span className="status-pulse-dot" />
@@ -1111,36 +1167,33 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   })}
                 </span>
               </div>
-              <p className="status-message">"{getStatusMessage()}"</p>
+              <p className="status-message">{getStatusMessage()}</p>
             </div>
 
-            {/* Tracking Details Grid */}
-            <div className="tracking-details-grid">
+            {/* Integrated Single Split Panel (Shipping & Destination) */}
+            <div className="tracking-split-panel">
               {/* Shipping Method / Carrier */}
-              <div className="details-card">
-                <div className="details-card-header">
-                  <span className="details-card-title">
-                    <Truck size={13} /> SHIPPING
-                  </span>
+              <div className="tracking-split-col">
+                <div className="split-col-header">
+                  <Truck size={14} className="split-col-icon" />
+                  <span className="split-col-title">Shipping Details</span>
                 </div>
                 {order.tracking_carrier ? (
                   <div className="carrier-assigned-box">
-                    <div className="carrier-badge-row">
-                      <span className="carrier-name-tag">{order.tracking_carrier}</span>
-                      {order.tracking_number && (
+                    <span className="carrier-name-tag">{order.tracking_carrier}</span>
+                    {order.tracking_number ? (
+                      <p className="carrier-awb-line">
+                        <span>AWB:</span>
+                        <strong>{order.tracking_number}</strong>
+                        <span className="carrier-awb-sep">·</span>
                         <a 
                           href={getCarrierUrl(order.tracking_carrier, order.tracking_number)} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="carrier-live-track-btn"
+                          className="carrier-track-inline-link"
                         >
-                          Track on {order.tracking_carrier} <ExternalLink size={12} />
+                          Track package <ExternalLink size={12} />
                         </a>
-                      )}
-                    </div>
-                    {order.tracking_number ? (
-                      <p className="carrier-awb-line">
-                        AWB: <strong>{order.tracking_number}</strong>
                       </p>
                     ) : (
                       <p className="carrier-sub-hint">Tracking AWB is being synchronized.</p>
@@ -1151,19 +1204,19 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     <p className="carrier-status-note">
                       Order is undergoing inspection at Varanasi fulfillment hub.
                     </p>
-                    <span className="carrier-pending-pill">
-                      AWB updated upon dispatch
-                    </span>
+                    <div className="carrier-pending-hint">
+                      <Clock size={12} />
+                      <span>AWB assigned upon courier dispatch</span>
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Delivery Address / Dropship Info */}
-              <div className="details-card">
-                <div className="details-card-header">
-                  <span className="details-card-title">
-                    <MapPin size={13} /> DESTINATION
-                  </span>
+              <div className="tracking-split-col">
+                <div className="split-col-header">
+                  <MapPin size={14} className="split-col-icon" />
+                  <span className="split-col-title">Delivery Address</span>
                 </div>
                 <div className="recipient-info-box">
                   <strong className="recipient-name">
@@ -1171,7 +1224,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   </strong>
                   {(order.dropship_recipient_phone || parsedAddress?.phone || order.phone) && (
                     <p className="recipient-phone">
-                      Phone: {order.dropship_recipient_phone || parsedAddress?.phone || order.phone}
+                      Phone:{' '}
+                      <a 
+                        href={`tel:${String(order.dropship_recipient_phone || parsedAddress?.phone || order.phone).replace(/\s+/g, '')}`}
+                        className="recipient-phone-link"
+                      >
+                        {order.dropship_recipient_phone || parsedAddress?.phone || order.phone}
+                      </a>
                     </p>
                   )}
                   <p className="recipient-address">
@@ -1185,7 +1244,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   )}
                   {order.is_dropship && (
                     <div className="dropship-parcel-sender">
-                      Sender: <strong>{order.dropship_sender_name || 'Partner Store'}</strong>
+                      <span>Sender:</span> <strong>{order.dropship_sender_name || 'Partner Store'}</strong>
                     </div>
                   )}
                 </div>
@@ -1229,8 +1288,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                           )}
                           <span className="item-meta-item">Qty: {item.qty}</span>
                           {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
-                            <span className="item-meta-item" style={{ color: '#64748b' }}>
-                              Slip Price: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}</strong>
+                            <span className="item-meta-item">
+                              Invoice Price: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}</strong>
                             </span>
                           )}
                         </div>
@@ -1240,7 +1299,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                           <strong>{item.totalPrice ? formatMoney(item.totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: orderCurrency }) : 'Direct')}</strong>
                           {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
                             <div className="item-slip-subtext">
-                              Slip: {formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}
+                              Invoice: {formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}
                             </div>
                           )}
                         </div>
@@ -1262,9 +1321,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
                   {amountBreakdown.hasLabelPrice && (
                     <>
-                      <div className="tracking-breakup-row" style={{ color: '#475569' }}>
+                      <div className="tracking-breakup-row">
                         <span className="tracking-breakup-label">
-                          Parcel Slip Price
+                          Price on Invoice
                         </span>
                         <span className="tracking-breakup-val">
                           {formatMoney(amountBreakdown.totalLabelPrice, { currency: orderCurrency })}
@@ -1288,7 +1347,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         Applied Coupon
                         {amountBreakdown.couponCode && (
                           <span className="tracking-coupon-pill">
-                            <Tag size={10.5} /> {amountBreakdown.couponCode}
+                            <Tag size={12} /> {amountBreakdown.couponCode}
                           </span>
                         )}
                       </span>

@@ -417,7 +417,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
       setFormMessage('Order confirmed! Our weaving and fulfillment team is reviewing your item details and scheduling dispatch.');
       setFormStatus('order_confirmed');
     } else if (type === 'in_process' || type === 'verified' || type === 'processing') {
-      setFormMessage('Your order is in process! Your handwoven pieces are currently undergoing quality inspection and careful packaging at our Varanasi hub.');
+      setFormMessage('Your order is in process! Your pieces are currently undergoing quality inspection and careful packaging at our Varanasi hub.');
       setFormStatus('in_process');
     } else if (type === 'shipped' || type === 'dispatched' || type === 'in_transit') {
       const carrierStr = formCarrier ? ` via ${formCarrier}` : '';
