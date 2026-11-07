@@ -31,6 +31,8 @@ import {
   Star,
   TrendingUp,
   ZoomIn,
+  Plus,
+  Minus,
   X,
   Check,
   PhotoIcon,
@@ -261,6 +263,11 @@ export function ProductDetail({
   const [isDownloading, setIsDownloading] = useState(false);
   const [galleryHeight, setGalleryHeight] = useState(null);
   const [zoomImage, setZoomImage] = useState(null);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isZoomDragging, setIsZoomDragging] = useState(false);
+  const [zoomDragStart, setZoomDragStart] = useState({ x: 0, y: 0 });
+  const zoomStageRef = useRef(null);
   const [variationDrawerOpen, setVariationDrawerOpen] = useState(false);
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
@@ -377,6 +384,116 @@ export function ProductDetail({
     };
   }, []);
 
+  const closeZoomModal = useCallback(() => {
+    setZoomImage(null);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+    setIsZoomDragging(false);
+  }, []);
+
+  const handleZoomIn = useCallback(() => {
+    setZoomScale((prev) => Math.min(4, Math.round((prev + 0.5) * 10) / 10));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomScale((prev) => {
+      const next = Math.max(1, Math.round((prev - 0.5) * 10) / 10);
+      if (next === 1) setZoomPosition({ x: 0, y: 0 });
+      return next;
+    });
+  }, []);
+
+  const handleZoomReset = useCallback(() => {
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  }, []);
+
+  const handleStageMouseDown = (e) => {
+    if (zoomScale <= 1) return;
+    e.preventDefault();
+    setIsZoomDragging(true);
+    setZoomDragStart({
+      x: e.clientX - zoomPosition.x,
+      y: e.clientY - zoomPosition.y,
+    });
+  };
+
+  const handleStageTouchStart = (e) => {
+    if (zoomScale <= 1 || e.touches.length !== 1) return;
+    setIsZoomDragging(true);
+    setZoomDragStart({
+      x: e.touches[0].clientX - zoomPosition.x,
+      y: e.touches[0].clientY - zoomPosition.y,
+    });
+  };
+
+  const handleStageTouchMove = (e) => {
+    if (!isZoomDragging || zoomScale <= 1 || e.touches.length !== 1) return;
+    setZoomPosition({
+      x: e.touches[0].clientX - zoomDragStart.x,
+      y: e.touches[0].clientY - zoomDragStart.y,
+    });
+  };
+
+  const handleStageTouchEnd = () => {
+    setIsZoomDragging(false);
+  };
+
+  const handleStageDoubleClick = (e) => {
+    e.stopPropagation();
+    if (zoomScale > 1) {
+      handleZoomReset();
+    } else {
+      setZoomScale(2);
+    }
+  };
+
+  useEffect(() => {
+    if (!isZoomDragging) return;
+
+    const handleWindowMouseMove = (e) => {
+      setZoomPosition({
+        x: e.clientX - zoomDragStart.x,
+        y: e.clientY - zoomDragStart.y,
+      });
+    };
+
+    const handleWindowMouseUp = () => {
+      setIsZoomDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+  }, [isZoomDragging, zoomDragStart]);
+
+  useEffect(() => {
+    const el = zoomStageRef.current;
+    if (!el || !zoomImage) return;
+
+    const onWheel = (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        setZoomScale((prev) => Math.min(4, Math.round((prev + 0.25) * 100) / 100));
+      } else if (e.deltaY > 0) {
+        setZoomScale((prev) => {
+          const next = Math.max(1, Math.round((prev - 0.25) * 100) / 100);
+          if (next === 1) setZoomPosition({ x: 0, y: 0 });
+          return next;
+        });
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+    };
+  }, [zoomImage]);
+
   useEffect(() => {
     if (!zoomImage) return;
 
@@ -385,19 +502,27 @@ export function ProductDetail({
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
-        setZoomImage(null);
+        closeZoomModal();
       } else if (event.key === 'ArrowRight' || event.key === 'Right') {
         const currentIndex = product.images.indexOf(zoomImage);
         if (currentIndex !== -1 && product.images.length > 1) {
           const nextIdx = (currentIndex + 1) % product.images.length;
           setZoomImage(product.images[nextIdx]);
+          handleZoomReset();
         }
       } else if (event.key === 'ArrowLeft' || event.key === 'Left') {
         const currentIndex = product.images.indexOf(zoomImage);
         if (currentIndex !== -1 && product.images.length > 1) {
           const prevIdx = (currentIndex - 1 + product.images.length) % product.images.length;
           setZoomImage(product.images[prevIdx]);
+          handleZoomReset();
         }
+      } else if (event.key === '+' || event.key === '=') {
+        handleZoomIn();
+      } else if (event.key === '-' || event.key === '_') {
+        handleZoomOut();
+      } else if (event.key === '0') {
+        handleZoomReset();
       }
     }
 
@@ -406,7 +531,7 @@ export function ProductDetail({
       document.body.style.overflow = originalOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [zoomImage, product.images]);
+  }, [zoomImage, product.images, closeZoomModal, handleZoomIn, handleZoomOut, handleZoomReset]);
 
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [activeAccordion, setActiveAccordion] = useState(null);
@@ -3273,8 +3398,18 @@ export function ProductDetail({
       <Newsletter />
 
       {zoomImage && (
-        <div className="modal-backdrop zoom-backdrop" onClick={() => setZoomImage(null)} onContextMenu={(e) => e.preventDefault()}>
-          <button type="button" className="icon-button modal-close zoom-close-btn" onClick={() => setZoomImage(null)}>
+        <div
+          className="modal-backdrop zoom-backdrop"
+          onClick={closeZoomModal}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <button
+            type="button"
+            className="icon-button modal-close zoom-close-btn"
+            onClick={closeZoomModal}
+            aria-label="Close zoom view"
+            title="Close (Esc)"
+          >
             <X size={24} />
           </button>
 
@@ -3289,6 +3424,7 @@ export function ProductDetail({
                   if (currentIndex !== -1) {
                     const prevIdx = (currentIndex - 1 + product.images.length) % product.images.length;
                     setZoomImage(product.images[prevIdx]);
+                    handleZoomReset();
                   }
                 }}
                 aria-label="Previous image"
@@ -3304,6 +3440,7 @@ export function ProductDetail({
                   if (currentIndex !== -1) {
                     const nextIdx = (currentIndex + 1) % product.images.length;
                     setZoomImage(product.images[nextIdx]);
+                    handleZoomReset();
                   }
                 }}
                 aria-label="Next image"
@@ -3313,21 +3450,79 @@ export function ProductDetail({
             </>
           )}
 
-          <img
-            src={getOptimizedImageUrl(zoomImage, 'zoom')}
-            alt="Zoomed view"
-            className="zoom-modal-img"
-            draggable={false}
-            data-protect-image="true"
-            onContextMenu={(e) => e.preventDefault()}
-            onClick={(e) => e.stopPropagation()}
-            onError={(e) => {
-              const raw = getOriginalImageUrl(zoomImage);
-              if (e.target.src !== raw && raw) {
-                e.target.src = raw;
+          <div
+            ref={zoomStageRef}
+            className="zoom-image-stage"
+            onMouseDown={handleStageMouseDown}
+            onTouchStart={handleStageTouchStart}
+            onTouchMove={handleStageTouchMove}
+            onTouchEnd={handleStageTouchEnd}
+            onDoubleClick={handleStageDoubleClick}
+            style={{
+              cursor: zoomScale > 1 ? (isZoomDragging ? 'grabbing' : 'grab') : 'zoom-in',
+              touchAction: zoomScale > 1 ? 'none' : 'auto',
+            }}
+            onClick={(e) => {
+              if (zoomScale > 1) {
+                e.stopPropagation();
               }
             }}
-          />
+          >
+            <img
+              src={getOptimizedImageUrl(zoomImage, 'zoom')}
+              alt="Zoomed view"
+              className="zoom-modal-img"
+              style={{
+                transform: `translate3d(${zoomPosition.x}px, ${zoomPosition.y}px, 0) scale(${zoomScale})`,
+                transition: isZoomDragging ? 'none' : 'transform 0.22s cubic-bezier(0.25, 1, 0.5, 1)',
+                transformOrigin: 'center center',
+              }}
+              draggable={false}
+              data-protect-image="true"
+              onContextMenu={(e) => e.preventDefault()}
+              onError={(e) => {
+                const raw = getOriginalImageUrl(zoomImage);
+                if (e.target.src !== raw && raw) {
+                  e.target.src = raw;
+                }
+              }}
+            />
+          </div>
+
+          {/* Floating Zoom Controls (+ / - / %) */}
+          <div className="zoom-controls-bar" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="zoom-ctrl-btn"
+              onClick={handleZoomOut}
+              disabled={zoomScale <= 1}
+              aria-label="Zoom out"
+              title="Zoom out (-)"
+            >
+              <Minus size={20} />
+            </button>
+
+            <button
+              type="button"
+              className="zoom-level-indicator"
+              onClick={handleZoomReset}
+              title={zoomScale > 1 ? "Click to reset zoom (100%)" : "Zoom level"}
+              aria-label={`Zoom level ${Math.round(zoomScale * 100)}%`}
+            >
+              {Math.round(zoomScale * 100)}%
+            </button>
+
+            <button
+              type="button"
+              className="zoom-ctrl-btn"
+              onClick={handleZoomIn}
+              disabled={zoomScale >= 4}
+              aria-label="Zoom in"
+              title="Zoom in (+)"
+            >
+              <Plus size={20} />
+            </button>
+          </div>
         </div>
       )}
 

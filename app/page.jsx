@@ -110,6 +110,23 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Preload Homepage LCP Hero Banner for Desktop & Mobile */}
+      <link
+        rel="preload"
+        as="image"
+        href="/assets/banner/heroFreeWebsite.webp"
+        media="(min-width: 900px)"
+        type="image/webp"
+        fetchPriority="high"
+      />
+      <link
+        rel="preload"
+        as="image"
+        href="/assets/banner/heroFreeWebsite-600.webp"
+        media="(max-width: 899px)"
+        type="image/webp"
+        fetchPriority="high"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsJsonLd) }}
