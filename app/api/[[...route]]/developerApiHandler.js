@@ -431,8 +431,11 @@ function formatForStockSync(products) {
     const firstPrices = p.variants?.[0]?.prices || {};
     const baseResellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
     const baseSuggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(baseResellerPrice * 1.5));
-    const primaryImage = (Array.isArray(p.images) && p.images[0]) || '';
-    const allImagesStr = Array.isArray(p.images) ? p.images.join(', ') : primaryImage;
+    const rawImages = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
+    const cleanImageList = rawImages.map(s => String(s || '').trim()).filter(s => s.startsWith('http'));
+    const primaryImage = cleanImageList[0] || (typeof p.image === 'string' ? p.image.trim() : '');
+    if (primaryImage && !cleanImageList.includes(primaryImage)) cleanImageList.unshift(primaryImage);
+    const allImagesStr = cleanImageList.join(',');
     const descHtml = `<p>${p.description || p.fullDescription || p.title || ''}</p><p><strong>Fabric:</strong> ${p.fabric || 'Pure Silk'}<br><strong>Weave:</strong> ${p.weave || 'Handloom'}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
     const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
     const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
@@ -446,7 +449,7 @@ function formatForStockSync(products) {
         const vMrp = Number(vPrices.single || baseSuggestedMrp);
         const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
         const vColor = v.color || `Option ${idx + 1}`;
-        const vImage = v.image || primaryImage;
+        const vImage = (v.image || primaryImage || '').trim();
         const vStock = isOutOfStock ? 0 : (typeof v.quantity === 'number' ? v.quantity : 5);
 
         items.push({
@@ -488,10 +491,29 @@ function formatForStockSync(products) {
           option1_value: vColor,
           color: vColor,
           Color: vColor,
-          image: vImage,
-          Image: vImage,
-          image_src: vImage,
+          image: vImage || primaryImage,
+          Image: vImage || primaryImage,
+          image_url: vImage || primaryImage,
+          Image_URL: vImage || primaryImage,
+          Image_Url: vImage || primaryImage,
+          image_src: vImage || primaryImage,
+          Image_Src: vImage || primaryImage,
+          product_images: allImagesStr,
+          Product_Images: allImagesStr,
+          product_image: primaryImage,
+          Product_Image: primaryImage,
+          variant_image: vImage || primaryImage,
+          Variant_Image: vImage || primaryImage,
+          featured_image: primaryImage,
+          Featured_Image: primaryImage,
           images: allImagesStr,
+          Images: allImagesStr,
+          image_1: cleanImageList[0] || '',
+          image_2: cleanImageList[1] || '',
+          image_3: cleanImageList[2] || '',
+          image_4: cleanImageList[3] || '',
+          image_5: cleanImageList[4] || '',
+          image_6: cleanImageList[5] || '',
           body_html: descHtml,
           description: descHtml,
           Description: descHtml,
@@ -553,8 +575,27 @@ function formatForStockSync(products) {
           Color: color,
           image: primaryImage,
           Image: primaryImage,
+          image_url: primaryImage,
+          Image_URL: primaryImage,
+          Image_Url: primaryImage,
           image_src: primaryImage,
+          Image_Src: primaryImage,
+          product_images: allImagesStr,
+          Product_Images: allImagesStr,
+          product_image: primaryImage,
+          Product_Image: primaryImage,
+          variant_image: primaryImage,
+          Variant_Image: primaryImage,
+          featured_image: primaryImage,
+          Featured_Image: primaryImage,
           images: allImagesStr,
+          Images: allImagesStr,
+          image_1: cleanImageList[0] || '',
+          image_2: cleanImageList[1] || '',
+          image_3: cleanImageList[2] || '',
+          image_4: cleanImageList[3] || '',
+          image_5: cleanImageList[4] || '',
+          image_6: cleanImageList[5] || '',
           body_html: descHtml,
           description: descHtml,
           Description: descHtml,
