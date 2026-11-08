@@ -36,6 +36,7 @@ import {
   ShoppingBag,
   Clock,
   FileText,
+  MoreHorizontal,
 } from '../../components/icons.jsx';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { DeveloperDashboard, ConfirmActionModal } from '../../components/developer/DeveloperDashboard.jsx';
@@ -58,6 +59,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
   // Review API Access Request Modal state
   const [reviewRequestItem, setReviewRequestItem] = useState(null);
   const [approvingRequestId, setApprovingRequestId] = useState(null);
+  const [openActionMenuId, setOpenActionMenuId] = useState(null);
 
   // Confirmation Dialog State
   const [confirmDialog, setConfirmDialog] = useState({
@@ -176,6 +178,18 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
   useEffect(() => {
     void fetchOverview();
   }, []);
+
+  // Close action dropdown menu on outside click or scroll
+  useEffect(() => {
+    if (!openActionMenuId) return;
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.api-action-menu-wrap')) {
+        setOpenActionMenuId(null);
+      }
+    };
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, [openActionMenuId]);
 
   // Filtered keys
   const filteredKeys = useMemo(() => {
@@ -518,81 +532,66 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
         <table className="api-table">
           <thead>
             <tr>
-              <th>Storefront / Client</th>
-              <th>User Account</th>
-              <th>Tier</th>
-              <th>Monthly Usage</th>
-              <th>Rate Limit</th>
-              <th>Status</th>
-              <th style={{ textAlign: 'right' }}>Actions</th>
+              <th className="api-col-sno">#</th>
+              <th className="api-col-client">Storefront / Client</th>
+              <th className="api-col-user">User Account</th>
+              <th className="api-col-tier">Tier</th>
+              <th className="api-col-usage">Monthly Usage</th>
+              <th className="api-col-rps">Rate Limit</th>
+              <th className="api-col-status">Status</th>
+              <th className="api-col-actions" style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredKeys.map((item) => {
+            {filteredKeys.map((item, index) => {
               const tierInfo = TIER_CONFIGS[item.tier] || TIER_CONFIGS.free;
               const phone = item.profiles?.whatsapp || '';
               const whatsappUrl = phone ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(item.client_name)},%20regarding%20your%20Weave365%20API%20integration...` : null;
               const hasAccessRequest = item.approval_status === 'pending' || Boolean(item.profiles?.qualification?.api_access_request);
+              const isPendingApproval = !item.is_active && item.approval_status !== 'approved' && hasAccessRequest;
 
               return (
                 <tr key={item.id}>
-                  <td>
-                    <strong className="api-client-title">{item.client_name}</strong>
-                    {item.client_website ? (
-                      <a
-                        href={item.client_website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="api-client-link"
-                      >
-                        <Globe size={11} /> {item.client_website} <ExternalLink size={10} />
-                      </a>
-                    ) : (
-                      <span className="api-no-website">No website specified</span>
-                    )}
+                  <td className="api-col-sno">
+                    <span className="api-sno-num">{filteredKeys.length - index}</span>
+                  </td>
+                  <td className="api-col-client">
+                    <div className="api-client-info">
+                      <strong className="api-client-title" title={item.client_name}>{item.client_name}</strong>
+                      {item.client_website ? (
+                        <a
+                          href={item.client_website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="api-client-link"
+                          title={item.client_website}
+                        >
+                          <span>{item.client_website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}</span>
+                          <ExternalLink size={10} />
+                        </a>
+                      ) : (
+                        <span className="api-no-website">No website</span>
+                      )}
+                    </div>
 
                     {item.approval_status === 'approved' && item.subscription_status === 'pending_payment' ? (
-                      <div style={{ marginTop: '5px' }}>
+                      <div className="api-client-subtag">
                         <button
                           type="button"
                           onClick={() => setReviewRequestItem(item)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '0.6875rem',
-                            fontWeight: 600,
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            background: '#eff6ff',
-                            color: '#1d4ed8',
-                            border: '1px solid #bfdbfe',
-                            cursor: 'pointer',
-                          }}
-                          title="Application approved! Click to inspect details or override"
+                          className="api-badge-btn pending-payment"
+                          title="Application approved (Awaiting payment). Click to inspect details or override"
                         >
-                          <Clock size={10} />
-                          <span>Approved • Awaiting Payment</span>
+                          <CheckCircle2 size={10} />
+                          <span>Approved</span>
                         </button>
                       </div>
-                    ) : (!item.is_active && hasAccessRequest) ? (
-                      <div style={{ marginTop: '5px' }}>
+                    ) : isPendingApproval ? (
+                      <div className="api-client-subtag">
                         <button
                           type="button"
                           onClick={() => setReviewRequestItem(item)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '0.6875rem',
-                            fontWeight: 600,
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            background: '#fef3c7',
-                            color: '#92400e',
-                            border: '1px solid #fde68a',
-                            cursor: 'pointer',
-                          }}
+                          className="api-badge-btn pending-review"
                           title="Click to review submitted API Access Request"
                         >
                           <Clock size={10} />
@@ -600,21 +599,8 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                         </button>
                       </div>
                     ) : item.subscription_status === 'expired' || (item.subscription_expires_at && new Date(item.subscription_expires_at).getTime() < Date.now()) ? (
-                      <div style={{ marginTop: '5px' }}>
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '0.6875rem',
-                            fontWeight: 600,
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            background: '#fef2f2',
-                            color: '#b91c1c',
-                            border: '1px solid #fecaca',
-                          }}
-                        >
+                      <div className="api-client-subtag">
+                        <span className="api-badge-btn expired">
                           <AlertTriangle size={10} />
                           <span>Expired</span>
                         </span>
@@ -622,19 +608,21 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     ) : null}
                   </td>
 
-                  <td>
-                    <span className="api-user-email">{item.profiles?.email || 'N/A'}</span>
-                    <small className="api-user-name">{item.profiles?.full_name || item.profiles?.business_name || ''}</small>
+                  <td className="api-col-user">
+                    <span className="api-user-email" title={item.profiles?.email}>{item.profiles?.email || 'N/A'}</span>
+                    {(item.profiles?.full_name || item.profiles?.business_name) && (
+                      <small className="api-user-name">{item.profiles?.full_name || item.profiles?.business_name}</small>
+                    )}
                   </td>
 
-                  <td>
+                  <td className="api-col-tier">
                     <span className={`api-tier-tag ${item.tier}`}>
                       {tierInfo.name}
                     </span>
                     <div className="api-tier-price">{tierInfo.priceLabel}</div>
                   </td>
 
-                  <td>
+                  <td className="api-col-usage">
                     <div className="api-usage-cell">
                       <div className="api-usage-nums">
                         <span className="api-usage-used">{item.monthTotal.toLocaleString()}</span>
@@ -652,154 +640,145 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     </div>
                   </td>
 
-                  <td>
-                    <span className="api-rps-badge">
-                      {item.rate_limit_rps || 1} req/s
+                  <td className="api-col-rps">
+                    <span className="api-rps-clean">
+                      {item.rate_limit_rps || 1} <span className="api-rps-unit">req/s</span>
                     </span>
                   </td>
 
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
-                      {/* 1. Order API Tag */}
+                  <td className="api-col-status">
+                    <div className="api-status-pills">
+                      {/* 1. Product API Permission Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleActive(item)}
+                        className={`api-perm-pill ${item.is_active ? 'active' : 'inactive'}`}
+                        title={item.is_active ? 'Product API: Enabled (Click to Deactivate)' : 'Product API: Disabled (Click to Activate)'}
+                      >
+                        <span className="api-perm-dot" />
+                        <span>Product</span>
+                      </button>
+
+                      {/* 2. Order API Permission Toggle */}
                       <button
                         type="button"
                         onClick={() => handleToggleOrders(item)}
                         disabled={!item.is_active}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '3px 10px',
-                          borderRadius: '999px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: (item.is_active && item.orders_enabled) ? '#ecfdf5' : '#f1f5f9',
-                          border: `1px solid ${(item.is_active && item.orders_enabled) ? '#a7f3d0' : '#e2e8f0'}`,
-                          color: (item.is_active && item.orders_enabled) ? '#065f46' : '#64748b',
-                          cursor: !item.is_active ? 'not-allowed' : 'pointer',
-                          opacity: !item.is_active ? 0.6 : 1,
-                          whiteSpace: 'nowrap',
-                          lineHeight: '1.4',
-                          transition: 'all 0.15s ease',
-                        }}
+                        className={`api-perm-pill ${item.is_active && item.orders_enabled ? 'active' : 'inactive'} ${!item.is_active ? 'disabled' : ''}`}
                         title={
                           !item.is_active
                             ? 'Cannot enable Order API: Product API must be enabled first'
                             : item.orders_enabled
-                              ? 'Order API is Enabled (Click to Disable)'
-                              : 'Order API is Disabled (Click to Enable)'
+                              ? 'Order API: Enabled (Click to Disable)'
+                              : 'Order API: Disabled (Click to Enable)'
                         }
                       >
-                        <span
-                          style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: (item.is_active && item.orders_enabled) ? '#10b981' : '#94a3b8',
-                            display: 'inline-block',
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span>Order: {(item.is_active && item.orders_enabled) ? 'Enabled' : 'Disabled'}</span>
-                      </button>
-
-                      {/* 2. Product API Tag */}
-                      <button
-                        type="button"
-                        onClick={() => handleToggleActive(item)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '3px 10px',
-                          borderRadius: '999px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: item.is_active ? '#ecfdf5' : '#f1f5f9',
-                          border: `1px solid ${item.is_active ? '#a7f3d0' : '#e2e8f0'}`,
-                          color: item.is_active ? '#065f46' : '#64748b',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          lineHeight: '1.4',
-                          transition: 'all 0.15s ease',
-                        }}
-                        title={item.is_active ? 'Product API is Enabled (Click to Deactivate key)' : 'Product API is Disabled (Click to Activate key)'}
-                      >
-                        <span
-                          style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: item.is_active ? '#10b981' : '#94a3b8',
-                            display: 'inline-block',
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span>Product: {item.is_active ? 'Enabled' : 'Disabled'}</span>
+                        <span className="api-perm-dot" />
+                        <span>Order</span>
                       </button>
                     </div>
                   </td>
 
-                  <td style={{ textAlign: 'right', width: '160px' }}>
-                    <div className="api-action-grid">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditModal(item)}
-                        title="Edit Tier & Quota Overrides"
-                        className="api-action-btn api-edit-btn"
-                        aria-label="Edit Key"
-                      >
-                        <Sliders size={12} />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setInspectedKeyId(item.id)}
-                        title="Inspect Live User Dashboard"
-                        className="api-action-btn api-inspect-btn"
-                        aria-label="Inspect Dashboard"
-                      >
-                        <Eye size={12} />
-                        <span>Inspect</span>
-                      </button>
-                      {hasAccessRequest && (
+                  <td className="api-col-actions" style={{ textAlign: 'right' }}>
+                    <div className="api-action-menu-wrap">
+                      {isPendingApproval && (
                         <button
                           type="button"
                           onClick={() => setReviewRequestItem(item)}
                           title="Review Submitted API Access Request Application"
-                          className="api-action-btn api-inspect-btn"
-                          style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
+                          className="api-action-btn api-review-btn"
                           aria-label="Review Request"
+                          style={{ marginRight: '6px' }}
                         >
                           <FileText size={12} />
                           <span>Review</span>
                         </button>
                       )}
-                      {whatsappUrl ? (
-                        <a
-                          href={whatsappUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Contact Reseller on WhatsApp"
-                          className="api-action-btn api-wa-btn"
-                          aria-label="WhatsApp Chat"
-                        >
-                          <MessageCircle size={12} />
-                          <span>Chat</span>
-                        </a>
-                      ) : (
-                        <span className="api-action-btn-placeholder" />
-                      )}
+
                       <button
                         type="button"
-                        onClick={() => handleDeleteKey(item.id, item.client_name, item.user_id)}
-                        title="Revoke API Key"
-                        className="api-action-btn api-delete-btn"
-                        aria-label="Delete Key"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenActionMenuId(openActionMenuId === item.id ? null : item.id);
+                        }}
+                        className={`api-action-trigger-btn ${openActionMenuId === item.id ? 'active' : ''}`}
+                        title="Actions"
+                        aria-label="Actions"
                       >
-                        <Trash2 size={12} />
-                        <span>Delete</span>
+                        <MoreHorizontal size={16} />
                       </button>
+
+                      {openActionMenuId === item.id && (
+                        <div
+                          className={`api-action-dropdown ${index >= filteredKeys.length - 2 && filteredKeys.length > 2 ? 'dropdown-up' : ''}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenActionMenuId(null);
+                              setInspectedKeyId(item.id);
+                            }}
+                            className="api-dropdown-item"
+                          >
+                            <Eye size={13} />
+                            <span>Inspect Dashboard</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenActionMenuId(null);
+                              handleOpenEditModal(item);
+                            }}
+                            className="api-dropdown-item"
+                          >
+                            <Sliders size={13} />
+                            <span>Edit Plan &amp; Quotas</span>
+                          </button>
+
+                          {hasAccessRequest && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenActionMenuId(null);
+                                setReviewRequestItem(item);
+                              }}
+                              className="api-dropdown-item"
+                            >
+                              <FileText size={13} />
+                              <span>{isPendingApproval ? 'Review Application' : 'View Application'}</span>
+                            </button>
+                          )}
+
+                          {whatsappUrl && (
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setOpenActionMenuId(null)}
+                              className="api-dropdown-item api-wa-item"
+                            >
+                              <MessageCircle size={13} />
+                              <span>Chat on WhatsApp</span>
+                            </a>
+                          )}
+
+                          <div className="api-dropdown-divider" />
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenActionMenuId(null);
+                              handleDeleteKey(item.id, item.client_name, item.user_id);
+                            }}
+                            className="api-dropdown-item danger"
+                          >
+                            <Trash2 size={13} />
+                            <span>Revoke Key</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -808,7 +787,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
 
             {filteredKeys.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: '#64748b' }}>
+                <td colSpan="8" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: '#64748b' }}>
                   <KeyRound size={28} style={{ color: '#cbd5e1', margin: '0 auto 8px auto', display: 'block' }} />
                   <strong style={{ display: 'block', color: '#334155', marginBottom: '4px' }}>No API Clients Found</strong>
                   <span style={{ fontSize: '0.8125rem' }}>No client matches your current filter criteria or no API keys have been generated yet.</span>

@@ -63,6 +63,8 @@ import {
   DevicePhoneMobileIcon as Hero_DevicePhoneMobileIcon,
   DocumentDuplicateIcon as Hero_DocumentDuplicateIcon,
   DocumentTextIcon as Hero_DocumentTextIcon,
+  EllipsisHorizontalIcon as Hero_EllipsisHorizontalIcon,
+  EllipsisVerticalIcon as Hero_EllipsisVerticalIcon,
   EnvelopeIcon as Hero_EnvelopeIcon,
   ExclamationCircleIcon as Hero_ExclamationCircleIcon,
   ExclamationTriangleIcon as Hero_ExclamationTriangleIcon,
@@ -341,6 +343,8 @@ export const MessageCircle = wrapIcon(Hero_ChatBubbleOvalLeftEllipsisIcon, 'Mess
 export const MessageSquare = wrapIcon(Hero_ChatBubbleLeftRightIcon, 'MessageSquare');
 export const MessageSquareText = wrapIcon(Hero_ChatBubbleBottomCenterTextIcon, 'MessageSquareText');
 export const Minus = wrapIcon(Hero_MinusIcon, 'Minus');
+export const MoreHorizontal = wrapIcon(Hero_EllipsisHorizontalIcon, 'MoreHorizontal');
+export const MoreVertical = wrapIcon(Hero_EllipsisVerticalIcon, 'MoreVertical');
 export const MousePointer = wrapIcon(Hero_CursorArrowRaysIcon, 'MousePointer');
 export const MousePointerClick = wrapIcon(Hero_CursorArrowRaysIcon, 'MousePointerClick');
 export const MoveDown = wrapIcon(Hero_ArrowDownIcon, 'MoveDown');
