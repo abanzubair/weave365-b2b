@@ -2516,18 +2516,60 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         platform,
       } = body || {};
 
-      // Support either 'customer' or 'shipping_address' key
-      const cust = customer || shipping_address || {};
+      // Support 'customer', 'shipping_address', or native Shopify webhook structure
+      const rawCust = customer || shipping_address || body?.shipping_address || body?.billing_address || body?.customer || {};
+      const customerName = (
+        rawCust.name ||
+        [rawCust.first_name, rawCust.last_name].filter(Boolean).join(' ') ||
+        [body?.customer?.first_name, body?.customer?.last_name].filter(Boolean).join(' ') ||
+        body?.customer?.name ||
+        ''
+      ).trim();
 
-      if (!cust?.name || !cust?.phone || !cust?.pincode) {
+      const customerPhone = (
+        rawCust.phone ||
+        body?.phone ||
+        body?.customer?.phone ||
+        rawCust.mobile ||
+        ''
+      ).trim();
+
+      const customerPincode = (
+        rawCust.pincode ||
+        rawCust.zip ||
+        rawCust.postal_code ||
+        rawCust.postcode ||
+        ''
+      ).trim();
+
+      const recipientAddress = (
+        rawCust.address_line1 ||
+        rawCust.address1 ||
+        rawCust.address ||
+        [rawCust.address1, rawCust.address2].filter(Boolean).join(', ') ||
+        ''
+      ).trim();
+      const recipientCity = (rawCust.city || '').trim();
+      const recipientState = (rawCust.state || rawCust.province || rawCust.state_code || '').trim();
+      const recipientEmail = (
+        rawCust.email ||
+        body?.email ||
+        body?.contact_email ||
+        body?.customer?.email ||
+        ''
+      ).trim().toLowerCase();
+
+      if (!customerName || !customerPhone || !customerPincode) {
         return Response.json({
           status: 'error',
           code: 'INVALID_CUSTOMER_DETAILS',
-          message: 'Missing customer details. Name, phone number, and pincode are required for delivery.',
+          message: 'Missing customer details. Name, phone number, and pincode/zip are required for delivery.',
         }, { status: 400, headers: cors });
       }
 
-      if (!Array.isArray(items) || items.length === 0) {
+      // Support 'items', 'line_items' (Shopify), or 'order_items'
+      const rawItems = items || body?.line_items || body?.order_items;
+      if (!Array.isArray(rawItems) || rawItems.length === 0) {
         return Response.json({
           status: 'error',
           code: 'EMPTY_ITEMS',
@@ -2559,7 +2601,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           }
         });
 
-        for (const item of items) {
+        for (const item of rawItems) {
           const itemSku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim().toLowerCase();
           const baseSku = itemSku.includes('-') ? itemSku.split('-')[0].trim() : itemSku;
           if (!authorizedSkuSet.has(itemSku) && !authorizedSkuSet.has(baseSku)) {
@@ -2573,11 +2615,11 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       }
 
       // Normalize items array with full catalog metadata
-      const normalizedItems = items.map((item) => {
+      const normalizedItems = rawItems.map((item) => {
         const sku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim();
         const skuLower = sku.toLowerCase();
         const baseSku = skuLower.includes('-') ? skuLower.split('-')[0].trim() : skuLower;
-        const itemColor = String(item.color || item.title || '').trim();
+        const itemColor = String(item.color || item.variant_title || item.title || '').trim();
         const itemColorLower = itemColor.toLowerCase();
 
         // 1. Match in catalog (exact match first, then base SKU fallback)
@@ -2694,8 +2736,9 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         totalWholesaleAmount
       );
 
-      const paymentType = String(body?.payment_type || body?.payment_mode || 'prepaid').toLowerCase();
-      const isCod = paymentType === 'cod' || paymentType === 'cash_on_delivery';
+      const paymentType = String(body?.payment_type || body?.payment_mode || '').toLowerCase();
+      const gatewayStr = String(body?.gateway || '').toLowerCase();
+      const isCod = paymentType === 'cod' || paymentType === 'cash_on_delivery' || gatewayStr.includes('cod') || gatewayStr.includes('cash on delivery') || gatewayStr.includes('cash_on_delivery');
       const codAmountToCollect = isCod ? Number(body?.cod_amount || customerOrderAmount) : 0;
       const resellerProfitMargin = Math.max(0, customerOrderAmount - totalWholesaleAmount);
 
@@ -2719,11 +2762,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }, { status: 409, headers: cors });
       }
 
-      const recipientAddress = cust.address_line1 || cust.address || '';
-      const recipientCity = cust.city || '';
-      const recipientState = cust.state || '';
-      const recipientPincode = cust.pincode || '';
-      const fullAddressStr = `${recipientAddress}${recipientCity ? `, ${recipientCity}` : ''}${recipientState ? `, ${recipientState}` : ''} - PIN: ${recipientPincode}`;
+      const resolvedResellerOrderId = String(reseller_order_id || body?.order_number || body?.name || body?.id || '').trim() || null;
+      const resolvedPlatform = platform || (body?.line_items ? 'shopify' : 'api');
+      const resolvedNotes = shipping_notes || body?.note || body?.notes || '';
+      const fullAddressStr = `${recipientAddress}${recipientCity ? `, ${recipientCity}` : ''}${recipientState ? `, ${recipientState}` : ''} - PIN: ${customerPincode}`;
 
       const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
       const senderPhone = sender?.phone || '';
@@ -2754,21 +2796,21 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const apiOrderPayload = {
         api_key_id: auth.keyRecord?.id || null,
         user_id: auth.keyRecord?.user_id || null,
-        reseller_order_id: reseller_order_id || null,
-        platform: platform || 'api',
-        recipient_name: cust.name,
-        recipient_phone: cust.phone,
-        recipient_email: cust.email || '',
+        reseller_order_id: resolvedResellerOrderId,
+        platform: resolvedPlatform,
+        recipient_name: customerName,
+        recipient_phone: customerPhone,
+        recipient_email: recipientEmail,
         recipient_address: recipientAddress,
         recipient_city: recipientCity,
         recipient_state: recipientState,
-        recipient_pincode: recipientPincode,
+        recipient_pincode: customerPincode,
         sender_name: senderName,
         sender_phone: senderPhone,
         packing_preference: packing_preference || 'Standard Protective Wholesale Packaging',
         items: normalizedItems,
         status: 'payment_pending',
-        shipping_notes: `${shipping_notes ? `${shipping_notes} | ` : ''}${courierSlipSummary}`,
+        shipping_notes: `${resolvedNotes ? `${resolvedNotes} | ` : ''}${courierSlipSummary}`,
       };
 
       let insertedOrder = null;
@@ -2844,10 +2886,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       try {
         emailResult = await sendResellerInvoiceEmail({
           order: insertedOrder,
-          resellerOrderId: reseller_order_id,
+          resellerOrderId: resolvedResellerOrderId,
           totalWholesaleAmount,
           items: normalizedItems,
-          recipientName: cust.name,
+          recipientName: customerName,
           shippingAddress: fullAddressStr,
           recipientEmail: resellerEmail,
           paymentLink,
@@ -2861,7 +2903,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         status: 'success',
         order_id: insertedOrder.id,
         order_number: insertedOrder.order_number || null,
-        reseller_order_id: reseller_order_id || null,
+        reseller_order_id: resolvedResellerOrderId,
         order_status: 'payment_pending',
         payment_status: 'pending',
         payment_link: paymentLink,
@@ -2878,7 +2920,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         courier_slip: {
           sender_name: senderName,
           sender_phone: senderPhone,
-          recipient_name: cust.name,
+          recipient_name: customerName,
           recipient_address: fullAddressStr,
           parcel_declared_value: customerOrderAmount,
           cod_amount_to_collect: codAmountToCollect,
@@ -2895,8 +2937,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           payment_link: paymentLink,
           items: normalizedItems,
           customer: {
-            name: cust.name,
-            phone: cust.phone,
+            name: customerName,
+            phone: customerPhone,
             address: fullAddressStr,
           },
         },
