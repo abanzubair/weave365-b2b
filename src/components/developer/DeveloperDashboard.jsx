@@ -3160,42 +3160,70 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
             {activePlatformTab === 'shopify' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">Shopify Automated Integration:</h4>
+                  <h4 className="dev-plat-title">Shopify Automated Inventory Sync:</h4>
                   <p>
-                    Use any Shopify inventory sync app (such as <strong>Matrixify</strong> or <strong>Stock Sync</strong>). Provide your dedicated Shopify-formatted JSON feed URL below:
+                    Connect using Shopify inventory apps such as <strong>Stock Sync (syncX)</strong> or <strong>Matrixify</strong>. Weave365 provides out-of-the-box auto-mapping with zero manual field matching.
                   </p>
                 </div>
-                <div className="dev-shopify-box">
-                  <label className="dev-shopify-label">Your Automated Shopify JSON Feed URL:</label>
+
+                <div className="dev-shopify-box" style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                    <label className="dev-shopify-label" style={{ marginBottom: 0 }}>
+                      ⚡ <strong>Stock Sync (syncX) Feed URL (Recommended & Zero Config):</strong>
+                    </label>
+                    <span style={{ fontSize: '11px', color: '#059669', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                      Auto-Detects JSON & Auto-Maps Fields
+                    </span>
+                  </div>
                   <div className="dev-feed-input-group">
                     <input
                       type="text"
                       readOnly
-                      value="https://www.weave365.com/api/v1/catalog?format=shopify"
+                      value={`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=stocksync`}
                       className="dev-feed-input"
                     />
                     <button
                       type="button"
                       className="dev-feed-copy-btn"
-                      onClick={() => copyToClipboard('https://www.weave365.com/api/v1/catalog?format=shopify', 'shopify-url')}
+                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=stocksync`, 'stocksync-url')}
                     >
-                      {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
+                      {copiedField === 'stocksync-url' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedField === 'stocksync-url' ? 'Copied' : 'Copy Feed URL'}</span>
                     </button>
                   </div>
                   <div className="dev-shopify-steps">
                     <div className="dev-step-item">
                       <span className="dev-step-num">1</span>
-                      <div className="dev-step-text">In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, select <em>New Scheduled Feed / Import</em>.</div>
+                      <div className="dev-step-text">In Shopify, open <strong>Stock Sync</strong> &rarr; Select <strong>Add New Update / Add Products</strong>.</div>
                     </div>
                     <div className="dev-step-item">
                       <span className="dev-step-num">2</span>
-                      <div className="dev-step-text">Set Feed URL to the URL above and add Custom Header: <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
+                      <div className="dev-step-text">Choose <strong>REST API / URL</strong> and paste the URL above. No custom headers or root node required!</div>
                     </div>
                     <div className="dev-step-item">
                       <span className="dev-step-num">3</span>
-                      <div className="dev-step-text">Set import frequency to <em>Hourly</em> or <em>Every 2 hours</em> for automated inventory sync.</div>
+                      <div className="dev-step-text">Stock Sync automatically detects <strong>JSON</strong> and auto-matches SKU, Title, Price, Compare Price, Inventory, and Images.</div>
                     </div>
+                  </div>
+                </div>
+
+                <div className="dev-shopify-box">
+                  <label className="dev-shopify-label">Standard Shopify REST API Feed (Nested Variants):</label>
+                  <div className="dev-feed-input-group">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=shopify`}
+                      className="dev-feed-input"
+                    />
+                    <button
+                      type="button"
+                      className="dev-feed-copy-btn"
+                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=shopify`, 'shopify-url')}
+                    >
+                      {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -3549,6 +3577,7 @@ fetchStockStatus();`, 'js-code')}
                 >
                   <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
                   <option value="/api/v1/catalog">/api/v1/catalog (B2R Reseller Catalog Feed)</option>
+                  <option value="/api/v1/catalog.json?format=stocksync">/api/v1/catalog.json?format=stocksync (Stock Sync Feed)</option>
                   <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
                   <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
                   <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>

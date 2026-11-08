@@ -149,11 +149,16 @@ export default function DeveloperApiDocPage() {
   ];
 
   const codeSnippets = {
-    shopify: `# Shopify Integration via Live CSV / JSON Sync Feed
-# 1. Open Matrixify or Stock Sync app in your Shopify Admin
-# 2. Add a new Scheduled Feed with the following parameters:
+    shopify: `# Shopify Integration via Stock Sync (syncX) or Matrixify
+# Option 1 (Recommended): Stock Sync (syncX) — Zero-Config Auto-Mapping
+# 1. Open Stock Sync app in your Shopify Admin
+# 2. Add New Feed -> Select "REST API / URL"
+# 3. Paste your dedicated feed URL:
+Feed URL: https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=stocksync
+# Note: Stock Sync will automatically detect JSON and auto-map SKU, Title, Price, Compare Price, Inventory & Images. No custom headers needed!
 
-Feed URL: https://www.weave365.com/api/v1/catalog?format=shopify
+# Option 2: Standard Shopify REST API Feed with Custom Headers
+Feed URL: https://www.weave365.com/api/v1/catalog.json?format=shopify
 HTTP Headers:
   x-api-key: w365_live_YOUR_API_KEY
 

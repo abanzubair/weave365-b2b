@@ -326,54 +326,230 @@ function formatForShopify(products) {
     const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
     // Compare-at price: Use D2C single price or markup, never the B2B bulk column
     const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
+    const primaryImage = (Array.isArray(p.images) && p.images[0]) || '';
+    const descHtml = `<p>${p.description || p.fullDescription || p.title || ''}</p><p><strong>Fabric:</strong> ${p.fabric || 'Pure Silk'}<br><strong>Weave:</strong> ${p.weave || 'Handloom'}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
+    const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
+    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
 
     const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
     const shopifyVariants = hasExplicitVariants
       ? p.variants.map((v, idx) => {
         const vPrices = v.prices || {};
         const vPrice = Number(vPrices.b2r || resellerPrice);
+        const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
         return {
-          id: `${p.id || p.groupKey}-${idx}`,
+          id: `${p.id || p.groupKey}-${idx + 1}`,
           title: v.color || `Option ${idx + 1}`,
-          sku: v.code || `${p.id || p.groupKey}-${(v.color || 'VAR').toUpperCase().slice(0, 3)}`,
+          sku: vSku,
+          SKU: vSku,
           price: vPrice,
           compare_at_price: suggestedMrp,
           inventory_management: 'shopify',
           inventory_policy: 'deny',
-          inventory_quantity: p.isOutOfStock ? 0 : 5,
+          inventory_quantity: isOutOfStock ? 0 : 5,
           option1: v.color || 'Default',
-          image: v.image || p.images?.[0] || '',
+          image: v.image || primaryImage,
         };
       })
-      : (p.colors || ['Default']).map((color, idx) => ({
-        id: `${p.id || p.groupKey}-${idx}`,
-        title: color,
-        sku: `${p.id || p.groupKey}-${color.toUpperCase().slice(0, 3)}`,
-        price: resellerPrice,
-        compare_at_price: suggestedMrp,
-        inventory_management: 'shopify',
-        inventory_policy: 'deny',
-        inventory_quantity: p.isOutOfStock ? 0 : 5,
-        option1: color,
-      }));
+      : (p.colors || ['Default']).map((color, idx) => {
+        const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        return {
+          id: `${p.id || p.groupKey}-${idx + 1}`,
+          title: color,
+          sku: vSku,
+          SKU: vSku,
+          price: resellerPrice,
+          compare_at_price: suggestedMrp,
+          inventory_management: 'shopify',
+          inventory_policy: 'deny',
+          inventory_quantity: isOutOfStock ? 0 : 5,
+          option1: color,
+        };
+      });
+
+    const rootSku = shopifyVariants[0]?.sku || p.id || p.groupKey;
+    const stockQty = isOutOfStock ? 0 : 5;
 
     return {
       id: p.id || p.groupKey,
       title: p.title || p.name,
+      Title: p.title || p.name,
       handle: handle,
-      body_html: `<p>${p.description || p.fullDescription || p.title}</p><p><strong>Fabric:</strong> ${p.fabric || 'Pure Silk'}<br><strong>Weave:</strong> ${p.weave || 'Handloom'}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`,
+      Handle: handle,
+      sku: rootSku,
+      SKU: rootSku,
+      barcode: rootSku,
+      Barcode: rootSku,
+      price: resellerPrice,
+      Price: resellerPrice,
+      compare_at_price: suggestedMrp,
+      Compare_At_Price: suggestedMrp,
+      quantity: stockQty,
+      Quantity: stockQty,
+      inventory_quantity: stockQty,
+      stock: stockQty,
+      is_available: !isOutOfStock,
+      body_html: descHtml,
+      description: descHtml,
+      Description: descHtml,
       vendor: 'Weave365 Wholesale',
+      Vendor: 'Weave365 Wholesale',
       product_type: p.category || 'Sarees',
-      tags: [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', '),
-      published: !p.isOutOfStock && !p.isArchived,
+      category: p.category || 'Sarees',
+      Category: p.category || 'Sarees',
+      tags: tagsStr,
+      Tags: tagsStr,
+      published: !isOutOfStock,
+      status: isOutOfStock ? 'draft' : 'active',
+      image: primaryImage,
+      Image: primaryImage,
+      image_src: primaryImage,
       variants: shopifyVariants,
       images: (p.images || []).map((src, pos) => ({
         src,
         position: pos + 1,
-        alt: `${p.title} - View ${pos + 1}`,
+        alt: `${p.title || p.name} - View ${pos + 1}`,
       })),
     };
   });
+}
+
+/**
+ * Transform standard products into Stock Sync / syncX auto-mapping feed format.
+ * Emits a flat list of variant items so Stock Sync can auto-map SKU, Price,
+ * Quantity, Image, Handle, and Color without requiring nested "Variants Path" configuration.
+ */
+function formatForStockSync(products) {
+  const items = [];
+
+  for (const p of products) {
+    const handle = (p.title || p.name || 'product')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const firstPrices = p.variants?.[0]?.prices || {};
+    const baseResellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
+    const baseSuggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(baseResellerPrice * 1.5));
+    const primaryImage = (Array.isArray(p.images) && p.images[0]) || '';
+    const allImagesStr = Array.isArray(p.images) ? p.images.join(', ') : primaryImage;
+    const descHtml = `<p>${p.description || p.fullDescription || p.title || ''}</p><p><strong>Fabric:</strong> ${p.fabric || 'Pure Silk'}<br><strong>Weave:</strong> ${p.weave || 'Handloom'}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
+    const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
+    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
+
+    const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
+
+    if (hasExplicitVariants) {
+      p.variants.forEach((v, idx) => {
+        const vPrices = v.prices || {};
+        const vPrice = Number(vPrices.b2r || baseResellerPrice);
+        const vMrp = Number(vPrices.single || baseSuggestedMrp);
+        const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        const vColor = v.color || `Option ${idx + 1}`;
+        const vImage = v.image || primaryImage;
+        const vStock = isOutOfStock ? 0 : (typeof v.quantity === 'number' ? v.quantity : 5);
+
+        items.push({
+          id: `${p.id || p.groupKey}-${idx + 1}`,
+          product_id: p.id || p.groupKey,
+          handle: handle,
+          Handle: handle,
+          title: p.title || p.name,
+          Title: p.title || p.name,
+          sku: vSku,
+          SKU: vSku,
+          barcode: vSku,
+          Barcode: vSku,
+          price: vPrice,
+          Price: vPrice,
+          compare_at_price: vMrp,
+          Compare_At_Price: vMrp,
+          mrp: vMrp,
+          quantity: vStock,
+          Quantity: vStock,
+          inventory_quantity: vStock,
+          stock: vStock,
+          is_available: !isOutOfStock && vStock > 0,
+          inventory_management: 'shopify',
+          inventory_policy: 'deny',
+          option1_name: 'Color',
+          option1_value: vColor,
+          color: vColor,
+          Color: vColor,
+          image: vImage,
+          Image: vImage,
+          image_src: vImage,
+          images: allImagesStr,
+          body_html: descHtml,
+          description: descHtml,
+          Description: descHtml,
+          vendor: 'Weave365 Wholesale',
+          Vendor: 'Weave365 Wholesale',
+          product_type: p.category || 'Sarees',
+          category: p.category || 'Sarees',
+          Category: p.category || 'Sarees',
+          tags: tagsStr,
+          Tags: tagsStr,
+          status: isOutOfStock ? 'draft' : 'active',
+          weight: 0.8,
+          weight_unit: 'kg',
+        });
+      });
+    } else {
+      const colors = (Array.isArray(p.colors) && p.colors.length > 0) ? p.colors : ['Default'];
+      colors.forEach((color, idx) => {
+        const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        const vStock = isOutOfStock ? 0 : 5;
+        items.push({
+          id: `${p.id || p.groupKey}-${idx + 1}`,
+          product_id: p.id || p.groupKey,
+          handle: handle,
+          Handle: handle,
+          title: p.title || p.name,
+          Title: p.title || p.name,
+          sku: vSku,
+          SKU: vSku,
+          barcode: vSku,
+          Barcode: vSku,
+          price: baseResellerPrice,
+          Price: baseResellerPrice,
+          compare_at_price: baseSuggestedMrp,
+          Compare_At_Price: baseSuggestedMrp,
+          mrp: baseSuggestedMrp,
+          quantity: vStock,
+          Quantity: vStock,
+          inventory_quantity: vStock,
+          stock: vStock,
+          is_available: !isOutOfStock && vStock > 0,
+          inventory_management: 'shopify',
+          inventory_policy: 'deny',
+          option1_name: colors.length > 1 ? 'Color' : 'Title',
+          option1_value: colors.length > 1 ? color : 'Default Title',
+          color: color,
+          Color: color,
+          image: primaryImage,
+          Image: primaryImage,
+          image_src: primaryImage,
+          images: allImagesStr,
+          body_html: descHtml,
+          description: descHtml,
+          Description: descHtml,
+          vendor: 'Weave365 Wholesale',
+          Vendor: 'Weave365 Wholesale',
+          product_type: p.category || 'Sarees',
+          category: p.category || 'Sarees',
+          Category: p.category || 'Sarees',
+          tags: tagsStr,
+          Tags: tagsStr,
+          status: isOutOfStock ? 'draft' : 'active',
+          weight: 0.8,
+          weight_unit: 'kg',
+        });
+      });
+    }
+  }
+
+  return items;
 }
 
 /**
@@ -385,7 +561,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     return Response.json({ status: 'error', code: 'DATABASE_ERROR', message: 'Database unconfigured' }, { status: 500, headers: defaultCorsHeaders });
   }
 
-  const endpoint = pathSegments[1] || ''; // e.g. 'catalog', 'stock-status', 'products', 'me'
+  const rawEndpoint = pathSegments[1] || ''; // e.g. 'catalog', 'catalog.json', 'stock-status', 'products', 'me'
+  const endpoint = rawEndpoint.replace(/\.json$/i, '');
+  const isJsonExtension = rawEndpoint.toLowerCase().endsWith('.json');
   const { searchParams } = new URL(request.url);
 
   // 0. Automated Cron Endpoint for Subscription Renewal Reminders (7-day and 3-day notices)
@@ -457,13 +635,29 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       });
     }
 
-    // Pagination & Cursor Limits (Default limit 50, max 250)
+    // Feed format detection: explicit query param or automated Stock Sync / syncX crawler detection
+    const userAgent = request.headers.get('user-agent') || '';
+    const isStockSyncAgent = /stock[-_]?sync|syncx/i.test(userAgent);
+    const format = (searchParams.get('format') || (isStockSyncAgent ? 'stocksync' : '')).toLowerCase();
+    const isRaw = searchParams.get('raw') === 'true' || searchParams.get('array') === 'true';
+
+    // Pagination & Cursor Limits (Default limit 50, higher default for sync feeds so catalog isn't truncated)
     const pageParam = searchParams.get('page');
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
     const totalProducts = resultProducts.length;
 
-    const limit = Math.min(250, Math.max(1, parseInt(limitParam || '50', 10)));
+    const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || format === 'matrixify';
+    const maxAllowedLimit = 2500;
+    const defaultLimit = isSyncFeed ? 1000 : 50;
+
+    let limit;
+    if (limitParam === 'all' || limitParam === 'max') {
+      limit = Math.min(totalProducts || 1, maxAllowedLimit);
+    } else {
+      limit = Math.min(maxAllowedLimit, Math.max(1, parseInt(limitParam || String(defaultLimit), 10)));
+    }
+
     const page = Math.max(1, parseInt(pageParam || '1', 10));
     const offset = offsetParam !== null
       ? Math.max(0, parseInt(offsetParam, 10))
@@ -487,10 +681,46 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     // Slice products BEFORE running CPU-heavy variant/color mappings
     const paginatedProducts = resultProducts.slice(offset, offset + limit);
 
-    // Format for Shopify if requested
-    const format = searchParams.get('format');
+    // Common file download & live sync headers (guarantees Stock Sync auto-detects JSON without CSV fallback)
+    const feedHeaders = {
+      ...securePrivateHeaders,
+      ...cors,
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Disposition': 'inline; filename="catalog.json"',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    };
+
+    // Format for Stock Sync / syncX:
+    // Emits a direct JSON array of variant rows for out-of-the-box auto-mapping
+    if (format === 'stocksync' || format === 'syncx') {
+      const syncxFeed = formatForStockSync(paginatedProducts);
+      if (searchParams.get('envelope') === 'true') {
+        return Response.json({
+          status: 'success',
+          pagination: paginationMeta,
+          total_products: totalProducts,
+          total_items: syncxFeed.length,
+          products: syncxFeed,
+        }, {
+          status: 200,
+          headers: feedHeaders,
+        });
+      }
+      return Response.json(syncxFeed, {
+        status: 200,
+        headers: feedHeaders,
+      });
+    }
+
+    // Format for Shopify / Matrixify (Nested Shopify REST structure + root fallbacks)
     if (format === 'shopify' || format === 'matrixify') {
       const shopifyFeed = formatForShopify(paginatedProducts);
+      if (isRaw) {
+        return Response.json(shopifyFeed, {
+          status: 200,
+          headers: feedHeaders,
+        });
+      }
       return Response.json({
         status: 'success',
         pagination: paginationMeta,
@@ -499,7 +729,15 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         products: shopifyFeed,
       }, {
         status: 200,
-        headers: { ...securePrivateHeaders, ...cors },
+        headers: feedHeaders,
+      });
+    }
+
+    // Raw array export for standard feed if requested
+    if (isRaw) {
+      return Response.json(paginatedProducts, {
+        status: 200,
+        headers: isJsonExtension ? feedHeaders : { ...securePrivateHeaders, ...cors },
       });
     }
 
@@ -558,7 +796,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }),
     }, {
       status: 200,
-      headers: { ...securePrivateHeaders, ...cors },
+      headers: isJsonExtension ? feedHeaders : { ...securePrivateHeaders, ...cors },
     });
   }
 
@@ -2185,7 +2423,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
     return Response.json({ status: 'error', code: 'DATABASE_ERROR', message: 'Database unconfigured' }, { status: 500, headers: defaultCorsHeaders });
   }
 
-  const endpoint = pathSegments[1] || '';
+  const rawEndpoint = pathSegments[1] || '';
+  const endpoint = rawEndpoint.replace(/\.json$/i, '');
 
   // 0. Public or Session-Based Order Payment Verification & Initiation (invoked from order tracking payment link)
   if (endpoint === 'initiate-order-payment' || endpoint === 'pay-order' || endpoint === 'initiate-payment') {
