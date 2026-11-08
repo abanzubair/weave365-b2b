@@ -93,16 +93,23 @@ export async function hashApiKey(rawKey) {
  * Strictly requires full unmasked API secret via X-API-Key or Authorization: Bearer header.
  */
 export async function authenticateApiKey(request, supabase) {
+  let queryKey = '';
+  try {
+    const url = new URL(request.url);
+    queryKey = url.searchParams.get('api_key') || url.searchParams.get('key') || '';
+  } catch {}
+
   const rawKey = (
     request.headers.get('x-api-key') ||
-    (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+    (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') ||
+    queryKey
   ).trim();
 
   if (!rawKey) {
     return {
       authenticated: false,
       status: 401,
-      error: 'Missing API Key. Pass your key in the "X-API-Key" or "Authorization: Bearer <key>" header.',
+      error: 'Missing API Key. Pass your key in the "X-API-Key" header, "Authorization: Bearer <key>", or "?api_key=<key>" query parameter.',
     };
   }
 
