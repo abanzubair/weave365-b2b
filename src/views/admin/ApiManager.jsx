@@ -43,6 +43,13 @@ import { DeveloperDashboard, ConfirmActionModal } from '../../components/develop
 import '../../styles/developerDashboard.css';
 import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
+const truncateClientName = (name, maxLength = 24) => {
+  if (!name || typeof name !== 'string') return '';
+  const trimmed = name.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, maxLength).trim().replace(/[\s(,.-]+$/, '')}...`;
+};
+
 export default function ApiManager({ adminData, loadAdminData, user, loading: propsLoading = false }) {
   const [loading, setLoading] = useState(true);
   const isOverallLoading = loading || propsLoading;
@@ -557,7 +564,9 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   </td>
                   <td className="api-col-client">
                     <div className="api-client-info">
-                      <strong className="api-client-title" title={item.client_name}>{item.client_name}</strong>
+                      <strong className="api-client-title" title={item.client_name}>
+                        {truncateClientName(item.client_name, 24)}
+                      </strong>
                       {item.client_website ? (
                         <a
                           href={item.client_website}
