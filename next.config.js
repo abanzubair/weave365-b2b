@@ -127,11 +127,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/wholesale-banarasi-sarees',
-        destination: '/wholesale-catalogue',
-        permanent: true,
-      },
-      {
         source: '/reseller-banarasi-sarees',
         destination: '/resell-sarees-online',
         permanent: true,

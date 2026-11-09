@@ -7,59 +7,6 @@
  */
 
 export const seoLandingPages = {
-  "wholesale-banarasi-sarees": {
-    slug: "wholesale-banarasi-sarees",
-    metaTitle: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
-    metaDescription: "Premium Banarasi sarees and suits direct from Varanasi for wholesalers, boutiques, retailers, dropshipping sellers, and global partners. Flexible MOQ worldwide.",
-    h1: "Wholesale Banarasi Sarees & Suits for Retailers and Resellers",
-    introTitle: "Trusted B2B Supplier of Authentic Varanasi Weave Collections",
-    introText: `Weave 365 stands at the intersection of historical Indian heritage and modern wholesale efficiency. As a direct-from-weaver supplier located in the heart of Varanasi, we provide boutiques, bulk retailers, and international resellers with direct access to unparalleled handloom Banarasi silk sarees, exquisite salwar suits, and custom bridal ensembles. Our platform removes the middleman, passing on authentic artisan pricing and direct quality control to boutique owners and global export partners. By sourcing through Weave 365, you are not simply acquiring inventory; you are partnering with a sustainable artisan network dedicated to maintaining the prestigious GI (Geographical Indication) heritage of Varanasi.
-
-    Whether you operate a premium bridal boutique in Delhi, an ethnic wear showroom in London, or an active social media reseller network in Bangalore, Weave 365 satisfies your boutique scaling needs. We cater to high-volume commercial shipments as well as flexible micro-orders, allowing emerging resellers to balance inventory risk while offering premium hand-curated Banarasi silk masterpieces to their local clienteles.`,
-    
-    buyerGuideTitle: "Ultimate B2B Sourcing Guide for Banarasi Saree Wholesalers",
-    buyerGuideSections: [
-      {
-        title: "1. Understanding Banarasi Fabrics & Wholesale Grades",
-        content: "When purchasing Banarasi sarees in bulk, understanding the fabric composition is critical for boutique profitability and customer retention. Weave 365 categorizes wholesale inventory into distinct grades: Pure Katan Silk (premium handloom, high tensile strength, rich luster), Kora Organza (lightweight transparency, crisp drape, silver/gold zari border), Georgette (fluid hand-feel, easy pleating, ideal for modern designer wear), and Soft Silk (highly budget-friendly, silk blends with luxury look and feel). Authentic pure silk products are shipped with certified Silk Mark assurances."
-      },
-      {
-        title: "2. Handloom Authentic vs. Powerloom Varieties",
-        content: "Authentic handloom sarees feature a subtle, soft, and slightly irregular weave pattern on the reverse side, illustrating the meticulous efforts of the master weaver. Powerloom sarees, while cost-efficient, lack the weight, heritage feel, and unique artistic imperfections of traditional Varanasi handloom work. At Weave 365, we transparently label each listing so that our business buyers can align their wholesale purchases with their retail buyer profiles."
-      },
-      {
-        title: "3. Minimum Order Quantity (MOQ) & Sample Orders",
-        content: "To support boutique startups and independent home resellers, Weave 365 offers a highly flexible MOQ architecture. While traditional wholesalers demand purchase by bulk sets, our platform allows you to mix-and-match colors, fabrics, and categories, reducing your capital locking. For large-scale custom runs, export orders, or custom dye matches, please utilize our Bulk Inquiry system."
-      },
-      {
-        title: "4. Global Export Shipping & Delivery Times",
-        content: "We provide comprehensive global door-to-door shipping via verified express carriers (DHL, FedEx, UPS). Domestic wholesale orders inside India typically arrive within 4-7 business days, whereas international boutique shipments are delivered within 7-12 business days. Import duties and local clearances are managed professionally to ensure seamless customs processing."
-      }
-    ],
-    
-    faqs: [
-      {
-        q: "What is the minimum order quantity (MOQ) for wholesale buyers?",
-        a: "Weave 365 offers a highly reseller-friendly MOQ structure. Wholesale prices are unlocked for verified retailers and boutique owners on flexible catalog orders, and we allow you to mix different designs and fabrics to meet low initial thresholds, reducing your upfront capital exposure."
-      },
-      {
-        q: "Do you supply authentic handwoven Banarasi sarees directly from Varanasi weavers?",
-        a: "Yes, Weave 365 is proudly situated in Varanasi, Uttar Pradesh. We work directly with a vetted network of local master weavers and local artisans, ensuring that every premium katan, organza, and meenakari saree is sourced direct from Varanasi without middleman markups."
-      },
-      {
-        q: "Is worldwide international shipping available for boutique owners?",
-        a: "Absolutely. We regularly export wholesale Banarasi bridal collections and premium suit fabrics to boutiques in the USA, Canada, UK, Australia, UAE, Malaysia, and Singapore. We offer real-time tracking and handle standard export documentation."
-      },
-      {
-        q: "Do you provide white-label catalogs or dropshipping support for resellers?",
-        a: "Yes, Weave 365 supports reseller networks with unbranded, white-label catalogs and direct-to-customer dropshipping services, allowing boutique partners to resell premium designs under their own labels without inventory liability."
-      }
-    ],
-    filter: {
-      category: "Saree"
-    }
-  },
-
   "katan-silk-sarees": {
     slug: "katan-silk-sarees",
     metaTitle: "Pure Katan Silk Banarasi Sarees Wholesale | Weave 365",

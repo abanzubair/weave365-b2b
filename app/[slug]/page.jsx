@@ -31,7 +31,16 @@ function getStaticLandingPagesFallback() {
     faqs: page.faqs || [],
     filter: page.filter || {},
     comparisonSections: page.comparisonSections || [],
+    trialPack: page.trialPack || null,
   }));
+}
+
+function getAllLandingPages(dbLandingPages = []) {
+  const staticFallback = getStaticLandingPagesFallback();
+  if (!dbLandingPages || dbLandingPages.length === 0) return staticFallback;
+  const dbSlugs = new Set(dbLandingPages.map((p) => p.slug));
+  const missingFromDb = staticFallback.filter((p) => !dbSlugs.has(p.slug));
+  return [...dbLandingPages, ...missingFromDb];
 }
 
 export async function generateMetadata({ params }) {
@@ -69,7 +78,7 @@ export async function generateMetadata({ params }) {
 
   // 2. SEO Landing Pages
   const dbLandingPages = await fetchSupabaseLandingPages().catch(() => []);
-  const allLandingPages = dbLandingPages.length > 0 ? dbLandingPages : getStaticLandingPagesFallback();
+  const allLandingPages = getAllLandingPages(dbLandingPages);
   const pageData = allLandingPages.find((p) => p.slug === slug);
 
   if (pageData) {
@@ -142,7 +151,7 @@ export default async function SlugPage({ params, searchParams }) {
     fetchSupabaseLandingPages().catch(() => []),
   ]);
 
-  const allLandingPages = dbLandingPages.length > 0 ? dbLandingPages : getStaticLandingPagesFallback();
+  const allLandingPages = getAllLandingPages(dbLandingPages);
   const pageData = allLandingPages.find((p) => p.slug === slug);
 
   if (!pageData) {

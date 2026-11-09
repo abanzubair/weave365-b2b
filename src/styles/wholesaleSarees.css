@@ -1,0 +1,1003 @@
+/* -------------------------------------------------------------
+   Weave 365 Wholesale Banarasi Sarees - Dedicated Page Styling
+   Modern Clean Minimal UI/UX (Maison Atelier Haute Handloom Aesthetic)
+   Font sizes strictly adhering to:
+   - 12px = 0.75rem
+   - 14px = 0.875rem
+   - 16px = 1rem
+   - 18px = 1.125rem
+   - 20px = 1.25rem
+   - 24px = 1.5rem
+   - 28px = 1.75rem
+   - 32px = 2rem
+   - 36px = 2.25rem
+   - 40px = 2.5rem
+   - 48px = 3rem
+------------------------------------------------------------- */
+
+.ws-page-container {
+  background-color: var(--paper, #faf8f5);
+  color: var(--ink, #1f1b17);
+  font-family: var(--font-body, 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif);
+  overflow-x: hidden;
+  padding-bottom: clamp(6rem, 8vw, 9rem);
+}
+
+/* -------------------------------------------------------------
+   Hero Section
+------------------------------------------------------------- */
+.ws-hero {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 1rem 2rem 0 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .ws-hero {
+    padding: 1rem 1rem 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+.ws-hero .premium-breadcrumb {
+  padding: 0.5rem 0 1.25rem 0;
+  margin: 0;
+}
+
+.ws-hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+@media (max-width: 992px) {
+  .ws-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.ws-hero-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-hero-eyebrow {
+  display: block;
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #855b29;
+  margin-bottom: 0.75rem;
+}
+
+.ws-hero-title {
+  font-family: var(--font-hero-heading, 'Marcellus', 'Playfair Display', serif);
+  font-size: 2.5rem; /* 40px */
+  line-height: 1.15;
+  color: #1a1510;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+.ws-title-accent {
+  display: block;
+  color: #855b29;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .ws-hero-title {
+    font-size: 1.75rem; /* 28px */
+  }
+}
+
+.ws-hero-description {
+  font-size: 1rem; /* 16px */
+  line-height: 1.7;
+  color: #55483b;
+  margin: 0 0 1.75rem 0;
+  max-width: 640px;
+}
+
+@media (min-width: 768px) {
+  .ws-hero-description {
+    font-size: 1.125rem; /* 18px */
+  }
+}
+
+/* Action Suite */
+.ws-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.ws-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  background: #805d31;
+  color: #ffffff;
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  height: 52px;
+  padding: 0 1.85rem;
+  border-radius: 8px;
+  border: 1.5px solid #805d31;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.25);
+  text-decoration: none;
+}
+
+.ws-btn-primary:hover {
+  background: #6a4c26;
+  border-color: #6a4c26;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(128, 93, 49, 0.35);
+  color: #ffffff;
+}
+
+.ws-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  background: #ffffff;
+  color: #2b2118;
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  height: 52px;
+  padding: 0 1.85rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(198, 158, 106, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.ws-btn-secondary:hover {
+  border-color: #805d31;
+  color: #805d31;
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Metrics Strip */
+.ws-metrics-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 0 0 0;
+  border-top: 1px solid rgba(198, 158, 106, 0.3);
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .ws-metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  .ws-metric-divider {
+    display: none;
+  }
+}
+
+.ws-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ws-metric-stat {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.75rem; /* 28px */
+  font-weight: 600;
+  color: #855b29;
+  line-height: 1.1;
+}
+
+.ws-metric-label {
+  font-size: 0.8rem; /* ~13px */
+  color: #241c14;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+}
+
+.ws-metric-divider {
+  width: 1px;
+  height: 36px;
+  background-color: rgba(198, 158, 106, 0.35);
+}
+
+/* Hero Visual */
+.ws-hero-visual {
+  position: relative;
+}
+
+.ws-hero-photo-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(74, 52, 26, 0.12);
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  aspect-ratio: 4 / 3;
+  background-color: #ede5d8;
+}
+
+.ws-hero-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.ws-hero-photo-card:hover img {
+  transform: scale(1.02);
+}
+
+.ws-visual-floating-badge {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.ws-floating-badge-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-floating-badge-title {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 700;
+  color: #2b1f13;
+}
+
+.ws-floating-badge-subtitle {
+  font-size: 0.75rem; /* 12px */
+  color: #7a5323;
+}
+
+/* -------------------------------------------------------------
+   B2B Starter Trial Pack Section (Above-the-fold Trust Driver)
+------------------------------------------------------------- */
+.ws-trial-pack-section {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+  scroll-margin-top: 100px;
+}
+
+@media (max-width: 768px) {
+  .ws-trial-pack-section {
+    padding: 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+/* Unboxed Atelier Inner Container (Uniform with page sections) */
+.ws-trial-pack-inner {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.ws-trial-title {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 2.125rem; /* ~34px */
+  font-weight: 600;
+  line-height: 1.25;
+  color: #17120c;
+  margin: 0 0 0.75rem 0;
+}
+
+@media (max-width: 768px) {
+  .ws-trial-title {
+    font-size: 1.5rem; /* 24px */
+  }
+}
+
+.ws-trial-subtitle {
+  font-size: 1.05rem; /* ~17px */
+  font-weight: 500;
+  line-height: 1.7;
+  color: #2b2118;
+  max-width: 1100px;
+  margin: 0 auto 2.5rem auto;
+}
+
+/* Trial Pack Cost Adjustment Guarantee Highlight Box (Uniform Wide Card - No Left Accent Border) */
+.ws-trial-guarantee-box {
+  background: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto 2.5rem auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  text-align: left;
+  box-shadow: 0 2px 10px rgba(128, 93, 49, 0.04);
+}
+
+@media (max-width: 680px) {
+  .ws-trial-guarantee-box {
+    flex-direction: column;
+    padding: 1.25rem;
+    gap: 0.875rem;
+  }
+}
+
+.ws-trial-guarantee-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #fbf8f3;
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  color: #805d31;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ws-trial-guarantee-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-trial-guarantee-heading {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.5rem; /* 24px */
+  font-weight: 700;
+  color: #17120c;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.25;
+}
+
+.ws-trial-guarantee-text {
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  line-height: 1.6;
+  color: #2b2118;
+  margin: 0;
+}
+
+.ws-trial-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto 2.5rem auto;
+  text-align: left;
+}
+
+@media (max-width: 900px) {
+  .ws-trial-features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.ws-trial-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.15rem;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.ws-trial-feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  color: #805d31;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(128, 93, 49, 0.04);
+}
+
+.ws-trial-feature-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-trial-feature-title {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.35rem; /* ~22px */
+  font-weight: 700;
+  color: #17120c;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.25;
+}
+
+.ws-trial-feature-desc {
+  font-size: 0.95rem; /* ~15px */
+  font-weight: 500;
+  line-height: 1.6;
+  color: #2b2118;
+  margin: 0;
+}
+
+.ws-trial-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ws-btn-trial-catalog {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  height: 52px;
+  padding: 0 2rem;
+  border-radius: 8px;
+  border: 1.5px solid #805d31;
+  background: #805d31;
+  color: #ffffff;
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.15);
+}
+
+.ws-btn-trial-catalog:hover {
+  background: #6a4c26;
+  border-color: #6a4c26;
+  box-shadow: 0 6px 18px rgba(128, 93, 49, 0.22);
+  transform: translateY(-1px);
+  color: #ffffff;
+}
+
+.ws-btn-trial-wa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  height: 52px;
+  padding: 0 2rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(198, 158, 106, 0.5);
+  background: #ffffff;
+  color: #2b2118;
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.ws-btn-trial-wa .ws-wa-icon {
+  color: #25D366;
+  flex-shrink: 0;
+}
+
+.ws-btn-trial-wa:hover {
+  border-color: #805d31;
+  color: #805d31;
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.08);
+  transform: translateY(-1px);
+}
+
+/* -------------------------------------------------------------
+   Captive Manufacturing & Cluster Process Steps (Interactive / Grid)
+------------------------------------------------------------- */
+.ws-process-section {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .ws-process-section {
+    padding: 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+.ws-section-header {
+  text-align: center;
+  max-width: 1100px;
+  margin: 0 auto 2.5rem auto;
+}
+
+.ws-section-kicker {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #855b29;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.ws-section-title {
+  font-family: var(--font-hero-heading, 'Marcellus', 'Playfair Display', serif);
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+  font-weight: 600;
+  color: #17120c;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.25;
+}
+
+@media (min-width: 1024px) {
+  .ws-buyers-section .ws-section-title {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .ws-section-title {
+    font-size: 1.5rem; /* 24px */
+  }
+}
+
+.ws-section-desc {
+  font-size: 1.05rem; /* ~17px */
+  font-weight: 500;
+  line-height: 1.65;
+  color: #2b2118;
+  margin: 0;
+}
+
+.ws-process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem 2.5rem;
+}
+
+@media (max-width: 992px) {
+  .ws-process-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .ws-process-grid {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+}
+
+/* Open Architectural Flow Columns (No card boxes, no top borders) */
+.ws-process-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: none;
+}
+
+.ws-process-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.ws-process-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.15rem;
+}
+
+.ws-process-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: #fbf8f3;
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #805d31;
+}
+
+.ws-process-num {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.65rem; /* ~26px */
+  font-weight: 700;
+  color: #805d31;
+  line-height: 1;
+}
+
+.ws-process-card-title {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.35rem; /* ~22px */
+  font-weight: 700;
+  color: #17120c;
+  margin: 0 0 0.65rem 0;
+  line-height: 1.3;
+}
+
+.ws-process-card-desc {
+  font-size: 0.95rem; /* ~15px */
+  font-weight: 500;
+  line-height: 1.65;
+  color: #2b2118;
+  margin: 0;
+}
+
+/* -------------------------------------------------------------
+   Target Buyers Segment Section
+------------------------------------------------------------- */
+.ws-buyers-section {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .ws-buyers-section {
+    padding: 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+.ws-buyers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.75rem 2.25rem;
+}
+
+@media (max-width: 992px) {
+  .ws-buyers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.25rem 1.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .ws-buyers-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+/* Open Editorial Directory (No card boxes, no top borders) */
+.ws-buyer-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+}
+
+.ws-buyer-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #fbf8f3;
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #855b29;
+  margin-bottom: 1rem;
+}
+
+.ws-buyer-title {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.45rem; /* ~23px */
+  font-weight: 700;
+  color: #17120c;
+  margin: 0 0 0.6rem 0;
+  line-height: 1.3;
+}
+
+.ws-buyer-desc {
+  font-size: 0.95rem; /* ~15px */
+  font-weight: 500;
+  line-height: 1.65;
+  color: #2b2118;
+  margin: 0 0 1.25rem 0;
+}
+
+.ws-buyer-perk {
+  font-size: 0.8rem; /* ~13px */
+  font-weight: 800;
+  color: #855b29;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px dashed rgba(198, 158, 106, 0.35);
+}
+
+/* -------------------------------------------------------------
+   Weaving Clusters GEO Spotlight
+------------------------------------------------------------- */
+.ws-clusters-section {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .ws-clusters-section {
+    padding: 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+.ws-clusters-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2.25rem;
+}
+
+@media (max-width: 1024px) {
+  .ws-clusters-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .ws-clusters-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+/* Open Cluster Provenance Columns (No card boxes) */
+.ws-cluster-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-cluster-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.ws-cluster-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #fbf8f3;
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  color: #805d31;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.ws-cluster-name {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.45rem; /* ~23px */
+  font-weight: 700;
+  color: #17120c;
+  margin: 0 0 0.6rem 0;
+  line-height: 1.3;
+}
+
+.ws-cluster-craft {
+  font-size: 0.95rem; /* ~15px */
+  font-weight: 500;
+  line-height: 1.65;
+  color: #2b2118;
+  margin: 0 0 1.25rem 0;
+}
+
+.ws-cluster-specialty {
+  font-size: 0.8rem; /* ~13px */
+  font-weight: 800;
+  color: #855b29;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px dashed rgba(198, 158, 106, 0.35);
+}
+
+/* -------------------------------------------------------------
+   Wholesale Catalog Gateway Section (Internal Link Architecture)
+------------------------------------------------------------- */
+.ws-catalog-gateway-section {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .ws-catalog-gateway-section {
+    padding: 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+/* Unboxed Atelier Inner Container (Uniform with page sections) */
+.ws-catalog-gateway-inner {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.ws-gateway-perks-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+  margin: 1.75rem 0 2rem 0;
+}
+
+.ws-gateway-perk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #4a3b2c;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+  padding: 0;
+}
+
+.ws-gateway-perk-pill svg {
+  color: #805d31;
+  flex-shrink: 0;
+}
+
+.ws-gateway-action-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ws-btn-large {
+  font-size: 1rem; /* 16px */
+  padding: 1rem 2.25rem;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------
+   FAQ Accordion Section (AEO & SEO Grounding)
+------------------------------------------------------------- */
+.ws-faq-section {
+  max-width: 1600px;
+  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .ws-faq-section {
+    padding: 0 1rem;
+    margin-bottom: 5rem;
+  }
+}
+
+.ws-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ws-faq-item {
+  background: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.ws-faq-item.active {
+  border-color: #805d31;
+}
+
+.ws-faq-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.125rem 1.25rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  gap: 1rem;
+}
+
+.ws-faq-question {
+  font-size: 1.05rem; /* ~17px */
+  font-weight: 600;
+  color: #17120c;
+  margin: 0;
+}
+
+.ws-faq-chevron {
+  flex-shrink: 0;
+  color: #855b29;
+  transition: transform 0.25s ease;
+}
+
+.ws-faq-item.active .ws-faq-chevron {
+  transform: rotate(180deg);
+}
+
+.ws-faq-answer {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  font-size: 0.95rem; /* ~15px */
+  font-weight: 500;
+  line-height: 1.65;
+  color: #2b2118;
+}
+
+.ws-faq-answer p {
+  margin: 0;
+  font-weight: 500;
+  color: #2b2118;
+}

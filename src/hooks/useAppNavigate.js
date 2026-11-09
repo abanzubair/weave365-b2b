@@ -61,7 +61,9 @@ export function useAppNavigate() {
       href = '/custom-weaving';
     } else if (nextRoute === 'sellers' || nextRoute === 'sell-banarasi-sarees' || nextRoute === 'seller' || nextRoute === 'weaver-onboarding' || nextRoute === 'become-a-supplier') {
       href = '/sell-banarasi-sarees';
-    } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue' || nextRoute === 'wholesale-banarasi-sarees') {
+    } else if (nextRoute === 'wholesale-banarasi-sarees') {
+      href = '/wholesale-banarasi-sarees';
+    } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue') {
       const currentSearchParams =
         typeof window !== 'undefined'
           ? new URLSearchParams(window.location.search)

@@ -67,7 +67,7 @@ export function WholesalePartnership({ imageUrl, navigate }) {
             {/* Editorial Link CTA */}
             <AppLink 
               to="wholesale-banarasi-sarees" 
-              href="/wholesale-banarasi-sarees/"
+              href="/wholesale-banarasi-sarees"
               className="partnership-cta-link" 
               navigate={navigate}
               aria-label="Explore wholesale Banarasi sarees"

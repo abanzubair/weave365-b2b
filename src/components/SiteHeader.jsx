@@ -168,6 +168,9 @@ export function SiteHeader(props) {
             WHOLESALE <ChevronDown size={14} className={dropdownOpen === 'wholesale' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={wholesaleRef} isOpen={dropdownOpen === 'wholesale'} className="dropdown-menu nav-standard-dropdown">
+            <AppLink to="wholesale-banarasi-sarees" href="/wholesale-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Wholesale Sarees
+            </AppLink>
             <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Wholesale Sourcing
             </AppLink>

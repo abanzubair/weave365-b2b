@@ -8,6 +8,7 @@ import { getSocialOgImageUrl } from './imageOptimizer.js';
  */
 export const ROUTE_FIRST_IMAGES = {
   '/': 'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp',
+  '/wholesale-banarasi-sarees': '/wholesale-banarasi-saree-hero.webp',
   '/handloom-vs-powerloom-guide': '/banarasi_loom_detail.webp',
   '/handloom-vs-semi-handloom-vs-powerloom-guide': '/banarasi_loom_detail.webp',
   '/sourcing-partners': '/artisan_at_loom_premium.webp',

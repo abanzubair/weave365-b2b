@@ -892,8 +892,8 @@
 
 .footer-main-layout {
   display: grid;
-  grid-template-columns: minmax(360px, 420px) 1fr;
-  gap: clamp(40px, 5.5vw, 84px);
+  grid-template-columns: minmax(360px, 440px) 1fr;
+  gap: clamp(64px, 7vw, 120px);
   width: 100%;
   max-width: 1600px;
   box-sizing: border-box;
@@ -995,9 +995,10 @@
 /* Right Columns: 4 Navigation Columns */
 .footer-nav-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(20px, 2.8vw, 48px);
-  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 180px));
+  gap: clamp(24px, 2.5vw, 42px);
+  width: auto;
+  justify-self: end;
 }
 
 .footer-nav-col {

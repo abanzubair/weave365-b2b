@@ -39,6 +39,7 @@ async function getSupabase() {
 export async function buildSitemapXmlString(siteUrl) {
   const staticPages = [
     { url: siteUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    { url: `${siteUrl}/wholesale-banarasi-sarees`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.95 },
     { url: `${siteUrl}/catalogue`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/new-arrivals`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/custom-weaving`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },

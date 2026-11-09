@@ -140,6 +140,10 @@ export function MobileMenu(props) {
       case 'wholesale':
         return (
           <>
+            <AppLink to="wholesale-banarasi-sarees" href="/wholesale-banarasi-sarees" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Wholesale Sarees</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
+            </AppLink>
             <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
               <span>Wholesale Sourcing</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
