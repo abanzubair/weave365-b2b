@@ -15,6 +15,7 @@ import {
   Download, 
   Sliders, 
   Globe, 
+  Code2,
   LayoutDashboard, 
   Users, 
   TrendingUp, 
@@ -258,8 +259,8 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
               <a href="/dropshipping" className="rf-inline-link" onClick={(e) => { e.preventDefault(); navigate('dropshipping'); }}>
                 Dropshipping Program Details <ArrowRight size={12} />
               </a>
-              <a href="/white-label" className="rf-inline-link" onClick={(e) => { e.preventDefault(); navigate('white-label'); }}>
-                White Label Branding <ArrowRight size={12} />
+              <a href="/developer-api" className="rf-inline-link" onClick={(e) => { e.preventDefault(); navigate('developer-api'); }}>
+                Developer API Integration <ArrowRight size={12} />
               </a>
               <a href="/sourcing-partners" className="rf-inline-link" onClick={(e) => { e.preventDefault(); navigate('sourcing-partners'); }}>
                 Sourcing Partnerships <ArrowRight size={12} />
@@ -340,8 +341,8 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
                 <div className="rf-wf-step">
                   <span className="rf-wf-num">2</span>
                   <div className="rf-wf-text">
-                    <strong>Post & Style</strong>
-                    <p>Publish reel and link your white-label bio storefront</p>
+                    <strong>Post &amp; Style</strong>
+                    <p>Publish reel and direct buyers to your store or share links</p>
                   </div>
                 </div>
                 <div className="rf-wf-step">
@@ -406,13 +407,13 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
 
               <button 
                 type="button" 
-                className={`rf-demo-tab-btn ${activeTab === 'storefront' ? 'active' : ''}`}
-                onClick={() => setActiveTab('storefront')}
+                className={`rf-demo-tab-btn ${activeTab === 'api' ? 'active' : ''}`}
+                onClick={() => setActiveTab('api')}
               >
-                <Globe className="rf-demo-tab-icon" size={20} />
+                <Code2 className="rf-demo-tab-icon" size={20} />
                 <div className="rf-demo-tab-meta">
-                  <span className="rf-demo-tab-title">White Label Storefront</span>
-                  <span className="rf-demo-tab-sub">Branded custom domain shop</span>
+                  <span className="rf-demo-tab-title">Developer REST API</span>
+                  <span className="rf-demo-tab-sub">Automated catalog &amp; orders</span>
                 </div>
               </button>
 
@@ -547,46 +548,47 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
                 </>
               )}
 
-              {activeTab === 'storefront' && (
+              {activeTab === 'api' && (
                 <>
                   <div className="rf-demo-text-side">
-                    <span className="rf-demo-badge">Premium Add-on</span>
-                    <h3>White-Label Custom Storefront</h3>
+                    <span className="rf-demo-badge">Developer API</span>
+                    <h3>Production REST API Sync</h3>
                     <p>
-                      Launch a fully independent ethnic wear storefront without writing code. Link your custom domain (e.g. www.yourbrand.com), upload your store logo, and customize color schemes.
+                      Already running your own boutique website, mobile app, or Shopify store? Connect directly to our high-performance B2B REST endpoints without manual work.
                     </p>
                     <p>
-                      Our system populates your store with our live catalog, showing your marked-up retail prices.
+                      Sync real-time Banarasi catalog feeds, check live inventory status, and push automated blind dropship orders straight to our Varanasi packing hub.
                     </p>
-                    <button type="button" className="rf-btn-secondary" onClick={() => navigate('white-label')}>
-                      Explore White Label Setup
+                    <button type="button" className="rf-btn-secondary" onClick={() => navigate('developer-api')}>
+                      Explore Developer API
                     </button>
                   </div>
                   <div className="rf-demo-visual-side">
-                    <div className="demo-wl-window">
-                      <div className="demo-wl-header">
-                        <div className="demo-wl-dots">
-                          <div className="demo-wl-dot" />
-                          <div className="demo-wl-dot" />
-                          <div className="demo-wl-dot" />
+                    <div className="demo-api-window">
+                      <div className="demo-api-header">
+                        <div className="demo-api-dots">
+                          <div className="demo-api-dot red" />
+                          <div className="demo-api-dot yellow" />
+                          <div className="demo-api-dot green" />
                         </div>
-                        <div className="demo-wl-address">https://www.myboutique.com</div>
+                        <div className="demo-api-endpoint">
+                          <span className="demo-api-method">GET</span>
+                          <span className="demo-api-path">/api/v1/catalog</span>
+                        </div>
                       </div>
-                      <div className="demo-wl-body">
-                        <div className="demo-wl-nav">
-                          <span className="demo-wl-logo">MY BOUTIQUE</span>
-                          <div className="demo-wl-links"><div className="demo-wl-link" /><div className="demo-wl-link" /></div>
-                        </div>
-                        <div className="demo-wl-products">
-                          <div className="demo-wl-prod">
-                            <div className="demo-wl-prod-img" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/dropshipping-hero.jpg)' }} />
-                            <div className="demo-wl-prod-price">₹3,200</div>
-                          </div>
-                          <div className="demo-wl-prod">
-                            <div className="demo-wl-prod-img" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/affiliate-hero.jpg)' }} />
-                            <div className="demo-wl-prod-price">₹3,600</div>
-                          </div>
-                        </div>
+                      <div className="demo-api-body">
+                        <pre className="demo-api-code">
+                          <code>
+{`{\n`}
+{'  '}<span className="token-key">"sku"</span>: <span className="token-string">"W365-KTN-089"</span>,{'\n'}
+{'  '}<span className="token-key">"title"</span>: <span className="token-string">"Katan Silk Saree"</span>,{'\n'}
+{'  '}<span className="token-key">"origin"</span>: <span className="token-string">"Varanasi, IN"</span>,{'\n'}
+{'  '}<span className="token-key">"stock"</span>: <span className="token-string">"in_stock"</span>,{'\n'}
+{'  '}<span className="token-key">"price_inr"</span>: <span className="token-number">2800</span>,{'\n'}
+{'  '}<span className="token-key">"dispatch"</span>: <span className="token-string">"24h"</span>{'\n'}
+{`}`}
+                          </code>
+                        </pre>
                       </div>
                     </div>
                   </div>
@@ -666,9 +668,9 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
                   <td>Mass-manufactured synthetic fabrics with no origin checks</td>
                 </tr>
                 <tr>
-                  <td><strong>Branding Control</strong></td>
-                  <td>Complete white-labeling, optional custom domain storefront</td>
-                  <td>No custom websites; generic product packaging and cards</td>
+                  <td><strong>Branding &amp; Integration</strong></td>
+                  <td>Blind dispatch under your boutique name, plus REST API sync</td>
+                  <td>Generic platform branding; no API feeds or automated sync</td>
                 </tr>
                 <tr>
                   <td><strong>Pricing Autonomy</strong></td>
@@ -758,14 +760,14 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
             <div className="rf-path-option">
               <div className="rf-path-meta">
                 <span className="rf-path-index">02</span>
-                <span className="rf-path-pill">BRAND BUILDER</span>
+                <span className="rf-path-pill">API INTEGRATION</span>
               </div>
-              <h3 className="rf-path-title">White-Label Storefront</h3>
+              <h3 className="rf-path-title">Developer &amp; REST&nbsp;API</h3>
               <p className="rf-path-desc">
-                Establish a premium digital brand. Connect your custom domain, upload your logo, set your pricing rules, and launch a fully syncable online catalog powered by&nbsp;Weave&nbsp;365.
+                Connect your custom website, mobile app, or e-commerce store directly to Weave 365. Automate live catalog sync, real-time inventory checks, and single-piece blind dropship order dispatch via our production REST APIs.
               </p>
-              <button type="button" className="rf-btn-secondary" onClick={() => navigate('account?tab=reseller')}>
-                <span>Setup Custom Website</span>
+              <button type="button" className="rf-btn-secondary" onClick={() => navigate('developer-api')}>
+                <span>Explore Developer API</span>
                 <ArrowRight size={15} className="rf-btn-arrow" />
               </button>
             </div>

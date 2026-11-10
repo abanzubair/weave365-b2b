@@ -1005,7 +1005,105 @@
   color: var(--muted);
 }
 
-/* Demo: White Label Storefront */
+/* Demo: Developer API */
+.demo-api-window {
+  background: #0f172a;
+  width: 300px;
+  height: 260px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+}
+
+.demo-api-header {
+  background: #1e293b;
+  padding: 8px 12px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.demo-api-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.demo-api-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.demo-api-dot.red {
+  background-color: #f87171;
+}
+
+.demo-api-dot.yellow {
+  background-color: #fbbf24;
+}
+
+.demo-api-dot.green {
+  background-color: #34d399;
+}
+
+.demo-api-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.demo-api-method {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.demo-api-path {
+  color: #94a3b8;
+  font-size: 10.5px;
+}
+
+.demo-api-body {
+  flex: 1;
+  padding: 12px 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: #0f172a;
+}
+
+.demo-api-code {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  white-space: pre;
+}
+
+.demo-api-code .token-key {
+  color: #38bdf8;
+}
+
+.demo-api-code .token-string {
+  color: #86efac;
+}
+
+.demo-api-code .token-number {
+  color: #fde047;
+}
+
+/* Demo: White Label Storefront (Legacy Support) */
 .demo-wl-window {
   background: var(--paper);
   width: 300px;
