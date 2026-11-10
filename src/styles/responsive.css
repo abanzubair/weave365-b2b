@@ -719,11 +719,13 @@
   .footer-main-layout {
     grid-template-columns: 1fr !important;
     gap: 40px !important;
+    align-items: start !important;
   }
 
   .footer-nav-grid {
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 32px 20px !important;
+    align-items: start !important;
   }
 
   @media screen and (max-width: 640px) {
@@ -741,21 +743,27 @@
     }
 
     .footer-tagline {
-      font-size: 15px !important;
+      font-size: 16px !important;
       margin-bottom: 8px !important;
     }
 
     .footer-desc {
       max-width: 100% !important;
       font-size: 13.5px !important;
+      font-weight: 500 !important;
       line-height: 1.6 !important;
       margin-bottom: 20px !important;
     }
 
     .footer-contact-details {
       gap: 8px !important;
-      font-size: 13px !important;
+      font-size: 13.5px !important;
       width: 100% !important;
+    }
+
+    .footer-contact-details .contact-value,
+    .footer-contact-details .contact-link {
+      font-weight: 500 !important;
     }
 
     .footer-contact-line {

@@ -41,14 +41,6 @@ export default function WholesaleSareesRoute() {
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'How does order-based captive manufacturing work for wholesale Banarasi sarees at Weave 365?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Weave 365 operates an on-demand captive manufacturing model connecting buyers directly to Varanasi weaving clusters. Instead of holding speculative warehouse dead-stock, dedicated looms in clusters like Madanpura, Bajardiha, Pilikothi, and Lohta are allocated exclusively to your order. This eliminates distributor markups, guarantees freshly woven sarees, enables custom colorways, and passes authentic loom-level wholesale pricing directly to you.',
-        },
-      },
-      {
-        '@type': 'Question',
         name: 'What is the B2B Starter Trial Pack (Buy Any 4–5 Sarees at Wholesale Rates)?',
         acceptedAnswer: {
           '@type': 'Answer',
@@ -85,6 +77,14 @@ export default function WholesaleSareesRoute() {
         acceptedAnswer: {
           '@type': 'Answer',
           text: 'Yes. We partner with fashion designers, couture labels, and private brands for custom captive weaving. You can provide your tech-packs, bespoke motifs, Pantone references, or CAD graph cards. Our Varanasi master weavers will produce strike-off sample swatches for approval before running the production batch, complete with custom boutique labels, hangtags, and branded packaging.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How does order-based captive manufacturing work for wholesale Banarasi sarees at Weave 365?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Weave 365 operates an on-demand captive manufacturing model connecting buyers directly to Varanasi weaving clusters. Instead of holding speculative warehouse dead-stock, dedicated looms in clusters like Madanpura, Bajardiha, Pilikothi, and Lohta are allocated exclusively to your order. This eliminates distributor markups, guarantees freshly woven sarees, enables custom colorways, and passes authentic loom-level wholesale pricing directly to you.',
         },
       },
     ],

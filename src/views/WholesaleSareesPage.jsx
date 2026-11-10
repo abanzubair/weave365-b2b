@@ -167,10 +167,6 @@ export function WholesaleSareesPage({ navigate }) {
 
   const faqs = [
     {
-      q: 'How does order-based captive manufacturing work for wholesale Banarasi sarees at Weave 365?',
-      a: 'Weave 365 operates an on-demand captive manufacturing model connecting buyers directly to Varanasi weaving clusters. Instead of holding speculative warehouse dead-stock, dedicated looms in clusters like Madanpura, Bajardiha, Pilikothi, and Lohta are allocated exclusively to your order. This eliminates distributor markups, guarantees freshly woven sarees, enables custom colorways, and passes authentic loom-level wholesale pricing directly to you.'
-    },
-    {
       q: 'What is the B2B Starter Trial Pack (Buy Any 4–5 Sarees at Wholesale Rates)?',
       a: 'The B2B Starter Trial Pack allows boutiques, retailers, and online resellers to test authentic Varanasi Banarasi sarees before committing to large bulk volumes. Business buyers can select any 4 to 5 sarees across our catalog—mixing fabrics like Katan silk, Kora Organza, Khaddi Georgette, and Tissue—at true wholesale prices. Under our Trial Pack Cost Adjustment Guarantee, when you place subsequent bulk orders, 10% of each bulk order value is credited back until 100% of your trial pack cost is fully adjusted.'
     },
@@ -189,6 +185,10 @@ export function WholesaleSareesPage({ navigate }) {
     {
       q: 'Can fashion designers and private labels order custom Banarasi weaves and bespoke designs?',
       a: 'Yes. We partner with fashion designers, couture labels, and private brands for custom captive weaving. You can provide your tech-packs, bespoke motifs, Pantone references, or CAD graph cards. Our Varanasi master weavers will produce strike-off sample swatches for approval before running the production batch, complete with custom boutique labels, hangtags, and branded packaging.'
+    },
+    {
+      q: 'How does order-based captive manufacturing work for wholesale Banarasi sarees at Weave 365?',
+      a: 'Weave 365 operates an on-demand captive manufacturing model connecting buyers directly to Varanasi weaving clusters. Instead of holding speculative warehouse dead-stock, dedicated looms in clusters like Madanpura, Bajardiha, Pilikothi, and Lohta are allocated exclusively to your order. This eliminates distributor markups, guarantees freshly woven sarees, enables custom colorways, and passes authentic loom-level wholesale pricing directly to you.'
     }
   ];
 
@@ -286,6 +286,8 @@ export function WholesaleSareesPage({ navigate }) {
         </div>
       </section>
 
+      <div className="ws-section-divider" />
+
       {/* 2. B2B STARTER TRIAL PACK SECTION (The Core Trust Driver) */}
       <section id="b2b-trial-pack" className="ws-trial-pack-section">
         <div className="ws-trial-pack-inner">
@@ -350,6 +352,8 @@ export function WholesaleSareesPage({ navigate }) {
         </div>
       </section>
 
+      <div className="ws-section-divider" />
+
       {/* 3. CAPTIVE MANUFACTURING & PROCESS STEPS */}
       <section className="ws-process-section">
         <div className="ws-section-header">
@@ -378,6 +382,8 @@ export function WholesaleSareesPage({ navigate }) {
         </div>
       </section>
 
+      <div className="ws-section-divider" />
+
       {/* 4. TARGET BUYER PROFILES (WHO WE SERVE) */}
       <section className="ws-buyers-section">
         <div className="ws-section-header">
@@ -404,6 +410,8 @@ export function WholesaleSareesPage({ navigate }) {
         </div>
       </section>
 
+      <div className="ws-section-divider" />
+
       {/* 5. VARANASI WEAVING CLUSTERS (GEO SPOTLIGHT) */}
       <section className="ws-clusters-section">
         <div className="ws-section-header">
@@ -428,6 +436,8 @@ export function WholesaleSareesPage({ navigate }) {
           ))}
         </div>
       </section>
+
+      <div className="ws-section-divider" />
 
       {/* 6. WHOLESALE CATALOG SHOWCASE & INTERNAL LINK */}
       <section className="ws-catalog-gateway-section">
@@ -472,6 +482,8 @@ export function WholesaleSareesPage({ navigate }) {
         </div>
       </section>
 
+      <div className="ws-section-divider" />
+
       {/* 7. IN-DEPTH FAQ ACCORDION (AEO & SEO Grounding) */}
       <section className="ws-faq-section">
         <div className="ws-section-header">
@@ -502,6 +514,8 @@ export function WholesaleSareesPage({ navigate }) {
           ))}
         </div>
       </section>
+
+      <div className="ws-section-divider ws-bottom-divider" />
     </article>
   );
 }

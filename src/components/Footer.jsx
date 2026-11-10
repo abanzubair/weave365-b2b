@@ -66,7 +66,7 @@ export function Footer({ navigate }) {
           <h3 className="footer-tagline">Banarasi Sourcing &amp; Commerce Platform</h3>
 
           <p className="footer-desc">
-            Weave 365 connects businesses and customers with Banarasi sarees and suits from Varanasi. We support wholesale and bulk buyers, importers and exporters, resellers and social sellers, boutiques, private labels, and retail customers with sourcing, custom collections, branded resale and fulfilment solutions.
+            Weave 365 is Varanasi&apos;s premier Banarasi saree manufacturer, exporter, and direct-from-loom wholesale sourcing platform. Sourced directly from master artisan weaving clusters in Varanasi, we supply authentic pure Katan silk, organza, georgette, and bridal sarees, suits, and fabrics at loom-gate wholesale prices to boutiques, retailers, fashion designers, resellers, and global importers across India and worldwide.
           </p>
 
           <div className="footer-contact-details">

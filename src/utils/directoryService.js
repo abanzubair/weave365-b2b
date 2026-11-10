@@ -12,7 +12,7 @@ export const DIRECTORY_STORAGE_KEY = 'weave365_directory_config_v2';
 export const DIRECTORY_UPDATED_EVENT = 'directory-config-updated';
 
 export const DEFAULT_DIRECTORY_CONFIG = {
-  kicker: 'HOW WEAVE 365 WORKS FOR YOU',
+  kicker: '',
   title: 'Explore the World of Banarasi, Your Way',
   columns: [
     {
@@ -104,6 +104,9 @@ export function getDirectoryConfigLocal() {
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed && Array.isArray(parsed.columns)) {
+        if (parsed.kicker && parsed.kicker.trim().toUpperCase() === 'HOW WEAVE 365 WORKS FOR YOU') {
+          parsed.kicker = '';
+        }
         inMemoryConfig = parsed;
         return parsed;
       }
@@ -139,6 +142,9 @@ export async function fetchDirectoryConfigRemote(force = false) {
       }
 
       if (data && data.config && Array.isArray(data.config.columns)) {
+        if (data.config.kicker && data.config.kicker.trim().toUpperCase() === 'HOW WEAVE 365 WORKS FOR YOU') {
+          data.config.kicker = '';
+        }
         inMemoryConfig = data.config;
         if (typeof window !== 'undefined') {
           try {

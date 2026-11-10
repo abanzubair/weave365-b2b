@@ -214,7 +214,7 @@ export function SiteHeader(props) {
           </button>
           <DropdownPortal anchorRef={resellRef} isOpen={dropdownOpen === 'resell'} className="dropdown-menu nav-standard-dropdown">
             <AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Sell Without Inventory
+              Resell Sarees
             </AppLink>
             <AppLink to="dropshipping" href="/dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Dropshipping

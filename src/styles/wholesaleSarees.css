@@ -20,7 +20,7 @@
   color: var(--ink, #1f1b17);
   font-family: var(--font-body, 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif);
   overflow-x: hidden;
-  padding-bottom: clamp(6rem, 8vw, 9rem);
+  padding-bottom: 0;
 }
 
 /* -------------------------------------------------------------
@@ -28,7 +28,7 @@
 ------------------------------------------------------------- */
 .ws-hero {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 1rem 2rem 0 2rem;
   box-sizing: border-box;
 }
@@ -36,7 +36,7 @@
 @media (max-width: 768px) {
   .ws-hero {
     padding: 1rem 1rem 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -99,6 +99,7 @@
 
 .ws-hero-description {
   font-size: 1rem; /* 16px */
+  font-weight: 500;
   line-height: 1.7;
   color: #55483b;
   margin: 0 0 1.75rem 0;
@@ -244,11 +245,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.5s ease;
-}
-
-.ws-hero-photo-card:hover img {
-  transform: scale(1.02);
 }
 
 .ws-visual-floating-badge {
@@ -287,7 +283,7 @@
 ------------------------------------------------------------- */
 .ws-trial-pack-section {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 0 2rem;
   box-sizing: border-box;
   scroll-margin-top: 100px;
@@ -296,7 +292,7 @@
 @media (max-width: 768px) {
   .ws-trial-pack-section {
     padding: 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -531,7 +527,7 @@
 ------------------------------------------------------------- */
 .ws-process-section {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 0 2rem;
   box-sizing: border-box;
 }
@@ -539,7 +535,7 @@
 @media (max-width: 768px) {
   .ws-process-section {
     padding: 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -674,7 +670,7 @@
 ------------------------------------------------------------- */
 .ws-buyers-section {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 0 2rem;
   box-sizing: border-box;
 }
@@ -682,7 +678,7 @@
 @media (max-width: 768px) {
   .ws-buyers-section {
     padding: 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -763,7 +759,7 @@
 ------------------------------------------------------------- */
 .ws-clusters-section {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 0 2rem;
   box-sizing: border-box;
 }
@@ -771,7 +767,7 @@
 @media (max-width: 768px) {
   .ws-clusters-section {
     padding: 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -858,7 +854,7 @@
 ------------------------------------------------------------- */
 .ws-catalog-gateway-section {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 0 2rem;
   box-sizing: border-box;
 }
@@ -866,7 +862,7 @@
 @media (max-width: 768px) {
   .ws-catalog-gateway-section {
     padding: 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -925,7 +921,7 @@
 ------------------------------------------------------------- */
 .ws-faq-section {
   max-width: 1600px;
-  margin: 0 auto clamp(7rem, 9vw, 10.5rem) auto;
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
   padding: 0 2rem;
   box-sizing: border-box;
 }
@@ -933,7 +929,7 @@
 @media (max-width: 768px) {
   .ws-faq-section {
     padding: 0 1rem;
-    margin-bottom: 5rem;
+    margin-bottom: 3.5rem;
   }
 }
 
@@ -1001,3 +997,31 @@
   font-weight: 500;
   color: #2b2118;
 }
+
+/* -------------------------------------------------------------
+   Section Separator Hairline Divider
+------------------------------------------------------------- */
+.ws-section-divider {
+  border: none;
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  max-width: calc(1600px - 4rem);
+  width: calc(100% - 4rem);
+  margin: 0 auto clamp(4.5rem, 6vw, 6.5rem) auto;
+  display: block;
+}
+
+.ws-section-divider.ws-bottom-divider {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .ws-section-divider {
+    max-width: calc(100% - 2rem);
+    width: calc(100% - 2rem);
+    margin: 0 auto 3.5rem auto;
+  }
+  .ws-section-divider.ws-bottom-divider {
+    margin-bottom: 0;
+  }
+}
+

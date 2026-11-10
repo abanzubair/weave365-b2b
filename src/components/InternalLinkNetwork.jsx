@@ -144,9 +144,10 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
       <div className="directory-container">
         {config.title && (
           <div className="directory-header">
-            {config.kicker && <span className="directory-kicker">{config.kicker}</span>}
+            {config.kicker && config.kicker.trim().toUpperCase() !== 'HOW WEAVE 365 WORKS FOR YOU' && (
+              <span className="directory-kicker">{config.kicker}</span>
+            )}
             <h2 className="directory-title">{config.title}</h2>
-            <div className="directory-divider"></div>
           </div>
         )}
 

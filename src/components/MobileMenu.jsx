@@ -175,7 +175,7 @@ export function MobileMenu(props) {
         return (
           <>
             <AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Sell Without Inventory</span>
+              <span>Resell Sarees</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
             <AppLink to="dropshipping" href="/dropshipping" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>

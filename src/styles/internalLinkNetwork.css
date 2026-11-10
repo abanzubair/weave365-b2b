@@ -23,9 +23,8 @@
 }
 
 .directory-header {
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.75rem;
   text-align: center;
-  min-height: 80px;
 }
 
 .directory-kicker {
@@ -46,15 +45,7 @@
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--gold-dark);
-  margin: 0 0 1.25rem;
-}
-
-.directory-divider {
-  width: 60px;
-  height: 2px;
-  background: var(--gold);
-  margin: 0 auto;
-  opacity: 0.5;
+  margin: 0;
 }
 
 .directory-grid {
@@ -144,9 +135,6 @@
   .directory-header {
     text-align: left;
     margin-bottom: 2.5rem;
-  }
-  .directory-divider {
-    margin: 0;
   }
   .internal-link-network {
     padding: 3.5rem var(--site-padding) 2rem;
