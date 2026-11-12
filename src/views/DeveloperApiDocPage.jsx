@@ -40,7 +40,9 @@ import {
   Image as ImageIcon,
   Info,
   Trash2,
-  Tag
+  Tag,
+  Settings,
+  X
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
@@ -157,49 +159,20 @@ export default function DeveloperApiDocPage() {
 
   const codeSnippets = {
     shopify: `# ============================================================================
-# Weave365 Shopify Integration Guide (SyncX / Stock Sync / Matrixify)
+# Weave365 Shopify Sync Feed URL (SyncX / Stock Sync / Matrixify)
 # ============================================================================
 
-# 1. DEDICATED SYNC FEED URL (Flat Variant Array - Zero Headers Required):
-Feed URL: https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=stocksync
-HTTP Method: GET
-File Format: JSON (Auto-detected by SyncX)
+# 1. Dedicated Source Feed URL (Flat JSON Variant Array - Auto-detected by SyncX):
+https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=stocksync
 
-# 2. STEP 2: MATCHING COLUMN (FIELD MAPPING)
-Product Identifier:
-  SKU (Variant's SKU)           -> sku (or SKU)
+# 2. Standard Nested Shopify REST Payload (Matrixify):
+https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=shopify
 
-Store Product Field(s):
-  Product's title               -> title (or Title)
-  Price                         -> price (or Price)
-  Compare At Price (MRP)        -> compare_at_price (or mrp)
-  Quantity / Stock              -> quantity (or stock)
-  Product's image (Gallery)     -> images (Smart setting: Delimiter = ,)
-  Variant image (Color Swatch)  -> variant_image (or image)
-  Description / Body HTML       -> description (or body_html)
-  Vendor                        -> vendor
-  Product Type / Category       -> category
-  Tags                          -> tags
+# 3. Optional Liquid Formula for Price Markup (+30% Profit Margin in SyncX):
+{{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}
 
-# 3. COMBINE ROWS INTO ONE PRODUCT (SAREE COLOR VARIANTS)
-  Variant group                 -> handle (or product_id)
-  Variant option 1              -> color (or option1_value)
-  * Smart Setting for Option 1: Set Option Name to "Color"
-  * Tip: Click Trash icon (🗑️) on any unused option rows (Option 2/3) to prevent errors!
-
-# 4. PRICE MARKUP (+30% PROFIT MARGIN)
-  - Method A (Smart Setting): Click ⚙️ Smart setting next to Price -> Price markup -> +30%
-  - Method B (Formula Box): {{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}
-
-# 5. FIXING MISSING IMAGES
-  - Under "Product's image", click ⚙️ Smart setting.
-  - Set "Multiple image delimiter" to comma (,)
-  - Allow 1-3 minutes after sync for Shopify CDN to finish downloading images.
-
-# 6. INCOMING FEED FILTERS (OPTIONAL)
-  - Delete any empty filter lines with the 🗑️ Trash Can icon.
-  - To sync only in-stock sarees: is_available Equal to true
-  - Toggle "Skip product(s) with zero quantity" (requires quantity mapped in Step 2).`,
+# NOTE: For complete column matching, color variants & image delimiter setup,
+# follow the step-by-step visual guide directly below.`,
 
     woocommerce: `<?php
 /**
@@ -618,7 +591,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             {activePlatformTab === 'shopify' && (
               <div className="api-clean-banner" style={{ background: '#f8fafc', borderColor: '#e2e8f0', margin: '0 0 1rem 0' }}>
                 <ShoppingBag size={16} style={{ color: '#2563eb', flexShrink: 0 }} />
-                <div style={{ fontSize: '0.8125rem', color: '#334155', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '0.875rem', color: '#334155', lineHeight: 1.5 }}>
                   Setting up <strong>SyncX / Stock Sync</strong> in Shopify? Jump to the detailed <a href="#shopify-guide" onClick={(e) => { e.preventDefault(); scrollToSection('shopify-guide'); }} style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>Shopify Column Matching, Margin &amp; Image Guide &rarr;</a> below.
                 </div>
               </div>
@@ -646,7 +619,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             <div className="api-endpoint-header" style={{ marginBottom: '1.25rem' }}>
               <div>
                 <h2 style={{ margin: 0 }}>Shopify &amp; SyncX (Stock Sync) Complete Setup Guide</h2>
-                <p className="api-docs-lead" style={{ margin: '0.35rem 0 0 0', fontSize: '0.9375rem' }}>
+                <p className="api-docs-lead" style={{ margin: '0.35rem 0 0 0', fontSize: '1rem' }}>
                   Step-by-step walkthrough to import the Weave365 wholesale catalog, configure color variants, apply profit margins, and sync images without errors.
                 </p>
               </div>
@@ -655,8 +628,8 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
             {/* Quick Tip Banner */}
             <div className="api-clean-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0' }}>
-              <CheckCircle2 size={18} style={{ color: '#059669', flexShrink: 0 }} />
-              <div style={{ fontSize: '0.8125rem', color: '#065f46', lineHeight: 1.5 }}>
+              <CheckCircle2 size={18} style={{ color: '#047857', flexShrink: 0 }} />
+              <div style={{ fontSize: '0.875rem', color: '#065f46', lineHeight: 1.5 }}>
                 <strong>Zero-Config Auto Mapping:</strong> By adding <code>&amp;format=stocksync</code> to your catalog URL, the API emits a flat JSON variant array that matches Shopify and SyncX out of the box.
               </div>
             </div>
@@ -786,8 +759,8 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <span>Method 1: UI Smart Setting</span>
                     <span className="api-method-tag recommended">Recommended</span>
                   </h5>
-                  <ol style={{ paddingLeft: '1.125rem', margin: '0.5rem 0', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.55 }}>
-                    <li>Click the ⚙️ <strong>Smart setting</strong> icon right next to the <code>Price</code> dropdown.</li>
+                  <ol style={{ paddingLeft: '1.125rem', margin: '0.5rem 0', fontSize: '0.875rem', color: '#475569', lineHeight: 1.55 }}>
+                    <li>Click the <Settings size={13} style={{ display: 'inline-block', verticalAlign: '-2px', color: '#64748b' }} /> <strong>Smart setting</strong> icon right next to the <code>Price</code> dropdown.</li>
                     <li>Under <strong>Price markup / Adjust price</strong>, choose <strong>Increase by percentage (%)</strong>.</li>
                     <li>Enter <strong><code>30</code></strong> (or your target profit margin percentage).</li>
                     <li>Set <strong>Rounding</strong> to <em>Round to nearest whole number</em> to prevent awkward decimal prices.</li>
@@ -800,7 +773,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <span>Method 2: Liquid Formula Box</span>
                     <span className="api-method-tag">Direct Formula</span>
                   </h5>
-                  <p style={{ fontSize: '0.8125rem', color: '#475569', margin: '0.5rem 0' }}>
+                  <p style={{ fontSize: '0.875rem', color: '#475569', margin: '0.5rem 0' }}>
                     If you prefer writing expressions directly inside the formula box, replace the default Price expression with:
                   </p>
                   <div className="api-code-wrapper" style={{ margin: '0.5rem 0' }}>
@@ -843,7 +816,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <tr>
                       <td><strong>Variant option 1</strong></td>
                       <td><span className="api-val-highlight">color</span> <em>(or <code>option1_value</code>)</em></td>
-                      <td>Sets the variant option value to the color name. Click ⚙️ <strong>Smart setting</strong> and verify Option Name is set to <strong><code>Color</code></strong>.</td>
+                      <td>Sets the variant option value to the color name. Click <Settings size={13} style={{ display: 'inline-block', verticalAlign: '-2px', color: '#64748b' }} /> <strong>Smart setting</strong> and verify Option Name is set to <strong><code>Color</code></strong>.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -851,10 +824,12 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
               <div className="api-callout-box warning">
                 <div className="api-callout-header">
-                  <AlertTriangle size={15} style={{ color: '#d97706' }} />
-                  <span>Crucial: Delete Unused Option Rows (Trash Icon 🗑️)</span>
+                  <AlertTriangle size={15} style={{ color: '#b45309' }} />
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    Crucial: Delete Unused Option Rows (Trash Icon <Trash2 size={13} style={{ color: '#b45309' }} />)
+                  </span>
                 </div>
-                If SyncX shows an empty 3rd row (like <em>Variant option 2</em> or <em>Variant option 3</em> with a red error), click the <strong>Trash Can icon (🗑️)</strong> to remove it. Sizing does not apply to unstitched sarees, and leaving empty option rows will cause SyncX to fail with validation errors.
+                If SyncX shows an empty 3rd row (like <em>Variant option 2</em> or <em>Variant option 3</em> with a red error), click the <strong>Trash Can icon</strong> (<Trash2 size={13} style={{ display: 'inline-block', verticalAlign: '-2px', color: '#dc2626' }} />) to remove it. Sizing does not apply to unstitched sarees, and leaving empty option rows will cause SyncX to fail with validation errors.
               </div>
             </div>
 
@@ -868,12 +843,12 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 If images aren&apos;t appearing on your Shopify store, verify these three essential checks:
               </p>
 
-              <ol style={{ paddingLeft: '1.25rem', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6 }}>
+              <ol style={{ paddingLeft: '1.25rem', fontSize: '0.875rem', color: '#475569', lineHeight: 1.6 }}>
                 <li style={{ marginBottom: '0.5rem' }}>
                   <strong>Map under &quot;Store product field(s)&quot;:</strong> Images must be added under <em>Store product field(s)</em> (click <code>+ Add more field</code>), NOT inside the <em>Product options / variations</em> section.
                 </li>
                 <li style={{ marginBottom: '0.5rem' }}>
-                  <strong>Configure the comma delimiter in Smart Settings:</strong> Next to <code>Product&apos;s image</code>, click the ⚙️ <strong>Smart setting</strong> icon and set <strong>Multiple image delimiter</strong> to comma (<code>,</code>). The Weave365 API provides all high-resolution saree photos in a comma-separated string under <code>images</code>.
+                  <strong>Configure the comma delimiter in Smart Settings:</strong> Next to <code>Product&apos;s image</code>, click the <Settings size={13} style={{ display: 'inline-block', verticalAlign: '-2px', color: '#64748b' }} /> <strong>Smart setting</strong> icon and set <strong>Multiple image delimiter</strong> to comma (<code>,</code>). The Weave365 API provides all high-resolution saree photos in a comma-separated string under <code>images</code>.
                 </li>
                 <li style={{ marginBottom: '0.5rem' }}>
                   <strong>Map Variant Image:</strong> Add a second field for <code>Variant image</code> and map it to <code>variant_image</code> so that selecting a color swatch dynamically swaps the image to that specific colorway.
@@ -899,9 +874,9 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 The <strong>Incoming feed</strong> filter section is entirely optional:
               </p>
 
-              <ul style={{ paddingLeft: '1.25rem', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6 }}>
+              <ul style={{ paddingLeft: '1.25rem', fontSize: '0.875rem', color: '#475569', lineHeight: 1.6 }}>
                 <li style={{ marginBottom: '0.5rem' }}>
-                  <strong>Removing accidental filter errors:</strong> If you see a red <em>&quot;Required field&quot;</em> error on an empty <em>Feed column name</em> line, click the <strong>Trash Can icon (🗑️)</strong> to delete the filter. This ensures all authorized products from your feed are imported.
+                  <strong>Removing accidental filter errors:</strong> If you see a red <em>&quot;Required field&quot;</em> error on an empty <em>Feed column name</em> line, click the <strong>Trash Can icon</strong> (<Trash2 size={13} style={{ display: 'inline-block', verticalAlign: '-2px', color: '#dc2626' }} />) to delete the filter. This ensures all authorized products from your feed are imported.
                 </li>
                 <li style={{ marginBottom: '0.5rem' }}>
                   <strong>Skip products with zero quantity:</strong> To enable this toggle switch, you must first map the <code>quantity</code> field in Step 2. Once mapped, toggle <strong>Skip product(s) with zero quantity</strong> to ON.
@@ -1176,10 +1151,10 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </p>
 
                 <div className="api-status-flow-box" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', margin: '16px 0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#0f172a', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: '#0f172a', marginBottom: '6px' }}>
                     Automated Reseller Invoice &amp; Payment Flow
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: '#475569', lineHeight: 1.6 }}>
+                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.875rem', color: '#475569', lineHeight: 1.6 }}>
                     <li><strong>1. Initial Placement:</strong> Order is created in <code>payment_pending</code> status.</li>
                     <li><strong>2. Invoice Email:</strong> An itemized B2B wholesale invoice with a direct payment link is automatically emailed to your registered reseller address.</li>
                     <li><strong>3. Payment Settlement:</strong> Settle the wholesale total via UPI, NetBanking, or Cards. Status immediately updates to <code>payment_received</code>.</li>
@@ -1592,8 +1567,8 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                       <Check size={14} className="api-feature-icon" />
                       <span>Standard B2R Reseller pricing feed</span>
                     </li>
-                    <li style={{ color: '#94a3b8' }}>
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, marginRight: '4px' }}>✕</span>
+                    <li style={{ color: '#64748b' }}>
+                      <X size={14} className="api-feature-icon" style={{ color: '#64748b' }} />
                       <span>Automated Orders API (Manual orders on Weave365)</span>
                     </li>
                   </ul>

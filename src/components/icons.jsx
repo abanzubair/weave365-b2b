@@ -52,6 +52,7 @@ import {
   ClockIcon as Hero_ClockIcon,
   CodeBracketIcon as Hero_CodeBracketIcon,
   CodeBracketSquareIcon as Hero_CodeBracketSquareIcon,
+  Cog6ToothIcon as Hero_Cog6ToothIcon,
   CommandLineIcon as Hero_CommandLineIcon,
   ComputerDesktopIcon as Hero_ComputerDesktopIcon,
   CpuChipIcon as Hero_CpuChipIcon,
@@ -371,6 +372,8 @@ export const Search = wrapIcon(Hero_MagnifyingGlassIcon, 'Search');
 export const Send = wrapIcon(Hero_PaperAirplaneIcon, 'Send');
 export const Server = wrapIcon(Hero_ServerIcon, 'Server');
 export const Share2 = wrapIcon(Hero_ShareIcon, 'Share2');
+export const Settings = wrapIcon(Hero_Cog6ToothIcon, 'Settings');
+export const Cog = wrapIcon(Hero_Cog6ToothIcon, 'Cog');
 export const Shield = wrapIcon(Hero_ShieldCheckIcon, 'Shield');
 export const ShieldAlert = wrapIcon(Hero_ShieldExclamationIcon, 'ShieldAlert');
 export const ShieldCheck = wrapIcon(Hero_ShieldCheckIcon, 'ShieldCheck');
