@@ -35,7 +35,12 @@ import {
   Server,
   Sparkles,
   BookOpen,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle,
+  Image as ImageIcon,
+  Info,
+  Trash2,
+  Tag
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
@@ -47,6 +52,7 @@ const NAV_GROUPS = [
       { id: 'quickstart', label: '3-Step Integration', icon: Sparkles },
       { id: 'authentication', label: 'Authentication', icon: KeyRound },
       { id: 'platforms', label: 'Supported Platforms', icon: Layers },
+      { id: 'shopify-guide', label: 'Shopify (SyncX) Guide', icon: ShoppingBag },
       { id: 'curated-catalog', label: 'Curated Catalog Sync', icon: Sliders },
     ],
   },
@@ -76,6 +82,7 @@ const SECTION_IDS = [
   'quickstart',
   'authentication',
   'platforms',
+  'shopify-guide',
   'curated-catalog',
   'endpoint-catalog',
   'endpoint-stock',
@@ -149,25 +156,50 @@ export default function DeveloperApiDocPage() {
   ];
 
   const codeSnippets = {
-    shopify: `# Shopify Integration via Stock Sync (syncX) or Matrixify
-# Option 1 (Recommended): Stock Sync (syncX) — Zero-Config Auto-Mapping
-# 1. Open Stock Sync app in your Shopify Admin
-# 2. Add New Feed -> Select "REST API / URL"
-# 3. Paste your dedicated feed URL:
+    shopify: `# ============================================================================
+# Weave365 Shopify Integration Guide (SyncX / Stock Sync / Matrixify)
+# ============================================================================
+
+# 1. DEDICATED SYNC FEED URL (Flat Variant Array - Zero Headers Required):
 Feed URL: https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=stocksync
-# Note: Stock Sync will automatically detect JSON and auto-map SKU, Title, Price, Compare Price, Inventory & Images. No custom headers needed!
+HTTP Method: GET
+File Format: JSON (Auto-detected by SyncX)
 
-# Option 2: Standard Shopify REST API Feed with Custom Headers
-Feed URL: https://www.weave365.com/api/v1/catalog.json?format=shopify
-HTTP Headers:
-  x-api-key: w365_live_YOUR_API_KEY
+# 2. STEP 2: MATCHING COLUMN (FIELD MAPPING)
+Product Identifier:
+  SKU (Variant's SKU)           -> sku (or SKU)
 
-Frequency: Every 1 Hour (or Daily)
-Update Fields: 
-  - Variant Price -> Reseller Procurement Price
-  - Compare At Price -> Suggested Retail MRP
-  - Inventory Quantity -> 5 (In Stock) or 0 (Out of Stock)
-  - Images -> Weave365 High-Resolution CDN URLs`,
+Store Product Field(s):
+  Product's title               -> title (or Title)
+  Price                         -> price (or Price)
+  Compare At Price (MRP)        -> compare_at_price (or mrp)
+  Quantity / Stock              -> quantity (or stock)
+  Product's image (Gallery)     -> images (Smart setting: Delimiter = ,)
+  Variant image (Color Swatch)  -> variant_image (or image)
+  Description / Body HTML       -> description (or body_html)
+  Vendor                        -> vendor
+  Product Type / Category       -> category
+  Tags                          -> tags
+
+# 3. COMBINE ROWS INTO ONE PRODUCT (SAREE COLOR VARIANTS)
+  Variant group                 -> handle (or product_id)
+  Variant option 1              -> color (or option1_value)
+  * Smart Setting for Option 1: Set Option Name to "Color"
+  * Tip: Click Trash icon (🗑️) on any unused option rows (Option 2/3) to prevent errors!
+
+# 4. PRICE MARKUP (+30% PROFIT MARGIN)
+  - Method A (Smart Setting): Click ⚙️ Smart setting next to Price -> Price markup -> +30%
+  - Method B (Formula Box): {{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}
+
+# 5. FIXING MISSING IMAGES
+  - Under "Product's image", click ⚙️ Smart setting.
+  - Set "Multiple image delimiter" to comma (,)
+  - Allow 1-3 minutes after sync for Shopify CDN to finish downloading images.
+
+# 6. INCOMING FEED FILTERS (OPTIONAL)
+  - Delete any empty filter lines with the 🗑️ Trash Can icon.
+  - To sync only in-stock sarees: is_available Equal to true
+  - Toggle "Skip product(s) with zero quantity" (requires quantity mapped in Step 2).`,
 
     woocommerce: `<?php
 /**
@@ -583,6 +615,15 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
               })}
             </div>
 
+            {activePlatformTab === 'shopify' && (
+              <div className="api-clean-banner" style={{ background: '#f8fafc', borderColor: '#e2e8f0', margin: '0 0 1rem 0' }}>
+                <ShoppingBag size={16} style={{ color: '#2563eb', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.8125rem', color: '#334155', lineHeight: 1.5 }}>
+                  Setting up <strong>SyncX / Stock Sync</strong> in Shopify? Jump to the detailed <a href="#shopify-guide" onClick={(e) => { e.preventDefault(); scrollToSection('shopify-guide'); }} style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>Shopify Column Matching, Margin &amp; Image Guide &rarr;</a> below.
+                </div>
+              </div>
+            )}
+
             <div className="api-code-wrapper">
               <div className="api-code-header">
                 <span className="api-code-title">{platforms.find((p) => p.id === activePlatformTab)?.name} Integration Code</span>
@@ -597,6 +638,278 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </button>
               </div>
               <pre className="api-code-pre">{codeSnippets[activePlatformTab]}</pre>
+            </div>
+          </section>
+
+          {/* Section: Comprehensive Shopify (SyncX / Stock Sync) Guide */}
+          <section id="shopify-guide" className="api-docs-section">
+            <div className="api-endpoint-header" style={{ marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ margin: 0 }}>Shopify &amp; SyncX (Stock Sync) Complete Setup Guide</h2>
+                <p className="api-docs-lead" style={{ margin: '0.35rem 0 0 0', fontSize: '0.9375rem' }}>
+                  Step-by-step walkthrough to import the Weave365 wholesale catalog, configure color variants, apply profit margins, and sync images without errors.
+                </p>
+              </div>
+              <span className="api-endpoint-tag">Shopify SyncX</span>
+            </div>
+
+            {/* Quick Tip Banner */}
+            <div className="api-clean-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0' }}>
+              <CheckCircle2 size={18} style={{ color: '#059669', flexShrink: 0 }} />
+              <div style={{ fontSize: '0.8125rem', color: '#065f46', lineHeight: 1.5 }}>
+                <strong>Zero-Config Auto Mapping:</strong> By adding <code>&amp;format=stocksync</code> to your catalog URL, the API emits a flat JSON variant array that matches Shopify and SyncX out of the box.
+              </div>
+            </div>
+
+            {/* Step 1: Dedicated Feed URL */}
+            <div className="api-shopify-guide-card">
+              <div className="api-shopify-guide-header">
+                <span className="api-shopify-step-badge">1</span>
+                <h3 className="api-shopify-guide-title">Connect Your Source Feed in SyncX (Step 1)</h3>
+              </div>
+              <p className="api-shopify-guide-desc">
+                In your Shopify admin, open the <strong>SyncX</strong> (or <strong>Stock Sync</strong>) app, click <strong>Add New Update / Add Products</strong>, choose <strong>REST API / URL</strong>, and paste your dedicated feed URL:
+              </p>
+
+              <div className="api-code-wrapper" style={{ margin: '0.75rem 0 1rem 0' }}>
+                <div className="api-code-header">
+                  <span className="api-code-title">SyncX Feed URL (GET Request)</span>
+                  <button
+                    type="button"
+                    className="api-code-copy-btn"
+                    onClick={() => copyToClipboard('https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=stocksync', 'shopify-feed-url')}
+                    aria-label="Copy feed URL"
+                  >
+                    {copiedSection === 'shopify-feed-url' ? <Check size={13} /> : <Copy size={13} />}
+                    <span>{copiedSection === 'shopify-feed-url' ? 'Copied' : 'Copy Feed URL'}</span>
+                  </button>
+                </div>
+                <pre className="api-code-pre">https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&amp;format=stocksync</pre>
+              </div>
+
+              <div className="api-callout-box">
+                <div className="api-callout-header">
+                  <Info size={15} style={{ color: '#2563eb' }} />
+                  <span>Why use the <code>?key=</code> parameter?</span>
+                </div>
+                Because Shopify apps make automated server-to-server <code>GET</code> requests without custom HTTP headers, passing your secret key in the query parameter <code>?key=...</code> authenticates requests instantly without needing custom header configuration.
+              </div>
+            </div>
+
+            {/* Step 2: Matching Column Table */}
+            <div className="api-shopify-guide-card">
+              <div className="api-shopify-guide-header">
+                <span className="api-shopify-step-badge">2</span>
+                <h3 className="api-shopify-guide-title">Matching Columns (Step 2: Matching Column)</h3>
+              </div>
+              <p className="api-shopify-guide-desc">
+                SyncX prompts for the exact feed column/property names to match your Shopify store fields. Enter these values into the input boxes:
+              </p>
+
+              <div className="api-table-wrapper">
+                <table className="api-params-table">
+                  <thead>
+                    <tr>
+                      <th>Section</th>
+                      <th>Search Store Field (Shopify)</th>
+                      <th>Value to Type in Box</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Product Identifier</strong></td>
+                      <td><code>SKU (Variant&apos;s SKU)</code></td>
+                      <td><span className="api-val-highlight">sku</span> <em>(or <code>SKU</code>)</em></td>
+                      <td>Matches feed rows to Shopify products/variants for stock and price updates.</td>
+                    </tr>
+                    <tr>
+                      <td rowSpan={8}><strong>Store Product Field(s)</strong></td>
+                      <td><code>Product&apos;s title</code></td>
+                      <td><span className="api-val-highlight">title</span> <em>(or <code>Title</code>)</em></td>
+                      <td>Clean saree title for your storefront catalog.</td>
+                    </tr>
+                    <tr>
+                      <td><code>Price</code></td>
+                      <td><span className="api-val-highlight">price</span> <em>(or <code>Price</code>)</em></td>
+                      <td>Weave365 wholesale B2R procurement rate (Strictly wholesale; cost prices never exposed).</td>
+                    </tr>
+                    <tr>
+                      <td><code>Compare At Price</code></td>
+                      <td><span className="api-val-highlight">compare_at_price</span> <em>(or <code>mrp</code>)</em></td>
+                      <td>Suggested retail price / MRP for strikethrough retail discount display.</td>
+                    </tr>
+                    <tr>
+                      <td><code>Quantity</code> <em>(or Inventory)</em></td>
+                      <td><span className="api-val-highlight">quantity</span> <em>(or <code>stock</code>)</em></td>
+                      <td>Live weaver inventory (5 for ready stock, 0 for out-of-stock).</td>
+                    </tr>
+                    <tr>
+                      <td><code>Product&apos;s image</code></td>
+                      <td><span className="api-val-highlight">images</span> <em>(or <code>image</code>)</em></td>
+                      <td>Full saree image gallery. <strong>Important:</strong> Set delimiter to comma <code>,</code> in Smart Settings (see Step 5).</td>
+                    </tr>
+                    <tr>
+                      <td><code>Variant image</code></td>
+                      <td><span className="api-val-highlight">variant_image</span> <em>(or <code>image</code>)</em></td>
+                      <td>Color-specific photo linked directly to the color swatch on Shopify.</td>
+                    </tr>
+                    <tr>
+                      <td><code>Product Description</code></td>
+                      <td><span className="api-val-highlight">description</span> <em>(or <code>body_html</code>)</em></td>
+                      <td>Rich HTML description including fabric, weave authenticity, and care instructions.</td>
+                    </tr>
+                    <tr>
+                      <td><code>Vendor</code></td>
+                      <td><span className="api-val-highlight">vendor</span></td>
+                      <td>Defaults to <code>Weave365 Wholesale</code> (can be customized or mapped to a static value).</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="api-table-scroll-hint">Swipe horizontally to view all columns &rarr;</div>
+            </div>
+
+            {/* Step 3: Profit Markup / Increase Price */}
+            <div className="api-shopify-guide-card">
+              <div className="api-shopify-guide-header">
+                <span className="api-shopify-step-badge">3</span>
+                <h3 className="api-shopify-guide-title">Setting Your Profit Margin (+30% Price Markup)</h3>
+              </div>
+              <p className="api-shopify-guide-desc">
+                Since the API provides your wholesale procurement cost, you can automatically add your profit margin so your Shopify store sells at retail:
+              </p>
+
+              <div className="api-two-col-grid">
+                <div className="api-method-card">
+                  <h5>
+                    <span>Method 1: UI Smart Setting</span>
+                    <span className="api-method-tag recommended">Recommended</span>
+                  </h5>
+                  <ol style={{ paddingLeft: '1.125rem', margin: '0.5rem 0', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.55 }}>
+                    <li>Click the ⚙️ <strong>Smart setting</strong> icon right next to the <code>Price</code> dropdown.</li>
+                    <li>Under <strong>Price markup / Adjust price</strong>, choose <strong>Increase by percentage (%)</strong>.</li>
+                    <li>Enter <strong><code>30</code></strong> (or your target profit margin percentage).</li>
+                    <li>Set <strong>Rounding</strong> to <em>Round to nearest whole number</em> to prevent awkward decimal prices.</li>
+                    <li>Click <strong>Done / Save</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="api-method-card">
+                  <h5>
+                    <span>Method 2: Liquid Formula Box</span>
+                    <span className="api-method-tag">Direct Formula</span>
+                  </h5>
+                  <p style={{ fontSize: '0.8125rem', color: '#475569', margin: '0.5rem 0' }}>
+                    If you prefer writing expressions directly inside the formula box, replace the default Price expression with:
+                  </p>
+                  <div className="api-code-wrapper" style={{ margin: '0.5rem 0' }}>
+                    <pre className="api-code-pre" style={{ fontSize: '0.75rem', padding: '0.5rem 0.75rem' }}>
+{`{{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}`}
+                    </pre>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                    *(Use <code>| round: 0</code> if you want integer prices with no paise).*
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4: Combine rows into one product (Color Variants) */}
+            <div className="api-shopify-guide-card">
+              <div className="api-shopify-guide-header">
+                <span className="api-shopify-step-badge">4</span>
+                <h3 className="api-shopify-guide-title">Combine Rows into One Product (Saree Color Variants)</h3>
+              </div>
+              <p className="api-shopify-guide-desc">
+                Weave365 sarees feature multiple colorways (e.g. Red, Bottle Green, Royal Blue). SyncX provides a section called <strong>Combine rows into one product</strong> so each saree has a single product page with color swatches:
+              </p>
+
+              <div className="api-table-wrapper">
+                <table className="api-params-table">
+                  <thead>
+                    <tr>
+                      <th>Store Field</th>
+                      <th>Value to Type in Box</th>
+                      <th>Configuration Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Variant group</strong></td>
+                      <td><span className="api-val-highlight">handle</span> <em>(or <code>product_id</code>)</em></td>
+                      <td>Groups all color variants belonging to the same saree under one parent product.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Variant option 1</strong></td>
+                      <td><span className="api-val-highlight">color</span> <em>(or <code>option1_value</code>)</em></td>
+                      <td>Sets the variant option value to the color name. Click ⚙️ <strong>Smart setting</strong> and verify Option Name is set to <strong><code>Color</code></strong>.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="api-callout-box warning">
+                <div className="api-callout-header">
+                  <AlertTriangle size={15} style={{ color: '#d97706' }} />
+                  <span>Crucial: Delete Unused Option Rows (Trash Icon 🗑️)</span>
+                </div>
+                If SyncX shows an empty 3rd row (like <em>Variant option 2</em> or <em>Variant option 3</em> with a red error), click the <strong>Trash Can icon (🗑️)</strong> to remove it. Sizing does not apply to unstitched sarees, and leaving empty option rows will cause SyncX to fail with validation errors.
+              </div>
+            </div>
+
+            {/* Step 5: Images Not Fetching Troubleshooting */}
+            <div className="api-shopify-guide-card">
+              <div className="api-shopify-guide-header">
+                <span className="api-shopify-step-badge">5</span>
+                <h3 className="api-shopify-guide-title">Image Sync &amp; Delimiter Setup (Troubleshooting Missing Images)</h3>
+              </div>
+              <p className="api-shopify-guide-desc">
+                If images aren&apos;t appearing on your Shopify store, verify these three essential checks:
+              </p>
+
+              <ol style={{ paddingLeft: '1.25rem', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6 }}>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <strong>Map under &quot;Store product field(s)&quot;:</strong> Images must be added under <em>Store product field(s)</em> (click <code>+ Add more field</code>), NOT inside the <em>Product options / variations</em> section.
+                </li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <strong>Configure the comma delimiter in Smart Settings:</strong> Next to <code>Product&apos;s image</code>, click the ⚙️ <strong>Smart setting</strong> icon and set <strong>Multiple image delimiter</strong> to comma (<code>,</code>). The Weave365 API provides all high-resolution saree photos in a comma-separated string under <code>images</code>.
+                </li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <strong>Map Variant Image:</strong> Add a second field for <code>Variant image</code> and map it to <code>variant_image</code> so that selecting a color swatch dynamically swaps the image to that specific colorway.
+                </li>
+              </ol>
+
+              <div className="api-callout-box">
+                <div className="api-callout-header">
+                  <Info size={15} style={{ color: '#2563eb' }} />
+                  <span>Shopify Asynchronous Download Queue Delay</span>
+                </div>
+                Shopify imports images in a background queue after product creation. It typically takes <strong>1 to 3 minutes</strong> after products appear in your Shopify admin for all high-resolution photos to finish downloading and display.
+              </div>
+            </div>
+
+            {/* Step 6: Incoming Feed Filters & Skipping Zero-Quantity */}
+            <div className="api-shopify-guide-card" style={{ marginBottom: 0 }}>
+              <div className="api-shopify-guide-header">
+                <span className="api-shopify-step-badge">6</span>
+                <h3 className="api-shopify-guide-title">Incoming Feed Filters &amp; Skipping Out-of-Stock Items</h3>
+              </div>
+              <p className="api-shopify-guide-desc">
+                The <strong>Incoming feed</strong> filter section is entirely optional:
+              </p>
+
+              <ul style={{ paddingLeft: '1.25rem', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.6 }}>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <strong>Removing accidental filter errors:</strong> If you see a red <em>&quot;Required field&quot;</em> error on an empty <em>Feed column name</em> line, click the <strong>Trash Can icon (🗑️)</strong> to delete the filter. This ensures all authorized products from your feed are imported.
+                </li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  <strong>Skip products with zero quantity:</strong> To enable this toggle switch, you must first map the <code>quantity</code> field in Step 2. Once mapped, toggle <strong>Skip product(s) with zero quantity</strong> to ON.
+                </li>
+                <li>
+                  <strong>Only import ready stock:</strong> If you want to use a filter rule instead, set <code>Feed column name: is_available</code>, <code>Condition: Equal to</code>, and <code>Value: true</code>.
+                </li>
+              </ul>
             </div>
           </section>
 
@@ -673,9 +986,16 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                         <td>Filter by specific selected SKUs (comma-separated, e.g. <code>100001,100005,100012</code>). Ideal when only curating selected products.</td>
                       </tr>
                       <tr>
+                        <td><span className="api-param-name">key</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Alternative to <code>x-api-key</code> header. Pass your secret API key directly in the query string (e.g. <code>?key=w365_live_...</code>). Essential for Shopify SyncX, Stock Sync, and automated feed crawlers that do not support custom request headers.</td>
+                      </tr>
+                      <tr>
                         <td><span className="api-param-name">format</span></td>
                         <td><span className="api-param-type">string (optional)</span></td>
-                        <td>Set to <code>shopify</code> to format directly for Shopify Matrixify or automated sync apps.</td>
+                        <td>
+                          Set to <code>stocksync</code> (or <code>syncx</code>) to emit flattened variant rows with out-of-the-box field auto-matching for Shopify sync apps. Set to <code>shopify</code> or <code>matrixify</code> for standard nested Shopify REST payload.
+                        </td>
                       </tr>
                     </tbody>
                   </table>

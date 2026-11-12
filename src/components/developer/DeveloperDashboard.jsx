@@ -3194,7 +3194,7 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                   <div className="dev-shopify-steps">
                     <div className="dev-step-item">
                       <span className="dev-step-num">1</span>
-                      <div className="dev-step-text">In Shopify, open <strong>Stock Sync</strong> &rarr; Select <strong>Add New Update / Add Products</strong>.</div>
+                      <div className="dev-step-text">In Shopify, open <strong>Stock Sync (SyncX)</strong> &rarr; Select <strong>Add New Update / Add Products</strong>.</div>
                     </div>
                     <div className="dev-step-item">
                       <span className="dev-step-num">2</span>
@@ -3202,8 +3202,26 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                     </div>
                     <div className="dev-step-item">
                       <span className="dev-step-num">3</span>
-                      <div className="dev-step-text">Stock Sync automatically detects <strong>JSON</strong> and auto-matches SKU, Title, Price, Compare Price, Inventory, and Images.</div>
+                      <div className="dev-step-text">
+                        In <strong>Step 2: Matching column</strong>, map:
+                        <div style={{ marginTop: '4px', fontSize: '11.5px', color: '#475569', lineHeight: 1.5 }}>
+                          • <strong>Identifier:</strong> SKU &rarr; <code>sku</code><br />
+                          • <strong>Store fields:</strong> Title &rarr; <code>title</code>, Price &rarr; <code>price</code>, Quantity &rarr; <code>quantity</code><br />
+                          • <strong>Images:</strong> Gallery &rarr; <code>images</code> <em>(Set delimiter to comma <code>,</code> in Smart Setting)</em>, Variant image &rarr; <code>variant_image</code><br />
+                          • <strong>Variants:</strong> Group by <code>handle</code>, Variant Option 1 &rarr; <code>color</code>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                    <a
+                      href="/developer-api#shopify-guide"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+                    >
+                      📖 View Complete SyncX Setup Guide (30% Price Markup, Images &amp; Variants) &rarr;
+                    </a>
                   </div>
                 </div>
 
