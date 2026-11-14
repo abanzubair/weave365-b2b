@@ -238,6 +238,30 @@ export const fetchConfigOptions = safeCache(async function fetchConfigOptions() 
   return { priceRanges: [], categories: [], fabrics: [], weaves: [], occasions: [] };
 });
 
+export function checkIsRowArchived(row) {
+  if (!row || typeof row !== 'object') return false;
+  for (const [key, val] of Object.entries(row)) {
+    if (!val) continue;
+    const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
+    const normVal = String(val).toLowerCase().trim();
+    if (normKey === 'archive' || normKey === 'archived' || normKey === 'isarchived' || normKey === 'archivestatus') {
+      if (['true', 'yes', 'y', '1', 'archive', 'archived', 'archieved', 'hidden', 'inactive'].includes(normVal)) {
+        return true;
+      }
+    }
+    if (normKey === 'status' || normKey === 'tag' || normKey === 'stockstatus' || normKey === 'visibility' || normKey === 'stock') {
+      if (normVal.includes('archiv')) {
+        return true;
+      }
+      const tokens = normVal.split(/[,|/\n\r]+/).map((t) => t.trim()).filter(Boolean);
+      if (tokens.some((t) => ['archive', 'archived', 'archieved', 'hidden', 'inactive', 'disabled', 'draft', 'delisted', 'deactivated', 'closed'].includes(t))) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 function normalizeLoadedProduct(product, idx) {
   if (!product) return product;
   let statusTags = (product.statusTags || []).map((tag) => {
@@ -251,27 +275,7 @@ function normalizeLoadedProduct(product, idx) {
   });
 
   const hasArchivedTag = statusTags.some((t) => t.key === 'archived' || t.key === 'archive' || t.key === 'archieved');
-
-  const hasRawArchive = (function() {
-    if (product.isArchived || hasArchivedTag) return true;
-    if (!product.raw) return false;
-    for (const [key, val] of Object.entries(product.raw)) {
-      const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
-      const normVal = String(val || '').toLowerCase().trim();
-      if (normKey === 'archive' || normKey === 'archived' || normKey === 'isarchived' || normKey === 'archivestatus') {
-        if (['true', 'yes', 'y', '1', 'archive', 'archived', 'archieved', 'hidden', 'inactive'].includes(normVal)) {
-          return true;
-        }
-      }
-      if (normKey === 'status' || normKey === 'tag' || normKey === 'stockstatus' || normKey === 'visibility' || normKey === 'stock') {
-        if (['archive', 'archived', 'archieved', 'hidden', 'inactive', 'disabled', 'draft', 'delisted', 'deactivated'].includes(normVal)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  })();
-
+  const hasRawArchive = Boolean(product.isArchived || hasArchivedTag || checkIsRowArchived(product.raw));
   const isArchived = Boolean(product.isArchived || hasArchivedTag || hasRawArchive);
 
   if (isArchived && !hasArchivedTag) {
@@ -415,18 +419,18 @@ export const fetchProducts = safeCache(async function fetchProducts() {
             const nonStockTags = (product.statusTags || []).filter(
               (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
             );
-            const isArchived = stockKey === 'archived'
-              ? true
-              : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
-                  ? false
-                  : Boolean(product.isArchived));
+            const isArchived = stockKey === 'archived' || Boolean(product.isArchived);
+            const updatedTags = [{ key: stockKey, label: stockLabel }, ...nonStockTags];
+            if (isArchived && !updatedTags.some((t) => t.key === 'archived')) {
+              updatedTags.push({ key: 'archived', label: 'Archived' });
+            }
             return {
               ...product,
               stockStatusOverride: stockKey,
               stockStatusLabel: stockLabel,
               stockLastUpdatedIST: row.updated_at_ist || '',
               stockLastUpdated: row.updated_at || '',
-              statusTags: [{ key: stockKey, label: stockLabel }, ...nonStockTags],
+              statusTags: updatedTags,
               isOutOfStock: stockKey === 'out-of-stock',
               isReadyStock: stockKey === 'ready-stock',
               isPreOrder: stockKey === 'pre-order',
@@ -456,18 +460,18 @@ export const fetchProducts = safeCache(async function fetchProducts() {
               const nonStockTags = (product.statusTags || []).filter(
                 (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
               );
-              const isArchived = stockKey === 'archived'
-                ? true
-                : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
-                    ? false
-                    : Boolean(product.isArchived));
+              const isArchived = stockKey === 'archived' || Boolean(product.isArchived);
+              const updatedTags = [{ key: stockKey, label: stockLabel }, ...nonStockTags];
+              if (isArchived && !updatedTags.some((t) => t.key === 'archived')) {
+                updatedTags.push({ key: 'archived', label: 'Archived' });
+              }
               return {
                 ...product,
                 stockStatusOverride: stockKey,
                 stockStatusLabel: stockLabel,
                 stockLastUpdatedIST: override.updatedAtIST,
                 stockLastUpdated: override.updatedAt,
-                statusTags: [{ key: stockKey, label: stockLabel }, ...nonStockTags],
+                statusTags: updatedTags,
                 isOutOfStock: stockKey === 'out-of-stock',
                 isReadyStock: stockKey === 'ready-stock',
                 isPreOrder: stockKey === 'pre-order',
@@ -549,29 +553,19 @@ export async function parseProductCsv(text) {
       if (parsedTotalColors > 0 && existing.totalColors === null) {
         existing.totalColors = parsedTotalColors;
       }
+      if (!existing.isArchived && checkIsRowArchived(row)) {
+        existing.isArchived = true;
+        if (!existing.statusTags.some(t => t.key === 'archived')) {
+          existing.statusTags.push({ key: 'archived', label: 'Archived' });
+        }
+      }
       continue;
     }
 
     const category = row.Category || categoryCodes[codeInfo.category] || 'Saree';
 
     // Check if the row has any explicit archive column or tag
-    const isExplicitlyArchived = (function() {
-      for (const [key, val] of Object.entries(row)) {
-        const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
-        const normVal = String(val || '').toLowerCase().trim();
-        if (normKey === 'archive' || normKey === 'archived' || normKey === 'isarchived' || normKey === 'archivestatus') {
-          if (['true', 'yes', 'y', '1', 'archive', 'archived', 'archieved', 'hidden', 'inactive'].includes(normVal)) {
-            return true;
-          }
-        }
-        if (normKey === 'status' || normKey === 'tag' || normKey === 'stockstatus' || normKey === 'visibility' || normKey === 'stock') {
-          if (['archive', 'archived', 'archieved', 'hidden', 'inactive', 'disabled', 'draft', 'delisted', 'deactivated', 'closed'].includes(normVal)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    })();
+    const isExplicitlyArchived = checkIsRowArchived(row);
 
     const rawStatus = [row.Tag, row.Status, row['Stock Status'], row.StockStatus, row.Archive, row.Archived]
       .filter(Boolean)

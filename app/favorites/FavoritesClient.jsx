@@ -29,7 +29,7 @@ export default function FavoritesClient() {
   );
 
   const favoriteProducts = useMemo(
-    () => products.filter((product) => favoriteKeySet.has(product.id)),
+    () => products.filter((product) => !product.isArchived && favoriteKeySet.has(product.id)),
     [favoriteKeySet, products]
   );
 

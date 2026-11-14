@@ -395,11 +395,10 @@ export function applyStockOverridesToProducts(products = [], overrides = {}) {
       ...nonStockTags,
     ];
 
-    const isArchived = stockKey === 'archived'
-      ? true
-      : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
-          ? false
-          : Boolean(product.isArchived));
+    const isArchived = stockKey === 'archived' || Boolean(product.isArchived);
+    if (isArchived && !updatedTags.some((t) => t.key === 'archived')) {
+      updatedTags.push({ key: 'archived', label: 'Archived' });
+    }
 
     return {
       ...product,

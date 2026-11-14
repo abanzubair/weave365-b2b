@@ -12772,6 +12772,7 @@ button.card-gradient-purple:hover,
 .admin-stock-pills-group .admin-status-pill.active.preorder { background: #b45309; }
 .admin-stock-pills-group .admin-status-pill.active.out { background: #b91c1c; }
 .admin-stock-pills-group .admin-status-pill.active.backsoon { background: #7e22ce; }
+.admin-stock-pills-group .admin-status-pill.active.archived { background: #475569; }
 
 .admin-stock-pills-group .admin-pill-count {
   background: rgba(0, 0, 0, 0.08);
@@ -12796,6 +12797,7 @@ button.card-gradient-purple:hover,
 .admin-stock-pills-group .admin-status-dot.preorder { background: #d97706; }
 .admin-stock-pills-group .admin-status-dot.out { background: #dc2626; }
 .admin-stock-pills-group .admin-status-dot.backsoon { background: #9333ea; }
+.admin-stock-pills-group .admin-status-dot.archived { background: #64748b; }
 
 .admin-stock-quick-select-wrap {
   display: flex;
@@ -12900,6 +12902,7 @@ button.card-gradient-purple:hover,
 .admin-batch-btn.preorder { background: #b45309; color: #ffffff; }
 .admin-batch-btn.out { background: #b91c1c; color: #ffffff; }
 .admin-batch-btn.backsoon { background: #7e22ce; color: #ffffff; }
+.admin-batch-btn.archived { background: #475569; color: #ffffff; }
 
 .admin-batch-btn:hover {
   opacity: 0.9;
@@ -13228,6 +13231,16 @@ button.card-gradient-purple:hover,
   background: #9333ea;
 }
 
+.admin-stock-radio-btn.archived.selected {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.admin-stock-radio-btn.archived.selected .admin-stock-radio-dot {
+  border-color: #64748b;
+  background: #64748b;
+}
+
 .admin-card-footer {
   display: flex;
   align-items: center;
@@ -13488,6 +13501,15 @@ button.card-gradient-purple:hover,
 }
 .admin-table-status-btn.backsoon.selected .table-radio-dot {
   background: #9333ea;
+}
+
+.admin-table-status-btn.archived.selected {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.admin-table-status-btn.archived.selected .table-radio-dot {
+  background: #64748b;
 }
 
 .admin-table-timestamp-cell {

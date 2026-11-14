@@ -1446,20 +1446,6 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           <strong className="admin-inspect-account-text">{modalAccountEmail}</strong>
                         </p>
                       )}
-                      {selectedInquiry.reseller_order_id && (
-                        <p className="admin-inspect-detail">
-                          <span className="admin-inspect-label">Ref ID:</span>{' '}
-                          <code className="admin-inspect-mono-tag">
-                            #{selectedInquiry.reseller_order_id}
-                          </code>
-                        </p>
-                      )}
-                      {selectedInquiry.isApi && (
-                        <p className="admin-inspect-detail">
-                          <span className="admin-inspect-label">Channel:</span>{' '}
-                          <span className="badge-api-mini">Developer API</span>
-                        </p>
-                      )}
                       {modalCustomPricing.hasCustom && (
                         <div className="admin-inspect-slip-price-box">
                           <div className="admin-inspect-slip-price-row">

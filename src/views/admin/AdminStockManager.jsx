@@ -194,6 +194,8 @@ export default function AdminStockManager({
   const getProductEffectiveStatus = useCallback((product) => {
     const pKey = product.id || product.groupKey;
     const override = stockOverrides[pKey];
+    if (override && override.stockStatus === 'archived') return 'archived';
+    if (product.isArchived) return 'archived';
     if (override && override.stockStatus) return override.stockStatus;
     if (product.isOutOfStock) return 'out-of-stock';
     if (product.isPreOrder) return 'pre-order';
@@ -312,6 +314,7 @@ export default function AdminStockManager({
     let preorder = 0;
     let out = 0;
     let backsoon = 0;
+    let archived = 0;
 
     for (const p of catalogProducts) {
       const currentStatus = getProductEffectiveStatus(p);
@@ -319,6 +322,7 @@ export default function AdminStockManager({
       else if (currentStatus === 'pre-order') preorder++;
       else if (currentStatus === 'out-of-stock') out++;
       else if (currentStatus === 'back-soon') backsoon++;
+      else if (currentStatus === 'archived') archived++;
     }
 
     const total = catalogProducts.length || 1;
@@ -333,6 +337,8 @@ export default function AdminStockManager({
       outPct: Math.round((out / total) * 100),
       backsoon,
       backsoonPct: Math.round((backsoon / total) * 100),
+      archived,
+      archivedPct: Math.round((archived / total) * 100),
     };
   }, [catalogProducts, vendorOptions.length, getProductEffectiveStatus]);
 
@@ -674,6 +680,14 @@ export default function AdminStockManager({
               <span className="admin-status-dot backsoon" />
               Back Soon <span className="admin-pill-count">{stats.backsoon}</span>
             </button>
+            <button
+              type="button"
+              className={`admin-status-pill archived ${statusFilter === 'archived' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('archived')}
+            >
+              <span className="admin-status-dot archived" />
+              Archived (Hidden) <span className="admin-pill-count">{stats.archived}</span>
+            </button>
           </div>
 
           {/* Quick Select Buttons */}
@@ -742,6 +756,14 @@ export default function AdminStockManager({
               disabled={batchActionLoading}
             >
               <span className="admin-status-dot backsoon" /> Back Soon
+            </button>
+            <button
+              type="button"
+              className="admin-batch-btn archived"
+              onClick={() => handleBatchStatusUpdate('archived')}
+              disabled={batchActionLoading}
+            >
+              <span className="admin-status-dot archived" /> Archive (Hide)
             </button>
 
             <button
@@ -888,7 +910,8 @@ export default function AdminStockManager({
                       const isRadioSelected = activeStatus === opt.key;
                       const optClass = opt.key === 'ready-stock' ? 'ready' :
                                        opt.key === 'pre-order' ? 'preorder' :
-                                       opt.key === 'out-of-stock' ? 'outofstock' : 'backsoon';
+                                       opt.key === 'out-of-stock' ? 'outofstock' :
+                                       opt.key === 'archived' ? 'archived' : 'backsoon';
 
                       return (
                         <button
@@ -1042,7 +1065,8 @@ export default function AdminStockManager({
                             const isRadioSelected = activeStatus === opt.key;
                             const optClass = opt.key === 'ready-stock' ? 'ready' :
                                              opt.key === 'pre-order' ? 'preorder' :
-                                             opt.key === 'out-of-stock' ? 'outofstock' : 'backsoon';
+                                             opt.key === 'out-of-stock' ? 'outofstock' :
+                                             opt.key === 'archived' ? 'archived' : 'backsoon';
 
                             return (
                               <button

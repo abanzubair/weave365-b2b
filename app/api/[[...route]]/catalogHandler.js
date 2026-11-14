@@ -53,11 +53,10 @@ function applyStockOverrides(products, stockRows) {
       { key: stockKey, label: stockLabel },
       ...nonStockTags,
     ];
-    const isArchived = stockKey === 'archived'
-      ? true
-      : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
-          ? false
-          : Boolean(product.isArchived));
+    const isArchived = stockKey === 'archived' || Boolean(product.isArchived);
+    if (isArchived && !updatedTags.some((t) => t.key === 'archived')) {
+      updatedTags.push({ key: 'archived', label: 'Archived' });
+    }
     return {
       ...product,
       stockStatusOverride: stockKey,
@@ -213,6 +212,11 @@ export async function GET(request) {
 
     const applyFiltersAndPagination = (items) => {
       let filtered = items;
+
+      const includeArchived = searchParams.get('include_archived') === 'true';
+      if (!includeArchived) {
+        filtered = filtered.filter((p) => !p.isArchived);
+      }
 
       if (categoryFilter) {
         const catLower = categoryFilter.toLowerCase().trim();
