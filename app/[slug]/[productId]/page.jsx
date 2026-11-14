@@ -72,6 +72,11 @@ function generateProductSchemas(product, activeReviews = [], requestedColor = nu
     },
   };
 
+  const isOutOfStock = Boolean(product.isOutOfStock);
+  const schemaAvailability = isOutOfStock
+    ? 'https://schema.org/OutOfStock'
+    : 'https://schema.org/InStock';
+
   const productOffers = requestedColor
     ? {
         '@type': 'Offer',
@@ -79,7 +84,7 @@ function generateProductSchemas(product, activeReviews = [], requestedColor = nu
         price: displayPrice,
         priceValidUntil: '2027-12-31',
         itemCondition: 'https://schema.org/NewCondition',
-        availability: 'https://schema.org/InStock',
+        availability: schemaAvailability,
         url: prodUrl,
         hasMerchantReturnPolicy: merchantReturnPolicy,
         shippingDetails: shippingDetails,
@@ -92,7 +97,7 @@ function generateProductSchemas(product, activeReviews = [], requestedColor = nu
         offerCount: Math.max(1, totalColors),
         priceValidUntil: '2027-12-31',
         itemCondition: 'https://schema.org/NewCondition',
-        availability: 'https://schema.org/InStock',
+        availability: schemaAvailability,
         url: prodUrl,
         hasMerchantReturnPolicy: merchantReturnPolicy,
         shippingDetails: shippingDetails,

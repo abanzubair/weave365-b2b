@@ -40,16 +40,8 @@ import {
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { ResellerWhatsappShare } from './ResellerWhatsappShare.jsx';
 import { isDropOffAccount } from '../utils/buyerAccess.js';
-import dynamic from 'next/dynamic';
-
-const ResellerShareModal = dynamic(
-  () => import('./ResellerShareModal.jsx').then((m) => m.ResellerShareModal),
-  { ssr: false }
-);
-const EnquiryPopup = dynamic(
-  () => import('./EnquiryPopup.jsx').then((m) => m.EnquiryPopup),
-  { ssr: false }
-);
+import { ResellerShareModal } from './ResellerShareModal.jsx';
+import { EnquiryPopup } from './EnquiryPopup.jsx';
 
 export const ProductCard = memo(function ProductCard({
   product,

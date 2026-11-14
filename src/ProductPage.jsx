@@ -40,24 +40,10 @@ import {
 } from './components/icons.jsx';
 import { storeConfig, getProductCategorySlug, getCategorySlug, siteUrl } from './config.js';
 import './styles/productDetail.css';
-import dynamic from 'next/dynamic';
-
-const VariationQuantityDrawer = dynamic(
-  () => import('./components/VariationQuantityDrawer.jsx').then((m) => m.VariationQuantityDrawer),
-  { ssr: false }
-);
-const ResellerShareModal = dynamic(
-  () => import('./components/ResellerShareModal.jsx').then((m) => m.ResellerShareModal),
-  { ssr: false }
-);
-const EnquiryPopup = dynamic(
-  () => import('./components/EnquiryPopup.jsx').then((m) => m.EnquiryPopup),
-  { ssr: false }
-);
-const SliderCaptcha = dynamic(
-  () => import('./components/SliderCaptcha.jsx'),
-  { ssr: false }
-);
+import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
+import { ResellerShareModal } from './components/ResellerShareModal.jsx';
+import { EnquiryPopup } from './components/EnquiryPopup.jsx';
+import SliderCaptcha from './components/SliderCaptcha.jsx';
 import {
   buildSingleProductWhatsappUrl,
   customerPrice,
@@ -72,14 +58,8 @@ import {
 import { useCountryCurrency } from './store/useCountryCurrency.js';
 import { Newsletter } from './components/Newsletter.jsx';
 import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
-const ProductCard = dynamic(
-  () => import('./components/ProductCard.jsx').then((m) => m.ProductCard),
-  { ssr: false }
-);
-const ResellerWhatsappShare = dynamic(
-  () => import('./components/ResellerWhatsappShare.jsx').then((m) => m.ResellerWhatsappShare),
-  { ssr: false }
-);
+import { ProductCard } from './components/ProductCard.jsx';
+import { ResellerWhatsappShare } from './components/ResellerWhatsappShare.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { WhatsappIcon } from './components/WhatsappIcon.jsx';
 import { priceNoticeForAccess, detectAccountCategory, isAccountLocked, isDropOffAccount, isProfileComplete } from './utils/buyerAccess.js';
