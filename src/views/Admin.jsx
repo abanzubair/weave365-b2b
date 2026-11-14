@@ -714,9 +714,20 @@ export function Admin({
             }))
           : (o.items || []);
 
+        const isApi = Boolean(
+          o.isApi ||
+          o.api_key_id ||
+          o.reseller_order_id ||
+          o.platform === 'api' ||
+          (typeof o.order_number === 'string' && (o.order_number.startsWith('API-') || o.order_number.startsWith('api-'))) ||
+          o.payment_method === 'api_invoice_payment' ||
+          (typeof o.message === 'string' && /\[(?:Wholesale API Order|API Dropship Order|API Order)/i.test(o.message))
+        );
+
         return {
           ...o,
           _sourceTable: 'orders',
+          isApi,
           account_email: o.email || p?.email || null,
           account_name: p?.full_name || p?.business_name || null,
           order_delivery_addresses: deliveryAddr,
@@ -796,6 +807,7 @@ export function Admin({
         return {
           ...a,
           _sourceTable: 'api_orders',
+          isApi: true,
           account_email: p?.email || extractedNoteEmail || a.client_email || a.email || null,
           account_name: p?.full_name || p?.business_name || null,
           is_dropship: true,

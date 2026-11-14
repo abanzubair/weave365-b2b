@@ -468,11 +468,25 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
         const s = String(i.status || '').toLowerCase().trim();
         return s !== 'draft' && s !== 'unpaid';
       })
-      .map(i => ({
-        ...i,
-        isDropship: Boolean(i.is_dropship || i._sourceTable === 'api_orders' || i.inquiry_type === 'reseller_api_order'),
-        cleanStatus: (i.status || 'new').toLowerCase(),
-      }));
+      .map(i => {
+        const isApi = Boolean(
+          i.isApi ||
+          i._sourceTable === 'api_orders' ||
+          i.api_key_id ||
+          i.reseller_order_id ||
+          i.platform === 'api' ||
+          i.inquiry_type === 'reseller_api_order' ||
+          (typeof i.order_number === 'string' && (i.order_number.startsWith('API-') || i.order_number.startsWith('api-'))) ||
+          i.payment_method === 'api_invoice_payment' ||
+          (typeof i.message === 'string' && /\[(?:Wholesale API Order|API Dropship Order|API Order)/i.test(i.message))
+        );
+        return {
+          ...i,
+          isApi,
+          isDropship: Boolean(i.is_dropship || i._sourceTable === 'api_orders' || i.inquiry_type === 'reseller_api_order'),
+          cleanStatus: (i.status || 'new').toLowerCase(),
+        };
+      });
 
     const directOrders = allOrders.filter(i => 
       i._sourceTable === 'orders' || 
@@ -482,15 +496,21 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
       i.inquiry_type === 'reseller_api_order'
     );
     const dropshipOrders = allOrders.filter(i => i.isDropship);
+    const apiOrders = allOrders.filter(i => i.isApi);
 
     const chCounts = {
       orders: directOrders.length,
       dropship: dropshipOrders.length,
+      api: apiOrders.length,
       all: allOrders.length
     };
 
     // Calculate overall stats for the active channel filter
-    const baseSet = typeFilter === 'orders' ? directOrders : (typeFilter === 'dropship' ? dropshipOrders : allOrders);
+    const baseSet = typeFilter === 'orders' 
+      ? directOrders 
+      : (typeFilter === 'dropship' 
+          ? dropshipOrders 
+          : (typeFilter === 'api' ? apiOrders : allOrders));
 
     const stats = {
       total: baseSet.length,
@@ -662,6 +682,13 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
           >
             Dropship Packages ({channelCounts.dropship})
           </button>
+          <button 
+            type="button"
+            className={`admin-channel-pill ${typeFilter === 'api' ? 'active' : ''}`}
+            onClick={() => setTypeFilter('api')}
+          >
+            API Orders ({channelCounts.api || 0})
+          </button>
         </div>
 
         {/* Right Search & Status Filter */}
@@ -816,9 +843,16 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                             })}
                           </span>
                         )}
-                        <span className={`admin-source-badge ${isDropship ? 'badge-dropship' : 'badge-direct'}`}>
-                          {isDropship ? 'Dropship' : 'Direct'}
-                        </span>
+                        <div className="admin-source-badges-row">
+                          {inquiry.isApi && (
+                            <span className="admin-source-badge badge-api" title="Created via Developer API">
+                              API
+                            </span>
+                          )}
+                          <span className={`admin-source-badge ${isDropship ? 'badge-dropship' : 'badge-direct'}`}>
+                            {isDropship ? 'Dropship' : 'Direct'}
+                          </span>
+                        </div>
                       </div>
                     </td>
 
@@ -828,6 +862,11 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                         <code className="admin-order-code" title={inquiry.order_number || inquiry.id}>
                           {inquiry.order_number || inquiry.id.substring(0, 8)}
                         </code>
+                        {inquiry.reseller_order_id && (
+                          <span className="admin-reseller-ref-subtext" title={`API Reseller Order Reference: #${inquiry.reseller_order_id}`}>
+                            Ref: #{inquiry.reseller_order_id}
+                          </span>
+                        )}
                         <div className="admin-id-actions-row">
                           <button 
                             type="button" 
@@ -1092,6 +1131,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                   <h3 className="admin-modal-title">
                     Order #{selectedInquiry.order_number || (selectedInquiry.id ? selectedInquiry.id.substring(0, 8) : '')}
                   </h3>
+                  {selectedInquiry.isApi && <span className="badge-api-mini">API Order</span>}
                   {selectedInquiry.isDropship && <span className="badge-dropship-mini">Dropship</span>}
                   {selectedInquiry.reseller_order_id && (
                     <span className="badge-reseller-ref-modal" title={`Reseller Reference: #${selectedInquiry.reseller_order_id}`}>
@@ -1414,6 +1454,12 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           </code>
                         </p>
                       )}
+                      {selectedInquiry.isApi && (
+                        <p className="admin-inspect-detail">
+                          <span className="admin-inspect-label">Channel:</span>{' '}
+                          <span className="badge-api-mini">Developer API</span>
+                        </p>
+                      )}
                       {modalCustomPricing.hasCustom && (
                         <div className="admin-inspect-slip-price-box">
                           <div className="admin-inspect-slip-price-row">
@@ -1589,6 +1635,10 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                               }
 
                               const hasAdjustments = couponDiscount > 0 || shippingFee > 0 || Math.abs(displayItemsSubtotal - finalTotal) > 0.01;
+                              const statusLower = String(selectedInquiry.status || '').toLowerCase().trim();
+                              const isPendingPayment = statusLower === 'pending_payment' || statusLower === 'payment_pending';
+                              const isCancelledOrder = statusLower === 'cancelled';
+                              const totalStatusLabel = isPendingPayment ? 'Amount Due' : (isCancelledOrder ? 'Order Total (Cancelled)' : 'Total Paid');
 
                               if (hasAdjustments) {
                                 return (
@@ -1632,9 +1682,11 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                     <tr className="admin-inspect-summary-total">
                                       <td colSpan="4">
                                         <div className="admin-inspect-total-left">
-                                          <span className="admin-inspect-total-label">Total Paid</span>
+                                          <span className="admin-inspect-total-label">{totalStatusLabel}</span>
                                           {selectedInquiry.payment_method && (
-                                            <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                            <span className={`admin-inspect-payment-pill ${isPendingPayment ? 'pending' : ''}`}>
+                                              {paymentMethod}{isPendingPayment ? ' · UNPAID' : ''}
+                                            </span>
                                           )}
                                         </div>
                                       </td>
@@ -1677,9 +1729,11 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                   <tr className="admin-inspect-summary-total">
                                     <td colSpan="4">
                                       <div className="admin-inspect-total-left">
-                                        <span className="admin-inspect-total-label">Total Paid ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
+                                        <span className="admin-inspect-total-label">{totalStatusLabel} ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
                                         {selectedInquiry.payment_method && (
-                                          <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                          <span className={`admin-inspect-payment-pill ${isPendingPayment ? 'pending' : ''}`}>
+                                            {paymentMethod}{isPendingPayment ? ' · UNPAID' : ''}
+                                          </span>
                                         )}
                                       </div>
                                     </td>
