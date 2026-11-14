@@ -355,10 +355,15 @@ function applyStockOverrides(products, stockRows) {
  */
 function formatForShopify(products) {
   return products.map((p) => {
-    const handle = (p.title || p.name || 'product')
+    const baseSlug = (p.title || p.name || 'product')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
+    const idSlug = String(p.id || p.groupKey || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const handle = idSlug && !baseSlug.endsWith(idSlug) ? `${baseSlug}-${idSlug}` : baseSlug;
 
     const firstPrices = p.variants?.[0]?.prices || {};
     // Strictly B2R Reseller Price (B2B bulk wholesale / cost prices are strictly blocked from the API)
@@ -375,7 +380,7 @@ function formatForShopify(products) {
       ? p.variants.map((v, idx) => {
         const vPrices = v.prices || {};
         const vPrice = Number(vPrices.b2r || resellerPrice);
-        const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
         return {
           id: `${p.id || p.groupKey}-${idx + 1}`,
           title: v.color || `Option ${idx + 1}`,
@@ -391,7 +396,7 @@ function formatForShopify(products) {
         };
       })
       : (p.colors || ['Default']).map((color, idx) => {
-        const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `C${idx + 1}`}-${idx + 1}`;
         return {
           id: `${p.id || p.groupKey}-${idx + 1}`,
           title: color,
@@ -462,10 +467,15 @@ function formatForStockSync(products) {
   const items = [];
 
   for (const p of products) {
-    const handle = (p.title || p.name || 'product')
+    const baseSlug = (p.title || p.name || 'product')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
+    const idSlug = String(p.id || p.groupKey || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const handle = idSlug && !baseSlug.endsWith(idSlug) ? `${baseSlug}-${idSlug}` : baseSlug;
 
     const firstPrices = p.variants?.[0]?.prices || {};
     const baseResellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
@@ -484,9 +494,9 @@ function formatForStockSync(products) {
     if (hasExplicitVariants) {
       p.variants.forEach((v, idx) => {
         const vPrices = v.prices || {};
-        const vPrice = Number(vPrices.b2r || baseResellerPrice);
-        const vMrp = Number(vPrices.single || baseSuggestedMrp);
-        const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        const vPrice = (vPrices.b2r !== undefined && vPrices.b2r !== null && vPrices.b2r !== '') ? Number(vPrices.b2r) : baseResellerPrice;
+        const vMrp = (vPrices.single !== undefined && vPrices.single !== null && vPrices.single !== '') ? Number(vPrices.single) : baseSuggestedMrp;
+        const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
         const vColor = v.color || `Option ${idx + 1}`;
         const vImage = (v.image || primaryImage || '').trim();
         const vStock = isOutOfStock ? 0 : (typeof v.quantity === 'number' ? v.quantity : 5);
@@ -563,6 +573,8 @@ function formatForStockSync(products) {
           Category: p.category || 'Sarees',
           tags: tagsStr,
           Tags: tagsStr,
+          published: !isOutOfStock,
+          inventory_tracked: true,
           status: isOutOfStock ? 'draft' : 'active',
           weight: 0.8,
           weight_unit: 'kg',
@@ -571,7 +583,7 @@ function formatForStockSync(products) {
     } else {
       const colors = (Array.isArray(p.colors) && p.colors.length > 0) ? p.colors : ['Default'];
       colors.forEach((color, idx) => {
-        const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)}`;
+        const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `C${idx + 1}`}-${idx + 1}`;
         const vStock = isOutOfStock ? 0 : 5;
         items.push({
           id: `${p.id || p.groupKey}-${idx + 1}`,
@@ -608,8 +620,8 @@ function formatForStockSync(products) {
           is_available: !isOutOfStock && vStock > 0,
           inventory_management: 'shopify',
           inventory_policy: 'deny',
-          option1_name: colors.length > 1 ? 'Color' : 'Title',
-          option1_value: colors.length > 1 ? color : 'Default Title',
+          option1_name: 'Color',
+          option1_value: color || 'Default',
           color: color,
           Color: color,
           image: primaryImage,
@@ -645,6 +657,8 @@ function formatForStockSync(products) {
           Category: p.category || 'Sarees',
           tags: tagsStr,
           Tags: tagsStr,
+          published: !isOutOfStock,
+          inventory_tracked: true,
           status: isOutOfStock ? 'draft' : 'active',
           weight: 0.8,
           weight_unit: 'kg',
@@ -757,8 +771,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     const totalProducts = resultProducts.length;
 
     const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || format === 'matrixify';
-    const maxAllowedLimit = 2500;
-    const defaultLimit = isSyncFeed ? 1000 : 50;
+    const maxAllowedLimit = isSyncFeed ? 10000 : 2500;
+    const defaultLimit = isSyncFeed ? (totalProducts || 1) : 50;
 
     let limit;
     if (limitParam === 'all' || limitParam === 'max') {
