@@ -36,19 +36,11 @@ export async function OPTIONS(request) {
 export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
   try {
-    const payload = await request.json();
-    const { email } = payload;
+    await request.json().catch(() => ({}));
 
-    if (!email) {
-      return new Response(JSON.stringify({ error: 'Missing authorized administrator email.' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-
-    // 1. Initialize Supabase Client securely
+    // 1. Initialize Supabase Client securely (never fall back to anon key)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Supabase configurations are missing on the server.');

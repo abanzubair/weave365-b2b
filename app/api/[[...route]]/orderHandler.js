@@ -12,6 +12,15 @@ import { recordCouponUsage } from './couponsHandler.js';
 
 export const runtime = 'edge';
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const ALLOWED_ORIGINS = [
   'https://www.weave365.com',
   'https://weave365.com',
@@ -75,9 +84,9 @@ export async function POST(request) {
 
     const isDropship = shipping_mode === 'dropship';
 
-    // 1. Initialize Supabase Admin Client
+    // 1. Initialize Supabase Admin Client (strictly require service role key)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('[orderHandler] Missing Supabase server credentials.');
@@ -91,8 +100,106 @@ export async function POST(request) {
       auth: { persistSession: false },
     });
 
-    // Format order narrative message
-    const orderItemsSummary = items.map((it, idx) => 
+    // Verify authenticated user_id from Bearer JWT (never trust unverified body.user_id)
+    let validUserId = null;
+    const authHeader = request.headers.get('Authorization') || '';
+    const bearerToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (bearerToken) {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser(bearerToken);
+        if (authUser?.id) validUserId = authUser.id;
+      } catch (authErr) {
+        console.warn('[orderHandler] Optional JWT check warning:', authErr?.message);
+      }
+    }
+
+    // Recompute authoritative item prices from catalog
+    let catalogList = [];
+    try {
+      const { data: sheetRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single();
+      if (sheetRow?.csv_data) {
+        catalogList = typeof sheetRow.csv_data === 'string' ? JSON.parse(sheetRow.csv_data) : sheetRow.csv_data;
+      }
+    } catch (catErr) {
+      console.error('[orderHandler] Failed to load catalog for price verification:', catErr);
+    }
+
+    const verifiedItems = [];
+    for (const rawItem of items) {
+      const skuRaw = String(rawItem.variant_code || rawItem.sku || rawItem.product_id || rawItem.productGroupKey || '').trim();
+      const skuLower = skuRaw.toLowerCase();
+      const baseSku = skuLower.includes('-') ? skuLower.split('-')[0].trim() : skuLower;
+      const qty = Math.max(1, Math.min(500, parseInt(rawItem.quantity || 1, 10) || 1));
+
+      const matchedProduct = (catalogList || []).find((p) => {
+        const pId = String(p.id || '').toLowerCase();
+        const pGroup = String(p.groupKey || '').toLowerCase();
+        if (pId === skuLower || pGroup === skuLower || (baseSku && (pId === baseSku || pGroup === baseSku))) return true;
+        return Array.isArray(p.variants) && p.variants.some((v) => String(v.code || '').toLowerCase() === skuLower);
+      });
+
+      const matchedVariant = matchedProduct?.variants?.find((v) => String(v.code || '').toLowerCase() === skuLower) || matchedProduct?.variants?.[0];
+      const prices = matchedVariant?.prices || {};
+      const catalogPrice = Number(prices.b2r || matchedProduct?.resellerPrice || prices.single || 0);
+
+      if (!matchedProduct || catalogPrice <= 0) {
+        return Response.json(
+          { success: false, error: `Invalid or unpriced product SKU: ${skuRaw || 'unknown'}` },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      verifiedItems.push({
+        ...rawItem,
+        product_id: matchedProduct.id || rawItem.product_id || rawItem.productGroupKey,
+        product_title: rawItem.product_title || rawItem.title || matchedProduct.title || matchedProduct.name || 'Handloom Textile',
+        variant_code: matchedVariant?.code || rawItem.variant_code || '',
+        color: rawItem.color || rawItem.selectedColorName || matchedVariant?.color || 'Standard',
+        quantity: qty,
+        price: catalogPrice,
+      });
+    }
+
+    const verifiedSubtotal = verifiedItems.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+    const verifiedShipping = shipping_speed === 'expedited' ? Math.max(0, Number(shipping_amount) || 0) : 0;
+
+    let verifiedDiscount = 0;
+    const normalizedCouponCode = coupon_code ? String(coupon_code).trim().toUpperCase() : null;
+    if (normalizedCouponCode) {
+      const { data: couponRow } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', normalizedCouponCode)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      const nowMs = Date.now();
+      const notExpired = !couponRow?.expires_at || new Date(couponRow.expires_at).getTime() > nowMs;
+      const underLimit = !couponRow?.max_uses || (couponRow.used_count || 0) < couponRow.max_uses;
+      const meetsMin = !couponRow?.min_order_amount || verifiedSubtotal >= Number(couponRow.min_order_amount);
+
+      if (!couponRow || !notExpired || !underLimit || !meetsMin) {
+        return Response.json(
+          { success: false, error: 'Invalid, expired, or ineligible coupon code.' },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      if (couponRow.discount_type === 'percentage') {
+        verifiedDiscount = Math.round((verifiedSubtotal * Number(couponRow.discount_value || 0)) / 100);
+        if (couponRow.max_discount_amount) {
+          verifiedDiscount = Math.min(verifiedDiscount, Number(couponRow.max_discount_amount));
+        }
+      } else {
+        verifiedDiscount = Number(couponRow.discount_value || 0);
+      }
+      verifiedDiscount = Math.max(0, Math.min(verifiedSubtotal, verifiedDiscount));
+    }
+
+    const verifiedTotalAmount = Math.max(0, Number((verifiedSubtotal + verifiedShipping - verifiedDiscount).toFixed(2)));
+
+    // Format order narrative message using server-verified items & totals
+    const orderItemsSummary = verifiedItems.map((it, idx) => 
       `${idx + 1}. ${it.product_title || 'Item'} (Code: ${it.variant_code || 'N/A'}, Color: ${it.color || 'Standard'}) x ${it.quantity} @ ₹${it.price || 0}`
     ).join('\n');
 
@@ -107,13 +214,8 @@ export async function POST(request) {
       : '';
 
     const orderMessage = isDropship
-      ? `DIRECT DROPSHIP ORDER (BLIND PACKAGING)\nPayment: ${paymentLabel}\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}${dropshipPricingNote}\n\nSender (Parcel Label):\nName: ${dropship_details.sender_name || 'Reseller'}\nPhone: ${dropship_details.sender_phone || 'N/A'}\nAddress: ${dropship_details.sender_address || ''}, ${dropship_details.sender_city || ''}, ${dropship_details.sender_state || ''} - ${dropship_details.sender_pincode || ''}\n\nDeliver To (Recipient):\nName: ${fullName}\nPhone: ${phone}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\nPackaging: ${dropship_details.packing_preference || 'Blind Shipping'}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`
-      : `B2B ORDER (${paymentLabel})\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${Number(shipping_amount) > 0 ? ` (+₹${Number(shipping_amount)})` : ''}` : 'Standard Free (4-5 Days)'}\n\nDelivery Address:\nName: ${fullName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`;
-
-    // Clean user_id (must be valid UUID or null)
-    const validUserId = (user_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id))
-      ? user_id
-      : null;
+      ? `DIRECT DROPSHIP ORDER (BLIND PACKAGING)\nPayment: ${paymentLabel}\nTotal: ₹${verifiedTotalAmount.toLocaleString('en-IN')}${dropshipPricingNote}\n\nSender (Parcel Label):\nName: ${dropship_details.sender_name || 'Reseller'}\nPhone: ${dropship_details.sender_phone || 'N/A'}\nAddress: ${dropship_details.sender_address || ''}, ${dropship_details.sender_city || ''}, ${dropship_details.sender_state || ''} - ${dropship_details.sender_pincode || ''}\n\nDeliver To (Recipient):\nName: ${fullName}\nPhone: ${phone}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\nPackaging: ${dropship_details.packing_preference || 'Blind Shipping'}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`
+      : `B2B ORDER (${paymentLabel})\nTotal: ₹${verifiedTotalAmount.toLocaleString('en-IN')}\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${verifiedShipping > 0 ? ` (+₹${verifiedShipping})` : ''}` : 'Standard Free (4-5 Days)'}\n\nDelivery Address:\nName: ${fullName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`;
 
     const orderNumber = `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
@@ -127,9 +229,9 @@ export async function POST(request) {
       phone: isDropship ? (dropship_details.sender_phone || phone) : phone,
       pincode: pincode,
       status: 'new',
-      total_amount: Number(Number(total_amount).toFixed(2)),
-      coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
-      coupon_discount: Number(coupon_discount) || 0,
+      total_amount: verifiedTotalAmount,
+      coupon_code: normalizedCouponCode,
+      coupon_discount: verifiedDiscount,
       message: orderMessage,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
@@ -145,13 +247,13 @@ export async function POST(request) {
       dropship_recipient_state: state,
       dropship_recipient_pincode: pincode,
       dropship_packing_preference: isDropship ? (dropship_details.packing_preference || 'Blind Packaging') : null,
-      items: items.map(item => ({
-        product_id: item.product_id || item.productGroupKey,
-        product_title: item.product_title || item.title || '',
-        variant_code: item.variant_code || '',
-        color: item.color || item.selectedColorName || 'Standard',
-        quantity: Number(item.quantity) || 1,
-        price: Number(item.price) || 0,
+      items: verifiedItems.map(item => ({
+        product_id: item.product_id,
+        product_title: item.product_title,
+        variant_code: item.variant_code,
+        color: item.color,
+        quantity: item.quantity,
+        price: item.price,
         custom_billed_price: item.custom_billed_price || dropship_details.custom_billed_price || null,
         custom_discount: item.custom_discount || dropship_details.custom_discount || null,
       })),
@@ -174,16 +276,16 @@ export async function POST(request) {
     const orderId = insertedOrder?.id;
     const resolvedOrderNumber = insertedOrder?.order_number || orderNumber;
 
-    if (coupon_code) {
+    if (normalizedCouponCode) {
       void recordCouponUsage(supabase, {
-        couponCode: coupon_code,
+        couponCode: normalizedCouponCode,
         orderId,
         orderNumber: resolvedOrderNumber,
         userId: validUserId,
         email: email || null,
         phone,
-        discountAmount: coupon_discount,
-        orderTotal: total_amount,
+        discountAmount: verifiedDiscount,
+        orderTotal: verifiedTotalAmount,
       });
     }
 
@@ -206,19 +308,20 @@ export async function POST(request) {
       const fromEmail = process.env.RESEND_NOTIFICATIONS_FROM_EMAIL || process.env.RESEND_DEFAULT_FROM_EMAIL || 'notifications@updates.weave365.com';
       const targetEmail = process.env.NEXT_PUBLIC_STORE_EMAIL || 'weave365@gmail.com';
 
-      const itemsRowsHtml = items.map((item, idx) => `
+      const itemsRowsHtml = verifiedItems.map((item, idx) => `
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${idx + 1}</td>
           <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
-            <strong>${item.product_title || 'Handloom Saree / Textile'}</strong>
-            <br/><span style="font-size: 11px; color: #6b7280;">Color: ${item.color || 'Standard'} | Code: ${item.variant_code || 'N/A'}</span>
+            <strong>${escapeHtml(item.product_title || 'Handloom Saree / Textile')}</strong>
+            <br/><span style="font-size: 11px; color: #6b7280;">Color: ${escapeHtml(item.color || 'Standard')} | Code: ${escapeHtml(item.variant_code || 'N/A')}</span>
           </td>
           <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity || 1}</td>
           <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">₹${Number((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</td>
         </tr>
       `).join('');
 
-      const emailSubject = `🎉 New Order #${resolvedOrderNumber || orderId?.slice(0, 8)}: ${fullName} (₹${Number(total_amount).toLocaleString('en-IN')}) - ${paymentLabel}`;
+      const safeFullName = escapeHtml(fullName).replace(/[\r\n]/g, ' ');
+      const emailSubject = `🎉 New Order #${resolvedOrderNumber || orderId?.slice(0, 8)}: ${fullName.replace(/[\r\n]/g, ' ')} (₹${verifiedTotalAmount.toLocaleString('en-IN')}) - ${paymentLabel}`;
       const emailHtml = `
         <!DOCTYPE html>
         <html>
@@ -227,23 +330,23 @@ export async function POST(request) {
           <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
             <div style="background: #0f172a; color: #ffffff; padding: 24px; text-align: center;">
               <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">NEW WEAVE 365 ORDER RECEIVED</h1>
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Order Ref: ${resolvedOrderNumber} &middot; ID: ${orderId}</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Order Ref: ${escapeHtml(resolvedOrderNumber)} &middot; ID: ${escapeHtml(orderId)}</p>
             </div>
             <div style="padding: 24px;">
               <div style="background: #f1f5f9; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Payment Method:</strong> ${paymentLabel}</p>
-                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Order Total:</strong> ₹${Number(total_amount).toLocaleString('en-IN')}</p>
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Payment Method:</strong> ${escapeHtml(paymentLabel)}</p>
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Order Total:</strong> ₹${verifiedTotalAmount.toLocaleString('en-IN')}</p>
                 <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Shipping Mode:</strong> ${isDropship ? 'White-Label Dropship' : 'Standard Delivery'}</p>
-                ${notes ? `<p style="margin: 0; font-size: 14px; color: #0369a1;"><strong>Payment Reference / Notes:</strong> ${notes}</p>` : ''}
+                ${notes ? `<p style="margin: 0; font-size: 14px; color: #0369a1;"><strong>Payment Reference / Notes:</strong> ${escapeHtml(notes)}</p>` : ''}
               </div>
 
               <h3 style="font-size: 14px; text-transform: uppercase; color: #64748b; margin: 0 0 10px 0; letter-spacing: 0.5px;">Delivery Address</h3>
               <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #334155; background: #fafafa; padding: 12px; border-radius: 6px; border: 1px solid #f1f5f9;">
-                <strong>${fullName}</strong><br/>
-                Phone: ${phone}<br/>
-                ${email ? 'Email: ' + email + '<br/>' : ''}
-                ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}<br/>
-                ${city}, ${state} - ${pincode}<br/>
+                <strong>${safeFullName}</strong><br/>
+                Phone: ${escapeHtml(phone)}<br/>
+                ${email ? 'Email: ' + escapeHtml(email) + '<br/>' : ''}
+                ${escapeHtml(addr1)}${delivery_details.address_line2 ? ', ' + escapeHtml(delivery_details.address_line2) : ''}<br/>
+                ${escapeHtml(city)}, ${escapeHtml(state)} - ${escapeHtml(pincode)}<br/>
                 India
               </p>
 

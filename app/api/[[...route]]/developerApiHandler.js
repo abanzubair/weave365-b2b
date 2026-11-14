@@ -20,12 +20,43 @@ export function _setSupabaseClientForTesting(client) {
 async function getSupabase() {
   if (!supabaseInstance) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !key) return null;
     const { createClient } = await import('@supabase/supabase-js');
     supabaseInstance = createClient(url, key);
   }
   return supabaseInstance;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isSafeFilterId(value) {
+  return typeof value === 'string' && /^[a-zA-Z0-9_-]{3,120}$/.test(value);
+}
+
+function sanitizeRawProduct(product) {
+  if (!product || typeof product !== 'object') return product;
+  const { b2bPrice, wholesaleBulkPrice, costPrice, ...rest } = product;
+  if (Array.isArray(rest.variants)) {
+    rest.variants = rest.variants.map((v) => {
+      if (!v || typeof v !== 'object') return v;
+      const prices = v.prices && typeof v.prices === 'object'
+        ? {
+            ...(v.prices.b2r !== undefined ? { b2r: v.prices.b2r } : {}),
+            ...(v.prices.single !== undefined ? { single: v.prices.single } : {}),
+          }
+        : undefined;
+      return { ...v, ...(prices ? { prices } : {}) };
+    });
+  }
+  return rest;
 }
 
 const defaultCorsHeaders = {
@@ -53,7 +84,7 @@ function getCorsHeaders(request, clientWebsite = null) {
 
   const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.weave365.com');
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : '*',
+    'Access-Control-Allow-Origin': isAllowed ? origin : 'https://www.weave365.com',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
     'Vary': 'Origin, X-API-Key, Authorization',
@@ -288,7 +319,15 @@ function applyStockOverrides(products, stockRows) {
   }
   return products.map((product) => {
     const key = product.id || product.groupKey;
-    const override = map.get(key);
+    let override = map.get(key);
+    if (!override && Array.isArray(product.variants)) {
+      for (const v of product.variants) {
+        if (v?.code && map.has(v.code)) {
+          override = map.get(v.code);
+          break;
+        }
+      }
+    }
     if (!override) return product;
     const stockKey = override.stock_status;
     const stockLabel = override.stock_status_label;
@@ -327,7 +366,7 @@ function formatForShopify(products) {
     // Compare-at price: Use D2C single price or markup, never the B2B bulk column
     const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
     const primaryImage = (Array.isArray(p.images) && p.images[0]) || '';
-    const descHtml = `<p>${p.description || p.fullDescription || p.title || ''}</p><p><strong>Fabric:</strong> ${p.fabric || 'Pure Silk'}<br><strong>Weave:</strong> ${p.weave || 'Handloom'}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
+    const descHtml = `<p>${escapeHtml(p.description || p.fullDescription || p.title || '')}</p><p><strong>Fabric:</strong> ${escapeHtml(p.fabric || 'Pure Silk')}<br><strong>Weave:</strong> ${escapeHtml(p.weave || 'Handloom')}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
     const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
     const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
 
@@ -346,7 +385,7 @@ function formatForShopify(products) {
           compare_at_price: suggestedMrp,
           inventory_management: 'shopify',
           inventory_policy: 'deny',
-          inventory_quantity: isOutOfStock ? 0 : 5,
+          inventory_quantity: isOutOfStock ? 0 : (typeof v.quantity === 'number' ? v.quantity : 5),
           option1: v.color || 'Default',
           image: v.image || primaryImage,
         };
@@ -436,7 +475,7 @@ function formatForStockSync(products) {
     const primaryImage = cleanImageList[0] || (typeof p.image === 'string' ? p.image.trim() : '');
     if (primaryImage && !cleanImageList.includes(primaryImage)) cleanImageList.unshift(primaryImage);
     const allImagesStr = cleanImageList.join(',');
-    const descHtml = `<p>${p.description || p.fullDescription || p.title || ''}</p><p><strong>Fabric:</strong> ${p.fabric || 'Pure Silk'}<br><strong>Weave:</strong> ${p.weave || 'Handloom'}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
+    const descHtml = `<p>${escapeHtml(p.description || p.fullDescription || p.title || '')}</p><p><strong>Fabric:</strong> ${escapeHtml(p.fabric || 'Pure Silk')}<br><strong>Weave:</strong> ${escapeHtml(p.weave || 'Handloom')}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
     const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
     const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
 
@@ -633,6 +672,11 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
   // 0. Automated Cron Endpoint for Subscription Renewal Reminders (7-day and 3-day notices)
   if (endpoint === 'cron-renewal-reminders' || endpoint === 'check-renewal-reminders') {
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = request.headers.get('authorization') || '';
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return Response.json({ status: 'error', code: 'UNAUTHORIZED', message: 'Valid cron secret required.' }, { status: 401, headers: defaultCorsHeaders });
+    }
     const result = await checkAndSendRenewalReminders(supabase);
     return Response.json({ status: 'success', result }, { headers: defaultCorsHeaders });
   }
@@ -676,10 +720,10 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
 
     // Mandatory Curated Product Selection Filter:
-    // Restrict products to the authenticated account's authorized catalog first
+    // Restrict products to the authenticated account's authorized catalog first and exclude archived items
     const authorizedProducts = getAuthorizedProducts(products, auth.keyRecord);
 
-    let resultProducts = authorizedProducts;
+    let resultProducts = authorizedProducts.filter((p) => !p.isArchived);
 
     // Optional Category Filtering (within authorized catalog)
     const category = searchParams.get('category');
@@ -720,12 +764,15 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     if (limitParam === 'all' || limitParam === 'max') {
       limit = Math.min(totalProducts || 1, maxAllowedLimit);
     } else {
-      limit = Math.min(maxAllowedLimit, Math.max(1, parseInt(limitParam || String(defaultLimit), 10)));
+      const parsedLimit = parseInt(limitParam || String(defaultLimit), 10);
+      limit = Math.min(maxAllowedLimit, Math.max(1, Number.isFinite(parsedLimit) ? parsedLimit : defaultLimit));
     }
 
-    const page = Math.max(1, parseInt(pageParam || '1', 10));
+    const parsedPage = parseInt(pageParam || '1', 10);
+    const page = Math.max(1, Number.isFinite(parsedPage) ? parsedPage : 1);
+    const parsedOffset = offsetParam !== null ? parseInt(offsetParam, 10) : NaN;
     const offset = offsetParam !== null
-      ? Math.max(0, parseInt(offsetParam, 10))
+      ? Math.max(0, Number.isFinite(parsedOffset) ? parsedOffset : 0)
       : (page - 1) * limit;
 
     const totalPages = Math.ceil(totalProducts / limit);
@@ -798,9 +845,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       });
     }
 
-    // Raw array export for standard feed if requested
+    // Raw array export for standard feed if requested (strictly strip B2B bulk/cost prices)
     if (isRaw) {
-      return Response.json(paginatedProducts, {
+      return Response.json(paginatedProducts.map(sanitizeRawProduct), {
         status: 200,
         headers: isJsonExtension ? feedHeaders : { ...securePrivateHeaders, ...cors },
       });
@@ -1116,8 +1163,10 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     const singleOrderId = searchParams.get('id') || searchParams.get('order_id') || pathSegments[2];
     const resellerOrderId = searchParams.get('reseller_order_id');
     const statusFilter = searchParams.get('status');
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
-    const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
+    const parsedOrderLimit = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = Math.min(100, Math.max(1, Number.isFinite(parsedOrderLimit) ? parsedOrderLimit : 50));
+    const parsedOrderOffset = parseInt(searchParams.get('offset') || '0', 10);
+    const offset = Math.max(0, Number.isFinite(parsedOrderOffset) ? parsedOrderOffset : 0);
 
     // STRICT ACCOUNT ISOLATION: Scoped strictly to authenticated api_key_id or user_id
     let apiOrdersQuery = supabase
@@ -1139,27 +1188,30 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       inquiriesQuery = inquiriesQuery.eq('user_id', auth.keyRecord.user_id);
     } else {
       apiOrdersQuery = apiOrdersQuery.eq('api_key_id', auth.keyRecord.id);
-      ordersQuery = ordersQuery.eq('business_name', auth.keyRecord.client_name || '__unmatched__');
-      inquiriesQuery = inquiriesQuery.eq('business_name', auth.keyRecord.client_name || '__unmatched__');
+      ordersQuery = null;
+      inquiriesQuery = null;
     }
 
     if (singleOrderId) {
       apiOrdersQuery = apiOrdersQuery.eq('id', singleOrderId);
-      ordersQuery = ordersQuery.eq('id', singleOrderId);
-      inquiriesQuery = inquiriesQuery.eq('id', singleOrderId);
+      if (ordersQuery) ordersQuery = ordersQuery.eq('id', singleOrderId);
+      if (inquiriesQuery) inquiriesQuery = inquiriesQuery.eq('id', singleOrderId);
     }
 
     if (statusFilter && statusFilter !== 'all') {
       apiOrdersQuery = apiOrdersQuery.eq('status', statusFilter.toLowerCase());
-      ordersQuery = ordersQuery.eq('status', statusFilter.toLowerCase());
-      inquiriesQuery = inquiriesQuery.eq('status', statusFilter.toLowerCase());
+      if (ordersQuery) ordersQuery = ordersQuery.eq('status', statusFilter.toLowerCase());
+      if (inquiriesQuery) inquiriesQuery = inquiriesQuery.eq('status', statusFilter.toLowerCase());
     }
 
-    const [{ data: apiOrdersData }, { data: ordersData }, { data: inqData }] = await Promise.all([
-      apiOrdersQuery.order('created_at', { ascending: false }).limit(limit),
-      ordersQuery.order('created_at', { ascending: false }).limit(limit),
-      inquiriesQuery.order('created_at', { ascending: false }).limit(limit),
+    const fetchWindow = Math.min(500, offset + limit);
+    const [{ data: apiOrdersData }, ordersRes, inqRes] = await Promise.all([
+      apiOrdersQuery.order('created_at', { ascending: false }).limit(fetchWindow),
+      ordersQuery ? ordersQuery.order('created_at', { ascending: false }).limit(fetchWindow) : Promise.resolve({ data: [] }),
+      inquiriesQuery ? inquiriesQuery.order('created_at', { ascending: false }).limit(fetchWindow) : Promise.resolve({ data: [] }),
     ]);
+    const ordersData = ordersRes?.data || [];
+    const inqData = inqRes?.data || [];
 
     // Normalize api_orders fields to match unified order representation
     const normalizedApiOrders = (apiOrdersData || []).map(a => ({
@@ -1251,7 +1303,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }
     };
 
-    let list = rawOrders.slice(offset, offset + limit).map((o) => {
+    let list = rawOrders.map((o) => {
       let extractedResellerOrderId = o.reseller_order_id || null;
       if (!extractedResellerOrderId && o.message) {
         const match = o.message.match(/\[(?:API Dropship Order|Wholesale API Order) #([^\]]+)\]/);
@@ -1306,6 +1358,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     if (resellerOrderId) {
       list = list.filter(o => o.reseller_order_id === resellerOrderId);
+    }
+    if (!singleOrderId) {
+      list = list.slice(offset, offset + limit);
     }
 
     if (singleOrderId) {
@@ -2101,12 +2156,12 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
   try {
     const body = await request.json();
     const orderId = String(body?.order_id || body?.id || body?.order_number || '').trim();
-    if (!orderId) {
+    if (!orderId || !isSafeFilterId(orderId)) {
       return Response.json({
         success: false,
         status: 'error',
         code: 'MISSING_ORDER_ID',
-        message: 'order_id or id is required.',
+        message: 'A valid order_id or id is required.',
       }, { status: 400, headers: corsHeaders });
     }
 
@@ -2194,7 +2249,18 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
       siteUrl = `http://${requestHost}`;
     }
 
-    const returnUrl = body?.return_url || `${siteUrl}/order-tracking/${order.id}`;
+    let returnUrl = `${siteUrl}/order-tracking/${order.id}`;
+    if (body?.return_url) {
+      try {
+        const parsedReturn = new URL(body.return_url);
+        const isAllowedReturn =
+          parsedReturn.origin === siteUrl ||
+          parsedReturn.hostname === 'www.weave365.com' ||
+          parsedReturn.hostname === 'weave365.com' ||
+          parsedReturn.hostname.endsWith('.weave365.com');
+        if (isAllowedReturn) returnUrl = parsedReturn.toString();
+      } catch {}
+    }
     const cleanId = order.id.replace(/-/g, '').slice(0, 12);
 
     const requestedGateway = String(body?.gateway || '').toLowerCase();
@@ -2328,11 +2394,11 @@ export async function handleVerifyOrderPayment(request, supabase, corsHeaders = 
   try {
     const body = await request.json();
     const orderId = String(body?.order_id || body?.id || body?.order_number || '').trim();
-    if (!orderId) {
+    if (!orderId || !isSafeFilterId(orderId)) {
       return Response.json({
         status: 'error',
         code: 'MISSING_ORDER_ID',
-        message: 'order_id or id is required.',
+        message: 'A valid order_id or id is required.',
       }, { status: 400, headers: corsHeaders });
     }
 
@@ -2340,62 +2406,88 @@ export async function handleVerifyOrderPayment(request, supabase, corsHeaders = 
     const ppOrderId = String(body?.pp_order_id || body?.merchant_order_id || '').trim();
     const cfOrderId = String(body?.cf_order_id || body?.payment_id || '').trim();
 
-    let paymentMethod = String(body?.payment_method || (ppOrderId ? 'phonepe' : cfOrderId ? 'cashfree' : 'instant_payment_link')).trim();
-    let paymentReference = String(body?.payment_reference || ppOrderId || cfOrderId || `SETTLE-${Date.now().toString(36).toUpperCase()}`).trim();
+    if (!ppOrderId && !cfOrderId) {
+      return Response.json({
+        status: 'error',
+        code: 'GATEWAY_VERIFICATION_REQUIRED',
+        message: 'A valid PhonePe (pp_order_id) or Cashfree (cf_order_id) transaction ID is required.',
+      }, { status: 400, headers: corsHeaders });
+    }
+
+    let paymentMethod = ppOrderId ? 'phonepe' : 'cashfree';
+    let paymentReference = ppOrderId || cfOrderId;
+    let gatewayVerified = false;
 
     // 1. Verify with PhonePe if pp_order_id is provided
     if (ppOrderId || gateway === 'phonepe') {
       const pp = getPhonePeConfig();
-      if (pp.clientId && pp.clientSecret && ppOrderId) {
-        try {
-          const status = await fetchOrderStatus(pp, ppOrderId);
-          if (status.ok && status.data?.state === 'COMPLETED') {
-            paymentMethod = 'phonepe';
-            paymentReference = status.data?.paymentDetails?.[0]?.transactionId || ppOrderId;
-          } else if (status.data?.state === 'FAILED') {
-            return Response.json({
-              status: 'failed',
-              message: 'PhonePe payment failed or was declined.',
-            }, { status: 400, headers: corsHeaders });
-          } else if (status.data?.state === 'PENDING') {
-            return Response.json({
-              status: 'pending',
-              message: 'PhonePe payment is still processing.',
-            }, { status: 202, headers: corsHeaders });
-          }
-        } catch (ppErr) {
-          console.warn('[handleVerifyOrderPayment] PhonePe verification query warning:', ppErr);
+      if (!pp.clientId || !pp.clientSecret || !ppOrderId) {
+        return Response.json({ status: 'error', message: 'PhonePe verification unavailable.' }, { status: 500, headers: corsHeaders });
+      }
+      const status = await fetchOrderStatus(pp, ppOrderId);
+      if (status.ok && status.data?.state === 'COMPLETED') {
+        const metaOrderId = status.data?.metaInfo?.udf1;
+        if (metaOrderId && metaOrderId !== orderId && !ppOrderId.includes(orderId.replace(/-/g, '').slice(0, 12))) {
+          return Response.json({ status: 'error', message: 'Payment reference does not match order.' }, { status: 400, headers: corsHeaders });
         }
+        paymentMethod = 'phonepe';
+        paymentReference = status.data?.paymentDetails?.[0]?.transactionId || ppOrderId;
+        gatewayVerified = true;
+      } else if (status.data?.state === 'PENDING') {
+        return Response.json({
+          status: 'pending',
+          message: 'PhonePe payment is still processing.',
+        }, { status: 202, headers: corsHeaders });
+      } else {
+        return Response.json({
+          status: 'failed',
+          message: 'PhonePe payment failed or was not completed.',
+        }, { status: 400, headers: corsHeaders });
       }
     }
 
     // 2. Verify with Cashfree if cf_order_id is provided
-    if (cfOrderId || gateway === 'cashfree') {
+    if (!gatewayVerified && (cfOrderId || gateway === 'cashfree')) {
       const cf = getCashfreeConfig();
-      if (cf.appId && cf.secretKey && cfOrderId) {
-        try {
-          const cfRes = await fetch(`${cf.baseUrl}/orders/${encodeURIComponent(cfOrderId)}`, {
-            method: 'GET',
-            headers: {
-              'x-client-id': cf.appId,
-              'x-client-secret': cf.secretKey,
-              'x-api-version': cf.apiVersion,
-            },
-          });
-          const cfData = await cfRes.json();
-          if (cfData?.order_status === 'PAID') {
-            paymentMethod = 'cashfree';
-            paymentReference = cfOrderId;
-          } else if (cfData?.order_status === 'FAILED' || cfData?.order_status === 'CANCELLED') {
-            return Response.json({
-              status: 'failed',
-              message: 'Cashfree payment failed or was cancelled.',
-            }, { status: 400, headers: corsHeaders });
-          }
-        } catch (cfErr) {
-          console.warn('[handleVerifyOrderPayment] Cashfree verification query warning:', cfErr);
-        }
+      if (!cf.appId || !cf.secretKey || !cfOrderId) {
+        return Response.json({ status: 'error', message: 'Cashfree verification unavailable.' }, { status: 500, headers: corsHeaders });
       }
+      const cfRes = await fetch(`${cf.baseUrl}/orders/${encodeURIComponent(cfOrderId)}`, {
+        method: 'GET',
+        headers: {
+          'x-client-id': cf.appId,
+          'x-client-secret': cf.secretKey,
+          'x-api-version': cf.apiVersion,
+        },
+      });
+      const cfData = await cfRes.json();
+      if (cfRes.ok && cfData?.order_status === 'PAID') {
+        const tagOrderId = cfData?.order_tags?.order_id;
+        if (tagOrderId && tagOrderId !== orderId && !cfOrderId.includes(orderId.replace(/-/g, '').slice(0, 12))) {
+          return Response.json({ status: 'error', message: 'Payment reference does not match order.' }, { status: 400, headers: corsHeaders });
+        }
+        paymentMethod = 'cashfree';
+        paymentReference = cfOrderId;
+        gatewayVerified = true;
+      } else if (cfData?.order_status === 'ACTIVE') {
+        return Response.json({
+          status: 'pending',
+          message: 'Cashfree payment is still pending.',
+        }, { status: 202, headers: corsHeaders });
+      } else {
+        return Response.json({
+          status: 'failed',
+          message: 'Cashfree payment failed or was cancelled.',
+        }, { status: 400, headers: corsHeaders });
+      }
+    }
+
+    if (!gatewayVerified) {
+      return Response.json({
+        status: 'error',
+        code: 'PAYMENT_NOT_VERIFIED',
+        message: 'Payment could not be verified with the payment gateway.',
+      }, { status: 402, headers: corsHeaders });
     }
 
     let updatedOrder = null;
@@ -2513,6 +2605,11 @@ export async function handleDeveloperApiPost(request, pathSegments) {
     return handleVerifySubscription(request, supabase);
   }
   if (endpoint === 'send-renewal-reminders' || endpoint === 'cron-renewal-reminders') {
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = request.headers.get('authorization') || '';
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return Response.json({ status: 'error', code: 'UNAUTHORIZED', message: 'Valid cron secret required.' }, { status: 401, headers: defaultCorsHeaders });
+    }
     const result = await checkAndSendRenewalReminders(supabase);
     return Response.json({ status: 'success', result }, { headers: defaultCorsHeaders });
   }
@@ -2627,6 +2724,14 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }
       } catch (e) {
         console.warn('Failed to load products_json for order enrichment:', e);
+      }
+
+      if (!Array.isArray(catalogList) || catalogList.length === 0) {
+        return Response.json({
+          status: 'error',
+          code: 'CATALOG_UNAVAILABLE',
+          message: 'Product catalog is temporarily unavailable for order validation.',
+        }, { status: 503, headers: cors });
       }
 
       // Enforce product authorization boundary: ensure all requested SKUs are authorized for this API key
@@ -2761,6 +2866,15 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         };
       });
 
+      const invalidItem = normalizedItems.find((it) => !it.wholesale_price || Number(it.wholesale_price) <= 0);
+      if (invalidItem) {
+        return Response.json({
+          status: 'error',
+          code: 'INVALID_PRODUCT_SKU',
+          message: `Unknown or unpriced product SKU '${invalidItem.sku}'.`,
+        }, { status: 400, headers: cors });
+      }
+
       // Compute total wholesale amount vs total retail customer amount
       const totalWholesaleAmount = normalizedItems.reduce((acc, it) => acc + ((Number(it.wholesale_price) || 0) * (it.quantity || 1)), 0);
       const calculatedRetailTotal = normalizedItems.reduce((acc, it) => acc + ((Number(it.selling_price) || 0) * (it.quantity || 1)), 0);
@@ -2788,7 +2902,12 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const outOfStockItems = [];
 
       for (const item of normalizedItems) {
-        const override = (stockData || []).find(s => (s.product_id || '').toLowerCase() === item.sku.toLowerCase());
+        const itemSkuLower = String(item.sku || '').toLowerCase();
+        const itemProdLower = String(item.product_id || '').toLowerCase();
+        const override = (stockData || []).find((s) => {
+          const sId = String(s.product_id || '').toLowerCase();
+          return sId === itemSkuLower || (itemProdLower && sId === itemProdLower);
+        });
         if (override && override.stock_status === 'out-of-stock') {
           outOfStockItems.push({ sku: item.sku, reason: 'Out of stock in warehouse' });
         }
@@ -2867,16 +2986,16 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         insertedOrder = apiRes.data;
       } else {
         // 2. Fallback: orders table
-        const orderNumber = reseller_order_id ? `API-${reseller_order_id}` : `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+        const orderNumber = resolvedResellerOrderId ? `API-${resolvedResellerOrderId}` : `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
         const orderPayload = {
           order_number: orderNumber,
           user_id: auth.keyRecord.user_id,
-          buyer_name: cust.name,
+          buyer_name: customerName,
           business_name: senderName,
-          phone: cust.phone,
-          email: cust.email || resellerEmail || '',
-          pincode: recipientPincode,
-          message: `[Wholesale API Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. ${courierSlipSummary} Notes: ${shipping_notes || 'Wholesale Packaging'}`,
+          phone: customerPhone,
+          email: recipientEmail || resellerEmail || '',
+          pincode: customerPincode,
+          message: `[Wholesale API Order #${resolvedResellerOrderId || 'N/A'}] Delivery Address: ${fullAddressStr}. ${courierSlipSummary} Notes: ${resolvedNotes || 'Wholesale Packaging'}`,
           items: normalizedItems,
           total_amount: totalWholesaleAmount,
           payment_method: isCod ? 'cod' : 'api_invoice_payment',
