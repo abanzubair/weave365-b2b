@@ -41,9 +41,205 @@ function isSafeFilterId(value) {
   return typeof value === 'string' && /^[a-zA-Z0-9_-]{3,120}$/.test(value);
 }
 
+/**
+ * Calculate product weight with +100g (0.1kg) offset as requested for API consumers.
+ * Handles database records stored in kg (e.g. 0.7, 0.8, 1.2) or grams.
+ */
+function getAdjustedWeight(p) {
+  const rawWeight = Number(p?.weight ?? p?.raw?.Weight ?? 0.8);
+  const baseWeightKg = (!isNaN(rawWeight) && rawWeight > 0)
+    ? (rawWeight > 20 ? rawWeight / 1000 : rawWeight)
+    : 0.8;
+  const adjustedWeightKg = Math.round((baseWeightKg + 0.1) * 1000) / 1000;
+  const adjustedWeightGrams = Math.round(adjustedWeightKg * 1000);
+  return {
+    kg: adjustedWeightKg,
+    grams: adjustedWeightGrams,
+  };
+}
+
+/**
+ * Resolve authentic product quantity from database & sheet records.
+ * Returns 0 if product is marked out-of-stock, archived, or sheet quantity is 0.
+ */
+function getProductQuantity(p, isOutOfStock) {
+  if (isOutOfStock || p?.isOutOfStock || p?.isArchived) {
+    return 0;
+  }
+  if (typeof p?.quantity === 'number' && !isNaN(p.quantity)) {
+    return Math.max(0, p.quantity);
+  }
+  if (p?.raw && p.raw.Quantity !== undefined && p.raw.Quantity !== null && p.raw.Quantity !== '') {
+    const parsed = Number(String(p.raw.Quantity).replace(/[^\d.]/g, ''));
+    if (!isNaN(parsed)) return Math.max(0, parsed);
+  }
+  return 5;
+}
+
+function getVariantQuantity(v, p, isOutOfStock) {
+  if (isOutOfStock || p?.isOutOfStock || p?.isArchived) {
+    return 0;
+  }
+  if (typeof v?.quantity === 'number' && !isNaN(v.quantity)) {
+    return Math.max(0, v.quantity);
+  }
+  return getProductQuantity(p, isOutOfStock);
+}
+
+/**
+ * Construct expanded, white-labeled HTML product details for paid and standard API users.
+ * Removes supplier branding ("Certified Weave365 Authentic" -> "100% Certified Authentic")
+ * and expands comprehensive attributes available in the database (Fabric, Weave, Work, Pattern, etc.).
+ */
+function buildProductDescriptionHtml(p, weightInfo) {
+  const descParagraph = escapeHtml(p?.description || p?.fullDescription || p?.summary || p?.title || '');
+  const lines = [];
+
+  if (p?.fabric) {
+    lines.push(`<strong>Fabric:</strong> ${escapeHtml(p.fabric)}`);
+  } else if (!p?.fabricTop) {
+    lines.push(`<strong>Fabric:</strong> Pure Silk`);
+  }
+  if (p?.fabricTop) {
+    lines.push(`<strong>Fabric (Top):</strong> ${escapeHtml(p.fabricTop)}`);
+  }
+  if (p?.fabricBottom) {
+    lines.push(`<strong>Fabric (Bottom):</strong> ${escapeHtml(p.fabricBottom)}`);
+  }
+  if (p?.fabricDupatta) {
+    lines.push(`<strong>Fabric (Dupatta):</strong> ${escapeHtml(p.fabricDupatta)}`);
+  }
+  if (p?.weave) {
+    lines.push(`<strong>Weave:</strong> ${escapeHtml(p.weave)}`);
+  } else {
+    lines.push(`<strong>Weave:</strong> Handloom`);
+  }
+  if (p?.work) {
+    lines.push(`<strong>Work / Craft:</strong> ${escapeHtml(p.work)}`);
+  }
+  if (p?.pattern) {
+    lines.push(`<strong>Pattern:</strong> ${escapeHtml(p.pattern)}`);
+  }
+  if (p?.purity) {
+    lines.push(`<strong>Purity:</strong> ${escapeHtml(p.purity)}`);
+  }
+  if (p?.type) {
+    lines.push(`<strong>Type:</strong> ${escapeHtml(p.type)}`);
+  }
+  if (p?.style) {
+    lines.push(`<strong>Style:</strong> ${escapeHtml(p.style)}`);
+  }
+  if (p?.occasion) {
+    lines.push(`<strong>Occasion:</strong> ${escapeHtml(p.occasion)}`);
+  }
+  if (p?.category) {
+    lines.push(`<strong>Category:</strong> ${escapeHtml(p.category)}`);
+  }
+  if (p?.subCategory) {
+    lines.push(`<strong>Sub Category:</strong> ${escapeHtml(p.subCategory)}`);
+  }
+  if (weightInfo && weightInfo.kg) {
+    lines.push(`<strong>Weight:</strong> ${weightInfo.kg} kg (${weightInfo.grams} g)`);
+  }
+  if (p?.care || (!p?.fabric || /silk/i.test(p.fabric))) {
+    lines.push(`<strong>Care Instructions:</strong> ${escapeHtml(p?.care || 'Dry Clean Only')}`);
+  }
+  lines.push(`<strong>Authenticity:</strong> 100% Certified Authentic`);
+
+  const detailsHtml = lines.join('<br>');
+  return descParagraph ? `<p>${descParagraph}</p><p>${detailsHtml}</p>` : `<p>${detailsHtml}</p>`;
+}
+
+/**
+ * Format product into comprehensive standard B2B/API representation.
+ * Includes actual database quantity, +100g adjusted weight, white-labeled expanded HTML description,
+ * and all rich attributes from the database.
+ */
+function formatStandardProduct(p) {
+  const firstPrices = p.variants?.[0]?.prices || {};
+  const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
+  const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
+  
+  const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
+  const productQty = getProductQuantity(p, isOutOfStock);
+  const weightInfo = getAdjustedWeight(p);
+  const descHtml = buildProductDescriptionHtml(p, weightInfo);
+
+  const extractedColors = Array.isArray(p.colorOptions) && p.colorOptions.length > 0
+    ? p.colorOptions.map(c => c.name).filter(Boolean)
+    : (Array.isArray(p.colors) && p.colors.length > 0
+      ? p.colors
+      : (Array.isArray(p.variants)
+        ? Array.from(new Set(p.variants.map(v => v.color).filter(Boolean)))
+        : []));
+
+  const structuredVariants = (p.variants || []).map((v, idx) => {
+    const vPrices = v.prices || {};
+    const vPrice = Number(vPrices.b2r || resellerPrice);
+    const vStock = getVariantQuantity(v, p, isOutOfStock);
+    return {
+      code: v.code || `${p.id || p.groupKey}-${idx + 1}`,
+      sku: v.code || `${p.id || p.groupKey}-${idx + 1}`,
+      color: v.color || '',
+      image: v.image || '',
+      price: vPrice,
+      compare_at_price: suggestedMrp,
+      quantity: vStock,
+      inventory_quantity: vStock,
+      stock: vStock,
+      weight: weightInfo.kg,
+      weight_unit: 'kg',
+      grams: weightInfo.grams,
+      is_available: !isOutOfStock && vStock > 0,
+    };
+  });
+
+  return {
+    id: p.id || p.groupKey,
+    sku: p.id || p.groupKey,
+    title: p.title || p.name,
+    category: p.category || 'Sarees',
+    sub_category: p.subCategory || '',
+    fabric: p.fabric || 'Pure Silk',
+    fabric_top: p.fabricTop || '',
+    fabric_bottom: p.fabricBottom || '',
+    fabric_dupatta: p.fabricDupatta || '',
+    weave: p.weave || 'Handloom',
+    work: p.work || '',
+    pattern: p.pattern || '',
+    purity: p.purity || '',
+    type: p.type || '',
+    style: p.style || '',
+    occasion: p.occasion || '',
+    price: resellerPrice,
+    compare_at_price: suggestedMrp,
+    currency: 'INR',
+    quantity: productQty,
+    inventory_quantity: productQty,
+    stock: productQty,
+    weight: weightInfo.kg,
+    weight_unit: 'kg',
+    grams: weightInfo.grams,
+    stock_status: p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock'),
+    stock_status_label: p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
+    is_available: !isOutOfStock && productQty > 0,
+    colors: extractedColors,
+    color_options: p.colorOptions || [],
+    variants: structuredVariants,
+    images: p.images || [],
+    description: descHtml,
+    plain_description: p.description || p.fullDescription || p.summary || p.title || '',
+    body_html: descHtml,
+  };
+}
+
 function sanitizeRawProduct(product) {
   if (!product || typeof product !== 'object') return product;
   const { b2bPrice, wholesaleBulkPrice, costPrice, ...rest } = product;
+  const weightInfo = getAdjustedWeight(product);
+  rest.weight = weightInfo.kg;
+  rest.weight_unit = 'kg';
+  rest.grams = weightInfo.grams;
   if (Array.isArray(rest.variants)) {
     rest.variants = rest.variants.map((v) => {
       if (!v || typeof v !== 'object') return v;
@@ -53,7 +249,13 @@ function sanitizeRawProduct(product) {
             ...(v.prices.single !== undefined ? { single: v.prices.single } : {}),
           }
         : undefined;
-      return { ...v, ...(prices ? { prices } : {}) };
+      return {
+        ...v,
+        weight: weightInfo.kg,
+        weight_unit: 'kg',
+        grams: weightInfo.grams,
+        ...(prices ? { prices } : {}),
+      };
     });
   }
   return rest;
@@ -371,9 +573,25 @@ function formatForShopify(products) {
     // Compare-at price: Use D2C single price or markup, never the B2B bulk column
     const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
     const primaryImage = (Array.isArray(p.images) && p.images[0]) || '';
-    const descHtml = `<p>${escapeHtml(p.description || p.fullDescription || p.title || '')}</p><p><strong>Fabric:</strong> ${escapeHtml(p.fabric || 'Pure Silk')}<br><strong>Weave:</strong> ${escapeHtml(p.weave || 'Handloom')}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
-    const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
-    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
+    
+    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
+    const productQty = getProductQuantity(p, isOutOfStock);
+    const weightInfo = getAdjustedWeight(p);
+    const descHtml = buildProductDescriptionHtml(p, weightInfo);
+
+    const tagsStr = [
+      p.fabric,
+      p.weave,
+      p.work,
+      p.pattern,
+      p.purity,
+      p.type,
+      p.style,
+      p.occasion,
+      p.category,
+      p.subCategory,
+      p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock')
+    ].filter(Boolean).join(', ');
 
     const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
     const shopifyVariants = hasExplicitVariants
@@ -381,6 +599,7 @@ function formatForShopify(products) {
         const vPrices = v.prices || {};
         const vPrice = Number(vPrices.b2r || resellerPrice);
         const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
+        const vStock = getVariantQuantity(v, p, isOutOfStock);
         return {
           id: `${p.id || p.groupKey}-${idx + 1}`,
           title: v.color || `Option ${idx + 1}`,
@@ -390,13 +609,17 @@ function formatForShopify(products) {
           compare_at_price: suggestedMrp,
           inventory_management: 'shopify',
           inventory_policy: 'deny',
-          inventory_quantity: isOutOfStock ? 0 : (typeof v.quantity === 'number' ? v.quantity : 5),
+          inventory_quantity: vStock,
           option1: v.color || 'Default',
           image: v.image || primaryImage,
+          weight: weightInfo.kg,
+          weight_unit: 'kg',
+          grams: weightInfo.grams,
         };
       })
       : (p.colors || ['Default']).map((color, idx) => {
         const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `C${idx + 1}`}-${idx + 1}`;
+        const vStock = productQty;
         return {
           id: `${p.id || p.groupKey}-${idx + 1}`,
           title: color,
@@ -406,13 +629,16 @@ function formatForShopify(products) {
           compare_at_price: suggestedMrp,
           inventory_management: 'shopify',
           inventory_policy: 'deny',
-          inventory_quantity: isOutOfStock ? 0 : 5,
+          inventory_quantity: vStock,
           option1: color,
+          weight: weightInfo.kg,
+          weight_unit: 'kg',
+          grams: weightInfo.grams,
         };
       });
 
     const rootSku = shopifyVariants[0]?.sku || p.id || p.groupKey;
-    const stockQty = isOutOfStock ? 0 : 5;
+    const stockQty = productQty;
 
     return {
       id: p.id || p.groupKey,
@@ -432,7 +658,11 @@ function formatForShopify(products) {
       Quantity: stockQty,
       inventory_quantity: stockQty,
       stock: stockQty,
-      is_available: !isOutOfStock,
+      weight: weightInfo.kg,
+      Weight: weightInfo.kg,
+      weight_unit: 'kg',
+      grams: weightInfo.grams,
+      is_available: !isOutOfStock && stockQty > 0,
       body_html: descHtml,
       description: descHtml,
       Description: descHtml,
@@ -441,6 +671,15 @@ function formatForShopify(products) {
       product_type: p.category || 'Sarees',
       category: p.category || 'Sarees',
       Category: p.category || 'Sarees',
+      sub_category: p.subCategory || '',
+      fabric: p.fabric || 'Pure Silk',
+      weave: p.weave || 'Handloom',
+      work: p.work || '',
+      pattern: p.pattern || '',
+      purity: p.purity || '',
+      type: p.type || '',
+      style: p.style || '',
+      occasion: p.occasion || '',
       tags: tagsStr,
       Tags: tagsStr,
       published: !isOutOfStock,
@@ -485,9 +724,25 @@ function formatForStockSync(products) {
     const primaryImage = cleanImageList[0] || (typeof p.image === 'string' ? p.image.trim() : '');
     if (primaryImage && !cleanImageList.includes(primaryImage)) cleanImageList.unshift(primaryImage);
     const allImagesStr = cleanImageList.join(',');
-    const descHtml = `<p>${escapeHtml(p.description || p.fullDescription || p.title || '')}</p><p><strong>Fabric:</strong> ${escapeHtml(p.fabric || 'Pure Silk')}<br><strong>Weave:</strong> ${escapeHtml(p.weave || 'Handloom')}<br><strong>Authenticity:</strong> 100% Certified Weave365 Authentic</p>`;
-    const tagsStr = [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', ');
-    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived);
+
+    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
+    const productQty = getProductQuantity(p, isOutOfStock);
+    const weightInfo = getAdjustedWeight(p);
+    const descHtml = buildProductDescriptionHtml(p, weightInfo);
+
+    const tagsStr = [
+      p.fabric,
+      p.weave,
+      p.work,
+      p.pattern,
+      p.purity,
+      p.type,
+      p.style,
+      p.occasion,
+      p.category,
+      p.subCategory,
+      p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock')
+    ].filter(Boolean).join(', ');
 
     const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
 
@@ -499,7 +754,7 @@ function formatForStockSync(products) {
         const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
         const vColor = v.color || `Option ${idx + 1}`;
         const vImage = (v.image || primaryImage || '').trim();
-        const vStock = isOutOfStock ? 0 : (typeof v.quantity === 'number' ? v.quantity : 5);
+        const vStock = getVariantQuantity(v, p, isOutOfStock);
 
         items.push({
           id: `${p.id || p.groupKey}-${idx + 1}`,
@@ -571,20 +826,42 @@ function formatForStockSync(products) {
           product_type: p.category || 'Sarees',
           category: p.category || 'Sarees',
           Category: p.category || 'Sarees',
+          sub_category: p.subCategory || '',
+          fabric: p.fabric || '',
+          Fabric: p.fabric || '',
+          weave: p.weave || '',
+          Weave: p.weave || '',
+          work: p.work || '',
+          Work: p.work || '',
+          pattern: p.pattern || '',
+          Pattern: p.pattern || '',
+          purity: p.purity || '',
+          Purity: p.purity || '',
+          type: p.type || '',
+          Type: p.type || '',
+          style: p.style || '',
+          Style: p.style || '',
+          occasion: p.occasion || '',
+          Occasion: p.occasion || '',
           tags: tagsStr,
           Tags: tagsStr,
           published: !isOutOfStock,
           inventory_tracked: true,
           status: isOutOfStock ? 'draft' : 'active',
-          weight: 0.8,
+          weight: weightInfo.kg,
+          Weight: weightInfo.kg,
           weight_unit: 'kg',
+          Weight_Unit: 'kg',
+          grams: weightInfo.grams,
+          Grams: weightInfo.grams,
+          weight_g: weightInfo.grams,
         });
       });
     } else {
       const colors = (Array.isArray(p.colors) && p.colors.length > 0) ? p.colors : ['Default'];
       colors.forEach((color, idx) => {
         const vSku = `${p.id || p.groupKey}-${color.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `C${idx + 1}`}-${idx + 1}`;
-        const vStock = isOutOfStock ? 0 : 5;
+        const vStock = productQty;
         items.push({
           id: `${p.id || p.groupKey}-${idx + 1}`,
           product_id: p.id || p.groupKey,
@@ -655,13 +932,35 @@ function formatForStockSync(products) {
           product_type: p.category || 'Sarees',
           category: p.category || 'Sarees',
           Category: p.category || 'Sarees',
+          sub_category: p.subCategory || '',
+          fabric: p.fabric || '',
+          Fabric: p.fabric || '',
+          weave: p.weave || '',
+          Weave: p.weave || '',
+          work: p.work || '',
+          Work: p.work || '',
+          pattern: p.pattern || '',
+          Pattern: p.pattern || '',
+          purity: p.purity || '',
+          Purity: p.purity || '',
+          type: p.type || '',
+          Type: p.type || '',
+          style: p.style || '',
+          Style: p.style || '',
+          occasion: p.occasion || '',
+          Occasion: p.occasion || '',
           tags: tagsStr,
           Tags: tagsStr,
           published: !isOutOfStock,
           inventory_tracked: true,
           status: isOutOfStock ? 'draft' : 'active',
-          weight: 0.8,
+          weight: weightInfo.kg,
+          Weight: weightInfo.kg,
           weight_unit: 'kg',
+          Weight_Unit: 'kg',
+          grams: weightInfo.grams,
+          Grams: weightInfo.grams,
+          weight_g: weightInfo.grams,
         });
       });
     }
@@ -876,50 +1175,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       total_products: totalProducts,
       page_products: paginatedProducts.length,
       last_synced_at: new Date().toISOString(),
-      products: paginatedProducts.map((p) => {
-        const firstPrices = p.variants?.[0]?.prices || {};
-        // Strictly B2R price only. B2B bulk wholesale / cost prices are never exposed on the API.
-        const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
-
-        const extractedColors = Array.isArray(p.colorOptions) && p.colorOptions.length > 0
-          ? p.colorOptions.map(c => c.name).filter(Boolean)
-          : (Array.isArray(p.colors) && p.colors.length > 0
-            ? p.colors
-            : (Array.isArray(p.variants)
-              ? Array.from(new Set(p.variants.map(v => v.color).filter(Boolean)))
-              : []));
-
-        const structuredVariants = (p.variants || []).map(v => {
-          const vPrices = v.prices || {};
-          const vPrice = Number(vPrices.b2r || resellerPrice);
-          return {
-            code: v.code,
-            sku: v.code,
-            color: v.color || '',
-            image: v.image || '',
-            price: vPrice,
-          };
-        });
-
-        return {
-          id: p.id || p.groupKey,
-          sku: p.id || p.groupKey,
-          title: p.title || p.name,
-          category: p.category || 'Sarees',
-          fabric: p.fabric || 'Pure Silk',
-          weave: p.weave || 'Handloom',
-          price: resellerPrice,
-          currency: 'INR',
-          stock_status: p.stockStatusOverride || (p.isOutOfStock ? 'out-of-stock' : 'ready-stock'),
-          stock_status_label: p.stockStatusLabel || (p.isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
-          is_available: !p.isOutOfStock && !p.isArchived,
-          colors: extractedColors,
-          color_options: p.colorOptions || [],
-          variants: structuredVariants,
-          images: p.images || [],
-          description: p.description || '',
-        };
-      }),
+      products: paginatedProducts.map(formatStandardProduct),
     }, {
       status: 200,
       headers: isJsonExtension ? feedHeaders : { ...securePrivateHeaders, ...cors },
@@ -965,11 +1221,14 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     const stockMap = {};
     resultProducts.forEach((p) => {
       const key = p.id || p.groupKey;
+      const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
+      const productQty = getProductQuantity(p, isOutOfStock);
       stockMap[key] = {
         title: p.title || p.name,
-        status: p.stockStatusOverride || (p.isOutOfStock ? 'out-of-stock' : 'ready-stock'),
-        is_available: !p.isOutOfStock && !p.isArchived,
-        stock_label: p.stockStatusLabel || (p.isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
+        status: p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock'),
+        is_available: !isOutOfStock && productQty > 0,
+        stock_label: p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
+        quantity: productQty,
         updated_at: p.stockLastUpdatedIST || new Date().toISOString(),
       };
     });
@@ -1031,27 +1290,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       return Response.json({
         status: 'success',
         total_products: matchedList.length,
-        products: matchedList.map((matched) => {
-          const firstPrices = matched.variants?.[0]?.prices || {};
-          // Strictly B2R Reseller Price (B2B bulk prices are blocked from API)
-          const resellerPrice = Number(firstPrices.b2r || matched.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
-          return {
-            id: matched.id || matched.groupKey,
-            sku: matched.id || matched.groupKey,
-            title: matched.title || matched.name,
-            category: matched.category || 'Sarees',
-            fabric: matched.fabric || 'Pure Silk',
-            weave: matched.weave || 'Handloom',
-            price: resellerPrice,
-            currency: 'INR',
-            stock_status: matched.stockStatusOverride || (matched.isOutOfStock ? 'out-of-stock' : 'ready-stock'),
-            stock_status_label: matched.stockStatusLabel || (matched.isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
-            is_available: !matched.isOutOfStock && !matched.isArchived,
-            colors: matched.colors || [],
-            images: matched.images || [],
-            description: matched.description || '',
-          };
-        }),
+        products: matchedList.map(formatStandardProduct),
       }, {
         status: 200,
         headers: { ...securePrivateHeaders, ...cors },
@@ -1076,28 +1315,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }, { status: 404, headers: cors });
     }
 
-    const firstPrices = matched.variants?.[0]?.prices || {};
-    // Strictly B2R Reseller Price (B2B bulk prices are blocked from API)
-    const resellerPrice = Number(firstPrices.b2r || matched.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
-
     return Response.json({
       status: 'success',
-      product: {
-        id: matched.id || matched.groupKey,
-        sku: matched.id || matched.groupKey,
-        title: matched.title || matched.name,
-        category: matched.category || 'Sarees',
-        fabric: matched.fabric || 'Pure Silk',
-        weave: matched.weave || 'Handloom',
-        price: resellerPrice,
-        currency: 'INR',
-        stock_status: matched.stockStatusOverride || (matched.isOutOfStock ? 'out-of-stock' : 'ready-stock'),
-        stock_status_label: matched.stockStatusLabel || (matched.isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
-        is_available: !matched.isOutOfStock && !matched.isArchived,
-        colors: matched.colors || [],
-        images: matched.images || [],
-        description: matched.description || '',
-      },
+      product: formatStandardProduct(matched),
     }, {
       status: 200,
       headers: { ...securePrivateHeaders, ...cors },
