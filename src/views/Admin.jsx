@@ -78,6 +78,8 @@ import {
   AdminLoadingScreen,
 } from './admin/AdminShared.jsx';
 
+const ADMIN_SIDEBAR_STORAGE_KEY = 'weave365_admin_sidebar_minimized';
+
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'orders', label: 'Orders' },
@@ -316,7 +318,45 @@ export function Admin({
 
   // Sidebar toggled for responsive viewports & minimize option
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(ADMIN_SIDEBAR_STORAGE_KEY);
+        if (saved !== null) {
+          return saved === 'true';
+        }
+      } catch (e) {
+        console.warn('Failed to load admin sidebar preference:', e);
+      }
+    }
+    return false;
+  });
+
+  const toggleSidebarMinimized = useCallback(() => {
+    setIsSidebarMinimized((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(ADMIN_SIDEBAR_STORAGE_KEY, String(next));
+        } catch (e) {
+          console.warn('Failed to persist admin sidebar preference:', e);
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  // Sync admin sidebar preference across browser tabs/windows
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleStorageChange = (e) => {
+      if (e.key === ADMIN_SIDEBAR_STORAGE_KEY && e.newValue !== null) {
+        setIsSidebarMinimized(e.newValue === 'true');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // API Call: Fetch all admin database tables
   async function loadAdminData() {
@@ -969,29 +1009,33 @@ export function Admin({
       {/* 1. Sidebar Panel (Desktop & Mobile Drawer) */}
       <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'} ${isSidebarMinimized ? 'minimized' : ''} ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="admin-sidebar-header">
-          {!isSidebarMinimized && (
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="admin-sidebar-brand-link"
-              title="Open Weave365 Homepage in new tab"
-            >
-              <img
-                src={assetSrc(brandLogo)}
-                alt={storeConfig.name}
-                style={{ height: '24px', width: 'auto', objectFit: 'contain' }}
-              />
-            </a>
-          )}
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="admin-sidebar-brand-link"
+            title="Open Weave365 Homepage in new tab"
+            tabIndex={isSidebarMinimized ? -1 : undefined}
+          >
+            <img
+              src={assetSrc(brandLogo)}
+              alt={storeConfig.name}
+              style={{ height: '24px', width: 'auto', objectFit: 'contain' }}
+            />
+          </a>
           {/* Desktop minimize button */}
           <button
             type="button"
             className="sidebar-toggle-btn admin-desktop-toggle-btn"
-            onClick={() => setIsSidebarMinimized((prev) => !prev)}
+            onClick={toggleSidebarMinimized}
             title={isSidebarMinimized ? 'Expand Sidebar' : 'Minimize Sidebar'}
+            aria-label={isSidebarMinimized ? 'Expand Sidebar' : 'Minimize Sidebar'}
+            aria-expanded={!isSidebarMinimized}
           >
-            {isSidebarMinimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            <ChevronLeft
+              size={16}
+              className={`admin-toggle-chevron ${isSidebarMinimized ? 'collapsed' : ''}`}
+            />
           </button>
           {/* Mobile drawer close button */}
           <button
@@ -1008,24 +1052,46 @@ export function Admin({
         <nav className="admin-sidebar-menu-wrapper">
           {sidebarSections.map((section) => (
             <div key={section.title} className="sidebar-group-section">
-              {!isSidebarMinimized && <span className="sidebar-group-title">{section.title}</span>}
+              <span className="sidebar-group-title">{section.title}</span>
               <div className="admin-sidebar-menu">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.key;
+                  const isBadgeActive = Boolean(item.badge);
+                  const hasBadgeCount = isBadgeActive && typeof item.badge !== 'boolean';
+                  const badgeText = hasBadgeCount ? String(item.badge) : '';
+                  const isSingleDigit = badgeText.length === 1;
+
                   return (
                     <button
                       key={item.key}
                       type="button"
                       className={`admin-sidebar-item ${isActive ? 'active' : ''}`}
                       onClick={() => setActiveTab(item.key)}
-                      title={isSidebarMinimized ? item.label : undefined}
+                      title={isSidebarMinimized ? (isBadgeActive ? `${item.label} (${hasBadgeCount ? badgeText : 'Alert'})` : item.label) : undefined}
                     >
                       <span className="admin-sidebar-item-content">
-                        <Icon size={18} />
-                        {!isSidebarMinimized && <span>{item.label}</span>}
+                        <span className="admin-sidebar-icon-wrap">
+                          <Icon size={18} />
+                          {isBadgeActive && (
+                            <span
+                              className={`admin-sidebar-badge-floating ${isSingleDigit ? 'is-single-digit' : ''} ${!hasBadgeCount ? 'is-dot' : ''}`}
+                              aria-label={hasBadgeCount ? `${badgeText} notifications` : 'Notification'}
+                            >
+                              {badgeText}
+                            </span>
+                          )}
+                        </span>
+                        <span className="admin-sidebar-item-label">{item.label}</span>
                       </span>
-                      {!isSidebarMinimized && item.badge && <span className="admin-sidebar-badge">{item.badge}</span>}
+                      {isBadgeActive && (
+                        <span
+                          className={`admin-sidebar-badge ${isSingleDigit ? 'is-single-digit' : ''} ${!hasBadgeCount ? 'is-dot' : ''}`}
+                          aria-label={hasBadgeCount ? `${badgeText} notifications` : 'Notification'}
+                        >
+                          {badgeText}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

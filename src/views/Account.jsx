@@ -250,6 +250,13 @@ export function Account({
   const [orderViewMode, setOrderViewMode] = useState('ledger');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
+  // Default to cards view mode on mobile devices
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setOrderViewMode('cards');
+    }
+  }, []);
+
   const copyCustomerTrackingLink = (orderRef) => {
     if (typeof window === 'undefined') return;
     const link = `${window.location.origin}/order-tracking/${encodeURIComponent(orderRef)}`;
@@ -1264,12 +1271,13 @@ export function Account({
                                         <span className="order-ref-code" title={displayRef}>
                                           #{displayRef}
                                         </span>
-                                        <span className="order-date-text">{orderDate}</span>
-                                        {isDropshipOrder ? (
-                                          <span className="order-badge-dropship">Dropship</span>
-                                        ) : (
-                                          <span className="order-badge-direct">Direct Wholesale</span>
-                                        )}
+                                        <div className="order-ref-meta-row">
+                                          <span className="order-date-text">{orderDate}</span>
+                                          <span className="order-ref-dot">·</span>
+                                          <span className="order-type-text">
+                                            {isDropshipOrder ? 'Dropship' : 'Direct Wholesale'}
+                                          </span>
+                                        </div>
                                       </div>
 
                                       {/* COL 2: PRODUCTS */}
@@ -1337,11 +1345,14 @@ export function Account({
 
                                       {/* COL 4: TOTAL */}
                                       <div className="ledger-td col-total">
+                                        <div className="ledger-total-info">
+                                          <span className="ledger-total-label">Total</span>
+                                          <span className="ledger-items-count">
+                                            ({orderItemsList.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} items)
+                                          </span>
+                                        </div>
                                         <span className="ledger-total-value">
                                           {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
-                                        </span>
-                                        <span className="ledger-items-count">
-                                          {orderItemsList.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} items
                                         </span>
                                       </div>
 
@@ -1489,6 +1500,9 @@ export function Account({
                                   ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
                                   : 0);
                               const isDropshipOrder = isOrderDropship(order);
+                              const isExpanded = expandedOrderId === order.id;
+                              const primaryItem = orderItemsList[0] || {};
+                              const extraItems = orderItemsList.slice(1);
                               const displayRef = order.order_number || order.id;
                               const senderName = dropshipSender?.sender_name || order.dropship_sender_name || order.sender_name || order.business_name || 'Reseller';
                               const senderPhone = dropshipSender?.sender_phone || order.dropship_sender_phone || order.sender_phone || '';
@@ -1508,17 +1522,13 @@ export function Account({
                                       <span className="order-ref-code" title={displayRef}>
                                         #{displayRef}
                                       </span>
-                                      <span className="order-ref-dot">·</span>
-                                      <span className="order-date-text">{orderDate}</span>
-                                      {isDropshipOrder ? (
-                                        <span className="order-badge-dropship">
-                                          Dropship
+                                      <div className="order-ref-meta-row">
+                                        <span className="order-date-text">{orderDate}</span>
+                                        <span className="order-ref-dot">·</span>
+                                        <span className="order-type-text">
+                                          {isDropshipOrder ? 'Dropship' : 'Direct Wholesale'}
                                         </span>
-                                      ) : (
-                                        <span className="order-badge-direct">
-                                          Direct
-                                        </span>
-                                      )}
+                                      </div>
                                     </div>
                                     <span 
                                       className="order-status-pill"
@@ -1539,38 +1549,69 @@ export function Account({
                                     </span>
                                   </div>
 
-                                  {/* DROPSHIP SENDER & RECIPIENT */}
+                                  {/* DROPSHIP SENDER & RECIPIENT - CLEAN FLAT TEXT, NO NESTED CARDS */}
                                   {isDropshipOrder && (
-                                    <div className="order-dropship-spec-box">
-                                      <div className="dropship-spec-col">
-                                        <span className="dropship-spec-label">Deliver To</span>
-                                        <span className="dropship-spec-name">{recipientName}</span>
-                                        <span className="dropship-spec-meta">
+                                    <div className="order-delivery-flat-info">
+                                      <div className="delivery-flat-line">
+                                        <span className="delivery-flat-label">To:</span>
+                                        <span className="delivery-flat-name">{recipientName}</span>
+                                        <span className="delivery-flat-sub">
                                           {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
-                                          {recipientPhone ? ` · ${recipientPhone}` : ''}
+                                          {recipientPhone ? ` · Ph: ${recipientPhone}` : ''}
                                         </span>
                                       </div>
 
-                                      <div className="dropship-spec-col">
-                                        <span className="dropship-spec-label">Sender (Ship From)</span>
-                                        <span className="dropship-spec-name">{senderName}</span>
-                                        {order.dropship_sender_address && (
-                                          <span className="dropship-spec-meta">{order.dropship_sender_address}</span>
+                                      <div className="delivery-flat-line">
+                                        <span className="delivery-flat-label">From:</span>
+                                        <span className="delivery-flat-name">{senderName}</span>
+                                        {order.dropship_sender_city && (
+                                          <span className="delivery-flat-sub">· {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}</span>
                                         )}
-                                        <span className="dropship-spec-meta">
-                                          {[order.dropship_sender_city, order.dropship_sender_pincode].filter(Boolean).join(' - ')}
-                                          {senderPhone ? ` · Ph: ${senderPhone}` : ''}
-                                        </span>
                                       </div>
                                     </div>
                                   )}
 
-                                  {/* ITEMS LIST */}
+                                  {/* ITEMS LIST (Minimal: 1st Item + Clean Toggle) */}
                                   <div className="order-items-list">
-                                    {orderItemsList.map((item, idx) => {
+                                    {/* Primary Item */}
+                                    <div className="order-item-row">
+                                      <img
+                                        src={getOptimizedImageUrl(resolveOrderItemImage(primaryItem), 'thumbnail')}
+                                        alt={primaryItem.product_title || primaryItem.title || 'Saree'}
+                                        className="order-item-thumb"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                          const fallback = getOriginalImageUrl(resolveOrderItemImage(primaryItem));
+                                          if (e.currentTarget.src !== fallback && fallback) {
+                                            e.currentTarget.src = fallback;
+                                          } else {
+                                            e.currentTarget.src = fallbackProductImage;
+                                          }
+                                        }}
+                                      />
+                                      <div className="order-item-details">
+                                        <span className="order-item-title">
+                                          {primaryItem.product_title || primaryItem.title || 'Banarasi Saree'}
+                                        </span>
+                                        <div className="order-item-meta-line">
+                                          {primaryItem.color && <span className="order-item-meta-part">{primaryItem.color}</span>}
+                                          {primaryItem.color && <span className="order-item-meta-dot">·</span>}
+                                          <span className="order-item-meta-part">Qty {primaryItem.quantity || 1}</span>
+                                          {(primaryItem.sku || primaryItem.variant_code) && (
+                                            <>
+                                              <span className="order-item-meta-dot">·</span>
+                                              <span className="order-item-meta-sku">#{primaryItem.sku || primaryItem.variant_code}</span>
+                                            </>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Extra Items when expanded */}
+                                    {isExpanded && extraItems.map((item, idx) => {
                                       const itemThumb = resolveOrderItemImage(item);
                                       return (
-                                        <div key={idx} className="order-item-row">
+                                        <div key={idx} className="order-item-row extra-item">
                                           <img
                                             src={getOptimizedImageUrl(itemThumb, 'thumbnail')}
                                             alt={item.product_title || item.title || 'Saree'}
@@ -1589,25 +1630,41 @@ export function Account({
                                             <span className="order-item-title">
                                               {item.product_title || item.title || 'Banarasi Saree'}
                                             </span>
-                                            <div className="order-item-meta-pills">
-                                              {item.color && (
-                                                <span className="order-item-pill">{item.color}</span>
-                                              )}
-                                              <span className="order-item-pill">Qty {item.quantity || 1}</span>
+                                            <div className="order-item-meta-line">
+                                              {item.color && <span className="order-item-meta-part">{item.color}</span>}
+                                              {item.color && <span className="order-item-meta-dot">·</span>}
+                                              <span className="order-item-meta-part">Qty {item.quantity || 1}</span>
                                               {(item.sku || item.variant_code) && (
-                                                <span className="order-item-sku">#{item.sku || item.variant_code}</span>
+                                                <>
+                                                  <span className="order-item-meta-dot">·</span>
+                                                  <span className="order-item-meta-sku">#{item.sku || item.variant_code}</span>
+                                                </>
                                               )}
                                             </div>
                                           </div>
                                         </div>
                                       );
                                     })}
+
+                                    {/* Multi-item Toggle - CLEAN FLAT LINK, NO NESTED CARD */}
+                                    {extraItems.length > 0 && (
+                                      <button
+                                        type="button"
+                                        className="order-card-expand-link"
+                                        onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                                      >
+                                        <span>{isExpanded ? 'Hide extra items' : `+${extraItems.length} more item${extraItems.length > 1 ? 's' : ''} in this order`}</span>
+                                        {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                                      </button>
+                                    )}
                                   </div>
 
                                   {/* BOTTOM BAR */}
                                   <div className="order-card-bottom-bar">
                                     <div className="order-total-block">
-                                      <span className="order-total-label">Total</span>
+                                      <span className="order-total-label">
+                                        Total ({orderItemsList.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} items)
+                                      </span>
                                       <span className="order-total-value">
                                         {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
                                       </span>
