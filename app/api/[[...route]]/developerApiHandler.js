@@ -88,8 +88,9 @@ function getVariantQuantity(v, p, isOutOfStock) {
 
 /**
  * Construct expanded, white-labeled HTML product details for paid and standard API users.
- * Removes supplier branding ("Certified Weave365 Authentic" -> "100% Certified Authentic")
+ * Removes supplier branding ("Certified Weave365 Authentic" -> "100% Banarasi")
  * and expands comprehensive attributes available in the database (Fabric, Weave, Work, Pattern, etc.).
+ * Appends standard product disclaimer note for external sync feeds.
  */
 function buildProductDescriptionHtml(p, weightInfo) {
   const descParagraph = escapeHtml(p?.description || p?.fullDescription || p?.summary || p?.title || '');
@@ -144,10 +145,14 @@ function buildProductDescriptionHtml(p, weightInfo) {
   if (p?.care || (!p?.fabric || /silk/i.test(p.fabric))) {
     lines.push(`<strong>Care Instructions:</strong> ${escapeHtml(p?.care || 'Dry Clean Only')}`);
   }
-  lines.push(`<strong>Authenticity:</strong> 100% Certified Authentic`);
+  lines.push(`<strong>Authenticity:</strong> ${escapeHtml(p?.authenticity || '100% Banarasi')}`);
 
   const detailsHtml = lines.join('<br>');
-  return descParagraph ? `<p>${descParagraph}</p><p>${detailsHtml}</p>` : `<p>${detailsHtml}</p>`;
+  const disclaimerHtml = `<strong>Disclaimer:</strong> Slight variations in color, fabric, and weaving are possible.<br>Model/Cover image is for reference only. Making a payment indicates your agreement to this.`;
+
+  return descParagraph
+    ? `<p>${descParagraph}</p><p>${detailsHtml}</p><p>${disclaimerHtml}</p>`
+    : `<p>${detailsHtml}</p><p>${disclaimerHtml}</p>`;
 }
 
 /**
