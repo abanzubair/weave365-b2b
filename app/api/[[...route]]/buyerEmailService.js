@@ -106,6 +106,40 @@ export function renderBuyerConfirmationEmailHtml({
     : (Array.isArray(order.items) ? order.items : []);
   const items = rawItems;
 
+  const rawSubtotal = items.reduce((acc, it) => {
+    const itemPrice = Number(it.unit_price ?? it.price ?? 0) || 0;
+    const qty = Number(it.quantity || 1);
+    return acc + (itemPrice * qty);
+  }, 0);
+
+  let couponDiscount = Number(order.coupon_discount || 0);
+  let couponCode = order.coupon_code || '';
+  if (!couponDiscount && order.message) {
+    const match = order.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9.,]+)\)/i);
+    if (match) {
+      couponCode = couponCode || match[1];
+      couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
+    }
+  }
+
+  let shippingFee = 0;
+  const isExpedited = order.shipping_speed === 'expedited' || (order.message && /Shipping:\s*Expedited/i.test(order.message));
+  if (order.shipping_amount && Number(order.shipping_amount) > 0) {
+    shippingFee = Number(order.shipping_amount);
+  } else if (order.message) {
+    const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i) ||
+                     order.message.match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9.,]+)\)/i);
+    if (feeMatch) {
+      shippingFee = Number(feeMatch[1].replace(/,/g, ''));
+    }
+  }
+
+  const finalPaidTotal = Number(order.total_amount) || 0;
+  let itemsSubtotal = rawSubtotal;
+  if (!itemsSubtotal || itemsSubtotal <= 0) {
+    itemsSubtotal = Math.max(0, finalPaidTotal + couponDiscount - shippingFee);
+  }
+
   const itemsRowsHtml = items.length > 0
     ? items.map((item, idx) => {
         const title = item.product_title || item.title || 'Handloom Textile';
@@ -255,25 +289,35 @@ export function renderBuyerConfirmationEmailHtml({
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 16px;">
                 <tr>
                   <td align="right" style="font-size: 12px; color: #71717a; padding: 4px 0;">
-                    Subtotal:
+                    Items Subtotal:
                   </td>
-                  <td align="right" style="font-size: 12px; color: #52525b; width: 100px; padding: 4px 0; font-variant-numeric: tabular-nums;">
-                    ${totalAmountFormatted}
+                  <td align="right" style="font-size: 12px; color: #18181b; width: 120px; padding: 4px 0; font-variant-numeric: tabular-nums;">
+                    ${formatCurrency(itemsSubtotal, orderCurrency)}
                   </td>
                 </tr>
+                ${couponDiscount > 0 ? `
+                <tr>
+                  <td align="right" style="font-size: 12px; color: #15803d; padding: 4px 0;">
+                    Coupon Discount:
+                  </td>
+                  <td align="right" style="font-size: 12px; font-weight: 500; color: #15803d; width: 120px; padding: 4px 0; font-variant-numeric: tabular-nums;">
+                    -${formatCurrency(couponDiscount, orderCurrency)}
+                  </td>
+                </tr>
+                ` : ''}
                 <tr>
                   <td align="right" style="font-size: 12px; color: #71717a; padding: 4px 0;">
-                    Insured Shipping:
+                    ${isExpedited ? 'Expedited Shipping (2-3 Days):' : 'Insured Shipping:'}
                   </td>
-                  <td align="right" style="font-size: 12px; color: #52525b; width: 100px; padding: 4px 0;">
-                    Complimentary
+                  <td align="right" style="font-size: 12px; color: #18181b; width: 120px; padding: 4px 0; font-variant-numeric: tabular-nums;">
+                    ${shippingFee > 0 ? formatCurrency(shippingFee, orderCurrency) : 'Complimentary'}
                   </td>
                 </tr>
                 <tr>
                   <td align="right" style="font-size: 14px; font-weight: 600; color: #18181b; padding: 10px 0 0 0; border-top: 1px solid #e4e4e7;">
-                    Total:
+                    Total Paid:
                   </td>
-                  <td align="right" style="font-size: 14px; font-weight: 600; color: #18181b; width: 100px; padding: 10px 0 0 0; border-top: 1px solid #e4e4e7; font-variant-numeric: tabular-nums;">
+                  <td align="right" style="font-size: 14px; font-weight: 600; color: #18181b; width: 120px; padding: 10px 0 0 0; border-top: 1px solid #e4e4e7; font-variant-numeric: tabular-nums;">
                     ${totalAmountFormatted}
                   </td>
                 </tr>
@@ -378,8 +422,17 @@ export async function sendBuyerOrderConfirmationEmail({
 
   const deliveryAddr = Array.isArray(orderRecord.order_delivery_addresses) ? orderRecord.order_delivery_addresses[0] : orderRecord.order_delivery_addresses;
   const targetEmail = overrideEmail || deliveryAddr?.email || orderRecord.email;
-  if (!targetEmail || !targetEmail.includes('@')) {
-    console.warn('[buyerEmailService] Order has no valid recipient email:', targetEmail);
+
+  const envAdminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => Boolean(e) && e.includes('@'));
+
+  const defaultAdmins = ['abanzubair@gmail.com', 'weave365@gmail.com'];
+  const adminEmails = Array.from(new Set([...defaultAdmins, ...envAdminEmails]));
+
+  if ((!targetEmail || !targetEmail.includes('@')) && adminEmails.length === 0) {
+    console.warn('[buyerEmailService] Order has no valid recipient or admin email:', targetEmail);
     return { success: false, reason: 'invalid_email' };
   }
 
@@ -420,33 +473,73 @@ export async function sendBuyerOrderConfirmationEmail({
 
   const subject = `Order Confirmed: ${orderNumber} &middot; Weave 365`;
 
+  let buyerResult = null;
+
   try {
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${resendApiKey}`,
-      },
-      body: JSON.stringify({
-        from: `Weave 365 <${fromEmail}>`,
-        to: targetEmail,
-        reply_to: replyToEmail,
-        subject: subject,
-        html: htmlContent,
-      }),
-    });
+    // 1. Send confirmation to buyer if valid email provided
+    if (targetEmail && targetEmail.includes('@')) {
+      const resendResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: `Weave 365 <${fromEmail}>`,
+          to: targetEmail,
+          reply_to: replyToEmail,
+          subject: subject,
+          html: htmlContent,
+        }),
+      });
 
-    const resData = await resendResponse.json();
-
-    if (!resendResponse.ok) {
-      console.error('[buyerEmailService] Resend dispatch failed:', resData);
-      return { success: false, reason: 'resend_error', details: resData };
+      const resData = await resendResponse.json();
+      if (resendResponse.ok) {
+        buyerResult = resData;
+        console.log(`[buyerEmailService] Confirmation email sent successfully to ${targetEmail}. Resend ID: ${resData.id}`);
+      } else {
+        console.error('[buyerEmailService] Resend buyer dispatch failed:', resData);
+      }
     }
 
-    console.log(`[buyerEmailService] Confirmation email sent successfully to ${targetEmail}. Resend ID: ${resData.id}`);
+    // 2. Dispatch instant order alert to admin email(s)
+    if (adminEmails.length > 0) {
+      try {
+        const recipientName = deliveryAddr?.recipient_name || orderRecord.buyer_name || orderRecord.dropship_recipient_name || 'Valued Buyer';
+        const orderCurrency = detectOrderCurrency(orderRecord);
+        const totalAmountFormatted = formatCurrency(orderRecord.total_amount, orderCurrency);
+        const paymentGatewayLabel = orderRecord.payment_method === 'phonepe' ? 'PhonePe' : 'Cashfree PG';
+        const adminSubject = `🎉 New Order #${orderNumber}: ${recipientName} (${totalAmountFormatted}) - ${paymentGatewayLabel}`;
+
+        const adminRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${resendApiKey}`,
+          },
+          body: JSON.stringify({
+            from: `Weave 365 Orders <${fromEmail}>`,
+            to: adminEmails,
+            reply_to: (targetEmail && targetEmail.includes('@')) ? targetEmail : replyToEmail,
+            subject: adminSubject,
+            html: htmlContent,
+          }),
+        });
+
+        const adminData = await adminRes.json();
+        if (adminRes.ok) {
+          console.log(`[buyerEmailService] Admin order notification sent to ${adminEmails.join(', ')}. Resend ID: ${adminData.id}`);
+        } else {
+          console.error('[buyerEmailService] Resend admin dispatch failed:', adminData);
+        }
+      } catch (adminErr) {
+        console.error('[buyerEmailService] Error sending admin notification:', adminErr);
+      }
+    }
+
     return {
       success: true,
-      resendId: resData.id,
+      resendId: buyerResult?.id || null,
       recipient: targetEmail,
       orderNumber,
     };

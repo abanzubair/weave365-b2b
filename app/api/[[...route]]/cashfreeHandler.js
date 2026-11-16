@@ -486,7 +486,7 @@ export async function handleVerifyOrder(request) {
           });
 
           if (order3NF?.coupon_code) {
-            void recordCouponUsage(supabase, {
+            await recordCouponUsage(supabase, {
               couponCode: order3NF.coupon_code,
               orderId: targetOrderId,
               orderNumber: order3NF.order_number,
@@ -717,7 +717,7 @@ export async function handleWebhook(request) {
             });
 
             if (order3NF?.coupon_code) {
-              void recordCouponUsage(supabase, {
+              await recordCouponUsage(supabase, {
                 couponCode: order3NF.coupon_code,
                 orderId: target.id,
                 orderNumber: order3NF.order_number,

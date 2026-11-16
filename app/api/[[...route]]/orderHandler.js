@@ -277,7 +277,7 @@ export async function POST(request) {
     const resolvedOrderNumber = insertedOrder?.order_number || orderNumber;
 
     if (normalizedCouponCode) {
-      void recordCouponUsage(supabase, {
+      await recordCouponUsage(supabase, {
         couponCode: normalizedCouponCode,
         orderId,
         orderNumber: resolvedOrderNumber,

@@ -219,7 +219,7 @@ async function markOrderPaid({ supabase, merchantOrderId, paidAmountPaise, trans
   try {
     await sendBuyerOrderConfirmationEmail({ orderId: order.id, order, supabase });
     if (order.coupon_code) {
-      void recordCouponUsage(supabase, {
+      await recordCouponUsage(supabase, {
         couponCode: order.coupon_code,
         orderId: order.id,
         orderNumber: order.order_number,
