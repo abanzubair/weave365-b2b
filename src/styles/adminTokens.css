@@ -179,7 +179,14 @@
   --admin-shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 
   /* Font Weights */
+  --admin-font-regular: 400;
+  --admin-font-medium: 500;
+  --admin-font-semibold: 600;
+  --admin-font-bold: 700;
+  --admin-font-extrabold: 800;
+
   --admin-font-weight-normal: 400;
+  --admin-font-weight-regular: 400;
   --admin-font-weight-medium: 500;
   --admin-font-weight-semibold: 600;
   --admin-font-weight-bold: 700;
