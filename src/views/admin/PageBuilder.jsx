@@ -220,7 +220,7 @@ export default function PageBuilder({
           <span className="admin-editor-title">
             Custom Page Configuration
           </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 10px)' }}>
             <button
               type="button"
               onClick={async () => {
@@ -230,7 +230,7 @@ export default function PageBuilder({
                 setIsLoadingPages(false);
               }}
               className="admin-btn-icon-subtle"
-              style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
+              style={{ padding: 'var(--admin-space-1, 4px) var(--admin-space-2, 8px)', display: 'flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 12px)' }}
               title="Refresh custom pages"
             >
               <RefreshCw size={13} style={{ animation: isLoadingPages ? 'spin 1s linear infinite' : 'none' }} /> Refresh
@@ -255,7 +255,7 @@ export default function PageBuilder({
                 }
               }}
               className="admin-field-input"
-              style={{ padding: '0.6rem 0.8rem', width: '100%', border: '1px solid #d1d5db', borderRadius: '4px' }}
+              style={{ padding: '0.6rem 0.8rem', width: '100%', border: '1px solid var(--admin-border, #d1d5db)', borderRadius: 'var(--admin-radius-xs, 4px)' }}
             >
               <option value="new">+ Create New Custom Landing Page</option>
               {landingPages.map(page => (
@@ -269,7 +269,7 @@ export default function PageBuilder({
           {/* URL Slug Field */}
           <div className="admin-field-container">
             <label className="admin-field-label">URL Slug *</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: 'var(--admin-space-2, 8px)' }}>
               <input
                 type="text"
                 value={builderSlug}
@@ -295,15 +295,15 @@ export default function PageBuilder({
                       baseText = baseText.substring(0, suffixIndex);
                     }
                     const clean = baseText
-                      .trim()
-                      .toLowerCase()
-                      .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9-_]/g, '')
-                      .replace(/-+/g, '-');
+                    .trim()
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^a-z0-9-_]/g, '')
+                    .replace(/-+/g, '-');
                     setBuilderSlug(clean);
                   }}
                   className="admin-btn-secondary-outline"
-                  style={{ whiteSpace: 'nowrap', padding: '0 12px' }}
+                  style={{ whiteSpace: 'nowrap', padding: '0 var(--admin-space-3, 12px)' }}
                 >
                   Auto-Generate
                 </button>
@@ -436,9 +436,9 @@ export default function PageBuilder({
           {/* Dynamic Filtering Rules */}
           <div className="admin-seo-meta-section">
             <label className="admin-faq-title">Inventory Filtering Rules</label>
-            <p className="admin-doc-card-muted" style={{ margin: '0 0 1rem' }}>Assign which products dynamically populate this collection grid based on their properties.</p>
+            <p className="admin-doc-card-muted" style={{ margin: '0 0 var(--admin-space-4, 1rem)' }}>Assign which products dynamically populate this collection grid based on their properties.</p>
             
-            <div className="admin-field-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="admin-field-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--admin-space-4, 1rem)' }}>
               <div>
                 <label className="admin-field-label">Filter: Category</label>
                 <input
@@ -461,7 +461,7 @@ export default function PageBuilder({
               </div>
             </div>
 
-            <div className="admin-field-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', margin: 0 }}>
+            <div className="admin-field-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--admin-space-4, 1rem)', margin: 0 }}>
               <div>
                 <label className="admin-field-label">Filter: Work Type</label>
                 <input
@@ -500,19 +500,19 @@ export default function PageBuilder({
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1.5rem 0 1rem' }}>
-              <label className="admin-field-label" style={{ fontWeight: '600', color: '#111827', margin: 0 }}>Sourcing Guide Steps</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 'var(--admin-space-6, 1.5rem) 0 var(--admin-space-4, 1rem)' }}>
+              <label className="admin-field-label" style={{ fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-heading, #111827)', margin: 0 }}>Sourcing Guide Steps</label>
               <button type="button" onClick={handleAddGuideSection} className="admin-btn-secondary-outline">
                 <Plus size={14} /> Add Step
               </button>
             </div>
 
             {builderBuyerGuideSections.map((section, idx) => (
-              <div key={idx} style={{ border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '6px', marginBottom: '1rem', backgroundColor: '#f9fafb', position: 'relative' }}>
+              <div key={idx} style={{ border: '1px solid var(--admin-border, #e5e7eb)', padding: 'var(--admin-space-4, 1rem)', borderRadius: 'var(--admin-radius-sm, 6px)', marginBottom: 'var(--admin-space-4, 1rem)', backgroundColor: 'var(--admin-surface-subtle, #f9fafb)', position: 'relative' }}>
                 <button
                   type="button"
                   onClick={() => handleRemoveGuideSection(idx)}
-                  style={{ position: 'absolute', right: '0.5rem', top: '0.5rem', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '3px' }}
+                  style={{ position: 'absolute', right: 'var(--admin-space-2, 0.5rem)', top: 'var(--admin-space-2, 0.5rem)', background: 'none', border: 'none', color: 'var(--admin-danger, #ef4444)', cursor: 'pointer', fontSize: 'var(--admin-font-size-14, 0.85rem)', display: 'flex', alignItems: 'center', gap: '3px' }}
                 >
                   <Trash2 size={13} /> Remove
                 </button>
@@ -540,13 +540,13 @@ export default function PageBuilder({
               </div>
             ))}
             {builderBuyerGuideSections.length === 0 && (
-              <p className="admin-muted admin-p20" style={{ textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '4px' }}>No guide steps added yet.</p>
+              <p className="admin-muted admin-p20" style={{ textAlign: 'center', backgroundColor: 'var(--admin-surface-subtle, #f9fafb)', borderRadius: 'var(--admin-radius-xs, 4px)' }}>No guide steps added yet.</p>
             )}
           </div>
 
           {/* FAQ List Editor */}
           <div className="admin-seo-meta-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--admin-space-4, 1rem)' }}>
               <label className="admin-faq-title" style={{ margin: 0 }}>FAQ Accordions</label>
               <button type="button" onClick={handleAddFaq} className="admin-btn-secondary-outline">
                 <Plus size={14} /> Add FAQ
@@ -554,11 +554,11 @@ export default function PageBuilder({
             </div>
 
             {builderFaqs.map((faq, idx) => (
-              <div key={idx} style={{ border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '6px', marginBottom: '1rem', backgroundColor: '#f9fafb', position: 'relative' }}>
+              <div key={idx} style={{ border: '1px solid var(--admin-border, #e5e7eb)', padding: 'var(--admin-space-4, 1rem)', borderRadius: 'var(--admin-radius-sm, 6px)', marginBottom: 'var(--admin-space-4, 1rem)', backgroundColor: 'var(--admin-surface-subtle, #f9fafb)', position: 'relative' }}>
                 <button
                   type="button"
                   onClick={() => handleRemoveFaq(idx)}
-                  style={{ position: 'absolute', right: '0.5rem', top: '0.5rem', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '3px' }}
+                  style={{ position: 'absolute', right: 'var(--admin-space-2, 0.5rem)', top: 'var(--admin-space-2, 0.5rem)', background: 'none', border: 'none', color: 'var(--admin-danger, #ef4444)', cursor: 'pointer', fontSize: 'var(--admin-font-size-14, 0.85rem)', display: 'flex', alignItems: 'center', gap: '3px' }}
                 >
                   <Trash2 size={13} /> Remove
                 </button>
@@ -586,7 +586,7 @@ export default function PageBuilder({
               </div>
             ))}
             {builderFaqs.length === 0 && (
-              <p className="admin-muted admin-p20" style={{ textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '4px' }}>No FAQ accordions added yet.</p>
+              <p className="admin-muted admin-p20" style={{ textAlign: 'center', backgroundColor: 'var(--admin-surface-subtle, #f9fafb)', borderRadius: 'var(--admin-radius-xs, 4px)' }}>No FAQ accordions added yet.</p>
             )}
           </div>
 
@@ -647,14 +647,14 @@ export default function PageBuilder({
             </div>
           </div>
 
-          <div className="admin-form-actions" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+          <div className="admin-form-actions" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--admin-space-8, 2rem)' }}>
             {builderPageId ? (
               <button
                 type="button"
                 onClick={handleDeleteBuilder}
                 disabled={isDeletingBuilder}
                 className="admin-btn-cancel"
-                style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                style={{ backgroundColor: 'var(--admin-danger-bg, #fee2e2)', color: 'var(--admin-danger, #dc2626)', border: '1px solid var(--admin-danger-border, #fecaca)' }}
               >
                 {isDeletingBuilder ? 'Deleting...' : 'Delete Page'}
               </button>
@@ -662,7 +662,7 @@ export default function PageBuilder({
               <div />
             )}
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: 'var(--admin-space-4, 1rem)' }}>
               <button
                 type="button"
                 onClick={() => loadBuilderForm(null)}
@@ -689,9 +689,9 @@ export default function PageBuilder({
       {/* Right Preview Column */}
       <aside className="admin-editor-sticky-aside">
         <article className="admin-panel admin-m0">
-          <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'nowrap' }}>
-            <span style={{ fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap' }}>SERP Preview</span>
-            <small style={{ whiteSpace: 'nowrap', color: '#6b7280', margin: 0 }}>Real-time rendering</small>
+          <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--admin-space-2, 8px)', flexWrap: 'nowrap' }}>
+            <span style={{ fontWeight: 'var(--admin-font-weight-semibold, 600)', fontSize: 'var(--admin-font-size-16, 15px)', whiteSpace: 'nowrap' }}>SERP Preview</span>
+            <small style={{ whiteSpace: 'nowrap', color: 'var(--admin-text-muted, #6b7280)', margin: 0 }}>Real-time rendering</small>
           </div>
           <div className="admin-p20">
             <div className="admin-serp-preview">
@@ -732,15 +732,15 @@ export default function PageBuilder({
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   width: '100%',
-                  padding: '0.8rem 1rem',
-                  borderBottom: '1px solid #e5e7eb',
-                  background: selectedBuilderSlug === page.slug ? '#f9fafb' : 'none',
-                  borderLeft: selectedBuilderSlug === page.slug ? '3px solid var(--admin-color-accent, #c69e6a)' : '3px solid transparent',
+                  padding: 'var(--admin-space-3, 0.8rem) var(--admin-space-4, 1rem)',
+                  borderBottom: '1px solid var(--admin-border, #e5e7eb)',
+                  background: selectedBuilderSlug === page.slug ? 'var(--admin-surface-subtle, #f9fafb)' : 'none',
+                  borderLeft: selectedBuilderSlug === page.slug ? '3px solid var(--admin-accent, #c69e6a)' : '3px solid transparent',
                 }}
               >
                 <strong>/{page.slug}</strong>
-                <span style={{ fontSize: '0.85rem', color: '#4b5563' }}>H1: {page.h1}</span>
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.2rem' }}>
+                <span style={{ fontSize: 'var(--admin-font-size-14, 0.85rem)', color: 'var(--admin-text-secondary, #4b5563)' }}>H1: {page.h1}</span>
+                <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #9ca3af)', marginTop: '0.2rem' }}>
                   Filter: {JSON.stringify(page.filter || {})}
                 </span>
               </button>

@@ -14,7 +14,7 @@ export default function AdminPage() {
   return (
     <Suspense
       fallback={
-        <section className="admin-loading-screen" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <section className="admin-loading-screen" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--admin-surface-subtle, #f8fafc)' }}>
           <AdminLoadingScreen
             title="Weave 365 Admin"
             subtitle="Initializing administrator dashboard…"

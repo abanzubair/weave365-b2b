@@ -945,11 +945,11 @@ export default function DashboardOverview({
                       cx={p.x}
                       cy={p.y}
                       r={isHovered ? 5.5 : 3}
-                      fill="#ffffff"
+                      fill="var(--admin-surface, #ffffff)"
                       stroke={lineGraphData.accentColor}
                       strokeWidth={isHovered ? 2.75 : 2}
                       filter={isHovered ? 'url(#trendPointGlow)' : 'none'}
-                      style={{ transition: 'all 0.15s ease' }}
+                      style={{ transition: 'var(--admin-transition-fast, all 0.15s ease)' }}
                     />
 
                     {/* X Axis Day Label */}
@@ -960,7 +960,7 @@ export default function DashboardOverview({
                       fontWeight={isHovered ? '700' : '500'}
                       fill={isHovered ? '#0f172a' : '#9ca3af'}
                       textAnchor="middle"
-                      style={{ transition: 'all 0.15s ease' }}
+                      style={{ transition: 'var(--admin-transition-fast, all 0.15s ease)' }}
                     >
                       {p.dayName}
                     </text>
@@ -1046,7 +1046,7 @@ export default function DashboardOverview({
                 >
                   <span
                     className="donut-center-val"
-                    style={{ color: activeSlice ? activeSlice.color : '#111827' }}
+                    style={{ color: activeSlice ? activeSlice.color : 'var(--admin-text-heading, #111827)' }}
                   >
                     {activeSlice ? `${activeSlice.percentage}%` : totalCategoryUnits}
                   </span>
@@ -1075,7 +1075,7 @@ export default function DashboardOverview({
                           className="legend-swatch"
                           style={{
                             backgroundColor: slice.color,
-                            boxShadow: isSelected ? `0 0 0 2px #ffffff, 0 0 0 4px ${slice.color}` : 'none',
+                            boxShadow: isSelected ? `0 0 0 2px var(--admin-surface, #ffffff), 0 0 0 4px ${slice.color}` : 'none',
                           }}
                         />
                         <span className="legend-title" title={slice.name}>
@@ -1088,7 +1088,7 @@ export default function DashboardOverview({
                           className="legend-badge"
                           style={{
                             backgroundColor: isSelected ? slice.color : `${slice.color}18`,
-                            color: isSelected ? '#ffffff' : slice.color,
+                            color: isSelected ? 'var(--admin-text-inverse, #ffffff)' : slice.color,
                           }}
                         >
                           {slice.percentage}%
@@ -1104,7 +1104,7 @@ export default function DashboardOverview({
 
       {/* 4. Recent Order Table */}
       <article className="admin-panel">
-        <div className="admin-panel-head" style={{ borderBottom: '1px solid #f3f4f6', paddingBottom: '16px' }}>
+        <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--admin-border-subtle, #f3f4f6)', paddingBottom: 'var(--admin-space-4, 16px)' }}>
           <span>Recent Orders</span>
           <small>{enquiryRows.length} {enquiryRows.length === 1 ? 'entry' : 'entries'} total</small>
         </div>

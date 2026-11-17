@@ -206,38 +206,38 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
   }
 
   return (
-    <div className="invoice-courier-container" style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div className="invoice-courier-container" style={{ padding: 'var(--admin-space-6, 24px)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--admin-space-6, 24px)' }}>
         <div>
-          <h1 className="admin-page-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: 0 }}>Invoice / Courier Slip</h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', margin: '4px 0 0 0' }}>Generate Pro-Forma Invoices, print Courier Dispatch Slips, and track fulfillment.</p>
+          <h1 className="admin-page-title" style={{ fontSize: 'var(--admin-font-size-24, 24px)', fontWeight: 'var(--admin-font-weight-bold, bold)', color: 'var(--admin-text-heading, #111827)', margin: 0 }}>Invoice / Courier Slip</h1>
+          <p style={{ color: 'var(--admin-text-muted, #6b7280)', fontSize: 'var(--admin-font-size-14, 14px)', margin: 'var(--admin-space-1, 4px) 0 0 0' }}>Generate Pro-Forma Invoices, print Courier Dispatch Slips, and track fulfillment.</p>
         </div>
         <button
           type="button"
           className="admin-refresh-btn"
           onClick={() => loadAdminData && loadAdminData()}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--admin-space-1, 6px)', padding: 'var(--admin-space-2, 8px) var(--admin-space-3, 14px)', background: 'var(--admin-surface, #ffffff)', border: '1px solid var(--admin-border, #e5e7eb)', borderRadius: 'var(--admin-radius-sm, 6px)', cursor: 'pointer' }}
         >
           <RefreshCw size={15} /> Refresh
         </button>
       </div>
 
       {/* Search Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+      <div style={{ display: 'flex', gap: 'var(--admin-space-4, 16px)', marginBottom: 'var(--admin-space-5, 20px)', background: 'var(--admin-surface, #fff)', padding: 'var(--admin-space-4, 16px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e5e7eb)' }}>
         <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', color: '#9ca3af' }} />
+          <Search size={16} style={{ position: 'absolute', left: 'var(--admin-space-3, 12px)', color: 'var(--admin-text-dim, #9ca3af)' }} />
           <input
             type="text"
             placeholder="Search by Invoice #, Buyer Name, Email, Phone or Courier Tracking #..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', padding: '9px 12px 9px 36px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+            style={{ width: '100%', padding: '9px var(--admin-space-3, 12px) 9px var(--admin-space-9, 36px)', border: '1px solid var(--admin-border-strong, #d1d5db)', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-14, 14px)' }}
           />
         </div>
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          style={{ padding: '9px 14px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', background: '#fff' }}
+          style={{ padding: '9px var(--admin-space-3, 14px)', border: '1px solid var(--admin-border-strong, #d1d5db)', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-14, 14px)', background: 'var(--admin-surface, #fff)' }}
         >
           <option value="all">All Records</option>
           <option value="orders">Orders Only</option>
@@ -246,21 +246,21 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
       </div>
 
       {/* Table */}
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
-          <thead style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ background: 'var(--admin-surface, #fff)', border: '1px solid var(--admin-border, #e5e7eb)', borderRadius: 'var(--admin-radius-md, 8px)', overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--admin-font-size-14, 14px)' }}>
+          <thead style={{ background: 'var(--admin-surface-subtle, #f9fafb)', borderBottom: '1px solid var(--admin-border, #e5e7eb)' }}>
             <tr>
-              <th style={{ padding: '12px 16px', fontWeight: '600', color: '#374151' }}>Invoice / Ref #</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', color: '#374151' }}>Buyer Info</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', color: '#374151' }}>Courier / Tracking</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', color: '#374151' }}>Status</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', color: '#374151', textAlign: 'center' }}>Print & Action</th>
+              <th style={{ padding: 'var(--admin-space-3, 12px) var(--admin-space-4, 16px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #374151)' }}>Invoice / Ref #</th>
+              <th style={{ padding: 'var(--admin-space-3, 12px) var(--admin-space-4, 16px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #374151)' }}>Buyer Info</th>
+              <th style={{ padding: 'var(--admin-space-3, 12px) var(--admin-space-4, 16px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #374151)' }}>Courier / Tracking</th>
+              <th style={{ padding: 'var(--admin-space-3, 12px) var(--admin-space-4, 16px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #374151)' }}>Status</th>
+              <th style={{ padding: 'var(--admin-space-3, 12px) var(--admin-space-4, 16px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #374151)', textAlign: 'center' }}>Print & Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredInquiries.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                <td colSpan={5} style={{ padding: 'var(--admin-space-6, 24px)', textAlign: 'center', color: 'var(--admin-text-muted, #6b7280)' }}>
                   No order or inquiry records found for invoice generation.
                 </td>
               </tr>
@@ -291,59 +291,59 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                 }
 
                 return (
-                  <tr key={inq.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '14px 16px' }}>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#1f2937', background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px' }}>
+                  <tr key={inq.id} style={{ borderBottom: '1px solid var(--admin-border-subtle, #f3f4f6)' }}>
+                    <td style={{ padding: '14px var(--admin-space-4, 16px)' }}>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 'var(--admin-font-weight-bold, bold)', color: 'var(--admin-text-primary, #1f2937)', background: 'var(--admin-surface-muted, #f3f4f6)', padding: '3px var(--admin-space-2, 8px)', borderRadius: 'var(--admin-radius-xs, 4px)' }}>
                         #{invCode}
                       </span>
                       {inq.reseller_order_id && (
-                        <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>
+                        <div style={{ fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #6b7280)', marginTop: 'var(--admin-space-1, 4px)' }}>
                           Ref: {inq.reseller_order_id}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <div style={{ fontWeight: '600', color: '#111827' }}>{inq.buyer_name || inq.full_name || 'B2B Buyer'}</div>
-                      {inq.business_name && <div style={{ fontSize: '13px', color: '#4b5563' }}>{inq.business_name}</div>}
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>{inq.email || 'No email'} · {inq.phone || 'No phone'}</div>
+                    <td style={{ padding: '14px var(--admin-space-4, 16px)' }}>
+                      <div style={{ fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-heading, #111827)' }}>{inq.buyer_name || inq.full_name || 'B2B Buyer'}</div>
+                      {inq.business_name && <div style={{ fontSize: 'var(--admin-font-size-14, 13px)', color: 'var(--admin-text-secondary, #4b5563)' }}>{inq.business_name}</div>}
+                      <div style={{ fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-text-muted, #6b7280)' }}>{inq.email || 'No email'} · {inq.phone || 'No phone'}</div>
                       {slipPrice > 0 && (
-                        <div style={{ marginTop: '6px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '11px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '2px 7px', borderRadius: '4px', fontWeight: '700' }} title="Declared retail price to print on the parcel courier slip">
+                        <div style={{ marginTop: 'var(--admin-space-1, 6px)', display: 'flex', gap: 'var(--admin-space-1, 6px)', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 'var(--admin-font-size-10, 11px)', background: 'var(--admin-metric-green-bg, #ecfdf5)', color: 'var(--admin-metric-green, #047857)', border: '1px solid var(--admin-metric-green-border, #a7f3d0)', padding: '2px 7px', borderRadius: 'var(--admin-radius-xs, 4px)', fontWeight: 'var(--admin-font-weight-bold, 700)' }} title="Declared retail price to print on the parcel courier slip">
                             Slip Value: ₹{slipPrice.toLocaleString('en-IN')}
                           </span>
                           {wholesaleDue > 0 && (
-                            <span style={{ fontSize: '11px', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '2px 7px', borderRadius: '4px', fontWeight: '500' }} title="Your wholesale procurement price from reseller">
+                            <span style={{ fontSize: 'var(--admin-font-size-10, 11px)', background: 'var(--admin-surface-subtle, #f8fafc)', color: 'var(--admin-text-secondary, #475569)', border: '1px solid var(--admin-border, #e2e8f0)', padding: '2px 7px', borderRadius: 'var(--admin-radius-xs, 4px)', fontWeight: 'var(--admin-font-weight-medium, 500)' }} title="Your wholesale procurement price from reseller">
                               Wholesale: ₹{wholesaleDue.toLocaleString('en-IN')}
                             </span>
                           )}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: '500' }}>{inq.tracking_carrier || 'Standard Courier'}</div>
-                      <div style={{ fontSize: '12px', fontFamily: 'monospace', color: '#2563eb' }}>
+                    <td style={{ padding: '14px var(--admin-space-4, 16px)' }}>
+                      <div style={{ fontSize: 'var(--admin-font-size-14, 13px)', fontWeight: 'var(--admin-font-weight-medium, 500)' }}>{inq.tracking_carrier || 'Standard Courier'}</div>
+                      <div style={{ fontSize: 'var(--admin-font-size-12, 12px)', fontFamily: 'monospace', color: 'var(--admin-info, #2563eb)' }}>
                         {inq.tracking_number || 'No tracking ID'}
                       </div>
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
+                    <td style={{ padding: '14px var(--admin-space-4, 16px)' }}>
                       <span style={{
                         display: 'inline-block',
                         padding: '4px 10px',
-                        borderRadius: '9999px',
-                        fontSize: '11px',
+                        borderRadius: 'var(--admin-radius-full, 9999px)',
+                        fontSize: 'var(--admin-font-size-12, 0.75rem)',
                         fontWeight: '700',
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
                         background: inq.status === 'payment_received' || inq.status === 'paid' || inq.status === 'completed' || inq.status === 'delivered'
-                          ? '#dcfce7'
+                          ? 'var(--admin-success-bg, #dcfce7)'
                           : inq.status === 'payment_pending' || inq.status === 'pending_payment' || inq.status === 'new'
-                            ? '#fef3c7'
-                            : '#f3f4f6',
+                            ? 'var(--admin-warning-bg, #fef3c7)'
+                            : 'var(--admin-surface-muted, #f3f4f6)',
                         color: inq.status === 'payment_received' || inq.status === 'paid' || inq.status === 'completed' || inq.status === 'delivered'
-                          ? '#166534'
+                          ? 'var(--admin-success-text, #166534)'
                           : inq.status === 'payment_pending' || inq.status === 'pending_payment' || inq.status === 'new'
-                            ? '#92400e'
-                            : '#374151',
+                            ? 'var(--admin-warning-text, #92400e)'
+                            : 'var(--admin-text-secondary, #374151)',
                       }}>
                         {inq.status === 'payment_pending' || inq.status === 'pending_payment' || inq.status === 'new'
                           ? 'Payment Pending'
@@ -352,8 +352,8 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                             : (inq.status?.replace('_', ' ') || 'Verified')}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <td style={{ padding: '14px var(--admin-space-4, 16px)', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', gap: 'var(--admin-space-2, 8px)', justifyContent: 'center' }}>
                         {(inq.status === 'payment_pending' || inq.status === 'new') && (
                           <button
                             type="button"
@@ -369,7 +369,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                                 console.error('Error marking order paid:', e);
                               }
                             }}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: '#166534', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', padding: '6px var(--admin-space-2, 10px)', background: 'var(--admin-success-text, #166534)', color: 'var(--admin-text-inverse, #fff)', border: 'none', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-10, 11px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', cursor: 'pointer' }}
                             title="Mark Wholesale Payment Received"
                           >
                             <Check size={12} /> Mark Paid
@@ -378,7 +378,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                         <button
                           type="button"
                           onClick={() => handlePrintInvoice(inq)}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', padding: '6px var(--admin-space-3, 12px)', background: 'var(--admin-info, #2563eb)', color: 'var(--admin-text-inverse, #fff)', border: 'none', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-12, 12px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', cursor: 'pointer' }}
                           title="Print Commercial Pro-Forma Invoice"
                         >
                           <Printer size={13} /> Invoice
@@ -386,7 +386,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                         <button
                           type="button"
                           onClick={() => handlePrintCourierSlip(inq)}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', padding: '6px var(--admin-space-3, 12px)', background: 'var(--admin-metric-green, #059669)', color: 'var(--admin-text-inverse, #fff)', border: 'none', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-12, 12px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', cursor: 'pointer' }}
                           title="Print Courier Shipping Slip"
                         >
                           <Truck size={13} /> Courier Slip
@@ -394,10 +394,10 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                         <button
                           type="button"
                           onClick={() => handleCopy(`Invoice #${invCode}\nBuyer: ${inq.buyer_name || ''}\nCarrier: ${inq.tracking_carrier || 'Delhivery'}\nTracking: ${inq.tracking_number || 'N/A'}`, inq.id)}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', padding: '6px var(--admin-space-2, 10px)', background: 'var(--admin-surface-muted, #f3f4f6)', color: 'var(--admin-text-secondary, #374151)', border: '1px solid var(--admin-border-strong, #d1d5db)', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-12, 12px)', cursor: 'pointer' }}
                           title="Copy Info"
                         >
-                          {isCopied ? <Check size={13} style={{ color: '#16a34a' }} /> : <Copy size={13} />}
+                          {isCopied ? <Check size={13} style={{ color: 'var(--admin-success, #16a34a)' }} /> : <Copy size={13} />}
                         </button>
                       </div>
                     </td>

@@ -1,3 +1,5 @@
+@import './adminTokens.css';
+
 /* ==========================================================================
    Country Pricing & Currency Admin Styling
    Refined with Impeccable 'distill' and 'quieter' principles:
@@ -16,7 +18,7 @@
   max-width: 1280px;
   margin: 0 auto;
   font-family: var(--font-inter, 'Manrope', system-ui, -apple-system, sans-serif);
-  color: #0f172a;
+  color: var(--admin-text-heading);
   box-sizing: border-box;
 }
 
@@ -40,7 +42,7 @@
   margin: 0;
   font-size: 1.35rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
@@ -48,14 +50,14 @@
 }
 
 .cpa-title-icon {
-  color: #64748b;
+  color: var(--admin-text-muted);
   flex-shrink: 0;
 }
 
 .cpa-subtitle {
   margin: 0;
   font-size: 0.84rem;
-  color: #64748b;
+  color: var(--admin-text-muted);
   line-height: 1.45;
 }
 
@@ -73,9 +75,9 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.45rem 0.85rem;
-  font-size: 0.8125rem;
+  font-size: var(--admin-font-size-14);
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-md);
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   font-family: inherit;
@@ -85,26 +87,26 @@
 }
 
 .cpa-btn-secondary {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #334155;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
 }
 
 .cpa-btn-secondary:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: #0f172a;
+  background: var(--admin-surface-subtle);
+  border-color: var(--admin-border-strong);
+  color: var(--admin-text-heading);
 }
 
 .cpa-btn-primary {
-  background: #0f172a;
-  border: 1px solid #0f172a;
-  color: #ffffff;
+  background: var(--admin-primary);
+  border: 1px solid var(--admin-primary);
+  color: var(--admin-text-inverse);
 }
 
 .cpa-btn-primary:hover:not(:disabled) {
-  background: #1e293b;
-  border-color: #1e293b;
+  background: var(--admin-primary-hover);
+  border-color: var(--admin-primary-hover);
 }
 
 .cpa-btn:disabled {
@@ -113,7 +115,7 @@
 }
 
 .cpa-btn:focus-visible {
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
+  box-shadow: 0 0 0 2px var(--admin-surface), 0 0 0 4px var(--admin-primary);
 }
 
 /* Status Banner / Notification */
@@ -122,22 +124,22 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.65rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8125rem;
+  border-radius: var(--admin-radius-md);
+  font-size: var(--admin-font-size-14);
   line-height: 1.4;
   animation: cpaFadeIn 0.2s ease-out;
 }
 
 .cpa-notice-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+  background: var(--admin-success-bg);
+  border: 1px solid var(--admin-success-border);
+  color: var(--admin-success-text);
 }
 
 .cpa-notice-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background: var(--admin-danger-bg);
+  border: 1px solid var(--admin-danger-border);
+  color: var(--admin-danger-text);
 }
 
 @keyframes cpaFadeIn {
@@ -159,9 +161,9 @@
 }
 
 .cpa-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
   padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
@@ -174,33 +176,33 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--admin-surface-muted);
 }
 
 .cpa-card-title {
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .cpa-card-title-icon {
-  color: #64748b;
+  color: var(--admin-text-muted);
 }
 
 .cpa-badge-subtle {
   display: inline-flex;
   align-items: center;
   padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
+  border-radius: var(--admin-radius-full);
   font-size: 0.72rem;
   font-weight: 500;
-  background: #f0fdf4;
-  color: #166534;
-  border: 1px solid #dcfce7;
+  background: var(--admin-success-bg);
+  color: var(--admin-success-text);
+  border: 1px solid var(--admin-success-bg);
   letter-spacing: 0.01em;
 }
 
@@ -210,7 +212,7 @@
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--admin-text-muted);
 }
 
 .cpa-meta-item {
@@ -220,11 +222,11 @@
 }
 
 .cpa-meta-sep {
-  color: #cbd5e1;
+  color: var(--admin-border-strong);
 }
 
 .cpa-meta-strong {
-  color: #1e293b;
+  color: var(--admin-text-primary);
   font-weight: 500;
 }
 
@@ -236,9 +238,9 @@
 }
 
 .cpa-rate-chip {
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  border-radius: 8px;
+  background: var(--admin-surface-subtle);
+  border: 1px solid var(--admin-surface-muted);
+  border-radius: var(--admin-radius-md);
   padding: 0.5rem 0.65rem;
   display: flex;
   flex-direction: column;
@@ -247,19 +249,19 @@
 }
 
 .cpa-rate-chip:hover {
-  border-color: #e2e8f0;
+  border-color: var(--admin-border);
 }
 
 .cpa-rate-chip-pair {
-  font-size: 0.6875rem;
+  font-size: var(--admin-font-size-12);
   font-weight: 500;
-  color: #64748b;
+  color: var(--admin-text-muted);
 }
 
 .cpa-rate-chip-val {
   font-size: 0.84rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
@@ -278,9 +280,9 @@
 }
 
 .cpa-label {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-12);
   font-weight: 500;
-  color: #475569;
+  color: var(--admin-text-secondary);
 }
 
 .cpa-input {
@@ -288,17 +290,17 @@
   padding: 0.45rem 0.65rem;
   font-size: 0.84rem;
   font-family: inherit;
-  color: #0f172a;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  color: var(--admin-text-heading);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   box-sizing: border-box;
 }
 
 .cpa-input:focus {
-  border-color: #0f172a;
+  border-color: var(--admin-primary);
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
@@ -324,11 +326,11 @@
   align-items: center;
   justify-content: space-between;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--admin-text-muted);
 }
 
 .cpa-sim-val {
-  color: #1e293b;
+  color: var(--admin-text-primary);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
@@ -338,36 +340,36 @@
   align-items: baseline;
   justify-content: space-between;
   padding-top: 0.6rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--admin-surface-muted);
   margin-top: 0.2rem;
 }
 
 .cpa-sim-total-label {
-  font-size: 0.8125rem;
+  font-size: var(--admin-font-size-14);
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
 }
 
 .cpa-sim-total-val {
-  font-size: 1.25rem;
+  font-size: var(--admin-font-size-20);
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
 .cpa-sim-footnote {
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: var(--admin-text-dim);
   margin: 0;
   line-height: 1.4;
 }
 
 /* 3. Country Table Section */
 .cpa-table-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -379,7 +381,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--admin-border);
   flex-wrap: wrap;
 }
 
@@ -393,13 +395,13 @@
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
 }
 
 .cpa-table-subtitle {
   margin: 0;
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--admin-text-muted);
 }
 
 .cpa-table-wrap {
@@ -411,23 +413,23 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.8125rem;
+  font-size: var(--admin-font-size-14);
 }
 
 .cpa-table thead th {
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 0.6875rem;
+  background: var(--admin-surface-subtle);
+  color: var(--admin-text-muted);
+  font-size: var(--admin-font-size-12);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--admin-border);
   white-space: nowrap;
 }
 
 .cpa-table tbody tr {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--admin-surface-muted);
   transition: background-color 0.1s ease;
 }
 
@@ -436,13 +438,13 @@
 }
 
 .cpa-table tbody tr:hover {
-  background-color: #fafbfc;
+  background-color: var(--admin-surface-subtle);
 }
 
 .cpa-table td {
   padding: 0.85rem 1.25rem;
   vertical-align: middle;
-  color: #334155;
+  color: var(--admin-text-secondary);
 }
 
 /* Country Cell */
@@ -468,13 +470,13 @@
 
 .cpa-country-name {
   font-weight: 500;
-  color: #0f172a;
+  color: var(--admin-text-heading);
   line-height: 1.2;
 }
 
 .cpa-country-code {
-  font-size: 0.6875rem;
-  color: #64748b;
+  font-size: var(--admin-font-size-12);
+  color: var(--admin-text-muted);
 }
 
 /* Currency Cell */
@@ -486,7 +488,7 @@
 
 .cpa-curr-name {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--admin-text-primary);
 }
 
 .cpa-base-badge {
@@ -494,11 +496,11 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  font-size: 0.6875rem;
+  border-radius: var(--admin-radius-xs);
+  font-size: var(--admin-font-size-12);
   font-weight: 500;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--admin-surface-muted);
+  color: var(--admin-text-secondary);
 }
 
 /* Markup Suffix Input */
@@ -512,13 +514,13 @@
 .cpa-markup-input {
   width: 100%;
   padding: 0.35rem 1.5rem 0.35rem 0.5rem;
-  font-size: 0.8125rem;
+  font-size: var(--admin-font-size-14);
   font-family: inherit;
   font-weight: 500;
-  color: #0f172a;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  color: var(--admin-text-heading);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
   outline: none;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -527,22 +529,22 @@
 }
 
 .cpa-markup-input:focus {
-  border-color: #0f172a;
+  border-color: var(--admin-primary);
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
 .cpa-markup-input:disabled {
-  background: #f8fafc;
-  color: #94a3b8;
-  border-color: #e2e8f0;
+  background: var(--admin-surface-subtle);
+  color: var(--admin-text-dim);
+  border-color: var(--admin-border);
   cursor: not-allowed;
 }
 
 .cpa-markup-suffix {
   position: absolute;
   right: 0.5rem;
-  font-size: 0.75rem;
-  color: #64748b;
+  font-size: var(--admin-font-size-12);
+  color: var(--admin-text-muted);
   pointer-events: none;
   font-weight: 500;
 }
@@ -550,16 +552,16 @@
 /* Rate Cell */
 .cpa-fx-rate-cell {
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  color: #475569;
+  font-size: var(--admin-font-size-14);
+  color: var(--admin-text-secondary);
 }
 
 .cpa-fx-rate-base {
-  color: #94a3b8;
+  color: var(--admin-text-dim);
 }
 
 .cpa-fx-rate-val {
-  color: #0f172a;
+  color: var(--admin-text-heading);
   font-weight: 500;
 }
 
@@ -575,8 +577,8 @@
   display: inline-block;
   width: 34px;
   height: 20px;
-  background: #cbd5e1;
-  border-radius: 9999px;
+  background: var(--admin-border-strong);
+  border-radius: var(--admin-radius-full);
   border: none;
   cursor: pointer;
   padding: 2px;
@@ -586,11 +588,11 @@
 }
 
 .cpa-switch:focus-visible {
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
+  box-shadow: 0 0 0 2px var(--admin-surface), 0 0 0 4px var(--admin-primary);
 }
 
 .cpa-switch.active {
-  background: #0f172a;
+  background: var(--admin-primary);
 }
 
 .cpa-switch:disabled {
@@ -602,7 +604,7 @@
   display: block;
   width: 16px;
   height: 16px;
-  background: #ffffff;
+  background: var(--admin-surface);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
@@ -614,14 +616,14 @@
 }
 
 .cpa-switch-label {
-  font-size: 0.75rem;
-  color: #64748b;
+  font-size: var(--admin-font-size-12);
+  color: var(--admin-text-muted);
   font-weight: 500;
   user-select: none;
 }
 
 .cpa-switch-label.active {
-  color: #0f172a;
+  color: var(--admin-text-heading);
 }
 
 /* Delete / Action Button */
@@ -631,22 +633,22 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--admin-text-dim);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
   padding: 0;
 }
 
 .cpa-icon-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--admin-danger-bg);
+  color: var(--admin-danger);
 }
 
 .cpa-icon-btn:focus-visible {
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #dc2626;
+  box-shadow: 0 0 0 2px var(--admin-surface), 0 0 0 4px var(--admin-danger);
 }
 
 /* 4. Modal Dialog */
@@ -665,9 +667,9 @@
 }
 
 .cpa-modal-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
   width: 100%;
   max-width: 420px;
   padding: 1.5rem;
@@ -704,16 +706,16 @@
   margin: 0;
   font-size: 1.05rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--admin-text-heading);
 }
 
 .cpa-modal-close {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--admin-text-dim);
   cursor: pointer;
   padding: 4px;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -721,8 +723,8 @@
 }
 
 .cpa-modal-close:hover {
-  color: #0f172a;
-  background: #f1f5f9;
+  color: var(--admin-text-heading);
+  background: var(--admin-surface-muted);
 }
 
 .cpa-modal-body {

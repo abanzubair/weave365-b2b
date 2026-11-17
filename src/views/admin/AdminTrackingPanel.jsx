@@ -874,7 +874,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                             className="admin-btn-icon-subtle"
                             title="Copy Order ID"
                           >
-                            {copyFeedback[inquiry.id] ? <Check size={12} style={{ color: '#15803d' }} /> : <Copy size={12} />}
+                            {copyFeedback[inquiry.id] ? <Check size={12} style={{ color: 'var(--admin-success-hover, #15803d)' }} /> : <Copy size={12} />}
                           </button>
                           <a 
                             href={`/order-tracking/${encodeURIComponent(inquiry.order_number || inquiry.id)}`}
@@ -1033,7 +1033,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                 className="admin-btn-icon-subtle"
                                 title="Copy AWB Number"
                               >
-                                {copyFeedback[`awb-${inquiry.id}`] ? <Check size={11} style={{ color: '#15803d' }} /> : <Copy size={11} />}
+                                {copyFeedback[`awb-${inquiry.id}`] ? <Check size={11} style={{ color: 'var(--admin-success-hover, #15803d)' }} /> : <Copy size={11} />}
                               </button>
                             )}
                             {carrierTrackingUrl && (
@@ -1107,7 +1107,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                 <tr>
                   <td colSpan="8" className="admin-empty-table-state">
                     <div className="admin-empty-wrap">
-                      <Package size={32} style={{ color: '#94a3b8', margin: '0 auto 8px' }} />
+                      <Package size={32} style={{ color: 'var(--admin-text-dim, #94a3b8)', margin: '0 auto var(--admin-space-2, 8px)' }} />
                       <p className="admin-empty-title">No orders found</p>
                       <p className="admin-empty-sub">Try changing your search terms or filter selection.</p>
                     </div>
@@ -1552,7 +1552,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                   <td><code className="admin-sku-code">{resolved.sku}</code></td>
                                   <td><span className="admin-color-tag">{resolved.color}</span></td>
                                   <td style={{ textAlign: 'center' }}><strong>{resolved.quantity}</strong></td>
-                                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{resolved.price > 0 ? formatMoney(resolved.price * resolved.quantity) : 'Wholesale Tier'}</td>
+                                  <td style={{ textAlign: 'right', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>{resolved.price > 0 ? formatMoney(resolved.price * resolved.quantity) : 'Wholesale Tier'}</td>
                                 </tr>
                               );
                             })}

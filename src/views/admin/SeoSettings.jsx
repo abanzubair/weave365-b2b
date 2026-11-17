@@ -515,18 +515,18 @@ export default function SeoSettings({
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
                     <small>Active Social (OG) Image</small>
-                    <p style={{ margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+                    <p style={{ margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 8px)', fontSize: 'var(--admin-font-size-12, 0.75rem)' }}>
                       <span style={{
                         display: 'inline-block',
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        background: currentSeoMeta.imageUrl ? '#16a34a' : '#94a3b8'
+                        width: 'var(--admin-space-2, 8px)',
+                        height: 'var(--admin-space-2, 8px)',
+                        borderRadius: 'var(--admin-radius-full, 9999px)',
+                        background: currentSeoMeta.imageUrl ? 'var(--admin-success, #16a34a)' : 'var(--admin-text-dim, #94a3b8)'
                       }} />
                       {currentSeoMeta.imageUrl ? (
-                        <span>Custom override: <code style={{ fontSize: '11px', background: '#f1f5f9', padding: '1px 4px', borderRadius: '3px' }}>{currentSeoMeta.imageUrl}</code></span>
+                        <span>Custom override: <code style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', background: 'var(--admin-surface-muted, #f1f5f9)', padding: '1px var(--admin-space-1, 4px)', borderRadius: 'var(--admin-radius-xs, 3px)' }}>{currentSeoMeta.imageUrl}</code></span>
                       ) : (
-                        <span>Default fallback: <code style={{ fontSize: '11px', background: '#f1f5f9', padding: '1px 4px', borderRadius: '3px' }}>{currentSeoMeta.defaultImageUrl.split('/').pop()}</code></span>
+                        <span>Default fallback: <code style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', background: 'var(--admin-surface-muted, #f1f5f9)', padding: '1px var(--admin-space-1, 4px)', borderRadius: 'var(--admin-radius-xs, 3px)' }}>{currentSeoMeta.defaultImageUrl.split('/').pop()}</code></span>
                       )}
                     </p>
                   </div>
@@ -609,8 +609,8 @@ export default function SeoSettings({
             </div>
 
             <div className="admin-field-container">
-              <div className="admin-flex-between" style={{ marginBottom: '4px' }}>
-                <label className="admin-field-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+              <div className="admin-flex-between" style={{ marginBottom: 'var(--admin-space-1, 4px)' }}>
+                <label className="admin-field-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-1, 6px)', margin: 0 }}>
                   <ImageIcon size={15} /> Social Preview Image URL (og:image)
                 </label>
                 {pageSeoPath === '/' && (
@@ -618,14 +618,14 @@ export default function SeoSettings({
                     type="button"
                     onClick={() => setPageSeoImageUrl('https://assets.weave365.com/assets/banner/heroFreeWebsite.webp')}
                     style={{
-                      fontSize: '11.5px',
-                      color: '#15803d',
-                      background: '#f0fdf4',
-                      border: '1px solid #bbf7d0',
-                      borderRadius: '4px',
-                      padding: '2px 8px',
+                      fontSize: 'var(--admin-font-size-12, 0.75rem)',
+                      color: 'var(--admin-success-text, #15803d)',
+                      background: 'var(--admin-success-bg, #f0fdf4)',
+                      border: '1px solid var(--admin-success-border, #bbf7d0)',
+                      borderRadius: 'var(--admin-radius-xs, 4px)',
+                      padding: '2px var(--admin-space-2, 8px)',
                       cursor: 'pointer',
-                      fontWeight: '500',
+                      fontWeight: 'var(--admin-font-weight-medium, 500)',
                     }}
                   >
                     Use Current Hero Image
@@ -639,13 +639,13 @@ export default function SeoSettings({
                 placeholder="https://assets.weave365.com/..."
                 className="admin-field-input"
               />
-              <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ marginTop: 'var(--admin-space-2, 10px)', display: 'flex', alignItems: 'center', gap: 'var(--admin-space-3, 12px)', background: 'var(--admin-surface-subtle, #f8fafc)', padding: 'var(--admin-space-2, 8px) var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
                 <div style={{
                   width: '96px',
                   height: '52px',
-                  borderRadius: '4px',
+                  borderRadius: 'var(--admin-radius-xs, 4px)',
                   overflow: 'hidden',
-                  background: '#e2e8f0',
+                  background: 'var(--admin-border, #e2e8f0)',
                   flexShrink: 0,
                   display: 'flex',
                   alignItems: 'center',
@@ -667,17 +667,17 @@ export default function SeoSettings({
                     }}
                   />
                 </div>
-                <div style={{ fontSize: '12px', color: '#475569', lineHeight: '1.4' }}>
+                <div style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-secondary, #475569)', lineHeight: '1.4' }}>
                   {pageSeoImageUrl.trim() ? (
                     <div>
-                      <strong style={{ color: '#166534' }}>Custom OG Image active</strong>
-                      <div style={{ fontSize: '11px', color: '#64748b', wordBreak: 'break-all' }}>{pageSeoImageUrl.trim()}</div>
+                      <strong style={{ color: 'var(--admin-success-text, #166534)' }}>Custom OG Image active</strong>
+                      <div style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-muted, #64748b)', wordBreak: 'break-all' }}>{pageSeoImageUrl.trim()}</div>
                     </div>
                   ) : (
                     <div>
                       <span>Using default image: </span>
-                      <strong style={{ color: '#334155' }}>{defaultPageImage.split('/').pop()}</strong>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>Provide a custom image URL above to override the default on WhatsApp, Twitter, and Facebook.</div>
+                      <strong style={{ color: 'var(--admin-text-secondary, #334155)' }}>{defaultPageImage.split('/').pop()}</strong>
+                      <div style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)' }}>Provide a custom image URL above to override the default on WhatsApp, Twitter, and Facebook.</div>
                     </div>
                   )}
                 </div>
@@ -728,9 +728,9 @@ export default function SeoSettings({
 
         <aside className="admin-editor-sticky-aside">
           <article className="admin-panel admin-m0">
-            <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'nowrap' }}>
-              <span style={{ fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap' }}>SERP Preview</span>
-              <small style={{ whiteSpace: 'nowrap', color: '#6b7280', margin: 0 }}>Real-time rendering</small>
+            <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--admin-space-2, 8px)', flexWrap: 'nowrap' }}>
+              <span style={{ fontWeight: 'var(--admin-font-weight-semibold, 600)', fontSize: 'var(--admin-font-size-16, 15px)', whiteSpace: 'nowrap' }}>SERP Preview</span>
+              <small style={{ whiteSpace: 'nowrap', color: 'var(--admin-text-muted, #6b7280)', margin: 0 }}>Real-time rendering</small>
             </div>
             <div className="admin-p20">
               <div className="admin-serp-preview">
@@ -753,20 +753,20 @@ export default function SeoSettings({
             </div>
           </article>
 
-          <article className="admin-panel admin-m0" style={{ marginTop: '14px' }}>
-            <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'nowrap' }}>
-              <span style={{ fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap' }}>Social Card Preview</span>
-              <small style={{ whiteSpace: 'nowrap', color: '#6b7280', margin: 0 }}>WhatsApp / Twitter / FB</small>
+          <article className="admin-panel admin-m0" style={{ marginTop: 'var(--admin-space-3, 14px)' }}>
+            <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--admin-space-2, 8px)', flexWrap: 'nowrap' }}>
+              <span style={{ fontWeight: 'var(--admin-font-weight-semibold, 600)', fontSize: 'var(--admin-font-size-16, 15px)', whiteSpace: 'nowrap' }}>Social Card Preview</span>
+              <small style={{ whiteSpace: 'nowrap', color: 'var(--admin-text-muted, #6b7280)', margin: 0 }}>WhatsApp / Twitter / FB</small>
             </div>
             <div className="admin-p20">
               <div style={{
-                borderRadius: '8px',
+                borderRadius: 'var(--admin-radius-md, 8px)',
                 overflow: 'hidden',
-                border: '1px solid #e2e8f0',
-                background: '#ffffff',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                border: '1px solid var(--admin-border, #e2e8f0)',
+                background: 'var(--admin-surface, #ffffff)',
+                boxShadow: 'var(--admin-shadow-sm, 0 2px 6px rgba(0,0,0,0.04))',
               }}>
-                <div style={{ width: '100%', height: '130px', overflow: 'hidden', background: '#f1f5f9' }}>
+                <div style={{ width: '100%', height: '130px', overflow: 'hidden', background: 'var(--admin-surface-muted, #f1f5f9)' }}>
                   <img
                     src={pageSeoImageUrl.trim() || defaultPageImage}
                     alt="Social Preview"
@@ -781,14 +781,14 @@ export default function SeoSettings({
                     }}
                   />
                 </div>
-                <div style={{ padding: '10px 12px' }}>
-                  <div style={{ fontSize: '10.5px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', fontWeight: '500' }}>
+                <div style={{ padding: 'var(--admin-space-2, 10px) var(--admin-space-3, 12px)' }}>
+                  <div style={{ fontSize: 'var(--admin-font-size-10, 0.625rem)', color: 'var(--admin-text-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', fontWeight: 'var(--admin-font-weight-medium, 500)' }}>
                     weave365.com
                   </div>
-                  <h4 style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '600', color: '#0f172a', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  <h4 style={{ margin: '0 0 var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-14, 13px)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-heading, #0f172a)', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {pageSeoOgTitle || pageSeoMetaTitle || currentSeoMeta.title || 'Page Title'}
                   </h4>
-                  <p style={{ margin: 0, fontSize: '11.5px', color: '#64748b', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--admin-font-size-12, 11.5px)', color: 'var(--admin-text-muted, #64748b)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {pageSeoOgDescription || pageSeoMetaDescription || currentSeoMeta.description || 'Page Description'}
                   </p>
                 </div>

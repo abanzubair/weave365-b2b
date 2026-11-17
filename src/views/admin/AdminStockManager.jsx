@@ -794,7 +794,7 @@ export default function AdminStockManager({
         />
       ) : paginatedProducts.length === 0 ? (
         <div className="admin-stock-empty-box">
-          <Boxes size={48} style={{ color: '#b8860b', opacity: 0.5, margin: '0 auto 12px' }} />
+          <Boxes size={48} style={{ color: 'var(--admin-accent, #b8860b)', opacity: 0.5, margin: '0 auto var(--admin-space-3, 12px)' }} />
           <h3>No Matching Products Found</h3>
           <p>
             No designs match the current filters (Vendor: {selectedVendorKey === 'all' ? 'All' : selectedVendorKey}, Status: {statusFilter}, Search: &ldquo;{searchQuery}&rdquo;).
@@ -1056,7 +1056,7 @@ export default function AdminStockManager({
                         {costNumber != null && costNumber > 0 ? (
                           <span className="admin-table-cost">₹{costNumber.toLocaleString('en-IN')}</span>
                         ) : (
-                          <span style={{ color: '#a8a29e' }}>—</span>
+                          <span style={{ color: 'var(--admin-text-dim, #a8a29e)' }}>—</span>
                         )}
                       </td>
                       <td>
@@ -1119,7 +1119,7 @@ export default function AdminStockManager({
               <strong>{sortedProducts.length}</strong> designs
             </span>
             <div className="admin-pagesize-select-wrap">
-              <label htmlFor="admin-page-size" style={{ fontSize: '12px', color: '#78716c' }}>
+              <label htmlFor="admin-page-size" style={{ fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-text-muted, #78716c)' }}>
                 Per page:
               </label>
               <select

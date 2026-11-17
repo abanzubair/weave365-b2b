@@ -439,7 +439,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
               className="admin-stat-progress-bar"
               style={{
                 transform: `scaleX(${Math.min(1, (systemOverview?.safetyUsagePercent || 0) / 100)})`,
-                background: (systemOverview?.safetyUsagePercent || 0) > 75 ? '#ef4444' : '#10b981',
+                background: (systemOverview?.safetyUsagePercent || 0) > 75 ? 'var(--admin-danger, #ef4444)' : 'var(--admin-success, #10b981)',
               }}
             />
           </div>
@@ -486,7 +486,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       {/* 4. Filter & Search Bar */}
       <div className="api-filter-bar">
         <div className="api-search-box">
-          <Search size={16} style={{ color: '#94a3b8' }} />
+          <Search size={16} style={{ color: 'var(--admin-text-dim, #94a3b8)' }} />
           <input
             type="text"
             className="api-search-input"
@@ -642,7 +642,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                           className="api-mini-progress-bar"
                           style={{
                             transform: `scaleX(${Math.min(1, (item.quotaPercent || 0) / 100)})`,
-                            background: item.quotaPercent > 85 ? '#ef4444' : item.quotaPercent > 60 ? '#f59e0b' : '#0f172a',
+                            background: item.quotaPercent > 85 ? 'var(--admin-danger, #ef4444)' : item.quotaPercent > 60 ? 'var(--admin-warning, #f59e0b)' : 'var(--admin-primary, #0f172a)',
                           }}
                         />
                       </div>
@@ -697,7 +697,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                           title="Review Submitted API Access Request Application"
                           className="api-action-btn api-review-btn"
                           aria-label="Review Request"
-                          style={{ marginRight: '6px' }}
+                          style={{ marginRight: 'var(--admin-space-1, 6px)' }}
                         >
                           <FileText size={12} />
                           <span>Review</span>
@@ -796,10 +796,10 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
 
             {filteredKeys.length === 0 && (
               <tr>
-                <td colSpan="8" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: '#64748b' }}>
-                  <KeyRound size={28} style={{ color: '#cbd5e1', margin: '0 auto 8px auto', display: 'block' }} />
-                  <strong style={{ display: 'block', color: '#334155', marginBottom: '4px' }}>No API Clients Found</strong>
-                  <span style={{ fontSize: '0.8125rem' }}>No client matches your current filter criteria or no API keys have been generated yet.</span>
+                <td colSpan="8" style={{ padding: '3.5rem var(--admin-space-4, 1rem)', textAlign: 'center', color: 'var(--admin-text-muted, #64748b)' }}>
+                  <KeyRound size={28} style={{ color: 'var(--admin-border-strong, #cbd5e1)', margin: '0 auto var(--admin-space-2, 8px) auto', display: 'block' }} />
+                  <strong style={{ display: 'block', color: 'var(--admin-text-secondary, #334155)', marginBottom: 'var(--admin-space-1, 4px)' }}>No API Clients Found</strong>
+                  <span style={{ fontSize: 'var(--admin-font-size-12, 0.8125rem)' }}>No client matches your current filter criteria or no API keys have been generated yet.</span>
                 </td>
               </tr>
             )}
@@ -810,30 +810,30 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       {/* 6. Admin Controls: Tier & Quota Overrides Modal (Outside Table) */}
       {editingKey && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-              <Sliders size={20} style={{ color: '#0f172a' }} />
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+          <div style={{ background: 'var(--admin-surface, #ffffff)', borderRadius: 'var(--admin-radius-xl, 16px)', maxWidth: '520px', width: '100%', padding: 'var(--admin-space-8, 2rem)', boxShadow: 'var(--admin-shadow-modal, 0 25px 50px -12px rgba(0, 0, 0, 0.25))', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 8px)', marginBottom: 'var(--admin-space-2, 0.5rem)' }}>
+              <Sliders size={20} style={{ color: 'var(--admin-text-heading, #0f172a)' }} />
+              <h2 style={{ fontSize: 'var(--admin-font-size-20, 1.25rem)', fontWeight: 'var(--admin-font-weight-extrabold, 800)', margin: 0, color: 'var(--admin-text-heading, #0f172a)' }}>
                 Admin Controls: Tier & Quota Overrides
               </h2>
             </div>
-            <p style={{ color: '#64748b', fontSize: '0.8125rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--admin-text-muted, #64748b)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', margin: '0 0 var(--admin-space-6, 1.5rem) 0', lineHeight: 1.5 }}>
               Configure pricing tier, monthly request quota, order access, and rate limits for <strong>{editingKey.client_name}</strong> ({editingKey.profiles?.email || 'No email'}).
             </p>
 
             <form onSubmit={handleSaveEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                 Storefront Website URL:
                 <input
                   type="url"
                   placeholder="https://example-reseller.com"
                   value={editClientWebsite}
                   onChange={(e) => setEditClientWebsite(e.target.value)}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                  style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)' }}
                 />
               </label>
 
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                 Plan / Pricing Tier:
                 <select
                   value={editTier}
@@ -846,7 +846,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       setEditRps(cfg.rateLimitRps);
                     }
                   }}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', background: '#ffffff', color: '#0f172a' }}
+                  style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)', background: 'var(--admin-surface, #ffffff)', color: 'var(--admin-text-heading, #0f172a)' }}
                 >
                   <option value="growth">Growth Partner (₹299/mo) - 10,000 req/mo</option>
                   <option value="pro">Pro / Scale (₹499/mo) - 25,000 req/mo</option>
@@ -854,7 +854,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                 </select>
               </label>
 
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                 Monthly Request Quota:
                 <input
                   type="number"
@@ -863,11 +863,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   required
                   value={editQuota}
                   onChange={(e) => setEditQuota(e.target.value)}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                  style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)' }}
                 />
               </label>
 
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                 Rate Limit (Req / Sec):
                 <input
                   type="number"
@@ -876,11 +876,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   required
                   value={editRps}
                   onChange={(e) => setEditRps(e.target.value)}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                  style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)' }}
                 />
               </label>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer', marginTop: '2px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 8px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)', cursor: 'pointer', marginTop: '2px' }}>
                 <input
                   type="checkbox"
                   checked={editIsActive}
@@ -889,10 +889,10 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     setEditIsActive(active);
                     if (!active) setEditOrdersEnabled(false);
                   }}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  style={{ width: 'var(--admin-space-4, 16px)', height: 'var(--admin-space-4, 16px)', cursor: 'pointer' }}
                 />
                 <span>
-                  Product API (API Key Status): {editIsActive ? <strong style={{ color: '#16a34a' }}>Active & Live</strong> : <span style={{ color: '#dc2626' }}>Deactivated / Suspended</span>}
+                  Product API (API Key Status): {editIsActive ? <strong style={{ color: 'var(--admin-success, #16a34a)' }}>Active & Live</strong> : <span style={{ color: 'var(--admin-danger, #dc2626)' }}>Deactivated / Suspended</span>}
                 </span>
               </label>
 
@@ -901,15 +901,15 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  fontSize: '0.8125rem',
+                  fontSize: 'var(--admin-font-size-12, 0.75rem)',
                   fontWeight: 600,
-                  color: !editIsActive ? '#94a3b8' : '#334155',
+                  color: !editIsActive ? 'var(--admin-text-dim, #94a3b8)' : 'var(--admin-text-secondary, #334155)',
                   cursor: !editIsActive ? 'not-allowed' : 'pointer',
                   marginTop: '2px',
-                  background: !editIsActive ? '#f1f5f9' : (editOrdersEnabled ? '#f0fdf4' : '#f8fafc'),
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: `1px solid ${!editIsActive ? '#e2e8f0' : (editOrdersEnabled ? '#86efac' : '#e2e8f0')}`,
+                  background: !editIsActive ? 'var(--admin-surface-muted, #f1f5f9)' : (editOrdersEnabled ? 'var(--admin-success-bg, #f0fdf4)' : 'var(--admin-surface-subtle, #f8fafc)'),
+                  padding: 'var(--admin-space-2, 8px) var(--admin-space-3, 12px)',
+                  borderRadius: 'var(--admin-radius-md, 8px)',
+                  border: `1px solid ${!editIsActive ? 'var(--admin-border, #e2e8f0)' : (editOrdersEnabled ? 'var(--admin-success-border, #86efac)' : 'var(--admin-border, #e2e8f0)')}`,
                   opacity: !editIsActive ? 0.6 : 1,
                 }}
               >
@@ -921,21 +921,21 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     if (!editIsActive) return;
                     setEditOrdersEnabled(e.target.checked);
                   }}
-                  style={{ width: '16px', height: '16px', cursor: !editIsActive ? 'not-allowed' : 'pointer' }}
+                  style={{ width: 'var(--admin-space-4, 16px)', height: 'var(--admin-space-4, 16px)', cursor: !editIsActive ? 'not-allowed' : 'pointer' }}
                 />
                 <span>
                   Order API Access:{' '}
                   {!editIsActive ? (
-                    <span style={{ color: '#94a3b8' }}>Disabled (Product API must be enabled first)</span>
+                    <span style={{ color: 'var(--admin-text-dim, #94a3b8)' }}>Disabled (Product API must be enabled first)</span>
                   ) : editOrdersEnabled ? (
-                    <strong style={{ color: '#16a34a' }}>Enabled (Authorized for /api/v1/orders)</strong>
+                    <strong style={{ color: 'var(--admin-success, #16a34a)' }}>Enabled (Authorized for /api/v1/orders)</strong>
                   ) : (
-                    <span style={{ color: '#64748b' }}>Disabled (Default 403 Forbidden)</span>
+                    <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>Disabled (Default 403 Forbidden)</span>
                   )}
                 </span>
               </label>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--admin-space-2, 10px)', marginTop: 'var(--admin-space-4, 1rem)' }}>
                 <button
                   type="button"
                   className="api-btn-secondary"
@@ -960,24 +960,24 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       {/* 7. Provision New API Client Modal */}
       {createModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: '#0f172a' }}>
+          <div style={{ background: 'var(--admin-surface, #ffffff)', borderRadius: 'var(--admin-radius-xl, 16px)', maxWidth: '520px', width: '100%', padding: 'var(--admin-space-8, 2rem)', boxShadow: 'var(--admin-shadow-modal, 0 25px 50px -12px rgba(0, 0, 0, 0.25))', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+            <h2 style={{ fontSize: 'var(--admin-font-size-20, 1.25rem)', fontWeight: 'var(--admin-font-weight-extrabold, 800)', margin: '0 0 0.5rem 0', color: 'var(--admin-text-heading, #0f172a)' }}>
               Provision New B2B API Key
             </h2>
-            <p style={{ color: '#64748b', fontSize: '0.8125rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--admin-text-muted, #64748b)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', margin: '0 0 var(--admin-space-6, 1.5rem) 0', lineHeight: 1.5 }}>
               Generate an authenticated API key for a reseller or external website.
             </p>
 
             {newlyCreatedKeySecret ? (
-              <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-                <strong style={{ color: '#15803d', display: 'block', marginBottom: '4px', fontSize: '0.9375rem' }}>
+              <div style={{ background: 'var(--admin-success-bg, #f0fdf4)', border: '1.5px solid var(--admin-success-border, #86efac)', borderRadius: 'var(--admin-radius-lg, 12px)', padding: 'var(--admin-space-5, 1.25rem)', marginBottom: 'var(--admin-space-6, 1.5rem)' }}>
+                <strong style={{ color: 'var(--admin-success-hover, #15803d)', display: 'block', marginBottom: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-14, 0.9375rem)' }}>
                   API Key Created Successfully!
                 </strong>
-                <p style={{ fontSize: '0.8125rem', color: '#166534', margin: '0 0 10px 0' }}>
+                <p style={{ fontSize: 'var(--admin-font-size-12, 0.8125rem)', color: 'var(--admin-success-text, #166534)', margin: '0 0 var(--admin-space-2, 10px) 0' }}>
                   Copy this key now to send to the reseller via WhatsApp. It will not be shown in plain text again:
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                  <code style={{ fontFamily: 'monospace', fontSize: '0.875rem', flex: 1, wordBreak: 'break-all', color: '#0f172a', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 8px)', background: 'var(--admin-surface, #ffffff)', padding: 'var(--admin-space-2, 8px) var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-success-border, #bbf7d0)' }}>
+                  <code style={{ fontFamily: 'monospace', fontSize: 'var(--admin-font-size-14, 0.875rem)', flex: 1, wordBreak: 'break-all', color: 'var(--admin-text-heading, #0f172a)', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>
                     {newlyCreatedKeySecret}
                   </code>
                   <button
@@ -988,7 +988,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       setTimeout(() => setCopiedKey(false), 2000);
                     }}
                     className="api-btn-primary"
-                    style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                    style={{ padding: 'var(--admin-space-1, 6px) var(--admin-space-3, 12px)', fontSize: 'var(--admin-font-size-12, 0.75rem)' }}
                   >
                     {copiedKey ? <Check size={14} /> : <Copy size={14} />} {copiedKey ? 'Copied' : 'Copy'}
                   </button>
@@ -997,20 +997,20 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
                   className="api-btn-secondary"
-                  style={{ width: '100%', marginTop: '1.25rem', justifyContent: 'center' }}
+                  style={{ width: '100%', marginTop: 'var(--admin-space-5, 1.25rem)', justifyContent: 'center' }}
                 >
                   Done
                 </button>
               </div>
             ) : (
               <form onSubmit={handleCreateClientSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                   Link to User Profile:
                   <select
                     required
                     value={newUserId}
                     onChange={(e) => setNewUserId(e.target.value)}
-                    style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', background: '#ffffff', color: '#0f172a' }}
+                    style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)', background: 'var(--admin-surface, #ffffff)', color: 'var(--admin-text-heading, #0f172a)' }}
                   >
                     <option value="">-- Select Registered User --</option>
                     {candidateProfiles.map((p) => (
@@ -1021,7 +1021,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   </select>
                 </label>
 
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                   Client / Storefront Name:
                   <input
                     type="text"
@@ -1029,11 +1029,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     placeholder="e.g. Reseller Boutique / Storefront"
                     value={newClientName}
                     onChange={(e) => setNewClientName(e.target.value)}
-                    style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                    style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)' }}
                   />
                 </label>
 
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                   Client Website URL *:
                   <input
                     type="url"
@@ -1041,35 +1041,35 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     placeholder="https://www.example.com"
                     value={newClientWebsite}
                     onChange={(e) => setNewClientWebsite(e.target.value)}
-                    style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                    style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)' }}
                   />
                 </label>
 
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)' }}>
                   Pricing Tier:
                   <select
                     value={newTier}
                     onChange={(e) => setNewTier(e.target.value)}
-                    style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', background: '#ffffff', color: '#0f172a' }}
+                    style={{ padding: '9px var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)', fontSize: 'var(--admin-font-size-14, 0.875rem)', background: 'var(--admin-surface, #ffffff)', color: 'var(--admin-text-heading, #0f172a)' }}
                   >
                     <option value="growth">Growth Partner (₹299/mo) - 10,000 req/mo + Order API</option>
                     <option value="pro">Pro / Scale (₹499/mo) - 25,000 req/mo</option>
                   </select>
                 </label>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer', marginTop: '2px', background: newOrdersEnabled ? '#f0fdf4' : '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: `1px solid ${newOrdersEnabled ? '#86efac' : '#e2e8f0'}` }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 8px)', fontSize: 'var(--admin-font-size-12, 0.8125rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-secondary, #334155)', cursor: 'pointer', marginTop: '2px', background: newOrdersEnabled ? 'var(--admin-success-bg, #f0fdf4)' : 'var(--admin-surface-subtle, #f8fafc)', padding: 'var(--admin-space-2, 8px) var(--admin-space-3, 12px)', borderRadius: 'var(--admin-radius-md, 8px)', border: `1px solid ${newOrdersEnabled ? 'var(--admin-success-border, #86efac)' : 'var(--admin-border, #e2e8f0)'}` }}>
                   <input
                     type="checkbox"
                     checked={newOrdersEnabled}
                     onChange={(e) => setNewOrdersEnabled(e.target.checked)}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    style={{ width: 'var(--admin-space-4, 16px)', height: 'var(--admin-space-4, 16px)', cursor: 'pointer' }}
                   />
                   <span>
                     Enable Order API Access (Default: OFF)
                   </span>
                 </label>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--admin-space-2, 10px)', marginTop: 'var(--admin-space-4, 1rem)' }}>
                   <button
                     type="button"
                     className="api-btn-secondary"
@@ -1168,7 +1168,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
           <div className="api-req-modal" onClick={(e) => e.stopPropagation()}>
             <div className="api-req-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <KeyRound size={17} style={{ color: '#0f172a' }} />
+                <KeyRound size={17} style={{ color: 'var(--admin-text-heading, #0f172a)' }} />
                 <h3>API Access Request Application</h3>
               </div>
               <button
@@ -1209,26 +1209,26 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '12px 16px',
-                      background: '#f8fafc',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
+                      padding: 'var(--admin-space-3, 12px) var(--admin-space-4, 16px)',
+                      background: 'var(--admin-surface-subtle, #f8fafc)',
+                      borderRadius: 'var(--admin-radius-md, 8px)',
+                      border: '1px solid var(--admin-border, #e2e8f0)'
                     }}>
                       <div>
-                        <strong style={{ fontSize: '0.9375rem', color: '#0f172a', display: 'block', fontWeight: 700 }}>
+                        <strong style={{ fontSize: 'var(--admin-font-size-14, 0.9375rem)', color: 'var(--admin-text-heading, #0f172a)', display: 'block', fontWeight: 'var(--admin-font-weight-bold, 700)' }}>
                           {reviewRequestItem.client_name || 'Client'}
                         </strong>
-                        <span style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+                        <span style={{ fontSize: 'var(--admin-font-size-12, 0.8125rem)', color: 'var(--admin-text-muted, #64748b)' }}>
                           Account: {prof.email || 'N/A'}
                         </span>
                       </div>
                       <span style={{
-                        fontSize: '0.75rem',
+                        fontSize: 'var(--admin-font-size-12, 0.75rem)',
                         fontWeight: 600,
                         padding: '3px 9px',
                         borderRadius: '5px',
-                        background: isItemActive ? '#ecfdf5' : isApprovedPendingPay ? '#eff6ff' : '#fef3c7',
-                        color: isItemActive ? '#065f46' : isApprovedPendingPay ? '#1e40af' : '#92400e',
+                        background: isItemActive ? 'var(--admin-success-bg, #ecfdf5)' : isApprovedPendingPay ? 'var(--admin-info-bg, #eff6ff)' : 'var(--admin-warning-bg, #fef3c7)',
+                        color: isItemActive ? 'var(--admin-success-text, #065f46)' : isApprovedPendingPay ? 'var(--admin-info-text, #1e40af)' : 'var(--admin-warning-text, #92400e)',
                         border: `1px solid ${isItemActive ? '#a7f3d0' : isApprovedPendingPay ? '#bfdbfe' : '#fde68a'}`
                       }}>
                         {isItemActive ? 'Active & Approved' : isApprovedPendingPay ? 'Approved • Awaiting Payment' : 'Pending Admin Review'}
@@ -1241,12 +1241,12 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                         <div>
                           <span style={{
                             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, monospace',
-                            fontSize: '0.8125rem',
+                            fontSize: 'var(--admin-font-size-12, 0.75rem)',
                             fontWeight: 600,
-                            background: '#f1f5f9',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            color: '#0f172a',
+                            background: 'var(--admin-surface-muted, #f1f5f9)',
+                            padding: '3px var(--admin-space-2, 8px)',
+                            borderRadius: 'var(--admin-radius-xs, 4px)',
+                            color: 'var(--admin-text-heading, #0f172a)',
                             display: 'inline-block'
                           }}>
                             {req.gstin || reviewRequestItem.gst_number || profQual.gstin || 'N/A'}
@@ -1264,9 +1264,9 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
-                              fontSize: '0.875rem',
+                              fontSize: 'var(--admin-font-size-14, 0.875rem)',
                               fontWeight: 500,
-                              color: '#0284c7',
+                              color: 'var(--admin-info, #0284c7)',
                               textDecoration: 'none',
                               wordBreak: 'break-all'
                             }}
@@ -1308,19 +1308,19 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                           <span
                             key={uc}
                             style={{
-                              fontSize: '0.75rem',
+                              fontSize: 'var(--admin-font-size-12, 0.75rem)',
                               fontWeight: 500,
                               padding: '3px 8px',
                               borderRadius: '5px',
-                              background: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              color: '#334155',
+                              background: 'var(--admin-surface-subtle, #f8fafc)',
+                              border: '1px solid var(--admin-border, #e2e8f0)',
+                              color: 'var(--admin-text-secondary, #334155)',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
                             }}
                           >
-                            <Check size={11} style={{ color: '#059669' }} /> {uc}
+                            <Check size={11} style={{ color: 'var(--admin-metric-green, #059669)' }} /> {uc}
                           </span>
                         ))}
                       </div>
@@ -1360,13 +1360,13 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       <span className="api-req-label">Integration Goals &amp; Objectives</span>
                       <div
                         style={{
-                          background: '#f8fafc',
-                          padding: '10px 14px',
-                          borderRadius: '6px',
-                          border: '1px solid #e2e8f0',
-                          fontSize: '0.8125rem',
+                          background: 'var(--admin-surface-subtle, #f8fafc)',
+                          padding: 'var(--admin-space-2, 10px) var(--admin-space-3, 14px)',
+                          borderRadius: 'var(--admin-radius-sm, 6px)',
+                          border: '1px solid var(--admin-border, #e2e8f0)',
+                          fontSize: 'var(--admin-font-size-12, 0.8125rem)',
                           lineHeight: '1.55',
-                          color: '#334155',
+                          color: 'var(--admin-text-secondary, #334155)',
                           whiteSpace: 'pre-wrap',
                         }}
                       >
@@ -1375,7 +1375,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     </div>
 
                     {req.submittedAt && (
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'right' }}>
+                      <div style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)', textAlign: 'right' }}>
                         Submitted: {new Date(req.submittedAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     )}
@@ -1391,7 +1391,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                 style={{
                   height: '36px',
                   padding: '0 14px',
-                  fontSize: '0.8125rem',
+                  fontSize: 'var(--admin-font-size-12, 0.75rem)',
                   fontWeight: 500,
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -1405,12 +1405,12 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                 style={{
                   height: '36px',
                   padding: '0 14px',
-                  fontSize: '0.8125rem',
+                  fontSize: 'var(--admin-font-size-12, 0.75rem)',
                   fontWeight: 500,
-                  color: '#dc2626',
-                  borderColor: '#fca5a5',
-                  background: '#ffffff',
-                  border: '1px solid #fca5a5',
+                  color: 'var(--admin-danger, #dc2626)',
+                  borderColor: 'var(--admin-danger-border, #fca5a5)',
+                  background: 'var(--admin-surface, #ffffff)',
+                  border: '1px solid var(--admin-danger-border, #fca5a5)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   display: 'inline-flex',
@@ -1436,11 +1436,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   style={{
                     height: '36px',
                     padding: '0 18px',
-                    fontSize: '0.8125rem',
+                    fontSize: 'var(--admin-font-size-12, 0.75rem)',
                     fontWeight: 600,
-                    background: '#059669',
-                    border: '1px solid #059669',
-                    color: '#ffffff',
+                    background: 'var(--admin-metric-green, #059669)',
+                    border: '1px solid var(--admin-metric-green, #059669)',
+                    color: 'var(--admin-text-inverse, #ffffff)',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     display: 'inline-flex',
@@ -1483,12 +1483,12 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                   style={{
                     height: '36px',
                     padding: '0 16px',
-                    fontSize: '0.8125rem',
+                    fontSize: 'var(--admin-font-size-12, 0.75rem)',
                     fontWeight: 500,
-                    color: '#2563eb',
-                    borderColor: '#93c5fd',
-                    background: '#eff6ff',
-                    border: '1px solid #93c5fd',
+                    color: 'var(--admin-info, #2563eb)',
+                    borderColor: 'var(--admin-info-border, #93c5fd)',
+                    background: 'var(--admin-info-bg, #eff6ff)',
+                    border: '1px solid var(--admin-info-border, #93c5fd)',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     display: 'inline-flex',

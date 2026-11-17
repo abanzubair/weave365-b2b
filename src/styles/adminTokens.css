@@ -1,0 +1,195 @@
+/* ==========================================================================
+   Weave365 Admin Dashboard - Comprehensive Design Tokens
+   Scoped for Admin Panel (:root and .admin-layout-container)
+   Base: 1rem = 16px
+   ========================================================================== */
+
+:root,
+.admin-layout-container {
+  /* ------------------------------------------------------------------------
+     1. FONT SIZE TOKENS
+     Base scale in multiples of 4px in rem equivalents (1rem = 16px)
+     ------------------------------------------------------------------------ */
+  --admin-font-size-8: 0.5rem;      /* 8px */
+  --admin-font-size-10: 0.625rem;   /* 10px */
+  --admin-font-size-12: 0.75rem;    /* 12px */
+  --admin-font-size-14: 0.875rem;   /* 14px (explicitly requested) */
+  --admin-font-size-16: 1rem;       /* 16px */
+  --admin-font-size-18: 1.125rem;   /* 18px (explicitly requested) */
+  --admin-font-size-20: 1.25rem;    /* 20px */
+  --admin-font-size-24: 1.5rem;     /* 24px */
+  --admin-font-size-28: 1.75rem;    /* 28px */
+  --admin-font-size-32: 2rem;       /* 32px */
+  --admin-font-size-36: 2.25rem;    /* 36px */
+  --admin-font-size-40: 2.5rem;     /* 40px */
+
+  /* Semantic Aliases */
+  --admin-text-xs: 0.75rem;         /* 12px */
+  --admin-text-sm: 0.875rem;        /* 14px */
+  --admin-text-base: 1rem;          /* 16px */
+  --admin-text-md: 1.125rem;        /* 18px */
+  --admin-text-lg: 1.25rem;         /* 20px */
+  --admin-text-xl: 1.5rem;          /* 24px */
+  --admin-text-2xl: 1.75rem;        /* 28px */
+  --admin-text-3xl: 2rem;           /* 32px */
+
+  /* ------------------------------------------------------------------------
+     2. BORDER RADII TOKENS
+     ------------------------------------------------------------------------ */
+  --admin-radius-none: 0;
+  --admin-radius-xs: 0.25rem;       /* 4px */
+  --admin-radius-sm: 0.375rem;      /* 6px */
+  --admin-radius-md: 0.5rem;        /* 8px */
+  --admin-radius-lg: 0.75rem;       /* 12px */
+  --admin-radius-xl: 1rem;          /* 16px */
+  --admin-radius-2xl: 1.25rem;      /* 20px */
+  --admin-radius-full: 9999px;
+
+  /* Convenient numeric radius aliases */
+  --admin-radius-4: 0.25rem;
+  --admin-radius-6: 0.375rem;
+  --admin-radius-8: 0.5rem;
+  --admin-radius-10: 0.625rem;
+  --admin-radius-12: 0.75rem;
+  --admin-radius-14: 0.875rem;
+  --admin-radius-16: 1rem;
+
+  /* ------------------------------------------------------------------------
+     3. COLOR TOKENS
+     ------------------------------------------------------------------------ */
+  /* Neutral Backgrounds */
+  --admin-bg: #f4f5f7;
+  --admin-surface: #ffffff;
+  --admin-surface-subtle: #f8fafc;
+  --admin-surface-muted: #f1f5f9;
+
+  /* Borders */
+  --admin-border: #e2e8f0;
+  --admin-border-subtle: #e5e7eb;
+  --admin-border-strong: #cbd5e1;
+
+  /* Text Colors */
+  --admin-text-heading: #0f172a;
+  --admin-text-primary: #1e293b;
+  --admin-text-secondary: #475569;
+  --admin-text-muted: #64748b;
+  --admin-text-dim: #94a3b8;
+  --admin-text-inverse: #ffffff;
+
+  /* Primary & Accent */
+  --admin-primary: #0f172a;
+  --admin-primary-hover: #1e293b;
+  --admin-accent: #b78646;
+  --admin-accent-hover: #9e7239;
+  --admin-accent-subtle: #fbf6ee;
+  --admin-accent-border: #f3dfbe;
+
+  /* Semantic Statuses (main, bg, border, text) */
+  --admin-success: #16a34a;
+  --admin-success-hover: #15803d;
+  --admin-success-bg: #f0fdf4;
+  --admin-success-border: #bbf7d0;
+  --admin-success-text: #166534;
+
+  --admin-warning: #d97706;
+  --admin-warning-hover: #b45309;
+  --admin-warning-bg: #fffbeb;
+  --admin-warning-border: #fde68a;
+  --admin-warning-text: #92400e;
+
+  --admin-danger: #dc2626;
+  --admin-danger-hover: #b91c1c;
+  --admin-danger-bg: #fef2f2;
+  --admin-danger-border: #fecaca;
+  --admin-danger-text: #991b1b;
+
+  --admin-info: #2563eb;
+  --admin-info-hover: #1d4ed8;
+  --admin-info-bg: #eff6ff;
+  --admin-info-border: #bfdbfe;
+  --admin-info-text: #1e40af;
+
+  /* Metric Palette (Blue, Green, Pink, Teal, Purple, Orange) */
+  --admin-metric-blue: #2563eb;
+  --admin-metric-blue-bg: #eff6ff;
+  --admin-metric-blue-border: #dbeafe;
+  --admin-metric-blue-gradient: linear-gradient(145deg, #eff6ff 0%, #f8faff 60%, #ffffff 100%);
+
+  --admin-metric-green: #059669;
+  --admin-metric-green-bg: #ecfdf5;
+  --admin-metric-green-border: #d1fae5;
+  --admin-metric-green-gradient: linear-gradient(145deg, #ecfdf5 0%, #f4fbf7 60%, #ffffff 100%);
+
+  --admin-metric-pink: #db2777;
+  --admin-metric-pink-bg: #fdf2f8;
+  --admin-metric-pink-border: #fce7f3;
+  --admin-metric-pink-gradient: linear-gradient(145deg, #fdf2f8 0%, #fcf6fa 60%, #ffffff 100%);
+
+  --admin-metric-teal: #0d9488;
+  --admin-metric-teal-bg: #f0fdfa;
+  --admin-metric-teal-border: #ccfbf1;
+  --admin-metric-teal-gradient: linear-gradient(145deg, #f0fdfa 0%, #f7fdfc 60%, #ffffff 100%);
+
+  --admin-metric-purple: #4f46e5;
+  --admin-metric-purple-bg: #eef2ff;
+  --admin-metric-purple-border: #e0e7ff;
+  --admin-metric-purple-gradient: linear-gradient(145deg, #eef2ff 0%, #f5f4fe 60%, #ffffff 100%);
+
+  --admin-metric-orange: #ea580c;
+  --admin-metric-orange-bg: #fff7ed;
+  --admin-metric-orange-border: #ffedd5;
+  --admin-metric-orange-gradient: linear-gradient(145deg, #fff7ed 0%, #fffbf5 60%, #ffffff 100%);
+
+  --admin-metric-amber: #d97706;
+  --admin-metric-amber-bg: #fffbeb;
+  --admin-metric-amber-border: #fef3c7;
+  --admin-metric-amber-gradient: linear-gradient(145deg, #fffbeb 0%, #fefcf5 60%, #ffffff 100%);
+
+  /* ------------------------------------------------------------------------
+     4. SPACING TOKENS
+     Multiples of 4px in rem equivalents (1rem = 16px)
+     ------------------------------------------------------------------------ */
+  --admin-space-0: 0;
+  --admin-space-1: 0.25rem;         /* 4px */
+  --admin-space-2: 0.5rem;          /* 8px */
+  --admin-space-3: 0.75rem;         /* 12px */
+  --admin-space-4: 1rem;            /* 16px */
+  --admin-space-5: 1.25rem;         /* 20px */
+  --admin-space-6: 1.5rem;          /* 24px */
+  --admin-space-7: 1.75rem;         /* 28px */
+  --admin-space-8: 2rem;            /* 32px */
+  --admin-space-9: 2.25rem;         /* 36px */
+  --admin-space-10: 2.5rem;         /* 40px */
+  --admin-space-12: 3rem;           /* 48px */
+  --admin-space-16: 4rem;           /* 64px */
+
+  /* ------------------------------------------------------------------------
+     5. SHADOWS, FONT WEIGHTS, AND TRANSITIONS TOKENS
+     ------------------------------------------------------------------------ */
+  /* Shadows */
+  --admin-shadow-none: none;
+  --admin-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --admin-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --admin-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --admin-shadow-card: 0 2px 5px rgba(0, 0, 0, 0.03);
+  --admin-shadow-card-hover: 0 6px 14px -2px rgba(0, 0, 0, 0.06);
+  --admin-shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --admin-shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+
+  /* Font Weights */
+  --admin-font-weight-normal: 400;
+  --admin-font-weight-medium: 500;
+  --admin-font-weight-semibold: 600;
+  --admin-font-weight-bold: 700;
+  --admin-font-weight-extrabold: 800;
+
+  /* Transitions */
+  --admin-transition-fast: 0.15s ease;
+  --admin-transition-normal: 0.2s ease;
+  --admin-transition-slow: 0.3s ease;
+  --admin-transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --admin-transition-spring: 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  --admin-transition-bounce: 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

@@ -353,7 +353,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
       <div className="coupons-header">
         <div className="coupons-header-title-wrap">
           <h1 className="coupons-title">
-            <Tag size={24} style={{ color: '#0f172a' }} /> Private Coupon Codes
+            <Tag size={24} style={{ color: 'var(--admin-text-heading, #0f172a)' }} /> Private Coupon Codes
           </h1>
           <p className="coupons-subtitle">
             Generate private discount codes with strict usage limits for manual distribution. Codes remain invisible to the public.
@@ -425,7 +425,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
       {/* Search & Filter Toolbar */}
       <div className="coupons-toolbar">
         <div className="coupons-search-box">
-          <Search size={16} style={{ color: '#94a3b8' }} />
+          <Search size={16} style={{ color: 'var(--admin-text-dim, #94a3b8)' }} />
           <input
             type="text"
             className="coupons-search-input"
@@ -437,7 +437,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: 'var(--admin-text-dim, #94a3b8)', cursor: 'pointer', padding: 0 }}
             >
               <X size={14} />
             </button>
@@ -462,7 +462,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
       {/* Table Card */}
       <div className="coupons-table-card">
         {isOverallLoading ? (
-          <div style={{ padding: '36px 20px' }}>
+          <div style={{ padding: 'var(--admin-space-9, 36px) var(--admin-space-5, 20px)' }}>
             <AdminLoadingScreen
               compact
               title="Loading Promotional Coupons..."
@@ -546,7 +546,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                             title="Copy coupon code"
                           >
                             {copiedCode === c.code ? (
-                              <Check size={14} style={{ color: '#16a34a' }} />
+                              <Check size={14} style={{ color: 'var(--admin-success, #16a34a)' }} />
                             ) : (
                               <Copy size={14} />
                             )}
@@ -556,11 +556,11 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
 
                       {/* Discount Value */}
                       <td>
-                        <div style={{ fontWeight: '700', color: '#0f172a', fontSize: '0.92rem' }}>
+                        <div style={{ fontWeight: 'var(--admin-font-weight-bold, 700)', color: 'var(--admin-text-heading, #0f172a)', fontSize: 'var(--admin-font-size-14, 0.92rem)' }}>
                           {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
                         </div>
                         {c.discount_type === 'percentage' && c.max_discount_amount > 0 && (
-                          <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                          <div style={{ fontSize: 'var(--admin-font-size-12, 0.72rem)', color: 'var(--admin-text-muted, #64748b)' }}>
                             Max ₹{c.max_discount_amount} cap
                           </div>
                         )}
@@ -570,10 +570,10 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                       <td>
                         <div className="coupon-usage-bar-wrap">
                           <div className="coupon-usage-text">
-                            <span style={{ color: isExhausted ? '#d97706' : '#1e293b' }}>
+                            <span style={{ color: isExhausted ? 'var(--admin-warning, #d97706)' : 'var(--admin-text-primary, #1e293b)' }}>
                               {timesUsed} / {usageLimit} used
                             </span>
-                            <span style={{ color: '#64748b' }}>{remaining} left</span>
+                            <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>{remaining} left</span>
                           </div>
                           <div className="coupon-usage-bar-track">
                             <div
@@ -581,7 +581,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                               style={{ width: `${percentUsed}%` }}
                             />
                           </div>
-                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                          <div style={{ fontSize: 'var(--admin-font-size-12, 0.7rem)', color: 'var(--admin-text-dim, #94a3b8)' }}>
                             Max {c.per_user_limit || 1} use/customer
                           </div>
                         </div>
@@ -589,32 +589,32 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
 
                       {/* Rules */}
                       <td>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.78rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: 'var(--admin-font-size-12, 0.78rem)' }}>
                           {c.min_order_amount > 0 ? (
-                            <span style={{ color: '#334155' }}>
+                            <span style={{ color: 'var(--admin-text-secondary, #334155)' }}>
                               Min Order: <strong>₹{Number(c.min_order_amount).toLocaleString('en-IN')}</strong>
                             </span>
                           ) : (
-                            <span style={{ color: '#94a3b8' }}>No minimum order</span>
+                            <span style={{ color: 'var(--admin-text-dim, #94a3b8)' }}>No minimum order</span>
                           )}
 
                           {c.expires_at ? (
-                            <span style={{ color: isExpired ? '#dc2626' : '#64748b' }}>
+                            <span style={{ color: isExpired ? 'var(--admin-danger, #dc2626)' : 'var(--admin-text-muted, #64748b)' }}>
                               Exp: {new Date(c.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
                           ) : (
-                            <span style={{ color: '#94a3b8' }}>No expiration</span>
+                            <span style={{ color: 'var(--admin-text-dim, #94a3b8)' }}>No expiration</span>
                           )}
                         </div>
                       </td>
 
                       {/* Notes / Recipient */}
                       <td>
-                        <div style={{ maxWidth: '220px', fontSize: '0.82rem', color: '#475569' }}>
+                        <div style={{ maxWidth: '220px', fontSize: 'var(--admin-font-size-14, 0.82rem)', color: 'var(--admin-text-secondary, #475569)' }}>
                           {c.description ? (
                             <span>{c.description}</span>
                           ) : (
-                            <span style={{ color: '#cbd5e1', fontStyle: 'italic' }}>Private distribution</span>
+                            <span style={{ color: 'var(--admin-border-strong, #cbd5e1)', fontStyle: 'italic' }}>Private distribution</span>
                           )}
                         </div>
                       </td>
@@ -658,7 +658,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                             className="coupon-icon-btn"
                             onClick={() => handleToggleActive(c)}
                             title={c.is_active ? 'Disable Coupon' : 'Enable Coupon'}
-                            style={{ color: c.is_active ? '#16a34a' : '#94a3b8' }}
+                            style={{ color: c.is_active ? 'var(--admin-success, #16a34a)' : 'var(--admin-text-dim, #94a3b8)' }}
                           >
                             <CheckCircle2 size={15} />
                           </button>
@@ -816,12 +816,12 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                       <div
                         className="coupon-form-input"
                         style={{
-                          background: '#f8fafc',
-                          color: '#475569',
+                          background: 'var(--admin-surface-subtle, #f8fafc)',
+                          color: 'var(--admin-text-secondary, #475569)',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '6px',
-                          fontSize: '0.84rem',
+                          fontSize: 'var(--admin-font-size-14, 0.875rem)',
                           fontWeight: '500',
                           borderStyle: 'dashed',
                         }}
@@ -848,7 +848,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                       onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
                       required
                     />
-                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    <span style={{ fontSize: 'var(--admin-font-size-12, 0.72rem)', color: 'var(--admin-text-muted, #64748b)' }}>
                       After this many total orders across all buyers, the code automatically stops working.
                     </span>
                   </div>
@@ -867,7 +867,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                       onChange={(e) => setFormData({ ...formData, per_user_limit: e.target.value })}
                       required
                     />
-                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    <span style={{ fontSize: 'var(--admin-font-size-12, 0.72rem)', color: 'var(--admin-text-muted, #64748b)' }}>
                       Max times a single customer phone/email can redeem this code.
                     </span>
                   </div>
@@ -920,15 +920,15 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                 </div>
 
                 {/* Active Checkbox */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 8px)', marginTop: 'var(--admin-space-1, 4px)' }}>
                   <input
                     type="checkbox"
                     id="coupon-active-check"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    style={{ width: 'var(--admin-space-4, 16px)', height: 'var(--admin-space-4, 16px)', cursor: 'pointer' }}
                   />
-                  <label htmlFor="coupon-active-check" style={{ fontSize: '0.86rem', fontWeight: '500', cursor: 'pointer' }}>
+                  <label htmlFor="coupon-active-check" style={{ fontSize: 'var(--admin-font-size-14, 0.86rem)', fontWeight: 'var(--admin-font-weight-medium, 500)', cursor: 'pointer' }}>
                     Activate coupon immediately
                   </label>
                 </div>
@@ -973,7 +973,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
               </button>
             </div>
             <div className="coupon-modal-body">
-              <p style={{ fontSize: '0.86rem', color: '#64748b', margin: 0 }}>
+              <p style={{ fontSize: 'var(--admin-font-size-14, 0.86rem)', color: 'var(--admin-text-muted, #64748b)', margin: 0 }}>
                 Current redemptions: <strong>{quickLimitCoupon.times_used || 0}</strong> uses.
                 Set a new total limit to allow more orders:
               </p>
@@ -1030,13 +1030,13 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                 const couponRedemptions = usages.filter((u) => u.coupon_id === viewingUsagesCoupon.id);
                 if (couponRedemptions.length === 0) {
                   return (
-                    <p style={{ color: '#64748b', textAlign: 'center', margin: '20px 0' }}>
+                    <p style={{ color: 'var(--admin-text-muted, #64748b)', textAlign: 'center', margin: 'var(--admin-space-5, 20px) 0' }}>
                       No redemptions recorded yet.
                     </p>
                   );
                 }
                 return (
-                  <table className="coupons-table" style={{ fontSize: '0.82rem' }}>
+                  <table className="coupons-table" style={{ fontSize: 'var(--admin-font-size-14, 0.82rem)' }}>
                     <thead>
                       <tr>
                         <th>Order #</th>
@@ -1054,10 +1054,10 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                           <td>
                             {r.buyer_phone || r.buyer_email || 'Direct Buyer'}
                           </td>
-                          <td style={{ color: '#16a34a', fontWeight: '600' }}>
+                          <td style={{ color: 'var(--admin-success, #16a34a)', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>
                             -₹{Number(r.discount_amount || 0).toLocaleString('en-IN')}
                           </td>
-                          <td style={{ color: '#64748b' }}>
+                          <td style={{ color: 'var(--admin-text-muted, #64748b)' }}>
                             {r.used_at ? new Date(r.used_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recently'}
                           </td>
                         </tr>

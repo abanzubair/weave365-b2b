@@ -886,7 +886,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
   return (
     <div className="buyer-activity-container">
       {/* 1. Header & Mode Switcher */}
-      <div className="buyer-activity-header" style={{ marginBottom: '16px' }}>
+      <div className="buyer-activity-header" style={{ marginBottom: 'var(--admin-space-4, 16px)' }}>
         <div>
           <h1 className="admin-page-title">
             {viewMode === 'interactions' ? 'Buyer Activity & Intent' : 'Main Website Traffic & AI Referral Analytics'}
@@ -898,8 +898,8 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+        <div style={{ display: 'flex', gap: 'var(--admin-space-2, 10px)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', background: 'var(--admin-surface-muted, #f1f5f9)', padding: 'var(--admin-space-1, 4px)', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border-strong, #cbd5e1)' }}>
             <button
               type="button"
               onClick={() => handleSwitchView('interactions')}
@@ -907,10 +907,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                 padding: '7px 16px',
                 borderRadius: '6px',
                 border: 'none',
-                background: viewMode === 'interactions' ? '#ffffff' : 'transparent',
-                color: viewMode === 'interactions' ? '#0f172a' : '#64748b',
+                background: viewMode === 'interactions' ? 'var(--admin-surface, #ffffff)' : 'transparent',
+                color: viewMode === 'interactions' ? 'var(--admin-text-heading, #0f172a)' : 'var(--admin-text-muted, #64748b)',
                 fontWeight: viewMode === 'interactions' ? 700 : 500,
-                fontSize: '13.5px',
+                fontSize: 'var(--admin-font-size-14, 0.875rem)',
                 cursor: 'pointer',
                 boxShadow: viewMode === 'interactions' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                 display: 'flex',
@@ -927,10 +927,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                 padding: '7px 16px',
                 borderRadius: '6px',
                 border: 'none',
-                background: viewMode === 'traffic' ? '#ffffff' : 'transparent',
-                color: viewMode === 'traffic' ? '#2563eb' : '#64748b',
+                background: viewMode === 'traffic' ? 'var(--admin-surface, #ffffff)' : 'transparent',
+                color: viewMode === 'traffic' ? 'var(--admin-info, #2563eb)' : 'var(--admin-text-muted, #64748b)',
                 fontWeight: viewMode === 'traffic' ? 700 : 500,
-                fontSize: '13.5px',
+                fontSize: 'var(--admin-font-size-14, 0.875rem)',
                 cursor: 'pointer',
                 boxShadow: viewMode === 'traffic' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                 display: 'flex',
@@ -938,7 +938,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                 gap: '6px'
               }}
             >
-              <Globe size={16} style={{ color: '#2563eb' }} /> Website Traffic & AI
+              <Globe size={16} style={{ color: 'var(--admin-info, #2563eb)' }} /> Website Traffic & AI
             </button>
           </div>
 
@@ -1262,7 +1262,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                   onClick={() => handleCopyGroup(group)}
                                   title="Copy buyer summary"
                                 >
-                                  {copyFeedback[group.key] ? <Check size={13} style={{ color: '#10b981' }} /> : <Copy size={13} />}
+                                  {copyFeedback[group.key] ? <Check size={13} style={{ color: 'var(--admin-success, #10b981)' }} /> : <Copy size={13} />}
                                 </button>
                                 <button
                                   type="button"
@@ -1371,7 +1371,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                           onClick={() => handleCopyActivity(act)}
                                           title="Copy log details"
                                         >
-                                          {copyFeedback[act.id] ? <Check size={12} style={{ color: '#10b981' }} /> : <Copy size={12} />}
+                                          {copyFeedback[act.id] ? <Check size={12} style={{ color: 'var(--admin-success, #10b981)' }} /> : <Copy size={12} />}
                                         </button>
                                       </div>
                                     </div>
@@ -1462,7 +1462,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                               <span className="text-muted">—</span>
                             )}
                             {act.message && (
-                              <div className="timeline-enquiry-msg" style={{ marginTop: '4px' }}>
+                              <div className="timeline-enquiry-msg" style={{ marginTop: 'var(--admin-space-1, 4px)' }}>
                                 💬 "{act.message}"
                               </div>
                             )}
@@ -1488,7 +1488,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                 onClick={() => handleCopyActivity(act)}
                                 title="Copy event details"
                               >
-                                {copyFeedback[act.id] ? <Check size={13} style={{ color: '#10b981' }} /> : <Copy size={13} />}
+                                {copyFeedback[act.id] ? <Check size={13} style={{ color: 'var(--admin-success, #10b981)' }} /> : <Copy size={13} />}
                               </button>
                             </div>
                           </td>
@@ -1503,7 +1503,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
         </>
       ) : (
         /* Website Traffic & AI Referral Analytics View */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--admin-space-5, 20px)' }}>
           {/* Top Overview Cards Grid (Decluttered Ultra-Minimal Cards) */}
           <div className="traffic-overview-grid">
             <div
@@ -1753,8 +1753,8 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                   gap: '10px',
                   padding: '7px 14px',
                   borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  background: '#ffffff',
+                  border: '1px solid var(--admin-border-strong, #cbd5e1)',
+                  background: 'var(--admin-surface, #ffffff)',
                   cursor: 'pointer',
                   userSelect: 'none',
                   height: '38px',
@@ -1771,7 +1771,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                     width: '38px',
                     height: '20px',
                     borderRadius: '999px',
-                    background: onlyRealTraffic ? '#0f172a' : '#cbd5e1',
+                    background: onlyRealTraffic ? 'var(--admin-primary, #0f172a)' : 'var(--admin-border-strong, #cbd5e1)',
                     boxShadow: 'none',
                     transition: 'background-color 0.25s ease',
                     flexShrink: 0
@@ -1786,7 +1786,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                       width: '16px',
                       height: '16px',
                       borderRadius: '50%',
-                      background: '#ffffff',
+                      background: 'var(--admin-surface, #ffffff)',
                       boxShadow: 'none',
                       boxSizing: 'border-box',
                       transform: onlyRealTraffic ? 'translateX(18px)' : 'translateX(0px)',
@@ -1799,9 +1799,9 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                 {/* Static Label */}
                 <span
                   style={{
-                    fontSize: '13px',
+                    fontSize: 'var(--admin-font-size-14, 0.875rem)',
                     fontWeight: 600,
-                    color: onlyRealTraffic ? '#0f172a' : '#64748b',
+                    color: onlyRealTraffic ? 'var(--admin-text-heading, #0f172a)' : 'var(--admin-text-muted, #64748b)',
                     whiteSpace: 'nowrap',
                     transition: 'color 0.25s ease'
                   }}
@@ -1822,10 +1822,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                     WebkitAppearance: 'none',
                     padding: '8px 34px 8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    background: '#ffffff',
-                    color: '#0f172a',
-                    fontSize: '13px',
+                    border: '1px solid var(--admin-border-strong, #cbd5e1)',
+                    background: 'var(--admin-surface, #ffffff)',
+                    color: 'var(--admin-text-heading, #0f172a)',
+                    fontSize: 'var(--admin-font-size-14, 0.875rem)',
                     fontWeight: 600,
                     cursor: 'pointer',
                     outline: 'none',
@@ -1846,7 +1846,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                     position: 'absolute',
                     right: '10px',
                     pointerEvents: 'none',
-                    color: '#64748b'
+                    color: 'var(--admin-text-muted, #64748b)'
                   }}
                 />
               </div>
@@ -1868,7 +1868,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
               <tbody>
                 {trafficLoading ? (
                   <tr>
-                    <td colSpan={5} className="empty-state-cell traffic-empty-cell" style={{ padding: '60px 20px' }}>
+                    <td colSpan={5} className="empty-state-cell traffic-empty-cell" style={{ padding: 'var(--admin-space-16, 60px) var(--admin-space-5, 20px)' }}>
                       <AdminLoadingScreen
                         compact
                         title="Loading Website Traffic & AI Analytics..."
@@ -1880,10 +1880,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                   <tr>
                     <td colSpan={5} className="empty-state-cell traffic-empty-cell">
                       <div className="traffic-empty-content">
-                        <Activity size={24} style={{ color: '#94a3b8', marginBottom: '8px' }} />
+                        <Activity size={24} style={{ color: 'var(--admin-text-dim, #94a3b8)', marginBottom: 'var(--admin-space-2, 8px)' }} />
                         <div>No site traffic records logged yet.</div>
                         {searchQuery && (
-                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                          <div style={{ fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-text-dim, #94a3b8)', marginTop: 'var(--admin-space-1, 4px)' }}>
                             No traffic matches "{searchQuery}". Try clearing filters or search.
                           </div>
                         )}

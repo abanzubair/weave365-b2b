@@ -1020,7 +1020,7 @@ export function Admin({
             <img
               src={assetSrc(brandLogo)}
               alt={storeConfig.name}
-              style={{ height: '24px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: 'var(--admin-space-6, 1.5rem)', width: 'auto', objectFit: 'contain' }}
             />
           </a>
           {/* Desktop minimize button */}
@@ -1119,7 +1119,7 @@ export function Admin({
             <img
               src={assetSrc(brandLogo)}
               alt={storeConfig.name}
-              style={{ height: '18px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: 'var(--admin-font-size-18, 1.125rem)', width: 'auto', objectFit: 'contain' }}
             />
             <span className="admin-mobile-tab-badge">
               {activeTabItem?.label || 'Admin'}

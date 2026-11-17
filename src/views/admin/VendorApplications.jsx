@@ -549,7 +549,7 @@ export default function VendorApplications({
             onClick={handleCopySignupLink}
             title="Copy link to vendor registration form"
           >
-            {copyFeedback.signup_link ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+            {copyFeedback.signup_link ? <Check size={14} style={{ color: 'var(--admin-success, #10b981)' }} /> : <Copy size={14} />}
             <span>{copyFeedback.signup_link ? 'Link Copied!' : 'Copy Signup Link'}</span>
           </button>
 
@@ -746,11 +746,11 @@ export default function VendorApplications({
             <tbody>
               {filteredVendors.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--admin-text-muted, #64748b)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                      <Store size={36} style={{ color: '#cbd5e1' }} />
-                      <strong style={{ fontSize: '15px', color: '#334155' }}>No vendor partners found</strong>
-                      <span style={{ fontSize: '13px' }}>
+                      <Store size={36} style={{ color: 'var(--admin-border-strong, #cbd5e1)' }} />
+                      <strong style={{ fontSize: 'var(--admin-font-size-16, 15px)', color: 'var(--admin-text-secondary, #334155)' }}>No vendor partners found</strong>
+                      <span style={{ fontSize: 'var(--admin-font-size-14, 13px)' }}>
                         {searchQuery || categoryFilter !== 'all' || codeFilter !== 'all'
                           ? 'Try adjusting your search criteria or filters.'
                           : 'Vendors who sign up on the registration page will automatically appear here.'}
@@ -793,10 +793,10 @@ export default function VendorApplications({
                     <tr key={vendor.id}>
                       {/* Date & Time */}
                       <td>
-                        <strong style={{ fontSize: '12.5px', color: '#0f172a', display: 'block' }}>
+                        <strong style={{ fontSize: 'var(--admin-font-size-12, 12.5px)', color: 'var(--admin-text-heading, #0f172a)', display: 'block' }}>
                           {formatDate(vendor.created_at || vendor.updated_at)}
                         </strong>
-                        <span style={{ display: 'block', fontSize: '11.5px', color: '#64748b', marginTop: '2px', fontWeight: 500 }}>
+                        <span style={{ display: 'block', fontSize: 'var(--admin-font-size-12, 11.5px)', color: 'var(--admin-text-muted, #64748b)', marginTop: '2px', fontWeight: 500 }}>
                           {formatTime(vendor.created_at || vendor.updated_at)}
                         </span>
                       </td>
@@ -804,18 +804,18 @@ export default function VendorApplications({
                       {/* Vendor & Workshop */}
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>
+                          <strong style={{ fontSize: 'var(--admin-font-size-14, 13.5px)', color: 'var(--admin-text-heading, #0f172a)' }}>
                             {toTitleCase(vendor.full_name) || 'Unnamed Partner'}
                           </strong>
                           {vendor.business_name && (
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#4f46e5' }}>
+                            <span style={{ fontSize: 'var(--admin-font-size-12, 12px)', fontWeight: 600, color: 'var(--admin-metric-purple, #4f46e5)' }}>
                               {vendor.business_name}
                             </span>
                           )}
                           {vendor.email && (
                             <a
                               href={`mailto:${vendor.email}`}
-                              style={{ fontSize: '11.5px', color: '#64748b', textDecoration: 'none' }}
+                              style={{ fontSize: 'var(--admin-font-size-12, 11.5px)', color: 'var(--admin-text-muted, #64748b)', textDecoration: 'none' }}
                               title="Send Email"
                             >
                               {vendor.email}
@@ -838,24 +838,24 @@ export default function VendorApplications({
                               >
                                 <Phone size={13} />
                               </a>
-                              <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#1e293b' }}>
+                              <span style={{ fontSize: 'var(--admin-font-size-12, 12.5px)', fontWeight: 600, color: 'var(--admin-text-primary, #1e293b)' }}>
                                 +91 {cleanPhone}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleCopy(cleanPhone, `phone_${vendor.id}`)}
-                                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px' }}
+                                style={{ background: 'none', border: 'none', color: 'var(--admin-text-dim, #94a3b8)', cursor: 'pointer', padding: '2px' }}
                                 title="Copy Phone Number"
                               >
                                 {copyFeedback[`phone_${vendor.id}`] ? (
-                                  <Check size={13} style={{ color: '#10b981' }} />
+                                  <Check size={13} style={{ color: 'var(--admin-success, #10b981)' }} />
                                 ) : (
                                   <Copy size={13} />
                                 )}
                               </button>
                             </>
                           ) : (
-                            <span style={{ color: '#94a3b8', fontSize: '12px' }}>No Phone</span>
+                            <span style={{ color: 'var(--admin-text-dim, #94a3b8)', fontSize: 'var(--admin-font-size-12, 12px)' }}>No Phone</span>
                           )}
                         </div>
                       </td>
@@ -863,12 +863,12 @@ export default function VendorApplications({
                       {/* Location */}
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '12.5px', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <MapPin size={12} style={{ color: '#64748b' }} />
+                          <span style={{ fontSize: 'var(--admin-font-size-12, 12.5px)', color: 'var(--admin-text-secondary, #334155)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={12} style={{ color: 'var(--admin-text-muted, #64748b)' }} />
                             {vendor.city || 'N/A'}{vendor.state ? `, ${vendor.state}` : ''}
                           </span>
                           {vendor.pincode && (
-                            <span style={{ fontSize: '11px', color: '#94a3b8', paddingLeft: '16px' }}>
+                            <span style={{ fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-dim, #94a3b8)', paddingLeft: '16px' }}>
                               PIN: {vendor.pincode}
                             </span>
                           )}
@@ -884,10 +884,10 @@ export default function VendorApplications({
                                 key={cat}
                                 style={{
                                   padding: '2px 6px',
-                                  background: '#f1f5f9',
-                                  color: '#475569',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
+                                  background: 'var(--admin-surface-muted, #f1f5f9)',
+                                  color: 'var(--admin-text-secondary, #475569)',
+                                  borderRadius: 'var(--admin-radius-xs, 4px)',
+                                  fontSize: 'var(--admin-font-size-10, 11px)',
                                   fontWeight: 500,
                                 }}
                               >
@@ -895,10 +895,10 @@ export default function VendorApplications({
                               </span>
                             ))
                           ) : (
-                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>General Handloom</span>
+                            <span style={{ fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-dim, #94a3b8)' }}>General Handloom</span>
                           )}
                           {cats.length > 3 && (
-                            <span style={{ fontSize: '10px', color: '#64748b', alignSelf: 'center' }}>
+                            <span style={{ fontSize: 'var(--admin-font-size-10, 10px)', color: 'var(--admin-text-muted, #64748b)', alignSelf: 'center' }}>
                               +{cats.length - 3} more
                             </span>
                           )}
@@ -908,8 +908,8 @@ export default function VendorApplications({
                             style={{
                               display: 'inline-block',
                               marginTop: '4px',
-                              fontSize: '10.5px',
-                              color: '#6366f1',
+                              fontSize: 'var(--admin-font-size-10, 10.5px)',
+                              color: 'var(--admin-metric-purple, #6366f1)',
                               fontWeight: 600,
                             }}
                           >
@@ -926,11 +926,11 @@ export default function VendorApplications({
                               style={{
                                 display: 'inline-block',
                                 padding: '4px 8px',
-                                background: '#eff6ff',
-                                color: '#1d4ed8',
-                                border: '1px solid #bfdbfe',
-                                borderRadius: '6px',
-                                fontSize: '12px',
+                                background: 'var(--admin-info-bg, #eff6ff)',
+                                color: 'var(--admin-info-text, #1d4ed8)',
+                                border: '1px solid var(--admin-info-border, #bfdbfe)',
+                                borderRadius: 'var(--admin-radius-sm, 6px)',
+                                fontSize: 'var(--admin-font-size-12, 12px)',
                                 fontWeight: 700,
                                 letterSpacing: '0.04em',
                               }}
@@ -943,7 +943,7 @@ export default function VendorApplications({
                                 setQuickCodeVendor(vendor);
                                 setQuickCodeInput(vendor.vendor_code || '');
                               }}
-                              style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '2px' }}
+                              style={{ background: 'none', border: 'none', color: 'var(--admin-text-muted, #64748b)', cursor: 'pointer', padding: '2px' }}
                               title="Edit Vendor Code"
                             >
                               <Edit3 size={13} />
@@ -961,11 +961,11 @@ export default function VendorApplications({
                               alignItems: 'center',
                               gap: '4px',
                               padding: '3px 8px',
-                              background: '#fffbeb',
-                              color: '#b45309',
-                              border: '1px dashed #fcd34d',
-                              borderRadius: '6px',
-                              fontSize: '11.5px',
+                              background: 'var(--admin-warning-bg, #fffbeb)',
+                              color: 'var(--admin-warning-text, #b45309)',
+                              border: '1px dashed var(--admin-warning-border, #fcd34d)',
+                              borderRadius: 'var(--admin-radius-sm, 6px)',
+                              fontSize: 'var(--admin-font-size-12, 11.5px)',
                               fontWeight: 600,
                               cursor: 'pointer',
                             }}
@@ -990,14 +990,14 @@ export default function VendorApplications({
                                 alignItems: 'center',
                                 gap: '6px',
                                 padding: '5px 12px',
-                                borderRadius: '20px',
-                                fontSize: '12px',
+                                borderRadius: 'var(--admin-radius-full, 20px)',
+                                fontSize: 'var(--admin-font-size-12, 12px)',
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s ease',
-                                background: prodInfo.allHidden ? '#fee2e2' : prodInfo.hiddenCount > 0 ? '#fef3c7' : '#dcfce7',
-                                color: prodInfo.allHidden ? '#dc2626' : prodInfo.hiddenCount > 0 ? '#b45309' : '#15803d',
-                                border: `1px solid ${prodInfo.allHidden ? '#fca5a5' : prodInfo.hiddenCount > 0 ? '#fcd34d' : '#86efac'}`,
+                                background: prodInfo.allHidden ? 'var(--admin-danger-bg, #fee2e2)' : prodInfo.hiddenCount > 0 ? 'var(--admin-warning-bg, #fef3c7)' : 'var(--admin-success-bg, #dcfce7)',
+                                color: prodInfo.allHidden ? 'var(--admin-danger, #dc2626)' : prodInfo.hiddenCount > 0 ? 'var(--admin-warning-text, #b45309)' : 'var(--admin-success-hover, #15803d)',
+                                border: `1px solid ${prodInfo.allHidden ? 'var(--admin-danger-border, #fca5a5)' : prodInfo.hiddenCount > 0 ? 'var(--admin-warning-border, #fcd34d)' : 'var(--admin-success-border, #86efac)'}`,
                               }}
                               title={
                                 prodInfo.allHidden
@@ -1017,13 +1017,13 @@ export default function VendorApplications({
                               </span>
                             </button>
                             {copyFeedback[`toggle_${vendor.id}`] && (
-                              <span style={{ fontSize: '10.5px', color: '#059669', fontWeight: 600 }}>
+                              <span style={{ fontSize: 'var(--admin-font-size-10, 10.5px)', color: 'var(--admin-success, #059669)', fontWeight: 600 }}>
                                 {copyFeedback[`toggle_${vendor.id}`]}
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span style={{ color: '#94a3b8', fontSize: '12px' }}>
+                          <span style={{ color: 'var(--admin-text-dim, #94a3b8)', fontSize: 'var(--admin-font-size-12, 12px)' }}>
                             {vendor.vendor_code ? '0 Items' : 'No Code'}
                           </span>
                         )}
@@ -1060,24 +1060,24 @@ export default function VendorApplications({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '17px', color: '#0f172a', fontWeight: 700 }}>
+                <h3 style={{ margin: 0, fontSize: 'var(--admin-font-size-18, 17px)', color: 'var(--admin-text-heading, #0f172a)', fontWeight: 700 }}>
                   Assign Loom / Vendor Code
                 </h3>
-                <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748b' }}>
+                <p style={{ margin: '4px 0 0', fontSize: 'var(--admin-font-size-12, 12.5px)', color: 'var(--admin-text-muted, #64748b)' }}>
                   Vendor: <strong>{quickCodeVendor.business_name || quickCodeVendor.full_name}</strong>
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setQuickCodeVendor(null)}
-                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '18px' }}
+                style={{ background: 'none', border: 'none', color: 'var(--admin-text-dim, #94a3b8)', cursor: 'pointer', fontSize: 'var(--admin-font-size-18, 18px)' }}
               >
                 ×
               </button>
             </div>
 
             <div style={{ marginTop: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: 'var(--admin-font-size-12, 12px)', fontWeight: 600, color: 'var(--admin-text-secondary, #334155)', marginBottom: '6px' }}>
                 Vendor Code Prefix (e.g. V01, V02, V03):
               </label>
               <input
@@ -1086,10 +1086,10 @@ export default function VendorApplications({
                 value={quickCodeInput}
                 onChange={(e) => setQuickCodeInput(e.target.value.toUpperCase())}
                 className="admin-search-input"
-                style={{ width: '100%', fontSize: '14px', fontWeight: 700, letterSpacing: '0.05em' }}
+                style={{ width: '100%', fontSize: 'var(--admin-font-size-14, 14px)', fontWeight: 700, letterSpacing: '0.05em' }}
                 autoFocus
               />
-              <span style={{ display: 'block', fontSize: '11.5px', color: '#64748b', marginTop: '6px' }}>
+              <span style={{ display: 'block', fontSize: 'var(--admin-font-size-12, 11.5px)', color: 'var(--admin-text-muted, #64748b)', marginTop: '6px' }}>
                 This prefix links products in the wholesale inventory catalog directly to this vendor.
               </span>
             </div>
@@ -1120,28 +1120,28 @@ export default function VendorApplications({
         <div className="admin-modal-overlay" onClick={() => setInspectVendor(null)}>
           <div
             className="admin-onboarding-modal"
-            style={{ maxWidth: '840px', borderRadius: '16px', overflow: 'hidden' }}
+            style={{ maxWidth: '840px', borderRadius: 'var(--admin-radius-xl, 16px)', overflow: 'hidden' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="admin-modal-header" style={{ padding: '20px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+            <div className="admin-modal-header" style={{ padding: '20px 24px', background: 'var(--admin-surface-subtle, #f8fafc)', borderBottom: '1px solid var(--admin-border, #e2e8f0)' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+                  <h3 style={{ margin: 0, fontSize: 'var(--admin-font-size-20, 20px)', fontWeight: 700, color: 'var(--admin-text-heading, #0f172a)' }}>
                     {toTitleCase(inspectVendor.full_name) || 'Vendor Details'}
                   </h3>
                   {inspectVendor.business_name && (
-                    <span style={{ padding: '3px 10px', background: '#e0e7ff', color: '#4338ca', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}>
+                    <span style={{ padding: '3px 10px', background: 'var(--admin-metric-purple-bg, #e0e7ff)', color: 'var(--admin-metric-purple, #4338ca)', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-14, 13px)', fontWeight: 600 }}>
                       {inspectVendor.business_name}
                     </span>
                   )}
                   {inspectVendor.vendor_code && (
-                    <span style={{ padding: '3px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '6px', fontSize: '13px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                    <span style={{ padding: '3px 10px', background: 'var(--admin-info-bg, #dbeafe)', color: 'var(--admin-info-text, #1e40af)', borderRadius: 'var(--admin-radius-sm, 6px)', fontSize: 'var(--admin-font-size-14, 13px)', fontWeight: 700, letterSpacing: '0.04em' }}>
                       Code: {inspectVendor.vendor_code}
                     </span>
                   )}
                 </div>
-                <span style={{ display: 'block', fontSize: '12.5px', color: '#64748b', marginTop: '4px' }}>
+                <span style={{ display: 'block', fontSize: 'var(--admin-font-size-12, 12.5px)', color: 'var(--admin-text-muted, #64748b)', marginTop: '4px' }}>
                   Registered: {formatDate(inspectVendor.created_at || inspectVendor.updated_at)} at {formatTime(inspectVendor.created_at || inspectVendor.updated_at)} • Email: {inspectVendor.email || 'N/A'}
                 </span>
               </div>
@@ -1149,7 +1149,7 @@ export default function VendorApplications({
                 type="button"
                 className="admin-modal-close-btn"
                 onClick={() => setInspectVendor(null)}
-                style={{ fontSize: '24px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
+                style={{ fontSize: 'var(--admin-font-size-24, 24px)', color: 'var(--admin-text-dim, #94a3b8)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
               >
                 ×
               </button>
@@ -1167,15 +1167,15 @@ export default function VendorApplications({
                     rel="noopener noreferrer"
                     className="admin-btn-save-drive"
                     style={{
-                      background: '#25d366',
+                      background: 'var(--admin-success, #25d366)',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
                       textDecoration: 'none',
                       padding: '10px 18px',
-                      borderRadius: '8px',
+                      borderRadius: 'var(--admin-radius-md, 8px)',
                       fontWeight: 600,
-                      fontSize: '13.5px',
+                      fontSize: 'var(--admin-font-size-14, 13.5px)',
                     }}
                   >
                     <Phone size={15} />
@@ -1190,9 +1190,9 @@ export default function VendorApplications({
                     handleCopy(summary, 'vendor_summary');
                   }}
                   className="admin-btn-inspect"
-                  style={{ padding: '10px 16px', fontSize: '13px' }}
+                  style={{ padding: '10px 16px', fontSize: 'var(--admin-font-size-14, 13px)' }}
                 >
-                  {copyFeedback.vendor_summary ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                  {copyFeedback.vendor_summary ? <Check size={14} style={{ color: 'var(--admin-success, #10b981)' }} /> : <Copy size={14} />}
                   <span>{copyFeedback.vendor_summary ? 'Summary Copied!' : 'Copy Summary'}</span>
                 </button>
               </div>
@@ -1201,52 +1201,52 @@ export default function VendorApplications({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 
                 {/* Left Card: Vendor Information */}
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Users size={16} style={{ color: '#4f46e5' }} />
+                <div style={{ background: 'var(--admin-surface-subtle, #f8fafc)', border: '1px solid var(--admin-border, #e2e8f0)', borderRadius: 'var(--admin-radius-lg, 12px)', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h4 style={{ margin: 0, fontSize: 'var(--admin-font-size-14, 14px)', fontWeight: 700, color: 'var(--admin-text-primary, #1e293b)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={16} style={{ color: 'var(--admin-metric-purple, #4f46e5)' }} />
                     Contact & Vendor Info
                   </h4>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: 'var(--admin-font-size-14, 13px)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>Proprietor:</span>
-                      <strong style={{ color: '#0f172a' }}>{toTitleCase(inspectVendor.full_name) || 'N/A'}</strong>
+                      <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>Proprietor:</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{toTitleCase(inspectVendor.full_name) || 'N/A'}</strong>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>Business / Firm:</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.business_name || 'Individual Weaver'}</strong>
+                      <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>Business / Firm:</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.business_name || 'Individual Weaver'}</strong>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>Email:</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.email || 'N/A'}</strong>
+                      <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>Email:</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.email || 'N/A'}</strong>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>WhatsApp:</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.whatsapp || inspectVendor.whatsapp_number || 'N/A'}</strong>
+                      <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>WhatsApp:</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.whatsapp || inspectVendor.whatsapp_number || 'N/A'}</strong>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>Location:</span>
-                      <strong style={{ color: '#0f172a', textAlign: 'right' }}>
+                      <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>Location:</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)', textAlign: 'right' }}>
                         {inspectVendor.city || ''}{inspectVendor.state ? `, ${inspectVendor.state}` : ''}
                         {inspectVendor.pincode ? ` (${inspectVendor.pincode})` : ''}
                       </strong>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>Sourcing Model:</span>
-                      <strong style={{ color: '#4338ca' }}>
+                      <span style={{ color: 'var(--admin-text-muted, #64748b)' }}>Sourcing Model:</span>
+                      <strong style={{ color: 'var(--admin-metric-purple, #4338ca)' }}>
                         {inspectVendor.buying_behavior === 'instant' ? 'Immediate Stock' : 'Order Basis / Custom Woven'}
                       </strong>
                     </div>
                   </div>
 
                   {/* Specialties */}
-                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '6px' }}>
+                  <div style={{ borderTop: '1px solid var(--admin-border, #e2e8f0)', paddingTop: '12px' }}>
+                    <span style={{ fontSize: 'var(--admin-font-size-12, 12px)', fontWeight: 600, color: 'var(--admin-text-muted, #64748b)', display: 'block', marginBottom: '6px' }}>
                       Specialties & Categories:
                     </span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -1256,10 +1256,10 @@ export default function VendorApplications({
                             key={c}
                             style={{
                               padding: '3px 8px',
-                              background: '#e0e7ff',
-                              color: '#3730a3',
-                              borderRadius: '4px',
-                              fontSize: '11.5px',
+                              background: 'var(--admin-metric-purple-bg, #e0e7ff)',
+                              color: 'var(--admin-metric-purple, #3730a3)',
+                              borderRadius: 'var(--admin-radius-xs, 4px)',
+                              fontSize: 'var(--admin-font-size-12, 11.5px)',
                               fontWeight: 600,
                             }}
                           >
@@ -1267,7 +1267,7 @@ export default function VendorApplications({
                           </span>
                         ))
                       ) : (
-                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>General Handloom</span>
+                        <span style={{ fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-text-dim, #94a3b8)' }}>General Handloom</span>
                       )}
                     </div>
                   </div>
@@ -1277,12 +1277,12 @@ export default function VendorApplications({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
                   {/* Vendor Code Box */}
-                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
-                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Tag size={16} style={{ color: '#2563eb' }} />
+                  <div style={{ background: 'var(--admin-surface-subtle, #f8fafc)', border: '1px solid var(--admin-border, #e2e8f0)', borderRadius: 'var(--admin-radius-lg, 12px)', padding: '18px' }}>
+                    <h4 style={{ margin: 0, fontSize: 'var(--admin-font-size-14, 14px)', fontWeight: 700, color: 'var(--admin-text-primary, #1e293b)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Tag size={16} style={{ color: 'var(--admin-info, #2563eb)' }} />
                       Vendor Code (Catalog Link)
                     </h4>
-                    <p style={{ margin: '4px 0 12px', fontSize: '12px', color: '#64748b' }}>
+                    <p style={{ margin: '4px 0 12px', fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-text-muted, #64748b)' }}>
                       Set a short code (e.g. <strong>V01</strong>, <strong>V02</strong>) to link this vendor to their catalog products.
                     </p>
 
@@ -1293,7 +1293,7 @@ export default function VendorApplications({
                         value={editingCode}
                         onChange={(e) => setEditingCode(e.target.value.toUpperCase())}
                         className="admin-search-input"
-                        style={{ width: '110px', fontSize: '14px', fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center' }}
+                        style={{ width: '110px', fontSize: 'var(--admin-font-size-14, 14px)', fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center' }}
                       />
                       <button
                         type="button"
@@ -1307,17 +1307,17 @@ export default function VendorApplications({
                     </div>
 
                     {copyFeedback.inspector_save && (
-                      <span style={{ display: 'block', fontSize: '12px', color: '#10b981', fontWeight: 600, marginTop: '6px' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-success, #10b981)', fontWeight: 600, marginTop: '6px' }}>
                         ✓ Vendor code saved successfully!
                       </span>
                     )}
                   </div>
 
                   {/* Linked Products & Bulk Toggle Box */}
-                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', flex: 1 }}>
+                  <div style={{ background: 'var(--admin-surface-subtle, #f8fafc)', border: '1px solid var(--admin-border, #e2e8f0)', borderRadius: 'var(--admin-radius-lg, 12px)', padding: '18px', flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Boxes size={16} style={{ color: '#7c3aed' }} />
+                      <h4 style={{ margin: 0, fontSize: 'var(--admin-font-size-14, 14px)', fontWeight: 700, color: 'var(--admin-text-primary, #1e293b)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Boxes size={16} style={{ color: 'var(--admin-metric-purple, #7c3aed)' }} />
                         Linked Products ({inspectedVendorProductsInfo.total})
                       </h4>
 
@@ -1332,13 +1332,13 @@ export default function VendorApplications({
                             alignItems: 'center',
                             gap: '6px',
                             padding: '6px 14px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
+                            borderRadius: 'var(--admin-radius-md, 8px)',
+                            fontSize: 'var(--admin-font-size-12, 12px)',
                             fontWeight: 700,
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
-                            background: inspectedVendorProductsInfo.allHidden ? '#16a34a' : '#dc2626',
-                            color: '#ffffff',
+                            background: inspectedVendorProductsInfo.allHidden ? 'var(--admin-success, #16a34a)' : 'var(--admin-danger, #dc2626)',
+                            color: 'var(--admin-surface, #ffffff)',
                             border: 'none',
                           }}
                           title={
@@ -1363,20 +1363,20 @@ export default function VendorApplications({
                       <div style={{ marginBottom: '8px' }}>
                         <span
                           style={{
-                            fontSize: '11.5px',
+                            fontSize: 'var(--admin-font-size-12, 11.5px)',
                             fontWeight: 600,
                             padding: '2px 8px',
-                            borderRadius: '4px',
+                            borderRadius: 'var(--admin-radius-xs, 4px)',
                             background: inspectedVendorProductsInfo.allHidden
-                              ? '#fee2e2'
+                              ? 'var(--admin-danger-bg, #fee2e2)'
                               : inspectedVendorProductsInfo.hiddenCount > 0
-                              ? '#fef3c7'
-                              : '#dcfce7',
+                              ? 'var(--admin-warning-bg, #fef3c7)'
+                              : 'var(--admin-success-bg, #dcfce7)',
                             color: inspectedVendorProductsInfo.allHidden
-                              ? '#b91c1c'
+                              ? 'var(--admin-danger-text, #b91c1c)'
                               : inspectedVendorProductsInfo.hiddenCount > 0
-                              ? '#b45309'
-                              : '#15803d',
+                              ? 'var(--admin-warning-text, #b45309)'
+                              : 'var(--admin-success-hover, #15803d)',
                           }}
                         >
                           Status:{' '}
@@ -1412,10 +1412,10 @@ export default function VendorApplications({
                               <div
                                 key={pKey || idx}
                                 style={{
-                                  border: `1px solid ${isHidden ? '#fca5a5' : '#e2e8f0'}`,
-                                  borderRadius: '6px',
+                                  border: `1px solid ${isHidden ? 'var(--admin-danger-border, #fca5a5)' : 'var(--admin-border, #e2e8f0)'}`,
+                                  borderRadius: 'var(--admin-radius-sm, 6px)',
                                   padding: '4px',
-                                  background: isHidden ? '#fff5f5' : '#ffffff',
+                                  background: isHidden ? '#fff5f5' : 'var(--admin-surface, #ffffff)',
                                   display: 'flex',
                                   flexDirection: 'column',
                                   gap: '2px',
@@ -1425,12 +1425,12 @@ export default function VendorApplications({
                                 <img
                                   src={p.image || (Array.isArray(p.images) && p.images[0]) || fallbackProductImage}
                                   alt={p.name || 'Product'}
-                                  style={{ width: '100%', height: '55px', objectFit: 'cover', borderRadius: '4px' }}
+                                  style={{ width: '100%', height: '55px', objectFit: 'cover', borderRadius: 'var(--admin-radius-xs, 4px)' }}
                                 />
                                 <span
                                   style={{
-                                    fontSize: '10px',
-                                    color: '#1e293b',
+                                    fontSize: 'var(--admin-font-size-10, 10px)',
+                                    color: 'var(--admin-text-primary, #1e293b)',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -1441,9 +1441,9 @@ export default function VendorApplications({
                                 </span>
                                 <span
                                   style={{
-                                    fontSize: '9.5px',
+                                    fontSize: 'var(--admin-font-size-10, 0.625rem)',
                                     fontWeight: 700,
-                                    color: isHidden ? '#dc2626' : '#16a34a',
+                                    color: isHidden ? 'var(--admin-danger, #dc2626)' : 'var(--admin-success, #16a34a)',
                                   }}
                                 >
                                   {isHidden ? 'Hidden' : 'Visible'}
@@ -1461,7 +1461,7 @@ export default function VendorApplications({
                               setActiveTab('stock');
                             }}
                             className="admin-btn-inspect"
-                            style={{ width: '100%', justifyContent: 'center', fontSize: '12px', marginTop: '10px' }}
+                            style={{ width: '100%', justifyContent: 'center', fontSize: 'var(--admin-font-size-12, 12px)', marginTop: '10px' }}
                           >
                             <ExternalLink size={13} />
                             <span>Manage in Stock Portal</span>
@@ -1469,7 +1469,7 @@ export default function VendorApplications({
                         )}
                       </div>
                     ) : (
-                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#64748b' }}>
+                      <p style={{ margin: '8px 0 0', fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-text-muted, #64748b)' }}>
                         {inspectVendor.vendor_code ? (
                           <>No catalog products currently tagged with code <strong>{inspectVendor.vendor_code}</strong>.</>
                         ) : (
@@ -1483,73 +1483,73 @@ export default function VendorApplications({
 
               {/* Supplier Qualification / Onboarding Details Card (if submitted via onboarding flow) */}
               {inspectVendor.qualification && (
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles size={16} style={{ color: '#4f46e5' }} />
+                <div style={{ background: 'var(--admin-surface-subtle, #f8fafc)', border: '1px solid var(--admin-border, #e2e8f0)', borderRadius: 'var(--admin-radius-lg, 12px)', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h4 style={{ margin: 0, fontSize: 'var(--admin-font-size-14, 14px)', fontWeight: 700, color: 'var(--admin-text-primary, #1e293b)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkles size={16} style={{ color: 'var(--admin-metric-purple, #4f46e5)' }} />
                     Supplier Onboarding & Capability Profile
                   </h4>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', fontSize: '13px' }}>
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>GST Registration</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.has_gst || 'No'}</strong>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', fontSize: 'var(--admin-font-size-14, 13px)' }}>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>GST Registration</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.has_gst || 'No'}</strong>
                       {inspectVendor.qualification.gstin && (
-                        <div style={{ fontSize: '12px', color: '#4338ca', marginTop: '2px', fontWeight: 600 }}>
+                        <div style={{ fontSize: 'var(--admin-font-size-12, 12px)', color: 'var(--admin-metric-purple, #4338ca)', marginTop: '2px', fontWeight: 600 }}>
                           GSTIN: {inspectVendor.qualification.gstin}
                         </div>
                       )}
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Business Role</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.business_type || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Business Role</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.business_type || 'N/A'}</strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Years in Business</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.business_experience || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Years in Business</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.business_experience || 'N/A'}</strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Wholesale Price Range</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.wholesale_price_range || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Wholesale Price Range</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.wholesale_price_range || 'N/A'}</strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Weaving Specialisation</span>
-                      <strong style={{ color: '#0f172a' }}>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Weaving Specialisation</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>
                         {Array.isArray(inspectVendor.qualification.weaving_specialisation)
                           ? inspectVendor.qualification.weaving_specialisation.join(', ')
                           : inspectVendor.qualification.weaving_specialisation || 'N/A'}
                       </strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Manufacturing Location</span>
-                      <strong style={{ color: '#0f172a' }}>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Manufacturing Location</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>
                         {inspectVendor.qualification.manufacturing_location || 'N/A'}
                         {inspectVendor.qualification.other_city_name ? ` (${inspectVendor.qualification.other_city_name})` : ''}
                       </strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Single-Piece Supply</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.single_piece_supply || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Single-Piece Supply</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.single_piece_supply || 'N/A'}</strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Repeat Supply Capability</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.repeat_supply || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Repeat Supply Capability</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.repeat_supply || 'N/A'}</strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Website Catalogue</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.has_catalogue || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Website Catalogue</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.has_catalogue || 'N/A'}</strong>
                     </div>
 
-                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Catalogue Source</span>
-                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.catalogue_source || 'N/A'}</strong>
+                    <div style={{ background: 'var(--admin-surface, #ffffff)', padding: '10px 12px', borderRadius: 'var(--admin-radius-md, 8px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
+                      <span style={{ display: 'block', fontSize: 'var(--admin-font-size-10, 11px)', color: 'var(--admin-text-muted, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Catalogue Source</span>
+                      <strong style={{ color: 'var(--admin-text-heading, #0f172a)' }}>{inspectVendor.qualification.catalogue_source || 'N/A'}</strong>
                     </div>
                   </div>
                 </div>

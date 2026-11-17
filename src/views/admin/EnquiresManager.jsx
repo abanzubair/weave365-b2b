@@ -1060,7 +1060,7 @@ function EnquiryItemsModal({ isOpen, onClose, modalData, products = [] }) {
                   href={getWhatsappUrl(phone)}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ color: '#0284c7', textDecoration: 'underline' }}
+                  style={{ color: 'var(--admin-info, #0284c7)', textDecoration: 'underline' }}
                 >
                   {phone}
                 </a>

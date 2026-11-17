@@ -446,7 +446,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
             <h2 className="cpa-card-title">
               <Calculator size={16} className="cpa-card-title-icon" /> Price Simulator
             </h2>
-            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Preview calculation</span>
+            <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)' }}>Preview calculation</span>
           </div>
 
           <div className="cpa-sim-inputs">
@@ -684,11 +684,11 @@ export default function CountryPricingManager({ adminData, loading = false }) {
 
             <div className="cpa-modal-body">
               {/* Toggle Mode: Preset vs Custom */}
-              <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', gap: 'var(--admin-space-2, 8px)', borderBottom: '1px solid var(--admin-border, #e2e8f0)', paddingBottom: 'var(--admin-space-2, 10px)' }}>
                 <button
                   type="button"
                   className={`cpa-btn ${!isCustomMode ? 'cpa-btn-primary' : 'cpa-btn-secondary'}`}
-                  style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+                  style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', padding: 'var(--admin-space-1, 4px) var(--admin-space-2, 10px)' }}
                   onClick={() => setIsCustomMode(false)}
                 >
                   Quick Presets
@@ -696,7 +696,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                 <button
                   type="button"
                   className={`cpa-btn ${isCustomMode ? 'cpa-btn-primary' : 'cpa-btn-secondary'}`}
-                  style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+                  style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', padding: 'var(--admin-space-1, 4px) var(--admin-space-2, 10px)' }}
                   onClick={() => setIsCustomMode(true)}
                 >
                   Custom Country
@@ -722,7 +722,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                 </div>
               ) : (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: 'var(--admin-space-2, 8px)' }}>
                     <div className="cpa-field-group">
                       <label className="cpa-label">Country Name</label>
                       <input
@@ -747,7 +747,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px', gap: 'var(--admin-space-2, 8px)' }}>
                     <div className="cpa-field-group">
                       <label className="cpa-label">Currency Code</label>
                       <input
@@ -794,11 +794,11 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                     value={customMarkup}
                     onChange={(e) => setCustomMarkup(e.target.value)}
                     placeholder="10"
-                    style={{ textAlign: 'left', paddingRight: '2rem' }}
+                    style={{ textAlign: 'left', paddingRight: 'var(--admin-space-8, 2rem)' }}
                   />
                   <span className="cpa-markup-suffix">%</span>
                 </div>
-                <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)' }}>
                   Applied to the base INR product price before currency conversion.
                 </span>
               </div>

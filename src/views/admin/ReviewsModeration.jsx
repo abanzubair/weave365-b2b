@@ -31,12 +31,12 @@ export function ReviewsModeration({
       </div>
 
       {/* Category selector */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '1.25rem', borderBottom: '1px solid var(--line)', paddingBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', gap: 'var(--admin-space-2, 8px)', marginBottom: 'var(--admin-space-5, 1.25rem)', borderBottom: '1px solid var(--admin-border, #e2e8f0)', paddingBottom: 'var(--admin-space-3, 0.75rem)' }}>
         <button
           type="button"
           onClick={() => setReviewsCategory && setReviewsCategory('product')}
           className={`admin-review-filter-btn ${isProductMode ? 'active' : ''}`}
-          style={{ fontWeight: isProductMode ? 700 : 500 }}
+          style={{ fontWeight: isProductMode ? 'var(--admin-font-weight-bold, 700)' : 'var(--admin-font-weight-medium, 500)' }}
         >
           <span>👗 Product Sourcing Reviews ({allProductReviews.length})</span>
         </button>
@@ -44,7 +44,7 @@ export function ReviewsModeration({
           type="button"
           onClick={() => setReviewsCategory && setReviewsCategory('service')}
           className={`admin-review-filter-btn ${!isProductMode ? 'active' : ''}`}
-          style={{ fontWeight: !isProductMode ? 700 : 500 }}
+          style={{ fontWeight: !isProductMode ? 'var(--admin-font-weight-bold, 700)' : 'var(--admin-font-weight-medium, 500)' }}
         >
           <span>🏢 Platform Service Reviews ({allSiteReviews.length})</span>
         </button>
@@ -115,12 +115,12 @@ export function ReviewsModeration({
                           <span className="admin-review-guest-pill">Guest</span>
                         )}
                         {review.verified_buyer && (
-                          <span className="admin-review-guest-pill" style={{ background: 'rgba(198, 158, 106, 0.15)', color: '#8b6534', borderColor: 'var(--gold)' }}>
+                          <span className="admin-review-guest-pill" style={{ background: 'var(--admin-accent-subtle, rgba(198, 158, 106, 0.15))', color: 'var(--admin-accent-hover, #8b6534)', borderColor: 'var(--admin-accent-border, var(--admin-accent))' }}>
                             ✓ Verified Buyer
                           </span>
                         )}
                         {isProductMode && review.product_id && (
-                          <span style={{ fontSize: '0.78rem', color: 'var(--muted)', background: 'var(--cream)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--line)' }}>
+                          <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-muted, #64748b)', background: 'var(--admin-surface-muted, #f1f5f9)', padding: 'var(--admin-space-1, 2px) var(--admin-space-2, 8px)', borderRadius: 'var(--admin-radius-xs, 4px)', border: '1px solid var(--admin-border, #e2e8f0)' }}>
                             SKU: {review.product_id}
                           </span>
                         )}
@@ -138,18 +138,18 @@ export function ReviewsModeration({
 
                       {/* Attached Customer Photos in Admin */}
                       {reviewImages.length > 0 && (
-                        <div style={{ marginTop: '10px' }}>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                        <div style={{ marginTop: 'var(--admin-space-2, 8px)' }}>
+                          <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-muted, #64748b)', display: 'inline-flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', marginBottom: 'var(--admin-space-1, 6px)' }}>
                             <PhotoIcon size={13} /> {reviewImages.length} Attached Photo{reviewImages.length === 1 ? '' : 's'}:
                           </span>
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: 'var(--admin-space-2, 8px)', flexWrap: 'wrap' }}>
                             {reviewImages.map((imgUrl, imgIdx) => (
                               <a
                                 key={imgIdx}
                                 href={imgUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{ display: 'block', width: '64px', height: '64px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--line)', background: '#f5f5f5' }}
+                                style={{ display: 'block', width: 'var(--admin-space-16, 64px)', height: 'var(--admin-space-16, 64px)', borderRadius: 'var(--admin-radius-sm, 6px)', overflow: 'hidden', border: '1px solid var(--admin-border, #e2e8f0)', background: 'var(--admin-surface-muted, #f1f5f9)' }}
                                 title="Click to view full image in new tab"
                               >
                                 <img

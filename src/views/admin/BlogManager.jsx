@@ -383,7 +383,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
       <article className="admin-panel admin-panel-margin-bottom">
         <div className="admin-panel-head">
           <span><FileText size={18} /> Current Compiled Articles</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--admin-space-2, 10px)' }}>
             <button
               type="button"
               onClick={async () => {
@@ -393,7 +393,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 setIsLoadingPosts(false);
               }}
               className="admin-btn-icon-subtle"
-              style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
+              style={{ padding: 'var(--admin-space-1, 4px) var(--admin-space-2, 8px)', display: 'flex', alignItems: 'center', gap: 'var(--admin-space-1, 4px)', fontSize: 'var(--admin-font-size-12, 0.75rem)' }}
               title="Refresh blog articles"
             >
               <RefreshCw size={13} style={{ animation: isLoadingPosts ? 'spin 1s linear infinite' : 'none' }} /> Refresh
@@ -406,7 +406,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
           <table className="admin-table">
             <thead>
               <tr>
-                <th style={{ width: '50px' }}>S.No.</th>
+                <th style={{ width: 'var(--admin-space-12, 50px)' }}>S.No.</th>
                 <th className="admin-col-article">Article</th>
                 <th className="admin-col-category">Category</th>
                 <th className="admin-col-readtime">Read Time</th>
@@ -661,37 +661,37 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
               
               {/* Markdown Formatting Cheat Sheet Reference */}
               <div className="admin-markdown-cheatsheet" style={{
-                marginTop: '0.75rem',
-                padding: '1rem',
-                backgroundColor: 'rgba(235, 187, 86, 0.05)',
-                border: '1px solid rgba(235, 187, 86, 0.25)',
-                borderRadius: '6px',
-                fontSize: '0.85rem',
+                marginTop: 'var(--admin-space-3, 0.75rem)',
+                padding: 'var(--admin-space-4, 1rem)',
+                backgroundColor: 'var(--admin-accent-subtle, rgba(235, 187, 86, 0.05))',
+                border: '1px solid var(--admin-accent-border, rgba(235, 187, 86, 0.25))',
+                borderRadius: 'var(--admin-radius-sm, 6px)',
+                fontSize: 'var(--admin-font-size-14, 0.875rem)',
                 lineHeight: '1.45'
               }}>
-                <div style={{ fontWeight: 600, color: '#c49a3c', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-accent, #c49a3c)', marginBottom: 'var(--admin-space-2, 0.5rem)', display: 'flex', alignItems: 'center', gap: 'var(--admin-space-1, 6px)' }}>
                   <span>📝 Blog Markdown Reference Guide</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--admin-space-4, 1rem)' }}>
                   <div>
-                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Headers & Divider</p>
-                    <code style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.03)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontFamily: 'monospace' }}>
+                    <p style={{ margin: '0 0 var(--admin-space-1, 0.25rem) 0', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-primary, #1e293b)' }}>Headers & Divider</p>
+                    <code style={{ display: 'block', backgroundColor: 'var(--admin-surface-muted, rgba(0,0,0,0.03))', padding: 'var(--admin-space-1, 0.25rem) var(--admin-space-2, 0.5rem)', borderRadius: 'var(--admin-radius-xs, 4px)', fontFamily: 'monospace' }}>
                       ## Main Heading (H2)<br/>
                       ### Sub Heading (H3)<br/>
                       --- (Horizontal Divider)
                     </code>
                   </div>
                   <div>
-                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Links & Bold Text</p>
-                    <code style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.03)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontFamily: 'monospace' }}>
+                    <p style={{ margin: '0 0 var(--admin-space-1, 0.25rem) 0', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-primary, #1e293b)' }}>Links & Bold Text</p>
+                    <code style={{ display: 'block', backgroundColor: 'var(--admin-surface-muted, rgba(0,0,0,0.03))', padding: 'var(--admin-space-1, 0.25rem) var(--admin-space-2, 0.5rem)', borderRadius: 'var(--admin-radius-xs, 4px)', fontFamily: 'monospace' }}>
                       [Link Text](https://example.com) (External)<br/>
                       [Link Text](/wholesale-catalogue) (Internal)<br/>
                       **Bold Text**
                     </code>
                   </div>
                   <div>
-                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Lists with Details (Indented)</p>
-                    <code style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.03)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                    <p style={{ margin: '0 0 var(--admin-space-1, 0.25rem) 0', fontWeight: 'var(--admin-font-weight-semibold, 600)', color: 'var(--admin-text-primary, #1e293b)' }}>Lists with Details (Indented)</p>
+                    <code style={{ display: 'block', backgroundColor: 'var(--admin-surface-muted, rgba(0,0,0,0.03))', padding: 'var(--admin-space-1, 0.25rem) var(--admin-space-2, 0.5rem)', borderRadius: 'var(--admin-radius-xs, 4px)', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                       1. Step Title<br/>
                       &nbsp;&nbsp;&nbsp;&nbsp;Step details line (indented)<br/>
                       2. Step Title

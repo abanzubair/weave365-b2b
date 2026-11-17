@@ -1075,13 +1075,13 @@ export default function BuyerPipeline({
                         {getBuyerTypeLabel(profile)}
                       </span>
                       {isAccountLocked(profile) && (
-                        <span className="pipeline-locked-tag" title="Account locked" style={{ marginLeft: '4px' }}>
+                        <span className="pipeline-locked-tag" title="Account locked" style={{ marginLeft: 'var(--admin-space-1, 0.25rem)' }}>
                           <Lock size={10} />
                         </span>
                       )}
                     </td>
                     <td className="pipeline-col-items">
-                      <div className="pipeline-items-cell" style={{ flexDirection: 'row', gap: '4px', alignItems: 'center' }}>
+                      <div className="pipeline-items-cell" style={{ flexDirection: 'row', gap: 'var(--admin-space-1, 0.25rem)', alignItems: 'center' }}>
                         {cartRows.length === 0 && favoriteRows.length === 0 ? (
                           <span className="pipeline-empty-dash" title="No cart or favourite items">—</span>
                         ) : (
@@ -1271,7 +1271,7 @@ export default function BuyerPipeline({
 
       {/* Notices */}
       {Object.keys(adminData.errors).filter(k => k !== 'blog_posts').length > 0 && (
-        <article className="admin-panel" style={{ marginTop: '24px' }}>
+        <article className="admin-panel" style={{ marginTop: 'var(--admin-space-6, 1.5rem)' }}>
           <div className="admin-panel-head">
             <span>Supabase Setup Notices</span>
             <small>Missing tables or RLS policies</small>
@@ -1336,7 +1336,7 @@ export default function BuyerPipeline({
                     }
                     return (
                       <span>
-                        Last active: <strong style={{ color: '#334155', fontWeight: 600 }}>{presence.fullFormatted}</strong>
+                        Last active: <strong style={{ color: 'var(--admin-text-secondary, #334155)', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>{presence.fullFormatted}</strong>
                       </span>
                     );
                   })()}
@@ -1402,7 +1402,7 @@ export default function BuyerPipeline({
                   <span className="pipeline-switch-hint">Takes effect on save</span>
                 </div>
 
-                <div className="pipeline-role-selector-row" style={{ marginBottom: 0 }}>
+                <div className="pipeline-role-selector-row" style={{ marginBottom: 'var(--admin-space-0, 0)' }}>
                   <button
                     type="button"
                     className={`pipeline-role-chip ${selectedRoleToSet === 'reseller' ? 'active' : ''}`}
