@@ -6586,23 +6586,6 @@ button.card-gradient-purple:hover,
   width: 100%;
 }
 
-/* Fluid rem typography for Metric/KPI cards in Order page */
-.admin-tracking-container-refined .gradient-card-large-val {
-  font-size: clamp(var(--admin-font-size-16), 2vw, var(--admin-font-size-18));
-  font-weight: var(--admin-font-semibold);
-  color: var(--admin-text-heading);
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  font-variant-numeric: tabular-nums;
-}
-
-.admin-tracking-container-refined .gradient-card-label-span {
-  font-size: var(--admin-font-size-12);
-  font-weight: var(--admin-font-medium);
-  color: var(--admin-text-muted);
-  letter-spacing: 0.01em;
-}
-
 /* 1. KPI Stats Summary Strip */
 .admin-order-stats-strip {
   display: grid;

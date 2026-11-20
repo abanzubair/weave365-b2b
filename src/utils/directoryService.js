@@ -52,6 +52,7 @@ export const DEFAULT_DIRECTORY_CONFIG = {
         { label: 'Start Saree Business from Home', type: 'blog-guide', target: 'how-to-start-a-saree-reselling-business-from-home-in-india', path: '/blog/how-to-start-a-saree-reselling-business-from-home-in-india' },
         { label: 'Low MOQ Dropshipping for Resellers', type: 'route', target: 'dropshipping-white-label-low-moq-banarasi-sarees', path: '/dropshipping-white-label-low-moq-banarasi-sarees' },
         { label: 'Banarasi Saree Dropshipping Services', type: 'route', target: 'dropshipping', path: '/dropshipping' },
+        { label: 'Developer API & Storefront Feeds', type: 'route', target: 'developer-api', path: '/developer-api' },
         { label: 'Zero-Investment Reselling Blueprint', type: 'blog-guide', target: 'how-to-start-a-banarasi-saree-and-suit-reselling-business-with-zero-investment', path: '/blog/how-to-start-a-banarasi-saree-and-suit-reselling-business-with-zero-investment' },
         { label: 'Reseller Pricing & FAQs Guide', type: 'route', target: 'reseller-faqs', path: '/reseller-faqs' },
         { label: 'Sell on Weave 365 (Artisan Network)', type: 'route', target: 'sell-banarasi-sarees', path: '/sell-banarasi-sarees' }

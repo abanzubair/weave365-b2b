@@ -97,7 +97,7 @@ const SECTION_IDS = [
   'dashboard-guide',
 ];
 
-export default function DeveloperApiDocPage() {
+export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [copiedSection, setCopiedSection] = useState(null);
   const [activePlatformTab, setActivePlatformTab] = useState('shopify');
   const [activeSection, setActiveSection] = useState('overview');
@@ -432,8 +432,23 @@ curl -X GET "https://www.weave365.com/api/v1/orders" \\
           {/* Documentation Hero Header */}
           <header className="api-docs-hero">
             <div className="api-docs-breadcrumbs">
-              <a href="/catalogue">Store</a>
-              <span className="api-breadcrumb-sep">/</span>
+              {onSwitchToLanding ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={onSwitchToLanding}
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'var(--api-accent, #2563eb)', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}
+                  >
+                    &larr; API Overview &amp; Landing
+                  </button>
+                  <span className="api-breadcrumb-sep">/</span>
+                </>
+              ) : (
+                <>
+                  <a href="/catalogue">Store</a>
+                  <span className="api-breadcrumb-sep">/</span>
+                </>
+              )}
               <a href="/account?tab=developer">Developer</a>
               <span className="api-breadcrumb-sep">/</span>
               <span className="api-breadcrumb-current">REST API Reference</span>

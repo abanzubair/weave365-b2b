@@ -20,7 +20,8 @@ import {
   ChevronDown, 
   ShoppingBag,
   Truck,
-  HeartHandshake
+  HeartHandshake,
+  Code
 } from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/dropshipping.css';
@@ -351,6 +352,18 @@ export function DropshippingPage({ navigate, openAuth }) {
               </div>
               <p>
                 Download high-quality professional imagery, styling videos, and specifications for all Banarasi designs. Export them in bulk format to easily feed your Shopify store or Instagram page.
+              </p>
+            </div>
+
+            <div className="side-tool-divider" />
+
+            <div className="side-tool-item">
+              <div className="side-tool-header">
+                <Code size={22} />
+                <h3>Developer REST API & Feeds</h3>
+              </div>
+              <p>
+                Automate real-time inventory sync and order dispatch directly with Shopify, WooCommerce, or custom apps using our <a href="/developer-api" style={{ textDecoration: 'underline', color: 'inherit', fontWeight: 600 }}>Developer API</a>.
               </p>
             </div>
           </div>

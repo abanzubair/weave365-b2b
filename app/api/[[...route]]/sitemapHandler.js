@@ -47,6 +47,7 @@ export async function buildSitemapXmlString(siteUrl) {
     { url: `${siteUrl}/resell`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/white-label`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/dropshipping`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${siteUrl}/developer-api`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/affiliate-program`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${siteUrl}/handloom-vs-powerloom-guide`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/sourcing-partners`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.75 },

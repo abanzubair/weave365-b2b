@@ -446,7 +446,7 @@ export function SiteHeader(props) {
             <AppLink to="collaboration" href="/collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Collaborations
             </AppLink>
-            <AppLink to="account?tab=developer" href="/account?tab=developer" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+            <AppLink to="developer-api" href="/developer-api" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               API Access
             </AppLink>
             <AppLink to="become-a-supplier" href="/become-a-supplier" navigate={navigate} onClick={() => setDropdownOpen(null)}>

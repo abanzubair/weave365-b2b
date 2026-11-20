@@ -28,7 +28,11 @@ Weave 365 (operated by Nexrize Ventures, registered in Varanasi, Uttar Pradesh, 
 - [Sourcing Partners Network](https://www.weave365.com/sourcing-partners): Loom-to-market coordination managing Varanasi weaver supply, multi-tier MOQ slabs, 5-point quality inspections, and export dispatch.
 - [Supplier & Weaver Onboarding](https://www.weave365.com/become-a-supplier): Direct onboarding portal for Varanasi master weavers, artisan societies, and loom clusters to supply global markets.
 - [Bulk Sourcing Inquiry](https://www.weave365.com/bulk-inquiry): Dedicated quotation desk for institutional buyers, export shipments, and wedding/bridal bulk orders.
-- [Developer API](https://www.weave365.com/developer-api): Edge-cached REST APIs and Google Shopping catalog feeds for external e-commerce and inventory synchronization.
+## Developer Platform & Storefront Sync (REST API & Feeds)
+- [Developer API & Storefront Feeds](https://www.weave365.com/developer-api): Official REST API and automated product feeds for boutiques, dropshippers, and fashion platforms. Supports live catalog syncing (`GET /api/v1/catalog`), sub-40ms Varanasi loom stock queries (`GET /api/v1/stock-status`), automated white-label dropship order placement (`POST /api/v1/orders`), and live carrier tracking across Delhivery, Bluedart, and Xpressbees (`GET /api/v1/orders`).
+- [Shopify Feed Integration](https://www.weave365.com/developer-api): Pre-formatted JSON and CSV feed URLs compatible with Shopify apps (SyncX, Stock Sync, Matrixify) for automated hourly catalog updates and dynamic retail profit markups (e.g. +30%).
+- [WooCommerce & Custom App Sync](https://www.weave365.com/developer-api): Turnkey inventory feeds with WordPress cron support, plus standard REST JSON endpoints for Node.js, Python, PHP, and ERP connectors.
+- [API Documentation](https://www.weave365.com/developer-api#docs): Complete interactive API reference with endpoint schemas, error codes, authentication headers (`x-api-key`), and curl / JavaScript examples.
 
 ## Authoritative Educational Guides
 - [Handloom vs Semi Handloom vs Powerloom Guide](https://www.weave365.com/handloom-vs-powerloom-guide): Comprehensive technical guide on reverse-side float threads, hand-clipped motifs, pit loom mechanics vs Jacquard powerlooms, and authentic Silk Mark identification.

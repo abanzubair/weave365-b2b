@@ -1,0 +1,730 @@
+/* ==========================================================================
+   Weave365 Developer API Landing Page Stylesheet
+   Theme: Minimalist, Clean & Simple Light Mode
+   WCAG 2.1 AA Compliant Contrast & Edge-to-Edge True Hairline Dividers
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Root Container & Typographic Foundation
+   -------------------------------------------------------------------------- */
+.api-min-root {
+  --am-bg: #ffffff;
+  --am-surface: #f8fafc;
+  --am-surface-card: #ffffff;
+  --am-border: #e2e8f0;
+  --am-border-subtle: #f1f5f9;
+  --am-border-strong: #cbd5e1;
+
+  /* Strict WCAG AA Compliant Text Palette (on #ffffff) */
+  --am-text: #0f172a;          /* Contrast ratio: 15.8:1 (Headings & strong text) */
+  --am-text-body: #334155;     /* Contrast ratio: 8.3:1 (Primary body text & subtitles) */
+  --am-text-muted: #475569;    /* Contrast ratio: 5.7:1 (Secondary descriptions & labels) */
+  --am-text-dim: #64748b;      /* Contrast ratio: 4.68:1 (Passes AA 4.5:1 for UI borders/links) */
+
+  --am-font-serif: var(--font-hero-heading, 'Marcellus', 'Cormorant Garamond', Georgia, serif);
+  --am-font-sans: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif);
+  --am-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  background-color: var(--am-bg);
+  color: var(--am-text-body);
+  font-family: var(--am-font-sans);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Accessible focus visible */
+.api-min-root :focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 3px;
+}
+
+/* Headings and Typography Legibility */
+.api-min-root h1,
+.api-min-root h2,
+.api-min-root h3 {
+  text-wrap: balance;
+  color: var(--am-text);
+  margin: 0;
+}
+
+.api-min-root h1,
+.api-min-root h2 {
+  font-family: var(--am-font-serif);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+:where(.api-min-root) p,
+:where(.api-min-root) li {
+  text-wrap: pretty;
+  margin: 0;
+  color: var(--am-text-body);
+}
+
+.api-min-root code {
+  font-family: var(--am-font-mono) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Full-Bleed Hairline Divider Section Wrappers
+   (Spans 100% of the viewport seamlessly, eliminating severed floating lines)
+   -------------------------------------------------------------------------- */
+.api-min-hero-wrap {
+  width: 100%;
+  background-color: #ffffff;
+}
+
+.api-min-section-wrap {
+  width: 100%;
+  border-top: 1px solid var(--am-border);
+  background-color: #ffffff;
+}
+
+.api-min-footer-cta-wrap {
+  width: 100%;
+  border-top: 1px solid var(--am-border);
+  background-color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Unified Max-Width & Container Spacing Across the Entire Page
+   -------------------------------------------------------------------------- */
+.api-min-breadcrumb-container,
+.api-min-hero,
+.api-min-section,
+.api-min-footer-cta {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: clamp(1.5rem, 4vw, 3rem);
+  padding-right: clamp(1.5rem, 4vw, 3rem);
+}
+
+/* --------------------------------------------------------------------------
+   Breadcrumbs Container (Clean, Single Line, No Sub-bar Border)
+   -------------------------------------------------------------------------- */
+.api-min-breadcrumb-container {
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.api-min-breadcrumb-container .premium-breadcrumb {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Minimal Hero Section (Perfect Horizontal Centering Across All Elements)
+   -------------------------------------------------------------------------- */
+.api-min-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: clamp(3.25rem, 5.5vw, 4.75rem);
+  padding-bottom: clamp(3.25rem, 5vw, 4.25rem);
+}
+
+.api-min-hero-content {
+  width: 100%;
+  max-width: 840px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.api-min-hero-title {
+  width: 100%;
+  text-align: center;
+  font-size: clamp(2.35rem, 4.8vw, 3.65rem);
+  line-height: 1.15;
+  color: var(--am-text);
+  margin-bottom: 1.25rem;
+}
+
+.api-min-hero-subtitle {
+  width: 100%;
+  max-width: 680px;
+  text-align: center;
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  color: var(--am-text-body);
+  line-height: 1.75;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0;
+}
+
+.api-min-hero-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2.25rem;
+  margin-bottom: 3.5rem;
+}
+
+/* Shared Buttons (Crisp, High Contrast, Perfectly Proportioned & Symmetrically Centered) */
+.api-btn-dark {
+  background-color: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+  padding: 0.85rem 1.85rem;
+  min-height: 48px;
+  min-width: 180px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition: all 0.15s ease;
+}
+
+.api-btn-dark:hover {
+  background-color: #1e293b;
+  border-color: #1e293b;
+  transform: translateY(-1px);
+}
+
+.api-btn-light {
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid var(--am-border-strong);
+  padding: 0.85rem 1.85rem;
+  min-height: 48px;
+  min-width: 180px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.api-btn-light:hover {
+  background-color: #f8fafc;
+  border-color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.api-btn-outline {
+  background-color: transparent;
+  color: #0f172a;
+  border: 1px solid var(--am-border-strong);
+  padding: 0.75rem 1.5rem;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.api-btn-outline:hover {
+  border-color: #0f172a;
+  background-color: #f8fafc;
+}
+
+/* Minimal Inline Metrics Strip (Single Clean Section Divider Below, No Duplicate Lines) */
+.api-min-metrics-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding: 0;
+  border: none;
+  margin: 0 auto;
+}
+
+.api-min-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.api-min-metric-val {
+  font-size: clamp(1.6rem, 2.5vw, 2.15rem);
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.api-min-metric-lbl {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--am-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.api-min-metric-divider {
+  width: 1px;
+  height: 36px;
+  background-color: var(--am-border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   Clean Section Containers
+   -------------------------------------------------------------------------- */
+.api-min-section {
+  padding-top: clamp(3.75rem, 5.5vw, 5rem);
+  padding-bottom: clamp(3.75rem, 5.5vw, 5rem);
+}
+
+.api-min-section-header {
+  max-width: 720px;
+  margin-bottom: 2.75rem;
+}
+
+.api-min-section-header h2 {
+  font-size: clamp(1.8rem, 2.8vw, 2.35rem);
+  line-height: 1.25;
+  color: #0f172a;
+  margin-bottom: 0.65rem;
+}
+
+.api-min-section-header p {
+  font-size: 1.05rem;
+  color: var(--am-text-muted);
+  line-height: 1.65;
+}
+
+/* --------------------------------------------------------------------------
+   Core Capabilities (Clean Editorial Grid)
+   -------------------------------------------------------------------------- */
+.api-min-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(2rem, 3.5vw, 2.75rem) clamp(2.5rem, 4.5vw, 4rem);
+}
+
+.api-min-feature-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.api-min-feature-item h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0f172a;
+  font-family: var(--am-font-sans);
+  letter-spacing: -0.01em;
+}
+
+.api-min-feature-item p {
+  font-size: 1rem;
+  color: var(--am-text-body);
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------------
+   Supported Platforms Grid (Clean, Crisp Hairlines)
+   -------------------------------------------------------------------------- */
+.api-min-platforms-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.api-min-platform-card {
+  padding: 1.65rem;
+  border: 1px solid var(--am-border);
+  border-radius: 8px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.api-min-platform-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.api-min-platform-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.api-min-platform-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--am-text-body);
+  background-color: var(--am-surface);
+  border: 1px solid var(--am-border-strong);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+
+.api-min-platform-desc {
+  font-size: 0.95rem;
+  color: var(--am-text-muted);
+  line-height: 1.65;
+}
+
+/* --------------------------------------------------------------------------
+   REST Endpoints (Clean Monospace List)
+   -------------------------------------------------------------------------- */
+.api-min-endpoints-list {
+  border: 1px solid var(--am-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.api-min-endpoint-row {
+  display: grid;
+  grid-template-columns: 80px 240px 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.35rem 1.75rem;
+  border-bottom: 1px solid var(--am-border-subtle);
+}
+
+.api-min-endpoint-row:last-child {
+  border-bottom: none;
+}
+
+.api-min-verb {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  text-align: center;
+  display: inline-block;
+  font-family: var(--am-font-mono);
+}
+
+.api-min-verb.get {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.api-min-verb.post {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.api-min-path {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.api-min-desc {
+  font-size: 0.925rem;
+  color: var(--am-text-body);
+  line-height: 1.55;
+}
+
+/* --------------------------------------------------------------------------
+   Minimal Pricing Comparison
+   -------------------------------------------------------------------------- */
+.api-min-pricing-wrap {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+  margin-bottom: 2.25rem;
+}
+
+.api-min-pricing-card {
+  padding: 2.25rem 2rem;
+  border: 1px solid var(--am-border);
+  border-radius: 8px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.api-min-pricing-card.featured {
+  border: 1.5px solid #0f172a;
+}
+
+.api-min-pricing-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.35rem;
+  border-bottom: 1px solid var(--am-border-subtle);
+}
+
+.api-min-pricing-head h3 {
+  font-size: 1.35rem;
+  font-family: var(--am-font-sans);
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.api-min-pricing-head p {
+  font-size: 0.9rem;
+  color: var(--am-text-muted);
+}
+
+.api-min-price {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.api-min-price .amount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.api-min-price .period {
+  font-size: 0.9rem;
+  color: var(--am-text-muted);
+  font-weight: 500;
+  margin-left: 0.2rem;
+}
+
+.api-min-pricing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.api-min-pricing-list li {
+  font-size: 0.95rem;
+  color: var(--am-text-body);
+  line-height: 1.55;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.api-min-pricing-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--am-text-muted);
+  font-weight: 600;
+}
+
+.api-min-pricing-list code {
+  font-size: 0.85rem;
+  color: #0f172a;
+  background-color: var(--am-surface);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.api-min-enterprise-note {
+  font-size: 1rem;
+  color: var(--am-text-muted);
+  text-align: center;
+}
+
+.api-min-enterprise-note a {
+  color: #0f172a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Minimal Accessible FAQ Accordion
+   -------------------------------------------------------------------------- */
+.api-min-faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.api-min-faq-item {
+  border-bottom: 1px solid var(--am-border);
+}
+
+.api-min-faq-item:first-child {
+  border-top: 1px solid var(--am-border);
+}
+
+.api-min-faq-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+  transition: color 0.15s ease;
+}
+
+.api-min-faq-summary::-webkit-details-marker {
+  display: none;
+}
+
+.api-min-faq-summary:hover {
+  color: #475569;
+}
+
+.api-min-faq-toggle {
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--am-text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.api-min-faq-item[open] .api-min-faq-toggle {
+  transform: rotate(45deg);
+}
+
+.api-min-faq-body {
+  padding-bottom: 1.5rem;
+}
+
+.api-min-faq-body p {
+  font-size: 1rem;
+  color: var(--am-text-body);
+  line-height: 1.75;
+}
+
+.api-min-faq-body code {
+  font-size: 0.875rem;
+  background-color: var(--am-surface);
+  color: #0f172a;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Quiet Minimal Footer CTA
+   -------------------------------------------------------------------------- */
+.api-min-footer-cta {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: clamp(3.75rem, 6vw, 5.25rem);
+  padding-bottom: clamp(4.25rem, 6.5vw, 5.75rem);
+}
+
+.api-min-footer-cta h2 {
+  width: 100%;
+  text-align: center;
+  font-size: clamp(2.15rem, 3.8vw, 2.95rem);
+  color: var(--am-text);
+  margin-bottom: 0.85rem;
+}
+
+.api-min-footer-cta p {
+  width: 100%;
+  text-align: center;
+  font-size: 1.125rem;
+  color: var(--am-text-muted);
+  margin-bottom: 0;
+}
+
+.api-min-footer-cta .api-min-hero-actions {
+  margin-top: 2.25rem;
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout (Mobile & Tablet)
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .api-min-features-grid,
+  .api-min-platforms-grid,
+  .api-min-pricing-wrap {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .api-min-endpoint-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1.25rem;
+  }
+
+  .api-min-metrics-strip {
+    flex-wrap: wrap;
+    gap: 1.75rem 2.25rem;
+  }
+
+  .api-min-metric-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .api-min-hero {
+    padding-top: 2.75rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .api-min-hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .api-min-hero-actions .api-btn-dark,
+  .api-min-hero-actions .api-btn-light {
+    width: 100%;
+  }
+
+  .api-min-section {
+    padding-top: 2.75rem;
+    padding-bottom: 2.75rem;
+  }
+
+  .api-min-section-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .api-min-footer-cta {
+    padding-top: 3rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .api-min-footer-cta .api-min-hero-actions {
+    margin-top: 1.75rem;
+    margin-bottom: 0;
+  }
+}

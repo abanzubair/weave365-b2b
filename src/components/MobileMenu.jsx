@@ -340,7 +340,7 @@ export function MobileMenu(props) {
               <span>Collaborations</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="account?tab=developer" href="/account?tab=developer" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+            <AppLink to="developer-api" href="/developer-api" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
               <span>API Access</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
