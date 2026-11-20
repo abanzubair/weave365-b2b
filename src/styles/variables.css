@@ -1,4 +1,6 @@
 :root {
+  interpolate-size: allow-keywords;
+  color-scheme: light;
   --font-cormorant: 'Cormorant Garamond', Georgia, serif;
   --font-manrope-google: 'Manrope', system-ui, sans-serif;
   --font-heading: 'Cormorant Garamond', Georgia, serif;
@@ -330,6 +332,21 @@ img, video, svg, canvas {
 @media (hover: none) and (pointer: coarse) {
   button, a, input, select, textarea {
     touch-action: manipulation;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 

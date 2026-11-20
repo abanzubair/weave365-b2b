@@ -562,7 +562,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
     }
 
     // Sort by date latest at top (descending) by default, or ascending if toggled
-    const sortedResult = [...result].sort((a, b) => {
+    const sortedResult = result.toSorted((a, b) => {
       const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateSortOrder === 'asc' ? timeA - timeB : timeB - timeA;

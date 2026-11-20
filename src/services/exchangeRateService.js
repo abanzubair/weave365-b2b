@@ -123,15 +123,11 @@ async function fetchRatesFromProvider() {
     requestUrl = `${apiUrl.replace(/\/$/, '')}/${apiKey}/latest/INR`;
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
   try {
     const res = await fetch(requestUrl, {
-      signal: controller.signal,
+      signal: AbortSignal.timeout(8000),
       headers: { Accept: 'application/json' },
     });
-    clearTimeout(timeoutId);
 
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -172,7 +168,6 @@ async function fetchRatesFromProvider() {
 
     return newCache;
   } catch (err) {
-    clearTimeout(timeoutId);
     console.error('[ExchangeRateService] External API fetch failed:', err.message);
 
     // Graceful fallback 1: Existing in-memory cache (even if expired)

@@ -8,6 +8,16 @@ import { fetchProducts } from '../productData.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
 
 /**
+ * Cooperative task yielding helper to break up long CPU tasks (Scheduler API with setTimeout fallback).
+ */
+export async function yieldToMain() {
+  if (typeof window !== 'undefined' && 'scheduler' in window && 'yield' in window.scheduler) {
+    return await window.scheduler.yield();
+  }
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+/**
  * Global search overlay with quick links and real-time product results.
  */
 const scrollToSection = (id) => {
@@ -78,62 +88,103 @@ export function SearchOverlay(props) {
   const deferredSearch = useDeferredValue(search);
   const searchTerm = useMemo(() => (deferredSearch || '').trim().toLowerCase(), [deferredSearch]);
 
-  const matchingProducts = useMemo(() => {
-    if (!searchTerm) return [];
+  const [matchingProducts, setMatchingProducts] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!searchTerm) {
+      setMatchingProducts([]);
+      return;
+    }
 
     const searchTerms = searchTerm.split(/\s+/).filter(Boolean);
-    if (searchTerms.length === 0) return [];
+    if (searchTerms.length === 0) {
+      setMatchingProducts([]);
+      return;
+    }
 
-    const productsWithIndex = rawProducts.map((p, idx) => ({ ...p, _originalIndex: idx }));
-    const filtered = productsWithIndex.filter((product) => {
-      if (product.isArchived) return false;
+    async function filterCatalogue() {
+      // Yield to main thread initially so input keystrokes render with 0 input lag
+      await yieldToMain();
+      if (cancelled) return;
 
-      const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
-      const colorOptionNames = (product.colorOptions || []).map((c) => c.name);
-      const variantColors = (product.variants || []).map((v) => v.color);
-      const csvColors = [
-        product.raw?.Color,
-        product.raw?.Col,
-        product.raw?.Colors,
-        product.raw?.['Colors Name List'],
-      ];
-      const allColors = [...colorOptionNames, ...variantColors, ...csvColors]
-        .filter(Boolean)
-        .map((c) => String(c).trim())
-        .join(' ');
+      const filtered = [];
+      const len = rawProducts.length;
+      let deadline = performance.now() + 16; // 16ms cooperative task slice budget
 
-      const weaveText = product.weave
-        ? `${product.weave} ${product.weave} weave ${product.weave} weave type`
-        : '';
-      const purityText = product.purity
-        ? `${product.purity} ${product.purity} purity ${product.purity} quality`
-        : '';
+      for (let i = 0; i < len; i++) {
+        if (cancelled) return;
 
-      const text = [
-        product.title,
-        product.name,
-        product.fabric,
-        product.work,
-        product.occasion,
-        product.category,
-        product.groupKey,
-        product.partner,
-        weaveText,
-        purityText,
-        allColors,
-        variantCodes,
-        product.pattern,
-        product.style,
-        product.subCategory,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+        const product = rawProducts[i];
+        if (!product.isArchived) {
+          const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
+          const colorOptionNames = (product.colorOptions || []).map((c) => c.name);
+          const variantColors = (product.variants || []).map((v) => v.color);
+          const csvColors = [
+            product.raw?.Color,
+            product.raw?.Col,
+            product.raw?.Colors,
+            product.raw?.['Colors Name List'],
+          ];
+          const allColors = [...colorOptionNames, ...variantColors, ...csvColors]
+            .filter(Boolean)
+            .map((c) => String(c).trim())
+            .join(' ');
 
-      return searchTerms.every((term) => text.includes(term));
-    });
+          const weaveText = product.weave
+            ? `${product.weave} ${product.weave} weave ${product.weave} weave type`
+            : '';
+          const purityText = product.purity
+            ? `${product.purity} ${product.purity} purity ${product.purity} quality`
+            : '';
 
-    return sortByStockDateDesc(filtered);
+          const text = [
+            product.title,
+            product.name,
+            product.fabric,
+            product.work,
+            product.occasion,
+            product.category,
+            product.groupKey,
+            product.partner,
+            weaveText,
+            purityText,
+            allColors,
+            variantCodes,
+            product.pattern,
+            product.style,
+            product.subCategory,
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+          if (searchTerms.every((term) => text.includes(term))) {
+            filtered.push({ ...product, _originalIndex: i });
+          }
+        }
+
+        // Periodically yield to main thread to prevent long tasks and protect INP
+        if ((i % 15 === 0) && performance.now() >= deadline) {
+          await yieldToMain();
+          if (cancelled) return;
+          deadline = performance.now() + 16;
+        }
+      }
+
+      if (cancelled) return;
+      const sorted = sortByStockDateDesc(filtered);
+      if (!cancelled) {
+        setMatchingProducts(sorted);
+      }
+    }
+
+    filterCatalogue().catch(console.error);
+
+    return () => {
+      cancelled = true;
+    };
   }, [rawProducts, searchTerm]);
 
   const handleSearchSubmit = (overrideSearch) => {
@@ -168,6 +219,7 @@ export function SearchOverlay(props) {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
+                  if (e.isComposing || e.keyCode === 229) return;
                   e.preventDefault();
                   handleSearchSubmit();
                 }

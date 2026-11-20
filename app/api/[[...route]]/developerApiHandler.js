@@ -1477,7 +1477,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       const deliveryAddr = Array.isArray(o.order_delivery_addresses) ? o.order_delivery_addresses[0] : o.order_delivery_addresses;
       const dropshipSender = Array.isArray(o.order_dropship_senders) ? o.order_dropship_senders[0] : o.order_dropship_senders;
       const fulfillments = Array.isArray(o.order_fulfillments) ? o.order_fulfillments : [];
-      const latestFulfillment = fulfillments.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
+      const latestFulfillment = fulfillments.toSorted((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
       const itemsList = (Array.isArray(o.order_items) && o.order_items.length > 0)
         ? o.order_items.map(it => ({
           sku: it.variant_code || it.product_id,

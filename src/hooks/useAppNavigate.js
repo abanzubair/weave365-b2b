@@ -110,7 +110,20 @@ export function useAppNavigate() {
       href = `/${catSlug}${q ? `?${q}` : ''}`;
     }
 
-    router.push(href, { scroll: true });
+    const updateDOM = () => {
+      router.push(href, { scroll: true });
+    };
+
+    // Progressive enhancement: View Transitions API for smooth page navigation
+    if (
+      typeof document !== 'undefined' &&
+      'startViewTransition' in document &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      document.startViewTransition(updateDOM);
+    } else {
+      updateDOM();
+    }
 
     if (typeof window !== 'undefined' && href.includes('#')) {
       const hashAnchor = href.split('#')[1];

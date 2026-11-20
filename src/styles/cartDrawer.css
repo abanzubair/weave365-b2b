@@ -11,6 +11,7 @@
   pointer-events: none;
   visibility: hidden;
   overflow: hidden;
+  overscroll-behavior: contain;
   transition: background 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s ease;
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
@@ -38,6 +39,7 @@
   box-shadow: none;
   pointer-events: auto;
   font-family: var(--font-body, system-ui, sans-serif);
+  overscroll-behavior: contain;
 }
 
 .cart-drawer.open {

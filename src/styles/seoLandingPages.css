@@ -424,13 +424,14 @@
 }
 
 .seo-faq-content {
-  max-height: 0;
+  interpolate-size: allow-keywords;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .seo-faq-item.active .seo-faq-content {
-  max-height: 400px;
+  height: auto;
 }
 
 .seo-faq-answer {

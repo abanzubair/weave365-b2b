@@ -139,15 +139,24 @@ export function CartDrawer(props) {
     if (navigate) navigate('wholesale-catalogue');
   };
 
-  // Prevent background scrolling when drawer is open
+  // Prevent background scrolling and avoid layout shift when drawer is open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    if (!open) return;
+
+    const scrollbarWidth = typeof window !== 'undefined'
+      ? window.innerWidth - document.documentElement.clientWidth
+      : 0;
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
+
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
     };
   }, [open]);
 

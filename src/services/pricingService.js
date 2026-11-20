@@ -45,6 +45,25 @@ export function roundCurrency(amount, currency = 'INR', forceDecimals = null) {
   return Math.round(Number(amount) * 100) / 100;
 }
 
+const LOCALE_MAP = {
+  INR: 'en-IN',
+  USD: 'en-US',
+  GBP: 'en-GB',
+  EUR: 'de-DE',
+  QAR: 'en-QA',
+  AED: 'en-AE',
+  CAD: 'en-CA',
+  AUD: 'en-AU',
+  SGD: 'en-SG',
+  SAR: 'en-SA',
+  KWD: 'en-KW',
+  OMR: 'en-OM',
+  BHD: 'en-BH',
+};
+
+// Module-level cache for Intl.NumberFormat instances keyed by locale, currency, and decimals
+const numberFormatCache = new Map();
+
 /**
  * Formats a numeric value into a localized currency string using Intl.NumberFormat
  */
@@ -54,47 +73,40 @@ export function formatCurrency(amount, currency = 'INR', options = {}) {
   const num = Number(amount);
   const curr = String(currency || 'INR').toUpperCase();
   const decimals = typeof options === 'number' ? options : (options?.fractionDigits ?? options?.decimals);
-
-  const localeMap = {
-    INR: 'en-IN',
-    USD: 'en-US',
-    GBP: 'en-GB',
-    EUR: 'de-DE',
-    QAR: 'en-QA',
-    AED: 'en-AE',
-    CAD: 'en-CA',
-    AUD: 'en-AU',
-    SGD: 'en-SG',
-    SAR: 'en-SA',
-    KWD: 'en-KW',
-    OMR: 'en-OM',
-    BHD: 'en-BH',
-  };
-
-  const locale = options?.locale || localeMap[curr] || 'en-US';
+  const locale = options?.locale || LOCALE_MAP[curr] || 'en-US';
 
   try {
-    const formatOpts = {
-      style: 'currency',
-      currency: curr,
-    };
+    let minFractionDigits;
+    let maxFractionDigits;
 
     if (decimals !== undefined) {
-      formatOpts.minimumFractionDigits = decimals;
-      formatOpts.maximumFractionDigits = decimals;
+      minFractionDigits = decimals;
+      maxFractionDigits = decimals;
     } else if (curr === 'INR') {
       // In India B2B, integers are preferred unless decimals exist
-      formatOpts.minimumFractionDigits = num % 1 === 0 ? 0 : 2;
-      formatOpts.maximumFractionDigits = 2;
+      minFractionDigits = num % 1 === 0 ? 0 : 2;
+      maxFractionDigits = 2;
     } else if (ZERO_DECIMAL_CURRENCIES.has(curr)) {
-      formatOpts.minimumFractionDigits = 0;
-      formatOpts.maximumFractionDigits = 0;
+      minFractionDigits = 0;
+      maxFractionDigits = 0;
     } else {
-      formatOpts.minimumFractionDigits = 2;
-      formatOpts.maximumFractionDigits = 2;
+      minFractionDigits = 2;
+      maxFractionDigits = 2;
     }
 
-    return new Intl.NumberFormat(locale, formatOpts).format(num);
+    const cacheKey = `${locale}:${curr}:${minFractionDigits}:${maxFractionDigits}`;
+    let formatter = numberFormatCache.get(cacheKey);
+    if (!formatter) {
+      formatter = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: curr,
+        minimumFractionDigits: minFractionDigits,
+        maximumFractionDigits: maxFractionDigits,
+      });
+      numberFormatCache.set(cacheKey, formatter);
+    }
+
+    return formatter.format(num);
   } catch (err) {
     const symbol = options?.currencySymbol || curr;
     return `${symbol} ${num.toFixed(decimals !== undefined ? decimals : 2)}`;

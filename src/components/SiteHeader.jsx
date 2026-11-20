@@ -6,6 +6,7 @@ import { AppLink } from './AppLink.jsx';
 import { CountrySelector } from './CountrySelector.jsx';
 import { storeConfig, getCategorySlug, adminEmails } from '../config.js';
 import { useStorefront } from '../store/useStorefront.js';
+import { isVendorProfile, detectAccountCategory } from '../utils/buyerAccess.js';
 
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
@@ -121,12 +122,52 @@ export function SiteHeader(props) {
     : 'Log In';
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const userEmail = (activeUser?.email || '').toLowerCase().trim();
-  const isAdmin = props.isAdmin ?? Boolean(userEmail && adminEmails.includes(userEmail));
+  const isAdmin = props.isAdmin ?? Boolean(
+    (userEmail && adminEmails.includes(userEmail)) ||
+    activeUser?.role === 'admin' ||
+    activeUser?.user_metadata?.role === 'admin' ||
+    activeBuyerProfile?.role === 'admin'
+  );
   const isProfileIncomplete = Boolean(props.isProfileIncomplete);
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const handleSignOut = props.handleSignOut;
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
   const cartProducts = props.cartProducts || [];
+
+  const isSupplier = Boolean(
+    !isAdmin && (
+      props.priceAccess?.isVendor ||
+      isVendorProfile(activeBuyerProfile) ||
+      isVendorProfile(activeUser?.user_metadata?.buyer_profile) ||
+      isVendorProfile(activeUser?.buyer_profile) ||
+      detectAccountCategory(activeUser, activeBuyerProfile) === 'supplier' ||
+      vendorOnboarding?.status === 'approved' ||
+      activeBuyerProfile?.role === 'vendor' ||
+      activeBuyerProfile?.role === 'supplier' ||
+      activeBuyerProfile?.user_type === 'supplier' ||
+      activeBuyerProfile?.user_type === 'vendor' ||
+      activeBuyerProfile?.buyer_type === 'vendor' ||
+      activeBuyerProfile?.buyer_type === 'supplier' ||
+      activeUser?.user_metadata?.user_type === 'supplier' ||
+      activeUser?.user_metadata?.user_type === 'vendor' ||
+      activeUser?.user_metadata?.role === 'supplier' ||
+      activeUser?.user_metadata?.role === 'vendor'
+    )
+  );
+
+  const accountCategory = detectAccountCategory(activeUser, activeBuyerProfile);
+  const isCustomer = !isAdmin && !isSupplier && (accountCategory === 'customer' || props.priceAccess?.isCustomer);
+  const isBusiness = !isAdmin && !isSupplier && (
+    accountCategory === 'reseller' ||
+    activeBuyerProfile?.user_type === 'business' ||
+    activeUser?.user_metadata?.user_type === 'business' ||
+    activeBuyerProfile?.buyer_type === 'business' ||
+    activeBuyerProfile?.buyer_type === 'reseller' ||
+    activeBuyerProfile?.role === 'reseller' ||
+    activeBuyerProfile?.role === 'business'
+  );
+
+  const showCartAndFavorites = !isAdmin && !isSupplier && (isCustomer || isBusiness);
 
   const whatsappPhone = String(storeConfig.whatsapp || storeConfig.phone || '9919101369').replace(/\D/g, '');
   const fullPhone = whatsappPhone.length === 10 ? `91${whatsappPhone}` : whatsappPhone;
@@ -511,6 +552,29 @@ export function SiteHeader(props) {
                 >
                   My Account
                 </button>
+              )}
+              {showCartAndFavorites && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCartOpen(true);
+                      setDropdownOpen(null);
+                    }}
+                  >
+                    My Cart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigate) navigate('favorites');
+                      else window.location.href = '/favorites';
+                      setDropdownOpen(null);
+                    }}
+                  >
+                    Favorites
+                  </button>
+                </>
               )}
               <button
                 type="button"
