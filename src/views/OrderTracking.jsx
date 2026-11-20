@@ -438,7 +438,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             const deliveryAddr = Array.isArray(ordData.order_delivery_addresses) ? ordData.order_delivery_addresses[0] : ordData.order_delivery_addresses;
             const dropshipSender = Array.isArray(ordData.order_dropship_senders) ? ordData.order_dropship_senders[0] : ordData.order_dropship_senders;
             const fulfillments = Array.isArray(ordData.order_fulfillments) ? ordData.order_fulfillments : [];
-            const latestFulfillment = fulfillments.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
+            const latestFulfillment = fulfillments.toSorted((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
             const itemsList = (Array.isArray(ordData.order_items) && ordData.order_items.length > 0)
               ? ordData.order_items.map(it => ({
                   ...it,

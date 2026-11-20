@@ -1713,9 +1713,14 @@
 }
 
 .rf-faq-content {
-  max-height: 0;
+  interpolate-size: allow-keywords;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  transition: height 0.3s ease-out;
+}
+
+.rf-faq-item.active .rf-faq-content {
+  height: auto;
 }
 
 .rf-faq-answer {

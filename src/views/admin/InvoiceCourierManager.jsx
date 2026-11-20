@@ -35,7 +35,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
       return true;
     });
 
-    return list.slice().sort((a, b) => {
+    return list.toSorted((a, b) => {
       const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return timeB - timeA;

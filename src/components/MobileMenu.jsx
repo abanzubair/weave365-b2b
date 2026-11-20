@@ -23,11 +23,12 @@ import {
   Shield,
 } from './icons.jsx';
 
-import { storeConfig } from '../config.js';
+import { storeConfig, adminEmails } from '../config.js';
 import { AppLink } from './AppLink.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { CountrySelector } from './CountrySelector.jsx';
 import { useStorefront } from '../store/useStorefront.js';
+import { isVendorProfile, detectAccountCategory } from '../utils/buyerAccess.js';
 
 export function MobileMenu(props) {
   const store = useStorefront();
@@ -37,13 +38,56 @@ export function MobileMenu(props) {
   const navigate = props.navigate;
   const setCategory = props.setCategory;
   const user = props.user ?? store.user;
+  const buyerProfile = props.buyerProfile ?? store.buyerProfile;
+  const priceAccess = props.priceAccess;
   const setCartOpen = props.setCartOpen || store.setCartOpen;
   const cartCount = props.cartCount ?? store.cart.length;
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const onSignOut = props.onSignOut;
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
-  const isAdmin = props.isAdmin;
+  const userEmail = (user?.email || '').toLowerCase().trim();
+  const isAdmin = props.isAdmin ?? Boolean(
+    (userEmail && adminEmails.includes(userEmail)) ||
+    user?.role === 'admin' ||
+    user?.user_metadata?.role === 'admin' ||
+    buyerProfile?.role === 'admin'
+  );
   const isProfileIncomplete = Boolean(props.isProfileIncomplete);
+
+  const isSupplier = Boolean(
+    !isAdmin && (
+      priceAccess?.isVendor ||
+      isVendorProfile(buyerProfile) ||
+      isVendorProfile(user?.user_metadata?.buyer_profile) ||
+      isVendorProfile(user?.buyer_profile) ||
+      (user && detectAccountCategory(user, buyerProfile) === 'supplier') ||
+      vendorOnboarding?.status === 'approved' ||
+      buyerProfile?.role === 'vendor' ||
+      buyerProfile?.role === 'supplier' ||
+      buyerProfile?.user_type === 'supplier' ||
+      buyerProfile?.user_type === 'vendor' ||
+      buyerProfile?.buyer_type === 'vendor' ||
+      buyerProfile?.buyer_type === 'supplier' ||
+      user?.user_metadata?.user_type === 'supplier' ||
+      user?.user_metadata?.user_type === 'vendor' ||
+      user?.user_metadata?.role === 'supplier' ||
+      user?.user_metadata?.role === 'vendor'
+    )
+  );
+
+  const accountCategory = user ? detectAccountCategory(user, buyerProfile) : 'guest';
+  const isCustomer = !isAdmin && !isSupplier && (accountCategory === 'customer' || priceAccess?.isCustomer);
+  const isBusiness = !isAdmin && !isSupplier && (
+    accountCategory === 'reseller' ||
+    buyerProfile?.user_type === 'business' ||
+    user?.user_metadata?.user_type === 'business' ||
+    buyerProfile?.buyer_type === 'business' ||
+    buyerProfile?.buyer_type === 'reseller' ||
+    buyerProfile?.role === 'reseller' ||
+    buyerProfile?.role === 'business'
+  );
+
+  const showCartAndFavorites = !isAdmin && !isSupplier && (!user || isCustomer || isBusiness);
 
   // Active subpanel: null (root) | 'wholesale' | 'resell' | 'custom-weaving' | 'collections' | 'company' | 'account'
   const [activeSubpanel, setActiveSubpanel] = useState(null);
@@ -88,24 +132,26 @@ export function MobileMenu(props) {
         }
       }
     ] : []),
-    { 
-      icon: <ShoppingBag size={18} />, 
-      label: 'My Cart', 
-      badge: cartCount,
-      action: () => {
-        onClose();
-        setCartOpen(true);
-      } 
-    },
-    { 
-      icon: <Bookmark size={18} />, 
-      label: 'Saved Items', 
-      badge: favoritesCount,
-      action: () => {
-        navigate('favorites');
-        onClose();
-      }
-    },
+    ...(showCartAndFavorites ? [
+      { 
+        icon: <ShoppingBag size={18} />, 
+        label: 'My Cart', 
+        badge: cartCount,
+        action: () => {
+          onClose();
+          setCartOpen(true);
+        } 
+      },
+      { 
+        icon: <Bookmark size={18} />, 
+        label: 'Favorites', 
+        badge: favoritesCount,
+        action: () => {
+          navigate('favorites');
+          onClose();
+        }
+      },
+    ] : []),
     ...(vendorOnboarding?.status === 'approved' && vendorOnboarding?.drive_folder_url ? [
       {
         icon: <Store size={18} style={{ color: '#b78646' }} />,

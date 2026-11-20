@@ -388,14 +388,15 @@
 }
 
 .weave-faq-content {
-  max-height: 0;
+  interpolate-size: allow-keywords;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+  transition: height 0.3s cubic-bezier(0, 1, 0, 1);
 }
 
 .weave-faq-item.active .weave-faq-content {
-  max-height: 500px; /* Smooth accordion unfold */
-  transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);
+  height: auto; /* Smooth accordion unfold */
+  transition: height 0.3s cubic-bezier(1, 0, 1, 0);
 }
 
 .weave-faq-answer {

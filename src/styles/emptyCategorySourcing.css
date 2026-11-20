@@ -246,13 +246,14 @@
 }
 
 .faq-accordion-body {
-  max-height: 0;
+  interpolate-size: allow-keywords;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .faq-accordion-item.open .faq-accordion-body {
-  max-height: 200px; /* Adjust if needed */
+  height: auto;
 }
 
 .faq-accordion-body p {

@@ -494,6 +494,7 @@ export const ProductCard = memo(function ProductCard({
               src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400'%3E%3C/svg%3E"
               alt={descriptiveAlt}
               loading="lazy"
+              fetchPriority="low"
               decoding="async"
               width={300}
               height={400}
@@ -505,6 +506,8 @@ export const ProductCard = memo(function ProductCard({
             <img
               src={optimizedImage}
               alt={descriptiveAlt}
+              loading="lazy"
+              decoding="async"
               width={300}
               height={400}
               draggable={false}

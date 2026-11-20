@@ -569,16 +569,22 @@ export function OverlapHero({ navigate }) {
                 media="(min-width: 900px)"
                 type="image/webp"
                 srcSet="/assets/banner/heroFreeWebsite.webp"
+                width={800}
+                height={598}
               />
               <source
                 media="(min-width: 641px)"
                 type="image/avif"
                 srcSet="/assets/banner/heroFreeWebsite-600.avif"
+                width={800}
+                height={598}
               />
               <source
                 media="(min-width: 641px)"
                 type="image/webp"
                 srcSet="/assets/banner/heroFreeWebsite-600.webp"
+                width={800}
+                height={598}
               />
               <img
                 src="/assets/banner/heroFreeWebsite-600.webp"

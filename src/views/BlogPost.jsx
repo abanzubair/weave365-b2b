@@ -615,6 +615,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && searchQuery.trim()) {
+                  if (e.isComposing || e.keyCode === 229) return;
                   navigate('blog', `?search=${encodeURIComponent(searchQuery.trim())}`);
                 }
               }}

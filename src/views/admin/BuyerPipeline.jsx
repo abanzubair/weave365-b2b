@@ -417,7 +417,7 @@ export default function BuyerPipeline({
         );
       });
     }
-    return [...profiles].sort((a, b) => {
+    return profiles.toSorted((a, b) => {
       let valA, valB;
       if (userSortField === 'last_seen') {
         valA = presenceMap.get(a.id)?.timestamp || 0;

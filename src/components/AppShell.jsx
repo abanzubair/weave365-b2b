@@ -795,6 +795,7 @@ export function AppShell({ children }) {
           handleSignOut={handleSignOut}
           setCartOpen={setCartOpen}
           cartProducts={cartProducts}
+          priceAccess={priceAccess}
         />
       )}
 
@@ -814,6 +815,7 @@ export function AppShell({ children }) {
           onClose={() => setMenuOpen(false)}
           navigate={navigate}
           user={user}
+          buyerProfile={buyerProfile}
           isAdmin={isAdmin}
           isProfileIncomplete={isProfileIncomplete}
           priceAccess={priceAccess}

@@ -100,6 +100,8 @@
 }
 
 .checkout-items-list {
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-track: #f1f5f9;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -107,24 +109,32 @@
   overflow-y: auto;
   padding-right: 8px;
   scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-.checkout-items-list::-webkit-scrollbar {
-  width: 5px;
-}
+@supports not (scrollbar-color: auto) {
+  .checkout-items-list {
+    scrollbar-width: auto;
+  }
 
-.checkout-items-list::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
+  .checkout-items-list::-webkit-scrollbar {
+    width: 5px;
+  }
 
-.checkout-items-list::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
+  .checkout-items-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
 
-.checkout-items-list::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  .checkout-items-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  .checkout-items-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 }
 
 /* Circle Scroll Down Indicator Button */
