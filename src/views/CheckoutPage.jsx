@@ -31,8 +31,16 @@ import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimiz
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
-import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import '../styles/checkout.css';
+
+// Lazy-load Cashfree SDK on demand or prefetch during checkout interaction to reduce initial bundle
+let cashfreeSdkPromise = null;
+function getCashfreeSdk() {
+  if (!cashfreeSdkPromise) {
+    cashfreeSdkPromise = import('@cashfreepayments/cashfree-js');
+  }
+  return cashfreeSdkPromise;
+}
 
 // PhonePe is shown at checkout only once keys are configured and this flag is set at build time.
 const PHONEPE_ENABLED = process.env.NEXT_PUBLIC_PHONEPE_ENABLED === 'true';
@@ -101,6 +109,13 @@ export function CheckoutPage({
   const [paymentGateway, setPaymentGateway] = useState(
     PHONEPE_ENABLED ? 'phonepe' : 'cashfree'
   );
+
+  // Warm up payment gateway SDK in background while user fills out delivery info
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      getCashfreeSdk().catch(() => {});
+    }
+  }, []);
 
   // Private Coupon / Promo Code State
   const [couponCodeInput, setCouponCodeInput] = useState('');
@@ -680,6 +695,7 @@ export function CheckoutPage({
         ? 'production'
         : 'sandbox';
 
+      const { load: loadCashfree } = await getCashfreeSdk();
       const cashfree = await loadCashfree({ mode: envMode });
       if (!cashfree) {
         throw new Error('Cashfree Payment Gateway SDK failed to initialize.');
