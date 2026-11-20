@@ -4,7 +4,6 @@ import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
 
 export const revalidate = 3600;
-export const runtime = 'edge';
 
 export async function generateMetadata() {
   const defaultMeta = {

@@ -355,11 +355,16 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
         // 1. If UUID, attempt high-performance get_order_tracking RPC
         if (isUuid) {
           try {
-            const { data, error: rpcError } = await supabase.rpc('get_order_tracking', {
-              order_id: cleanId
-            });
+            const [{ data, error: rpcError }, { data: ordRow }] = await Promise.all([
+              supabase.rpc('get_order_tracking', { order_id: cleanId }),
+              safeQuery(supabase.from('orders').select('id, status, tracking_carrier, tracking_number, tracking_message').eq('id', cleanId).maybeSingle())
+            ]);
             if (!rpcError && data && data.length > 0) {
-              trackingOrder = data[0];
+              trackingOrder = {
+                ...data[0],
+                // Master status in orders table set by admin takes precedence
+                status: ordRow?.status || data[0].status,
+              };
             }
           } catch (rpcErr) {
             console.warn('get_order_tracking RPC fallback:', rpcErr);
@@ -423,6 +428,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   trackingOrder = {
                     ...ordData,
                     ...rpcData[0],
+                    // Canonical admin status from orders table takes precedence
+                    status: ordData.status || rpcData[0].status,
                     total_amount: (rpcData[0].total_amount !== undefined && rpcData[0].total_amount !== null && Number(rpcData[0].total_amount) > 0)
                       ? Number(rpcData[0].total_amount)
                       : (ordData.total_amount !== undefined && ordData.total_amount !== null ? Number(ordData.total_amount) : undefined),
@@ -657,7 +664,21 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     return null;
   }, [order]);
 
-  const currentStatus = (order?.status || 'new').toLowerCase();
+  const currentStatus = (() => {
+    const raw = (order?.status || 'new').toLowerCase().trim();
+    const msg = (order?.tracking_message || '').toLowerCase();
+    const hasTrackingInfo = Boolean(order?.tracking_number && String(order.tracking_number).trim());
+    // If status says shipped/dispatched but there is no carrier or tracking number,
+    // and the tracking message explicitly states the order is in process / undergoing quality inspection:
+    if (
+      (raw === 'shipped' || raw === 'dispatched' || raw === 'in_transit') &&
+      !hasTrackingInfo &&
+      (msg.includes('in process') || msg.includes('undergoing quality inspection') || msg.includes('quality inspection') || msg.includes('varanasi hub'))
+    ) {
+      return 'in_process';
+    }
+    return raw;
+  })();
 
   // Status mapping and step calculation (5-step customer-facing flow)
   const steps = [

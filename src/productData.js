@@ -9,7 +9,7 @@
  */
 
 import { cache } from 'react';
-import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls } from './config.js';
+import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls, getProductCategorySlug } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import { seoLandingPages } from './data/seoLandingPages.js';
 import { blogPosts as defaultBlogPosts } from './data/blogPosts.js';
@@ -300,8 +300,26 @@ function normalizeLoadedProduct(product, idx) {
   const parsedWeight = Number(product.weight);
   const resolvedWeight = (!isNaN(parsedWeight) && parsedWeight > 0) ? parsedWeight : 1.2;
 
+  const firstVariant = product.variants?.[0] || {};
+  const firstPrices = firstVariant.prices || {};
+  const mrp = product.mrp ?? firstPrices.mrp ?? 0;
+  const reseller_price = product.reseller_price ?? firstPrices.b2r ?? mrp;
+  const base_price = product.base_price ?? mrp;
+  const price = product.price ?? mrp;
+  const slug = product.slug || getProductCategorySlug(product.id, product.category);
+  const colors = product.colors || (product.colorOptions || []).map((entry) => entry.name).filter(Boolean);
+
+  // Safely prune raw row if present in payload
+  const { raw: _discardRaw, ...cleanProduct } = product;
+
   return {
-    ...product,
+    ...cleanProduct,
+    slug,
+    price,
+    base_price,
+    reseller_price,
+    mrp,
+    colors,
     weight: resolvedWeight,
     _originalIndex: product._originalIndex !== undefined ? product._originalIndex : (typeof idx === 'number' ? idx : 0),
     _stockTimestamp: isNaN(stockTimestamp) ? 0 : stockTimestamp,
@@ -665,7 +683,9 @@ export async function parseProductCsv(text) {
         }
         return null;
       })(),
-      raw: row,
+      pcSet: readCsvValue(row, 'Pc / Set', 'pc_set', 'Pc/Set') || '',
+      length: readCsvValue(row, 'Length', 'Saree Length', 'saree_length') || '6.3m (incl. 85cm blouse)',
+      csvColors: [row.Color, row.Col, row.Colors, row['Colors Name List']].map(s => String(s || '').trim()).filter(Boolean),
     };
 
     products.set(groupKey, product);
@@ -704,8 +724,26 @@ export async function parseProductCsv(text) {
     ]);
     const firstColorName = normalizedColorOptions[0]?.name || '';
 
+    const firstVariant = product.variants?.[0] || {};
+    const firstPrices = firstVariant.prices || {};
+    const mrp = firstPrices.mrp || 0;
+    const reseller_price = firstPrices.b2r || mrp;
+    const base_price = mrp;
+    const price = mrp;
+    const slug = getProductCategorySlug(product.id, product.category);
+    const colors = normalizedColorOptions.map((entry) => entry.name).filter(Boolean);
+
+    // Explicitly omit the raw spreadsheet row from stored catalog JSON
+    const { raw: _discardRaw, ...cleanProduct } = product;
+
     return {
-      ...product,
+      ...cleanProduct,
+      slug,
+      price,
+      base_price,
+      reseller_price,
+      mrp,
+      colors,
       _originalIndex: idx,
       _stockTimestamp: isNaN(stockTime) ? 0 : stockTime,
       isNew,
@@ -1246,6 +1284,7 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
 
     // 1. Parse products CSV to JSON
     let parsedProductsJson = null;
+    let cleanProductList = null;
     try {
       const mainProducts = await parseProductCsv(products);
       const productMap = new Map(mainProducts.map(p => [p.groupKey, p]));
@@ -1265,7 +1304,12 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
           }
         }
       }
-      parsedProductsJson = JSON.stringify(Array.from(productMap.values()));
+      // Prune raw row from stored products_json to protect Edge Worker CPU and memory limits
+      cleanProductList = Array.from(productMap.values()).map(p => {
+        const { raw: _discardRaw, ...clean } = p;
+        return clean;
+      });
+      parsedProductsJson = JSON.stringify(cleanProductList);
     } catch (err) {
       console.error('[Sync] Error parsing products CSV during sync:', err);
     }
@@ -1398,6 +1442,18 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
     // Upsert parsed JSON values for high-speed read operations
     if (parsedProductsJson) {
       updates.push({ id: 'products_json', csv_data: parsedProductsJson, updated_at: timestamp });
+
+      // Automatically generate decoupled stock_map alongside products_json
+      if (Array.isArray(cleanProductList) && cleanProductList.length > 0) {
+        try {
+          const { data: stockRows } = await db.from('vendor_product_stock').select('*');
+          const { generateStockMap } = await import('./utils/stockMapService.js');
+          const stockMap = generateStockMap(cleanProductList, stockRows || []);
+          updates.push({ id: 'stock_map', csv_data: JSON.stringify(stockMap), updated_at: timestamp });
+        } catch (stockMapErr) {
+          console.warn('[Sync] Optional stock_map pregeneration notice:', stockMapErr.message);
+        }
+      }
     }
     if (parsedConfigJson) {
       updates.push({ id: 'config_json', csv_data: parsedConfigJson, updated_at: timestamp });

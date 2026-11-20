@@ -256,6 +256,17 @@ export async function saveVendorProductStock({
             resolve({ success: true, warning: 'Saved locally. DB warning: ' + error.message, item: updateItem });
             return;
           }
+
+          // Write-through cache invalidation: update sheet_data.stock_map
+          import('./stockMapService.js').then(({ updateStockMapWriteThrough }) => {
+            updateStockMapWriteThrough(supabase, {
+              productId,
+              stockStatus: updateItem.stockStatus,
+              stockStatusLabel: updateItem.stockStatusLabel,
+              updatedAt: timestampIST,
+            }).catch((err) => console.warn('[vendorStockService] Write-through stock_map error:', err.message));
+          });
+
           resolve({ success: true, item: updateItem });
         } catch (err) {
           console.error('[vendorStockService] Save exception:', err);
@@ -355,6 +366,19 @@ export async function batchSaveVendorStock({
 
         if (error) {
           console.warn('[vendorStockService] Supabase batch upsert error:', error.message);
+        } else {
+          // Write-through cache invalidation: update sheet_data.stock_map
+          import('./stockMapService.js').then(({ updateStockMapWriteThrough }) => {
+            const updates = dbRows.map((r) => ({
+              productId: r.product_id,
+              stockStatus: r.stock_status,
+              stockStatusLabel: r.stock_status_label,
+              updatedAt: r.updated_at_ist,
+            }));
+            updateStockMapWriteThrough(supabase, updates).catch((err) =>
+              console.warn('[vendorStockService] Write-through batch stock_map error:', err.message)
+            );
+          });
         }
       }
     } catch (err) {

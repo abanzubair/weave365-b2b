@@ -7,6 +7,30 @@
 
 export const runtime = 'edge';
 
+import { createClient } from '@supabase/supabase-js';
+
+let supabaseAdminInstance = null;
+
+export function _setSupabaseAdminForTesting(client) {
+  supabaseAdminInstance = client;
+}
+
+export function getSupabaseAdmin() {
+  if (supabaseAdminInstance) return supabaseAdminInstance;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    return null;
+  }
+
+  supabaseAdminInstance = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
+  return supabaseAdminInstance;
+}
+
 const ALLOWED_ORIGINS = [
   'https://www.weave365.com',
   'https://weave365.com',
@@ -40,10 +64,8 @@ export async function OPTIONS(request) {
 export async function GET(request) {
   const corsHeaders = getCorsHeaders(request);
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceKey) {
+    const adminClient = getSupabaseAdmin();
+    if (!adminClient) {
       return new Response(JSON.stringify({ error: 'Supabase service configuration missing.' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -59,9 +81,6 @@ export async function GET(request) {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
-
-    const { createClient } = await import('@supabase/supabase-js');
-    const adminClient = createClient(supabaseUrl, serviceKey);
 
     // Verify calling user is an authorized admin
     const { data: { user: authUser }, error: userError } = await adminClient.auth.getUser(token);
@@ -141,10 +160,8 @@ export async function GET(request) {
 export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceKey) {
+    const adminClient = getSupabaseAdmin();
+    if (!adminClient) {
       return new Response(JSON.stringify({ status: 'ok' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -160,9 +177,6 @@ export async function POST(request) {
 
     const authHeader = request.headers.get('Authorization') || '';
     const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-    const { createClient } = await import('@supabase/supabase-js');
-    const adminClient = createClient(supabaseUrl, serviceKey);
 
     let targetUserId = body?.userId;
 

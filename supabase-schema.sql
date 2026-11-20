@@ -1492,7 +1492,7 @@ begin
   end if;
 
   -- 5.4 Order Fulfillment Sync
-  if new.tracking_carrier is not null or new.tracking_number is not null then
+  if (nullif(trim(new.tracking_carrier), '') is not null or nullif(trim(new.tracking_number), '') is not null) and new.status in ('shipped', 'dispatched', 'in_transit', 'delivered') then
     insert into public.order_fulfillments (
       order_id,
       tracking_carrier,
@@ -1503,8 +1503,8 @@ begin
       delivered_at
     ) values (
       new.id,
-      coalesce(new.tracking_carrier, 'Delhivery'),
-      coalesce(new.tracking_number, ''),
+      coalesce(nullif(trim(new.tracking_carrier), ''), 'Delhivery'),
+      coalesce(nullif(trim(new.tracking_number), ''), ''),
       new.tracking_message,
       case when new.status = 'delivered' then 'delivered' else 'dispatched' end,
       now(),
@@ -1906,7 +1906,7 @@ BEGIN
   SELECT 
     o.id,
     coalesce(o.order_number, 'ORD-' || substring(o.id::text from 1 for 8)) AS order_number,
-    coalesce(f.status, o.status) AS status,
+    coalesce(o.status, f.status) AS status,
     coalesce(f.tracking_carrier, o.tracking_carrier) AS tracking_carrier,
     coalesce(f.tracking_number, o.tracking_number) AS tracking_number,
     coalesce(f.tracking_message, o.tracking_message) AS tracking_message,

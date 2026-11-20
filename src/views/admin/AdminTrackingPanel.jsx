@@ -50,30 +50,50 @@ async function updateSupabaseOrderTracking(id, { status, trackingCarrier, tracki
   if (sourceTable === 'api_orders') table = 'api_orders';
   else if (sourceTable === 'orders') table = 'orders';
 
+  const cleanCarrier = trackingCarrier && trackingCarrier.trim() ? trackingCarrier.trim() : null;
+  const cleanNumber = trackingNumber && trackingNumber.trim() ? trackingNumber.trim() : null;
+  const cleanMessage = trackingMessage && trackingMessage.trim() ? trackingMessage.trim() : null;
+
   const payload = {
     status: status,
-    tracking_carrier: trackingCarrier,
-    tracking_number: trackingNumber,
-    tracking_message: trackingMessage,
+    tracking_carrier: cleanCarrier,
+    tracking_number: cleanNumber,
+    tracking_message: cleanMessage,
     updated_at: new Date().toISOString()
   };
   const { error } = await supabase.from(table).update(payload).eq('id', id);
   if (error) throw error;
 
-  if (sourceTable === 'orders' && (trackingCarrier || trackingNumber)) {
+  if (sourceTable === 'orders') {
     try {
-      await supabase.from('order_fulfillments').insert({
-        order_id: id,
-        tracking_carrier: trackingCarrier || '',
-        tracking_number: trackingNumber || '',
-        tracking_message: trackingMessage || null,
-        status: status === 'delivered' ? 'delivered' : 'dispatched',
-        dispatched_at: new Date().toISOString(),
-        delivered_at: status === 'delivered' ? new Date().toISOString() : null,
-      });
+      const isShipped = ['shipped', 'dispatched', 'in_transit'].includes(status);
+      const isDelivered = status === 'delivered';
+      const fulfillmentStatus = isDelivered ? 'delivered' : (isShipped ? 'dispatched' : status);
+
+      // Always sync existing order_fulfillments rows to prevent stale "dispatched" status overriding master order status
+      await supabase.from('order_fulfillments').update({
+        status: fulfillmentStatus,
+        tracking_message: cleanMessage,
+        ...(cleanCarrier ? { tracking_carrier: cleanCarrier } : {}),
+        ...(cleanNumber ? { tracking_number: cleanNumber } : {}),
+        updated_at: new Date().toISOString()
+      }).eq('order_id', id);
+
+      // Only insert a new fulfillment record if tracking details exist AND order is shipped or delivered
+      if ((cleanCarrier || cleanNumber) && (isShipped || isDelivered)) {
+        await supabase.from('order_fulfillments').insert({
+          order_id: id,
+          tracking_carrier: cleanCarrier || '',
+          tracking_number: cleanNumber || '',
+          tracking_message: cleanMessage,
+          status: fulfillmentStatus,
+          dispatched_at: new Date().toISOString(),
+          delivered_at: isDelivered ? new Date().toISOString() : null,
+        });
+      }
     } catch (e) {
       // Non-blocking if table or trigger already handled it
-      console.warn('[AdminTrackingPanel] order_fulfillments insert notice:', e);
+      console.warn('[AdminTrackingPanel] order_fulfillments sync notice:', e);
     }
   }
 }

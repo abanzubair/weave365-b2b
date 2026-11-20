@@ -112,6 +112,21 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/login',
+        destination: '/signup?mode=login',
+        permanent: false,
+      },
+      {
+        source: '/register',
+        destination: '/signup?mode=register',
+        permanent: false,
+      },
+      {
+        source: '/store',
+        destination: '/resell-sarees-online',
+        permanent: true,
+      },
+      {
         source: '/custom-woven',
         destination: '/custom-weaving',
         permanent: true,

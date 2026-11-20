@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { fetchProducts } from '../../../src/productData.js';
 import { getProductCategorySlug, siteUrl, storeConfig } from '../../../src/config.js';
@@ -8,6 +9,10 @@ import ProductPageClient from './ProductPageClient.jsx';
 
 export const revalidate = 3600;
 export const runtime = 'edge';
+
+const getCachedProducts = cache(async () => {
+  return fetchProducts().catch(() => []);
+});
 
 function generateProductSchemas(product, activeReviews = [], requestedColor = null) {
   if (!product) return null;
@@ -227,7 +232,7 @@ export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const rawId = decodeURIComponent(resolvedParams?.productId || '');
-  const products = await fetchProducts().catch(() => []);
+  const products = await getCachedProducts();
   let product = products.find((item) => item.id === rawId);
   let requestedColor = resolvedSearchParams?.color || null;
 
@@ -321,7 +326,7 @@ export default async function ProductPage({ params, searchParams }) {
   const rawId = decodeURIComponent(resolvedParams?.productId || '');
   const categoryParam = resolvedParams?.slug || resolvedParams?.category || '';
 
-  const products = await fetchProducts().catch(() => []);
+  const products = await getCachedProducts();
   let product = products.find((item) => item.id === rawId);
 
   // If rawId is a variant code (e.g. 102045-4), redirect to parent product with ?color=
@@ -407,8 +412,9 @@ export default async function ProductPage({ params, searchParams }) {
     }));
 
   const { raw, ...cleanProduct } = product;
-  if (raw?.['Pc / Set']) {
-    cleanProduct.raw = { 'Pc / Set': raw['Pc / Set'] };
+  const pcSetVal = raw?.['Pc / Set'] || cleanProduct.pcSet || '';
+  if (pcSetVal) {
+    cleanProduct.raw = { 'Pc / Set': pcSetVal };
   }
 
   let primaryHeroImage = product.images?.[0] || '';

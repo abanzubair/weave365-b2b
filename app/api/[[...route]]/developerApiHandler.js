@@ -315,6 +315,112 @@ export function _clearKeyMemoryCacheForTesting() {
   keyMemoryCache.clear();
 }
 
+// Lightweight 5-minute in-memory edge cache for formatted sync feeds (Stock Sync, Matrixify, SyncX)
+const syncFeedCache = new Map();
+const syncFeedResponseCache = new Map();
+const SYNC_FEED_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_FEED_CACHE_ENTRIES = 100;
+
+function setBoundedCache(map, key, value, maxSize = MAX_FEED_CACHE_ENTRIES) {
+  if (map.size >= maxSize) {
+    const firstKey = map.keys().next().value;
+    if (firstKey !== undefined) {
+      map.delete(firstKey);
+    }
+  }
+  map.set(key, value);
+}
+
+export function _clearSyncFeedCacheForTesting() {
+  syncFeedCache.clear();
+  syncFeedResponseCache.clear();
+}
+
+// Edge in-memory cache for parsed catalog products (TTL: 5 minutes)
+let catalogDataCache = null;
+const CATALOG_DATA_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export function _clearCatalogDataCacheForTesting() {
+  catalogDataCache = null;
+}
+
+export function _setCatalogProductsForTesting(products) {
+  catalogDataCache = products ? { products, timestamp: Date.now() } : null;
+}
+
+let stockMapDataCache = null;
+const STOCK_MAP_CACHE_TTL_MS = 60 * 1000; // 1 minute Edge cache for live stock map
+
+export function _clearStockMapCacheForTesting() {
+  stockMapDataCache = null;
+}
+
+export function _setStockMapForTesting(stockMap) {
+  stockMapDataCache = stockMap ? { stockMap, timestamp: Date.now() } : null;
+}
+
+export async function getCachedStockMap(supabase) {
+  const now = Date.now();
+  if (stockMapDataCache && (now - stockMapDataCache.timestamp < STOCK_MAP_CACHE_TTL_MS)) {
+    return stockMapDataCache.stockMap;
+  }
+
+  if (!supabase) return null;
+
+  try {
+    const { data: row, error } = await supabase
+      .from('sheet_data')
+      .select('csv_data, updated_at')
+      .eq('id', 'stock_map')
+      .maybeSingle();
+
+    if (!error && row?.csv_data) {
+      const parsed = typeof row.csv_data === 'string' ? JSON.parse(row.csv_data) : row.csv_data;
+      if (parsed && typeof parsed === 'object') {
+        stockMapDataCache = {
+          stockMap: parsed,
+          updatedAt: row.updated_at,
+          timestamp: now,
+        };
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('[getCachedStockMap] Error reading stock_map cache:', err.message);
+  }
+
+  return null;
+}
+
+async function getCachedCatalogProducts(supabase) {
+  const now = Date.now();
+  if (catalogDataCache && (now - catalogDataCache.timestamp < CATALOG_DATA_CACHE_TTL_MS)) {
+    return catalogDataCache.products;
+  }
+
+  const [{ data: sheetRow }, { data: stockData }] = await Promise.all([
+    supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single(),
+    supabase.from('vendor_product_stock').select('*'),
+  ]);
+
+  let products = [];
+  try {
+    products = JSON.parse(sheetRow?.csv_data || '[]');
+  } catch {
+    products = [];
+  }
+
+  if (Array.isArray(stockData) && stockData.length > 0) {
+    products = applyStockOverrides(products, stockData);
+  }
+
+  catalogDataCache = {
+    products,
+    timestamp: now,
+  };
+  return products;
+}
+
 /**
  * Compute SHA-256 hash using native Web Crypto API (Edge-safe)
  */
@@ -560,8 +666,19 @@ function applyStockOverrides(products, stockRows) {
 /**
  * Transform standard products into Shopify-ready feed format (Reseller Price Only)
  */
-function formatForShopify(products) {
-  return products.map((p) => {
+export function formatForShopify(products, cacheKey = null) {
+  if (!Array.isArray(products) || products.length === 0) return [];
+
+  const effectiveKey = cacheKey || `shopify:${products.length}:${products[0]?.id || products[0]?.groupKey || ''}:${products[products.length - 1]?.id || products[products.length - 1]?.groupKey || ''}:${products[0]?.stockLastUpdatedIST || ''}`;
+
+  if (effectiveKey) {
+    const cached = syncFeedCache.get(effectiveKey);
+    if (cached && (Date.now() - cached.timestamp < SYNC_FEED_CACHE_TTL_MS)) {
+      return cached.data;
+    }
+  }
+
+  const result = products.map((p) => {
     const baseSlug = (p.title || p.name || 'product')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -700,6 +817,15 @@ function formatForShopify(products) {
       })),
     };
   });
+
+  if (effectiveKey) {
+    setBoundedCache(syncFeedCache, effectiveKey, {
+      data: result,
+      timestamp: Date.now(),
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -707,7 +833,18 @@ function formatForShopify(products) {
  * Emits a flat list of variant items so Stock Sync can auto-map SKU, Price,
  * Quantity, Image, Handle, and Color without requiring nested "Variants Path" configuration.
  */
-function formatForStockSync(products) {
+export function formatForStockSync(products, cacheKey = null) {
+  if (!Array.isArray(products) || products.length === 0) return [];
+
+  const effectiveKey = cacheKey || `stocksync:${products.length}:${products[0]?.id || products[0]?.groupKey || ''}:${products[products.length - 1]?.id || products[products.length - 1]?.groupKey || ''}:${products[0]?.stockLastUpdatedIST || ''}`;
+
+  if (effectiveKey) {
+    const cached = syncFeedCache.get(effectiveKey);
+    if (cached && (Date.now() - cached.timestamp < SYNC_FEED_CACHE_TTL_MS)) {
+      return cached.data;
+    }
+  }
+
   const items = [];
 
   for (const p of products) {
@@ -971,7 +1108,117 @@ function formatForStockSync(products) {
     }
   }
 
+  if (effectiveKey) {
+    setBoundedCache(syncFeedCache, effectiveKey, {
+      data: items,
+      timestamp: Date.now(),
+    });
+  }
+
   return items;
+}
+
+/**
+ * Ultra-fast stock status route handler (<0.5ms CPU).
+ * Directly reads decoupled stock_map from memory cache or sheet_data (id: 'stock_map'),
+ * completely bypassing the 437 KB products_json catalog download and JSON.parse.
+ */
+export async function handleStockStatusRequest(request, supabase, auth, searchParams) {
+  const cors = getCorsHeaders(request, auth?.keyRecord?.client_website);
+  const responseHeaders = { ...securePrivateHeaders, ...cors };
+
+  // 1. Fast path: Read decoupled lightweight stock_map (<0.5ms CPU)
+  const rawStockMap = await getCachedStockMap(supabase);
+
+  if (rawStockMap && typeof rawStockMap === 'object' && Object.keys(rawStockMap).length > 0) {
+    const isCurated = auth?.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth?.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0);
+    const authorizedSet = isCurated
+      ? new Set((auth.keyRecord.selected_skus || []).map((s) => String(s).trim().toLowerCase()).filter(Boolean))
+      : null;
+
+    const stockSkusParam = searchParams?.get('skus') || searchParams?.get('ids') || searchParams?.get('sku');
+    const requestedSkus = stockSkusParam
+      ? new Set(stockSkusParam.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean))
+      : null;
+
+    let stockMap = {};
+
+    if (requestedSkus) {
+      for (const [key, item] of Object.entries(rawStockMap)) {
+        const lowerKey = key.toLowerCase();
+        if (requestedSkus.has(lowerKey)) {
+          if (!authorizedSet || authorizedSet.has(lowerKey)) {
+            stockMap[key] = item;
+          }
+        }
+      }
+    } else if (authorizedSet) {
+      for (const [key, item] of Object.entries(rawStockMap)) {
+        if (authorizedSet.has(key.toLowerCase())) {
+          stockMap[key] = item;
+        }
+      }
+    } else {
+      stockMap = rawStockMap;
+    }
+
+    return Response.json({
+      status: 'success',
+      timestamp: new Date().toISOString(),
+      total_items: Object.keys(stockMap).length,
+      stock_map: stockMap,
+    }, {
+      status: 200,
+      headers: responseHeaders,
+    });
+  }
+
+  // 2. Fallback path: Full catalog download & parse if stock_map is not yet initialized
+  const products = await getCachedCatalogProducts(supabase);
+  const authorizedProducts = getAuthorizedProducts(products, auth?.keyRecord);
+  let resultProducts = authorizedProducts;
+
+  const stockSkusParam = searchParams?.get('skus') || searchParams?.get('ids') || searchParams?.get('sku');
+  if (stockSkusParam) {
+    const requestedSkus = new Set(stockSkusParam.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
+    resultProducts = resultProducts.filter((p) => {
+      const pId = String(p.id || '').trim().toLowerCase();
+      const pGroup = String(p.groupKey || '').trim().toLowerCase();
+      if (requestedSkus.has(pId) || requestedSkus.has(pGroup)) return true;
+      if (Array.isArray(p.variants) && p.variants.some((v) => requestedSkus.has(String(v.code || '').trim().toLowerCase()))) return true;
+      return false;
+    });
+  }
+
+  const stockMap = {};
+  resultProducts.forEach((p) => {
+    const key = p.id || p.groupKey;
+    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
+    const productQty = getProductQuantity(p, isOutOfStock);
+    const stockStatus = p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock');
+    const inStock = !isOutOfStock && productQty > 0;
+    const stockLabel = p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock');
+    stockMap[key] = {
+      title: p.title || p.name || '',
+      in_stock: inStock,
+      quantity: productQty,
+      stock_status: stockStatus,
+      status: stockStatus,
+      is_available: inStock,
+      stock_label: stockLabel,
+      updated_at: p.stockLastUpdatedIST || new Date().toISOString(),
+    };
+  });
+
+  return Response.json({
+    status: 'success',
+    timestamp: new Date().toISOString(),
+    total_items: Object.keys(stockMap).length,
+    stock_map: stockMap,
+  }, {
+    status: 200,
+    headers: responseHeaders,
+  });
 }
 
 /**
@@ -1019,23 +1266,50 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
   // 2. Route: /api/v1/catalog
   if (endpoint === 'catalog') {
-    const [{ data: sheetRow }, { data: stockData }] = await Promise.all([
-      supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single(),
-      supabase.from('vendor_product_stock').select('*'),
-    ]);
-
-    let products = [];
-    try {
-      products = JSON.parse(sheetRow?.csv_data || '[]');
-    } catch {
-      products = [];
-    }
-
-    if (Array.isArray(stockData) && stockData.length > 0) {
-      products = applyStockOverrides(products, stockData);
-    }
-
     const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
+
+    // Common file download & live sync headers (guarantees Stock Sync auto-detects JSON without CSV fallback)
+    const feedHeaders = {
+      ...securePrivateHeaders,
+      ...cors,
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Disposition': 'inline; filename="catalog.json"',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    };
+
+    // Feed format detection: explicit query param or automated Stock Sync / syncX crawler detection
+    const userAgent = request.headers.get('user-agent') || '';
+    const isStockSyncAgent = /stock[-_]?sync|syncx/i.test(userAgent);
+    const format = (searchParams.get('format') || (isStockSyncAgent ? 'stocksync' : '')).toLowerCase();
+    const isRaw = searchParams.get('raw') === 'true' || searchParams.get('array') === 'true';
+    const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || format === 'matrixify';
+
+    const authScope = (auth.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0))
+      ? `curated:${auth.keyRecord.id || auth.keyRecord.key_hash}`
+      : 'all';
+    const category = searchParams.get('category');
+    const skusParam = searchParams.get('skus') || searchParams.get('ids');
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
+    const envelope = searchParams.get('envelope') === 'true';
+
+    // 5-minute in-memory edge cache check for formatted sync feed response
+    const syncResponseKey = isSyncFeed
+      ? `${format}:${envelope}:${isRaw}:${authScope}:${category || ''}:${skusParam || ''}:${pageParam || ''}:${limitParam || ''}:${offsetParam || ''}`
+      : null;
+
+    if (syncResponseKey) {
+      const cachedResponse = syncFeedResponseCache.get(syncResponseKey);
+      if (cachedResponse && (Date.now() - cachedResponse.timestamp < SYNC_FEED_CACHE_TTL_MS)) {
+        return Response.json(cachedResponse.data, {
+          status: 200,
+          headers: feedHeaders,
+        });
+      }
+    }
+
+    const products = await getCachedCatalogProducts(supabase);
 
     // Mandatory Curated Product Selection Filter:
     // Restrict products to the authenticated account's authorized catalog first and exclude archived items
@@ -1044,13 +1318,11 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     let resultProducts = authorizedProducts.filter((p) => !p.isArchived);
 
     // Optional Category Filtering (within authorized catalog)
-    const category = searchParams.get('category');
     if (category) {
       resultProducts = resultProducts.filter(p => (p.category || '').toLowerCase() === category.toLowerCase());
     }
 
     // Optional SKU filtering: ?skus= can only narrow authorized products, never expand access
-    const skusParam = searchParams.get('skus') || searchParams.get('ids');
     if (skusParam) {
       const requestedSkus = new Set(skusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
       resultProducts = resultProducts.filter((p) => {
@@ -1062,19 +1334,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       });
     }
 
-    // Feed format detection: explicit query param or automated Stock Sync / syncX crawler detection
-    const userAgent = request.headers.get('user-agent') || '';
-    const isStockSyncAgent = /stock[-_]?sync|syncx/i.test(userAgent);
-    const format = (searchParams.get('format') || (isStockSyncAgent ? 'stocksync' : '')).toLowerCase();
-    const isRaw = searchParams.get('raw') === 'true' || searchParams.get('array') === 'true';
-
     // Pagination & Cursor Limits (Default limit 50, higher default for sync feeds so catalog isn't truncated)
-    const pageParam = searchParams.get('page');
-    const limitParam = searchParams.get('limit');
-    const offsetParam = searchParams.get('offset');
     const totalProducts = resultProducts.length;
 
-    const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || format === 'matrixify';
     const maxAllowedLimit = isSyncFeed ? 10000 : 2500;
     const defaultLimit = isSyncFeed ? (totalProducts || 1) : 50;
 
@@ -1111,32 +1373,30 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     // Slice products BEFORE running CPU-heavy variant/color mappings
     const paginatedProducts = resultProducts.slice(offset, offset + limit);
 
-    // Common file download & live sync headers (guarantees Stock Sync auto-detects JSON without CSV fallback)
-    const feedHeaders = {
-      ...securePrivateHeaders,
-      ...cors,
-      'Content-Type': 'application/json; charset=utf-8',
-      'Content-Disposition': 'inline; filename="catalog.json"',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-    };
-
     // Format for Stock Sync / syncX:
     // Emits a direct JSON array of variant rows for out-of-the-box auto-mapping
     if (format === 'stocksync' || format === 'syncx') {
-      const syncxFeed = formatForStockSync(paginatedProducts);
-      if (searchParams.get('envelope') === 'true') {
-        return Response.json({
+      const feedFormatKey = `stocksync:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}`;
+      const syncxFeed = formatForStockSync(paginatedProducts, feedFormatKey);
+      let responsePayload;
+      if (envelope) {
+        responsePayload = {
           status: 'success',
           pagination: paginationMeta,
           total_products: totalProducts,
           total_items: syncxFeed.length,
           products: syncxFeed,
-        }, {
-          status: 200,
-          headers: feedHeaders,
+        };
+      } else {
+        responsePayload = syncxFeed;
+      }
+      if (syncResponseKey) {
+        setBoundedCache(syncFeedResponseCache, syncResponseKey, {
+          data: responsePayload,
+          timestamp: Date.now(),
         });
       }
-      return Response.json(syncxFeed, {
+      return Response.json(responsePayload, {
         status: 200,
         headers: feedHeaders,
       });
@@ -1144,20 +1404,27 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     // Format for Shopify / Matrixify (Nested Shopify REST structure + root fallbacks)
     if (format === 'shopify' || format === 'matrixify') {
-      const shopifyFeed = formatForShopify(paginatedProducts);
+      const feedFormatKey = `shopify:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}`;
+      const shopifyFeed = formatForShopify(paginatedProducts, feedFormatKey);
+      let responsePayload;
       if (isRaw) {
-        return Response.json(shopifyFeed, {
-          status: 200,
-          headers: feedHeaders,
+        responsePayload = shopifyFeed;
+      } else {
+        responsePayload = {
+          status: 'success',
+          pagination: paginationMeta,
+          total_products: totalProducts,
+          page_products: shopifyFeed.length,
+          products: shopifyFeed,
+        };
+      }
+      if (syncResponseKey) {
+        setBoundedCache(syncFeedResponseCache, syncResponseKey, {
+          data: responsePayload,
+          timestamp: Date.now(),
         });
       }
-      return Response.json({
-        status: 'success',
-        pagination: paginationMeta,
-        total_products: totalProducts,
-        page_products: shopifyFeed.length,
-        products: shopifyFeed,
-      }, {
+      return Response.json(responsePayload, {
         status: 200,
         headers: feedHeaders,
       });
@@ -1189,64 +1456,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
   // 3. Route: /api/v1/stock-status
   if (endpoint === 'stock-status') {
-    const [{ data: sheetRow }, { data: stockData }] = await Promise.all([
-      supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single(),
-      supabase.from('vendor_product_stock').select('*'),
-    ]);
-
-    let products = [];
-    try {
-      products = JSON.parse(sheetRow?.csv_data || '[]');
-    } catch {
-      products = [];
-    }
-
-    if (Array.isArray(stockData) && stockData.length > 0) {
-      products = applyStockOverrides(products, stockData);
-    }
-
-    const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
-
-    // Mandatory Curated Stock Filter: Restrict to authorized catalog FIRST
-    const authorizedProducts = getAuthorizedProducts(products, auth.keyRecord);
-    let resultProducts = authorizedProducts;
-
-    const stockSkusParam = searchParams.get('skus') || searchParams.get('ids') || searchParams.get('sku');
-    if (stockSkusParam) {
-      const requestedSkus = new Set(stockSkusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
-      resultProducts = resultProducts.filter((p) => {
-        const pId = String(p.id || '').trim().toLowerCase();
-        const pGroup = String(p.groupKey || '').trim().toLowerCase();
-        if (requestedSkus.has(pId) || requestedSkus.has(pGroup)) return true;
-        if (Array.isArray(p.variants) && p.variants.some(v => requestedSkus.has(String(v.code || '').trim().toLowerCase()))) return true;
-        return false;
-      });
-    }
-
-    const stockMap = {};
-    resultProducts.forEach((p) => {
-      const key = p.id || p.groupKey;
-      const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
-      const productQty = getProductQuantity(p, isOutOfStock);
-      stockMap[key] = {
-        title: p.title || p.name,
-        status: p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock'),
-        is_available: !isOutOfStock && productQty > 0,
-        stock_label: p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
-        quantity: productQty,
-        updated_at: p.stockLastUpdatedIST || new Date().toISOString(),
-      };
-    });
-
-    return Response.json({
-      status: 'success',
-      timestamp: new Date().toISOString(),
-      total_items: Object.keys(stockMap).length,
-      stock_map: stockMap,
-    }, {
-      status: 200,
-      headers: { ...securePrivateHeaders, ...cors },
-    });
+    return handleStockStatusRequest(request, supabase, auth, searchParams);
   }
 
   // 4. Route: /api/v1/products (Single or Batch product query - Reseller Price Only)
@@ -1261,21 +1471,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }, { status: 400, headers: cors });
     }
 
-    const [{ data: sheetRow }, { data: stockData }] = await Promise.all([
-      supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single(),
-      supabase.from('vendor_product_stock').select('*'),
-    ]);
-
-    let products = [];
-    try {
-      products = JSON.parse(sheetRow?.csv_data || '[]');
-    } catch {
-      products = [];
-    }
-
-    if (Array.isArray(stockData) && stockData.length > 0) {
-      products = applyStockOverrides(products, stockData);
-    }
+    const products = await getCachedCatalogProducts(supabase);
 
     // Restrict product search to authorized catalog FIRST
     const authorizedProducts = getAuthorizedProducts(products, auth.keyRecord);

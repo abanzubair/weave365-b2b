@@ -1,7 +1,5 @@
-import { redirect } from 'next/navigation';
-
-export const runtime = 'edge';
+import { permanentRedirect } from 'next/navigation';
 
 export default function StoreIndexPage() {
-  redirect('/resell-sarees-online');
+  permanentRedirect('/resell-sarees-online');
 }

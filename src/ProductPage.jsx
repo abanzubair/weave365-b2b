@@ -1042,7 +1042,7 @@ export function ProductDetail({
     : 0;
 
   const pcSetVal = useMemo(() => {
-    const rawVal = String(product.raw?.['Pc / Set'] || '').trim().toLowerCase();
+    const rawVal = String(product.pcSet || product.raw?.['Pc / Set'] || '').trim().toLowerCase();
     if (rawVal) return rawVal;
 
     // Fallback to defaults based on category
@@ -1051,7 +1051,7 @@ export function ProductDetail({
       return 'pc';
     }
     return 'set';
-  }, [product.raw, product.category]);
+  }, [product.pcSet, product.raw, product.category]);
   const isSoldAsPc = useMemo(() => pcSetVal === 'pc', [pcSetVal]);
   const isSoldAsBoth = useMemo(() => pcSetVal === 'pc, set' || pcSetVal === 'set, pc', [pcSetVal]);
   const isSoldAsSet = useMemo(() => pcSetVal === 'set', [pcSetVal]);

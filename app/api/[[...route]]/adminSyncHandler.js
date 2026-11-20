@@ -107,6 +107,22 @@ export async function POST(request) {
       console.warn('[admin sync] Optional sitemap pregeneration notice:', sitemapErr.message);
     }
 
+    // 5. Pre-generate and store fresh Google Shopping XML in Supabase sheet_data
+    try {
+      const { pregenerateAndSaveGoogleShopping } = await import('./googleShoppingHandler.js');
+      await pregenerateAndSaveGoogleShopping(supabase);
+    } catch (shoppingErr) {
+      console.warn('[admin sync] Optional Google Shopping pregeneration notice:', shoppingErr.message);
+    }
+
+    // 6. Pre-generate and store fresh decoupled stock map in Supabase sheet_data
+    try {
+      const { pregenerateAndSaveStockMap } = await import('../../../src/utils/stockMapService.js');
+      await pregenerateAndSaveStockMap(supabase);
+    } catch (stockMapErr) {
+      console.warn('[admin sync] Optional stock map pregeneration notice:', stockMapErr.message);
+    }
+
     const timestamp = new Date().toISOString();
 
     return new Response(JSON.stringify({ success: true, timestamp }), {

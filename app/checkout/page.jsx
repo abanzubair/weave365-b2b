@@ -6,8 +6,6 @@ export const metadata = {
   },
 };
 
-export const runtime = 'edge';
-
 import CheckoutClient from './CheckoutClient.jsx';
 
 export default function CheckoutRoute() {

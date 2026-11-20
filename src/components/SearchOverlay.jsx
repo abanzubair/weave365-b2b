@@ -122,6 +122,7 @@ export function SearchOverlay(props) {
           const colorOptionNames = (product.colorOptions || []).map((c) => c.name);
           const variantColors = (product.variants || []).map((v) => v.color);
           const csvColors = [
+            ...(Array.isArray(product.csvColors) ? product.csvColors : []),
             product.raw?.Color,
             product.raw?.Col,
             product.raw?.Colors,
