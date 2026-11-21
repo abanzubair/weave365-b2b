@@ -33,7 +33,9 @@ skills/*
 .agents/
 .zcode/
 skills-lock.json
+# Rules
 AGENTS.md
+GEMINI.md
 .agent/*
 
 # OpenNext & Wrangler
