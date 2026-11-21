@@ -2,13 +2,13 @@
    Weave365 Developer API Documentation Stylesheet
    Theme: Minimalist Developer Docs (Stripe / Linear / Vercel Inspired)
    Architecture: Clean, Flat, Zero Nested Boxes, High WCAG Contrast
-   Typography: Strict multiples of 4px in exact rem equivalents
-   - 12px = 0.75rem
-   - 16px = 1rem
-   - 20px = 1.25rem
-   - 24px = 1.5rem
-   - 28px = 1.75rem
-   - 32px = 2rem
+   Typography Scale: Minimum font size 14px (0.875rem) to ensure optimal legibility
+   - 14px = 0.875rem (Strict minimum: badges, sidebar links, small labels, tables, code)
+   - 16px = 1rem (Base body text, descriptions, input fields, step headings)
+   - 20px = 1.25rem (Subheadings h3, tier names)
+   - 24px = 1.5rem (Section headings h2)
+   - 28px = 1.75rem (Tier prices, mobile title)
+   - 32px = 2rem (Main title h1)
    ========================================================================== */
 
 .api-docs-page {
@@ -162,7 +162,7 @@
   background: none;
   border: none;
   color: #334155;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   padding: 6px 0;
@@ -179,7 +179,7 @@
 }
 
 .api-sidebar-title {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -201,9 +201,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
+  padding: 7px 10px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
   text-decoration: none;
@@ -223,9 +223,9 @@
 }
 
 .api-sidebar-badge {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
   letter-spacing: 0.04em;
 }
@@ -259,7 +259,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #475569;
   margin-bottom: 0.75rem;
 }
@@ -270,7 +270,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -315,9 +315,9 @@
 }
 
 .api-pill {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 9999px;
   border: 1px solid #cbd5e1;
   background: #f8fafc;
@@ -350,12 +350,12 @@
   gap: 6px;
   padding: 8px 16px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none !important;
   cursor: pointer;
   transition: all 0.15s ease;
-  min-height: 36px;
+  min-height: 38px;
 }
 
 .api-btn.primary {
@@ -431,7 +431,7 @@
   color: #0f172a;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -452,13 +452,13 @@
 }
 
 .api-step-circle {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: #ffffff;
   border: 1px solid #94a3b8;
   color: #1e293b;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -552,13 +552,13 @@
 }
 
 .api-feed-method {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 0 12px;
   color: #1e293b;
   background: #f8fafc;
-  height: 38px;
+  height: 42px;
   display: flex;
   align-items: center;
   border-right: 1px solid #cbd5e1;
@@ -569,7 +569,7 @@
    Minimal Sober Note (Quiet Callout)
    ========================================================================== */
 .api-note-text {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #1e293b;
   background: #f8fafc;
   border-left: 3px solid #94a3b8;
@@ -584,7 +584,7 @@
 }
 
 .api-step-subnote {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #334155;
   margin: 0.375rem 0 0 0;
   line-height: 1.55;
@@ -597,24 +597,24 @@
 .api-feed-input {
   flex: 1;
   min-width: 0;
-  height: 38px;
+  height: 42px;
   border: none;
   background: transparent;
   padding: 0 12px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #0f172a;
   outline: none;
 }
 
 .api-feed-copy-btn {
-  height: 38px;
+  height: 42px;
   padding: 0 14px;
   background: transparent;
   border: none;
   border-left: 1px solid #cbd5e1;
   color: #1e293b;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
@@ -652,7 +652,7 @@
   padding: 8px 14px;
   background: #0e1424;
   border-bottom: 1px solid #1e293b;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #cbd5e1;
 }
@@ -666,9 +666,9 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #f8fafc;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -684,7 +684,7 @@
 .api-code-content {
   margin: 0;
   padding: 1.25rem 1.25rem;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: #f8fafc;
   overflow-x: auto;
@@ -705,15 +705,15 @@
 .api-flat-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   min-width: 540px;
 }
 
 .api-flat-table th {
   background: #f8fafc;
   text-align: left;
-  padding: 10px 12px;
-  font-size: 0.75rem;
+  padding: 10px 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -722,7 +722,7 @@
 }
 
 .api-flat-table td {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: top;
   color: #334155;
@@ -739,7 +739,7 @@
 }
 
 .api-param-type {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #475569;
   display: block;
@@ -770,9 +770,9 @@
 }
 
 .api-method-badge {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  padding: 3px 7px;
+  padding: 3px 8px;
   border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -835,7 +835,7 @@
 }
 
 .api-tier-badge {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   background: #0f172a;
   color: #ffffff;
@@ -852,13 +852,13 @@
 }
 
 .api-tier-price span {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #475569;
 }
 
 .api-tier-quota {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #047857;
   margin-bottom: 1.25rem;
@@ -874,7 +874,7 @@
 }
 
 .api-tier-features li {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #334155;
   display: flex;
   align-items: center;
@@ -886,8 +886,8 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: #0f172a;
   color: #ffffff;
@@ -948,8 +948,8 @@
     background: #f8fafc;
     border: 1px solid #cbd5e1;
     border-radius: 9999px;
-    padding: 4px 12px;
-    font-size: 0.75rem;
+    padding: 5px 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #334155;
     text-decoration: none;
