@@ -62,7 +62,6 @@ import { developerService, TIER_CONFIGS } from '../../services/developerService.
 import { fetchProducts } from '../../productData.js';
 import { storeConfig } from '../../config.js';
 import { DispatchLabelCard } from './DispatchLabelCard.jsx';
-import { ShopifyDirectConnectCard } from './ShopifyDirectConnectCard.jsx';
 import '../../styles/developerDashboard.css';
 
 export const BUSINESS_TYPES = [
@@ -1712,11 +1711,6 @@ export function DeveloperDashboard({
       icon: KeyRound,
     },
     {
-      id: 'shopify',
-      label: 'Shopify 1-Click Sync',
-      icon: ShoppingBag,
-    },
-    {
       id: 'dispatch',
       label: 'Dispatch Label',
       icon: MapPin,
@@ -2746,13 +2740,6 @@ export function DeveloperDashboard({
             </div>
           )}
 
-          {/* TAB: Shopify 1-Click Direct Sync */}
-          {activeDevTab === 'shopify' && (
-            <div className="dev-shopify-integration-stage">
-              <ShopifyDirectConnectCard apiKey={apiKey} user={user} />
-            </div>
-          )}
-
   {/* TAB 2: Dispatch Label */}
   {activeDevTab === 'dispatch' && (
     <DispatchLabelCard
@@ -3172,12 +3159,10 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
 
             {activePlatformTab === 'shopify' && (
               <div>
-                <ShopifyDirectConnectCard apiKey={apiKey} user={user} />
-
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">Alternative Third-Party Feeds (Stock Sync &amp; Matrixify):</h4>
+                  <h4 className="dev-plat-title">Shopify Automated Inventory Sync:</h4>
                   <p>
-                    If you prefer using third-party inventory apps instead of our 1-click integration, you can also use our auto-mapping REST and CSV feeds below:
+                    Connect using Shopify inventory apps such as <strong>Stock Sync (syncX)</strong> or <strong>Matrixify</strong>. Weave365 provides out-of-the-box auto-mapping with zero manual field matching.
                   </p>
                 </div>
 

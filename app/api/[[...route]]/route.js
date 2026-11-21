@@ -45,16 +45,11 @@ import {
   handleValidateCoupon,
 } from './couponsHandler.js';
 import { GET as presenceGet, POST as presencePost } from './presenceHandler.js';
-import { handleShopifyRoute } from './shopifyIntegrationHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
   const routeArray = resolvedParams?.route || [];
   const routeKey = routeArray.join('/');
-
-  if (routeArray[0] === 'shopify') {
-    return handleShopifyRoute(request, routeArray);
-  }
 
   if (routeArray[0] === 'v1' || routeArray[0] === 'developer') {
     return handleDeveloperApiGet(request, routeArray);
@@ -80,10 +75,6 @@ export async function POST(request, { params }) {
   const resolvedParams = await params;
   const routeArray = resolvedParams?.route || [];
   const routeKey = routeArray.join('/');
-
-  if (routeArray[0] === 'shopify') {
-    return handleShopifyRoute(request, routeArray);
-  }
 
   if (routeArray[0] === 'v1' || routeArray[0] === 'developer') {
     return handleDeveloperApiPost(request, routeArray);

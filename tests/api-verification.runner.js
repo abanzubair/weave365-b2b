@@ -22,7 +22,6 @@ async function runAllTests() {
 
   const files = [
     path.join(__dirname, 'developer-api.test.js'),
-    path.join(__dirname, 'shopify-integration.test.js'),
   ];
 
   const stream = run({
