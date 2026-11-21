@@ -3422,25 +3422,32 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         platform,
       } = body || {};
 
-      // Support 'customer', 'shipping_address', or native Shopify webhook structure
-      const rawCust = customer || shipping_address || body?.shipping_address || body?.billing_address || body?.customer || {};
+      // Support 'shipping_address', 'customer', or native Shopify webhook structure
+      const rawShip = shipping_address || body?.shipping_address || body?.billing_address || {};
+      const rawCust = customer || body?.customer || {};
+
       const customerName = (
+        rawShip.name ||
+        [rawShip.first_name, rawShip.last_name].filter(Boolean).join(' ') ||
         rawCust.name ||
         [rawCust.first_name, rawCust.last_name].filter(Boolean).join(' ') ||
-        [body?.customer?.first_name, body?.customer?.last_name].filter(Boolean).join(' ') ||
-        body?.customer?.name ||
         ''
       ).trim();
 
       const customerPhone = (
+        rawShip.phone ||
         rawCust.phone ||
         body?.phone ||
-        body?.customer?.phone ||
+        rawShip.mobile ||
         rawCust.mobile ||
         ''
       ).trim();
 
       const customerPincode = (
+        rawShip.pincode ||
+        rawShip.zip ||
+        rawShip.postal_code ||
+        rawShip.postcode ||
         rawCust.pincode ||
         rawCust.zip ||
         rawCust.postal_code ||
@@ -3449,19 +3456,23 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       ).trim();
 
       const recipientAddress = (
+        rawShip.address_line1 ||
+        rawShip.address1 ||
+        rawShip.address ||
+        [rawShip.address1, rawShip.address2].filter(Boolean).join(', ') ||
         rawCust.address_line1 ||
         rawCust.address1 ||
         rawCust.address ||
-        [rawCust.address1, rawCust.address2].filter(Boolean).join(', ') ||
         ''
       ).trim();
-      const recipientCity = (rawCust.city || '').trim();
-      const recipientState = (rawCust.state || rawCust.province || rawCust.state_code || '').trim();
+
+      const recipientCity = (rawShip.city || rawCust.city || '').trim();
+      const recipientState = (rawShip.state || rawShip.province || rawShip.state_code || rawCust.state || rawCust.province || '').trim();
       const recipientEmail = (
         rawCust.email ||
+        rawShip.email ||
         body?.email ||
         body?.contact_email ||
-        body?.customer?.email ||
         ''
       ).trim().toLowerCase();
 
@@ -3486,7 +3497,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       // Fetch catalog for SKU validation and item metadata enrichment (title, images, price)
       let catalogList = [];
       try {
-        const { data: sheetRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single();
+        const sheetQuery = supabase.from('sheet_data').select('csv_data').eq('id', 'products_json');
+        const { data: sheetRow } = typeof sheetQuery.single === 'function' ? await sheetQuery.single() : await sheetQuery.maybeSingle();
         if (sheetRow?.csv_data) {
           catalogList = typeof sheetRow.csv_data === 'string' ? JSON.parse(sheetRow.csv_data) : sheetRow.csv_data;
         }
@@ -3502,11 +3514,19 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }, { status: 503, headers: cors });
       }
 
+      const isShopify = Boolean(
+        body?.line_items ||
+        platform === 'shopify' ||
+        request.headers.get('x-shopify-topic') ||
+        request.headers.get('x-shopify-shop-domain')
+      );
+
       // Enforce product authorization boundary: ensure all requested SKUs are authorized for this API key
       const isCurated = auth.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0);
+      let authorizedSkuSet = null;
       if (isCurated) {
         const authorizedProducts = getAuthorizedProducts(catalogList, auth.keyRecord);
-        const authorizedSkuSet = new Set(authorizedProducts.map(p => String(p.id || p.groupKey || '').trim().toLowerCase()));
+        authorizedSkuSet = new Set(authorizedProducts.map(p => String(p.id || p.groupKey || '').trim().toLowerCase()));
         authorizedProducts.forEach((p) => {
           if (Array.isArray(p.variants)) {
             p.variants.forEach((v) => {
@@ -3515,26 +3535,36 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           }
         });
 
-        for (const item of rawItems) {
-          const itemSku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim().toLowerCase();
-          const baseSku = itemSku.includes('-') ? itemSku.split('-')[0].trim() : itemSku;
-          if (!authorizedSkuSet.has(itemSku) && !authorizedSkuSet.has(baseSku)) {
-            return Response.json({
-              status: 'error',
-              code: 'UNAUTHORIZED_PRODUCT',
-              message: `Product SKU '${item.sku || item.product_id || item.id}' is not authorized for this account.`,
-            }, { status: 403, headers: cors });
+        // For direct manual API calls, strictly reject unauthorized products
+        if (!isShopify) {
+          for (const item of rawItems) {
+            const itemSku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim().toLowerCase();
+            const baseSku = itemSku.includes('-') ? itemSku.split('-')[0].trim() : itemSku;
+            if (!authorizedSkuSet.has(itemSku) && !authorizedSkuSet.has(baseSku)) {
+              return Response.json({
+                status: 'error',
+                code: 'UNAUTHORIZED_PRODUCT',
+                message: `Product SKU '${item.sku || item.product_id || item.id}' is not authorized for this account.`,
+              }, { status: 403, headers: cors });
+            }
           }
         }
       }
 
       // Normalize items array with full catalog metadata
-      const normalizedItems = rawItems.map((item) => {
+      const candidateItems = rawItems.map((item) => {
         const sku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim();
         const skuLower = sku.toLowerCase();
         const baseSku = skuLower.includes('-') ? skuLower.split('-')[0].trim() : skuLower;
         const itemColor = String(item.color || item.variant_title || item.title || '').trim();
         const itemColorLower = itemColor.toLowerCase();
+
+        // In curated catalog mode, ensure this SKU is in the reseller's authorized list
+        if (isCurated && authorizedSkuSet) {
+          if (!authorizedSkuSet.has(skuLower) && !authorizedSkuSet.has(baseSku)) {
+            return null;
+          }
+        }
 
         // 1. Match in catalog (exact match first, then base SKU fallback)
         let matchedProduct = (catalogList || []).find(p => {
@@ -3551,6 +3581,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
             const pGroup = String(p.groupKey || '').toLowerCase();
             return pId === baseSku || pGroup === baseSku;
           });
+        }
+
+        if (!matchedProduct) {
+          return null; // Not a Weave 365 product
         }
 
         // 2. Resolve matched variant / color
@@ -3601,7 +3635,19 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         let wholesalePrice = 0;
         if (matchedVariant || matchedProduct) {
           const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
-          wholesalePrice = Number(prices.b2r || matchedProduct?.resellerPrice || (prices.single ? prices.single : 0));
+          wholesalePrice = Number(
+            prices.b2r ||
+            matchedProduct?.reseller_price ||
+            matchedProduct?.resellerPrice ||
+            (prices.single ? prices.single : 0) ||
+            matchedVariant?.price ||
+            matchedProduct?.price ||
+            0
+          );
+        }
+
+        if (!wholesalePrice || wholesalePrice <= 0) {
+          return null;
         }
 
         // 2. Selling price / Retail price charged to end customer (what appears on courier slip & invoice)
@@ -3624,45 +3670,74 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           product_title: productTitle,
           color: colorName,
           quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
-          wholesale_price: wholesalePrice > 0 ? wholesalePrice : undefined,
+          wholesale_price: wholesalePrice,
           selling_price: finalSellingPrice,
           custom_billed_price: finalSellingPrice,
           dropship_billed_price: finalSellingPrice,
-          price: wholesalePrice > 0 ? wholesalePrice : finalSellingPrice,
-          unit_price: wholesalePrice > 0 ? wholesalePrice : finalSellingPrice,
+          price: wholesalePrice,
+          unit_price: wholesalePrice,
           image: imageSrc || undefined,
         };
       });
 
-      const invalidItem = normalizedItems.find((it) => !it.wholesale_price || Number(it.wholesale_price) <= 0);
-      if (invalidItem) {
+      // Filter out non-Weave 365 items
+      const validWeaveItems = candidateItems.filter(Boolean);
+
+      // Handle Case A: Zero Weave 365 items found in this order
+      if (validWeaveItems.length === 0) {
+        if (isShopify) {
+          const resolvedResellerOrderId = String(reseller_order_id || body?.order_number || body?.name || body?.id || '').trim() || null;
+          return Response.json({
+            status: 'ignored',
+            code: 'NO_WEAVE365_ITEMS',
+            message: 'Order contains no Weave 365 products. Ignored successfully without creating an invoice.',
+            reseller_order_id: resolvedResellerOrderId,
+          }, { status: 200, headers: cors });
+        }
+
+        const firstInvalid = candidateItems.find((it) => !it) ? rawItems[0] : null;
         return Response.json({
           status: 'error',
           code: 'INVALID_PRODUCT_SKU',
-          message: `Unknown or unpriced product SKU '${invalidItem.sku}'.`,
+          message: `Unknown or unpriced product SKU '${firstInvalid?.sku || firstInvalid?.id || 'unknown'}'.`,
         }, { status: 400, headers: cors });
       }
 
-      // Compute total wholesale amount vs total retail customer amount
+      // Handle Case B: Direct non-Shopify API calls that supplied unknown SKUs alongside valid ones
+      if (!isShopify && validWeaveItems.length < rawItems.length) {
+        return Response.json({
+          status: 'error',
+          code: 'INVALID_PRODUCT_SKU',
+          message: 'One or more product SKUs in your order do not match valid Weave 365 catalog products.',
+        }, { status: 400, headers: cors });
+      }
+
+      const isMixedOrder = validWeaveItems.length < rawItems.length;
+      const normalizedItems = validWeaveItems;
+
+      // Compute total wholesale amount vs total retail customer amount for Weave 365 products
       const totalWholesaleAmount = normalizedItems.reduce((acc, it) => acc + ((Number(it.wholesale_price) || 0) * (it.quantity || 1)), 0);
       const calculatedRetailTotal = normalizedItems.reduce((acc, it) => acc + ((Number(it.selling_price) || 0) * (it.quantity || 1)), 0);
 
-      const customerOrderAmount = Number(
-        body?.customer_price ||
-        body?.customer_selling_price ||
-        body?.selling_price ||
-        body?.retail_price ||
-        body?.billed_price ||
-        body?.custom_billed_price ||
-        body?.total_customer_price ||
-        calculatedRetailTotal ||
-        totalWholesaleAmount
-      );
+      // For mixed orders, customerOrderAmount MUST be strictly the retail total of the Weave 365 items
+      const customerOrderAmount = isMixedOrder
+        ? calculatedRetailTotal
+        : Number(
+            body?.customer_price ||
+            body?.customer_selling_price ||
+            body?.selling_price ||
+            body?.retail_price ||
+            body?.billed_price ||
+            body?.custom_billed_price ||
+            body?.total_customer_price ||
+            calculatedRetailTotal ||
+            totalWholesaleAmount
+          );
 
       const paymentType = String(body?.payment_type || body?.payment_mode || '').toLowerCase();
       const gatewayStr = String(body?.gateway || '').toLowerCase();
       const isCod = paymentType === 'cod' || paymentType === 'cash_on_delivery' || gatewayStr.includes('cod') || gatewayStr.includes('cash on delivery') || gatewayStr.includes('cash_on_delivery');
-      const codAmountToCollect = isCod ? Number(body?.cod_amount || customerOrderAmount) : 0;
+      const codAmountToCollect = isCod ? (isMixedOrder ? calculatedRetailTotal : Number(body?.cod_amount || customerOrderAmount)) : 0;
       const resellerProfitMargin = Math.max(0, customerOrderAmount - totalWholesaleAmount);
 
       // Check Real-Time Stock Availability for all items before placing
@@ -3691,8 +3766,9 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       }
 
       const resolvedResellerOrderId = String(reseller_order_id || body?.order_number || body?.name || body?.id || '').trim() || null;
-      const resolvedPlatform = platform || (body?.line_items ? 'shopify' : 'api');
-      const resolvedNotes = shipping_notes || body?.note || body?.notes || '';
+      const resolvedPlatform = platform || (isShopify ? 'shopify' : 'api');
+      const filterNote = isMixedOrder ? `[Shopify Multi-Vendor: ${normalizedItems.length} of ${rawItems.length} items fulfilled by Weave 365]` : '';
+      const resolvedNotes = [shipping_notes || body?.note || body?.notes || '', filterNote].filter(Boolean).join(' | ');
       const fullAddressStr = `${recipientAddress}${recipientCity ? `, ${recipientCity}` : ''}${recipientState ? `, ${recipientState}` : ''} - PIN: ${customerPincode}`;
 
       const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
@@ -3845,6 +3921,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           cod_amount_to_collect: codAmountToCollect,
           currency: 'INR',
         },
+        items_filtered: isMixedOrder ? {
+          total_order_items: rawItems.length,
+          weave365_items_processed: normalizedItems.length,
+        } : undefined,
         courier_slip: {
           sender_name: senderName,
           sender_phone: senderPhone,
