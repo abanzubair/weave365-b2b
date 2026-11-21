@@ -570,13 +570,13 @@
    ========================================================================== */
 .api-note-text {
   font-size: 0.875rem;
-  color: #1e293b;
+  color: #334155;
   background: #f8fafc;
-  border-left: 3px solid #94a3b8;
+  border: 1px solid #e2e8f0;
   padding: 0.75rem 1rem;
   margin: 1rem 0 1.5rem 0;
   line-height: 1.6;
-  border-radius: 0 4px 4px 0;
+  border-radius: 6px;
 }
 
 .api-note-text strong {
@@ -995,7 +995,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .api-workflow-badge {
@@ -1009,16 +1009,9 @@
   letter-spacing: 0.04em;
   background: #f1f5f9;
   color: #0f172a;
-}
-
-.api-workflow-badge.primary {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-
-.api-workflow-badge.accent {
-  background: #fef3c7;
-  color: #92400e;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .api-workflow-title {
@@ -1036,17 +1029,139 @@
 }
 
 .api-gear-callout {
-  margin-top: 0.75rem;
+  margin-top: 0.875rem;
   padding: 0.875rem 1rem;
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
-  border-left: 3px solid #f59e0b;
-  border-radius: 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
   font-size: 0.875rem;
-  color: #92400e;
+  color: #334155;
   line-height: 1.55;
 }
 
 .api-gear-callout strong {
-  color: #78350f;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   Mobile Screen Optimizations (<640px)
+   ========================================================================== */
+@media (max-width: 640px) {
+  .api-docs-container {
+    padding: 1rem 0.75rem 3.5rem 0.75rem;
+  }
+
+  .api-header {
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .api-main-title {
+    font-size: 1.5rem;
+  }
+
+  .api-workflow-card {
+    padding: 1rem 0.75rem;
+    margin-top: 1rem;
+    border-radius: 6px;
+  }
+
+  .api-workflow-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .api-workflow-title {
+    font-size: 1.0625rem;
+    line-height: 1.35;
+  }
+
+  .api-workflow-desc {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .api-clean-steps {
+    gap: 1.125rem;
+    margin: 1rem 0 1.25rem 0;
+  }
+
+  .api-step-row {
+    gap: 10px;
+  }
+
+  .api-step-circle {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8125rem;
+    margin-top: 2px;
+  }
+
+  .api-step-heading {
+    font-size: 0.9375rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .api-step-body {
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  .api-table-scroll {
+    margin: 0.75rem 0 1rem 0;
+  }
+
+  .api-flat-table {
+    min-width: 460px;
+    font-size: 0.8125rem;
+  }
+
+  .api-flat-table th {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .api-flat-table td {
+    padding: 8px 10px;
+  }
+
+  .api-gear-callout {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8125rem;
+    margin-top: 0.75rem;
+  }
+
+  .api-note-text {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8125rem;
+    margin: 0.75rem 0 1rem 0;
+  }
+
+  .api-feed-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .api-feed-method {
+    height: 34px;
+    font-size: 0.75rem;
+    border-right: none;
+    border-bottom: 1px solid #cbd5e1;
+    justify-content: flex-start;
+  }
+
+  .api-feed-input {
+    height: 38px;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  .api-feed-copy-btn {
+    height: 38px;
+    border-left: none;
+    justify-content: center;
+    background: #f8fafc;
+  }
 }

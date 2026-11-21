@@ -427,7 +427,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                 {/* Phase 1: Initial Import with "Add" */}
                 <div className="api-workflow-card">
                   <div className="api-workflow-header">
-                    <span className="api-workflow-badge primary">Phase 1</span>
+                    <span className="api-workflow-badge">Phase 1</span>
                     <h3 className="api-workflow-title">Initial Product Import (Using &quot;Add&quot;)</h3>
                   </div>
                   <p className="api-workflow-desc">
@@ -518,7 +518,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         </div>
 
                         <div className="api-gear-callout">
-                          <strong>⚙️ Crucial Variant Image Mapping:</strong> Next to <strong>Product Images</strong>, click the <strong>gear icon (⚙️)</strong>. Under <em>Variant Image Mapping</em>, select <strong>&quot;Link image to variant when image URL is same row as variant&quot;</strong> and make sure <strong>&quot;Assign first product images to all variants&quot;</strong> is <strong>unchecked</strong>. This guarantees that clicking each color swatch in your storefront displays its matching saree photo instead of the first cover image.
+                          <strong>Variant Image Mapping:</strong> Next to <strong>Product Images</strong>, click the settings gear. Under <em>Variant Image Mapping</em>, select <strong>&quot;Link image to variant when image URL is same row as variant&quot;</strong> and make sure <strong>&quot;Assign first product images to all variants&quot;</strong> is <strong>unchecked</strong>. This guarantees that clicking each color swatch in your storefront displays its matching saree photo instead of the first cover image.
                         </div>
                       </div>
                     </div>
@@ -538,7 +538,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                 {/* Phase 2: Ongoing Stock Sync with "Update" */}
                 <div className="api-workflow-card">
                   <div className="api-workflow-header">
-                    <span className="api-workflow-badge accent">Phase 2</span>
+                    <span className="api-workflow-badge">Phase 2</span>
                     <h3 className="api-workflow-title">Ongoing Stock &amp; Badge Sync (Using &quot;Update&quot;)</h3>
                   </div>
                   <p className="api-workflow-desc">
