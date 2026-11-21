@@ -425,179 +425,260 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                 </div>
 
                 {/* Phase 1: Initial Import with "Add" */}
-                <h3 className="api-sub-title" style={{ marginTop: '2rem', marginBottom: '0.5rem' }}>
-                  Step 1: Initial Product Import (Using &quot;Add&quot;)
-                </h3>
-                <p className="api-text">
-                  When starting with a new store, use Stock Sync&apos;s <strong>&quot;Add&quot;</strong> feed to create all sarees, color variants, photos, descriptions, and disclaimers.
-                </p>
-
-                <div className="api-clean-steps">
-                  <div className="api-step-row">
-                    <span className="api-step-circle">1</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Create Feed &rarr; Select &quot;Add&quot;</h4>
-                      <p className="api-step-body">
-                        In your Shopify admin, open <strong>syncX: Stock Sync</strong> &rarr; Click <strong>Create new feed</strong> &rarr; Select <strong>Add</strong>.
-                      </p>
-                    </div>
+                <div className="api-workflow-card">
+                  <div className="api-workflow-header">
+                    <span className="api-workflow-badge primary">Phase 1</span>
+                    <h3 className="api-workflow-title">Initial Product Import (Using &quot;Add&quot;)</h3>
                   </div>
+                  <p className="api-workflow-desc">
+                    When setting up a new store, use Stock Sync&apos;s <strong>&quot;Add&quot;</strong> feed once to create all sarees, color variants, high-resolution photos, and authenticity descriptions.
+                  </p>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">2</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Source: REST API / Download from URL</h4>
-                      <p className="api-step-body">
-                        Choose <strong>REST API / Download from URL</strong> as the connection method &rarr; Paste your dedicated SyncX Feed URL above &rarr; Click <strong>Next</strong>.
-                      </p>
+                  <div className="api-clean-steps">
+                    <div className="api-step-row">
+                      <span className="api-step-circle">1</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Create Feed &rarr; Select &quot;Add&quot;</h4>
+                        <p className="api-step-body">
+                          In Shopify Admin, open <strong>syncX: Stock Sync</strong> &rarr; Click <strong>Create new feed</strong> &rarr; Select <strong>Add</strong>.
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">3</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Map Product &amp; Variant Fields</h4>
-                      <p className="api-step-body">
-                        Map the feed columns into your Shopify store fields:
-                        <br />
-                        • <strong>SKU:</strong> <code>sku</code>
-                        <br />
-                        • <strong>Title:</strong> <code>title</code>
-                        <br />
-                        • <strong>Description:</strong> <code>description</code> (includes Authenticity &amp; bold Disclaimer)
-                        <br />
-                        • <strong>Price:</strong> <code>price</code> (or apply your retail markup)
-                        <br />
-                        • <strong>Quantity:</strong> <code>quantity</code>
-                        <br />
-                        • <strong>Product Images:</strong> Select <code>Product Images</code> &rarr; Map to <code>image</code> (or <code>variant_image_url</code>).
-                        <br />
-                        &nbsp;&nbsp;↳ <em>Crucial Setting:</em> Click the <strong>gear icon (⚙️)</strong> next to <strong>Product Images</strong> &rarr; In the <strong>Variant Image Mapping</strong> section, select <strong>&quot;Link image to variant when image URL is same row as variant&quot;</strong> and make sure <strong>&quot;Assign first product images to all variants&quot;</strong> is <strong>unchecked</strong>. This ensures each color swatch (Pink, Navy, Rani, etc.) receives its own matching saree photo instead of displaying only the first cover image!
-                        <br />
-                        • <strong>Variant Grouping:</strong> Under <em>Combine rows into one product</em>, map Handle to <code>handle</code> and Option 1 (Color) to <code>color</code>.
-                      </p>
+                    <div className="api-step-row">
+                      <span className="api-step-circle">2</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Connection &amp; Source</h4>
+                        <p className="api-step-body">
+                          Choose <strong>REST API / Download from URL</strong> &rarr; Paste your dedicated SyncX Feed URL from above &rarr; Click <strong>Next</strong>.
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">4</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Run Initial Import</h4>
-                      <p className="api-step-body">
-                        Click <strong>Finish</strong> and run the feed once. Stock Sync will create all products and color swatches in your Shopify catalog.
-                      </p>
+                    <div className="api-step-row">
+                      <span className="api-step-circle">3</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Map Product &amp; Variant Fields</h4>
+                        <p className="api-step-body">
+                          Match the feed fields to your Shopify store columns:
+                        </p>
+
+                        <div className="api-table-scroll">
+                          <table className="api-flat-table">
+                            <thead>
+                              <tr>
+                                <th>Shopify Target Field</th>
+                                <th>Feed Column</th>
+                                <th>Notes / Description</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><strong>SKU</strong></td>
+                                <td><code className="api-code-inline">sku</code></td>
+                                <td>Unique item code per saree variant</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Title</strong></td>
+                                <td><code className="api-code-inline">title</code></td>
+                                <td>Product name (e.g., Banarasi Katan Silk Saree)</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Description</strong></td>
+                                <td><code className="api-code-inline">description</code></td>
+                                <td>Includes authenticity guarantee, fabric specs &amp; disclaimer</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Price</strong></td>
+                                <td><code className="api-code-inline">price</code></td>
+                                <td>Wholesale rate in ₹ (or apply your retail markup)</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Quantity</strong></td>
+                                <td><code className="api-code-inline">quantity</code></td>
+                                <td>Live warehouse stock count</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Product Images</strong></td>
+                                <td><code className="api-code-inline">image</code></td>
+                                <td>High-resolution cover and color variant photos</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Variant Grouping</strong></td>
+                                <td>
+                                  Handle: <code className="api-code-inline">handle</code><br />
+                                  Option 1: <code className="api-code-inline">color</code>
+                                </td>
+                                <td>
+                                  Under <em>&quot;Combine rows into one product&quot;</em>, groups colors (Rani, Navy, Wine) under the same saree
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="api-gear-callout">
+                          <strong>⚙️ Crucial Variant Image Mapping:</strong> Next to <strong>Product Images</strong>, click the <strong>gear icon (⚙️)</strong>. Under <em>Variant Image Mapping</em>, select <strong>&quot;Link image to variant when image URL is same row as variant&quot;</strong> and make sure <strong>&quot;Assign first product images to all variants&quot;</strong> is <strong>unchecked</strong>. This guarantees that clicking each color swatch in your storefront displays its matching saree photo instead of the first cover image.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">4</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Run Initial Import</h4>
+                        <p className="api-step-body">
+                          Click <strong>Finish</strong> and run the feed once. Stock Sync will populate your Shopify catalog with all products, colors, and inventory.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Phase 2: Ongoing Stock Sync with "Update" */}
-                <h3 className="api-sub-title" style={{ marginTop: '2.5rem', marginBottom: '0.5rem' }}>
-                  Step 2: Ongoing Stock &amp; Badge Sync (Using &quot;Update&quot;)
-                </h3>
-                <p className="api-text">
-                  Once products exist in your store, create a second feed using <strong>&quot;Update&quot;</strong> mode. This continuously refreshes inventory counts and manages stock badges (<em>&quot;In Stock&quot;</em> / <em>&quot;Sold Out&quot;</em>) without risk of creating duplicate products.
-                </p>
-
-                <div className="api-clean-steps">
-                  <div className="api-step-row">
-                    <span className="api-step-circle">1</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Create Feed &rarr; Select &quot;Update&quot; (Most Popular)</h4>
-                      <p className="api-step-body">
-                        In Stock Sync, click <strong>Create new feed</strong> &rarr; Select <strong>Update</strong>.
-                      </p>
-                      <p className="api-step-subnote">
-                        <strong>Why Update?</strong> Since products already exist in your store, &quot;Update&quot; matches items by SKU and updates only the live stock availability without creating duplicate listings or disturbing custom collections.
-                      </p>
-                    </div>
+                <div className="api-workflow-card">
+                  <div className="api-workflow-header">
+                    <span className="api-workflow-badge accent">Phase 2</span>
+                    <h3 className="api-workflow-title">Ongoing Stock &amp; Badge Sync (Using &quot;Update&quot;)</h3>
                   </div>
+                  <p className="api-workflow-desc">
+                    Once products are created in your store, set up an <strong>&quot;Update&quot;</strong> feed to refresh live inventory hourly and automatically manage &quot;In Stock&quot; / &quot;Sold Out&quot; badges without creating duplicates.
+                  </p>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">2</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Source: REST API / Download from URL</h4>
-                      <p className="api-step-body">
-                        Choose <strong>REST API / Download from URL</strong> as the connection method &rarr; Paste your SyncX Feed URL &rarr; Click <strong>Next</strong>.
-                      </p>
+                  <div className="api-clean-steps">
+                    <div className="api-step-row">
+                      <span className="api-step-circle">1</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Create Feed &rarr; Select &quot;Update&quot;</h4>
+                        <p className="api-step-body">
+                          In Stock Sync, click <strong>Create new feed</strong> &rarr; Select <strong>Update</strong>. This matches products by SKU and syncs availability without disturbing custom collections or SEO URLs.
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">3</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Store Product Filters (Keep Defaults)</h4>
-                      <p className="api-step-body">
-                        On the <em>Store product filter</em> screen:
-                        <br />
-                        • Leave <strong>Store field name: Published</strong> as <code>Equal to: Any</code>.
-                        <br />
-                        • Leave all 3 toggle switches turned <strong>OFF</strong> (ensures Stock Sync can update items both when they sell out to 0 and when restocked).
-                        <br />
-                        • Click <strong>Next</strong>.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="api-step-row">
-                    <span className="api-step-circle">4</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Map Matching &amp; Inventory Columns</h4>
-                      <p className="api-step-body">
-                        In <strong>Matching column</strong>, map:
-                        <br />
-                        • <strong>SKU (Matching Field):</strong> <code>sku</code>
-                        <br />
-                        • <strong>Quantity (Inventory):</strong> <code>quantity</code>
-                        <br />
-                        • <strong>Price (Optional):</strong> <code>price</code> (optional retail price updates)
-                        <br />
-                        • <strong>Product Images (Optional to fix variant photos):</strong> Select <code>Product Images</code> &rarr; Map to <code>image</code> &rarr; Click <strong>gear icon (⚙️)</strong> &rarr; Select <em>&quot;Link image to variant when image URL is same row as variant&quot;</em>.
-                        <br />
-                        • Click <strong>Next</strong>.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="api-step-row">
-                    <span className="api-step-circle">5</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Advanced Settings (Crucial for Stock Badges)</h4>
-                      <p className="api-step-body">
-                        On the <em>Step 4: Advanced settings</em> screen:
-                        <br />
-                        • <strong>Auto publish:</strong> Select <strong><code>Publish</code></strong> &mdash; Automatically makes items active and purchasable when stock is available (&gt; 0).
-                        <br />
-                        • <strong>Auto unpublish / archive:</strong> Select <strong><code>No action</code></strong> &mdash; Keeps the product page active so your Shopify theme displays the <strong>&quot;Sold Out&quot;</strong> badge while preserving SEO.
-                        <br />
-                        • <strong>Out of stock strategy:</strong> Keep <strong><code>OFF</code></strong>.
-                        <br />
-                        • Click the dark <strong>Finish &rarr;</strong> button at the top right.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="api-step-row">
-                    <span className="api-step-circle">6</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Set Automated Schedule &amp; Price Markup</h4>
-                      <p className="api-step-body">
-                        Under <strong>Schedule</strong>, select your update frequency (e.g. <em>Every 1 hour</em> or <em>Daily at 08:00 AM</em>).
-                        <br />
-                        To add a standard +30% retail margin on wholesale prices, click <strong>Edit / Smart Settings</strong> on the Price field and paste:
-                      </p>
-                      <div className="api-code-block">
-                        <div className="api-code-topbar">
-                          <span className="api-code-label">Liquid Price Markup (+30%)</span>
-                          <button
-                            type="button"
-                            className="api-code-copy-btn"
-                            onClick={() => copyToClipboard(`{{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}`, 'syncx-markup')}
-                          >
-                            {copiedKey === 'syncx-markup' ? <Check size={12} /> : <Copy size={12} />}
-                            <span>{copiedKey === 'syncx-markup' ? 'Copied' : 'Copy'}</span>
-                          </button>
+                    <div className="api-step-row">
+                      <span className="api-step-circle">2</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Connection &amp; Store Product Filters</h4>
+                        <p className="api-step-body">
+                          Select <strong>REST API / Download from URL</strong> and paste your SyncX Feed URL. On the <em>Store product filter</em> screen:
+                        </p>
+                        <div className="api-note-text" style={{ margin: '0.75rem 0' }}>
+                          • Leave <strong>Store field name: Published</strong> as <code>Equal to: Any</code>.<br />
+                          • Keep all 3 toggle switches turned <strong>OFF</strong> (ensures items update both when selling out to 0 and when restocked).
                         </div>
-                        <pre className="api-code-content">{`{{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}`}</pre>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">3</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Map Matching &amp; Inventory Columns</h4>
+                        <p className="api-step-body">
+                          Configure matching and sync fields:
+                        </p>
+
+                        <div className="api-table-scroll">
+                          <table className="api-flat-table">
+                            <thead>
+                              <tr>
+                                <th>Shopify Target Field</th>
+                                <th>Feed Column</th>
+                                <th>Purpose</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><strong>SKU (Matching Field)</strong></td>
+                                <td><code className="api-code-inline">sku</code></td>
+                                <td>Primary key used to locate existing products in your store</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Quantity (Inventory)</strong></td>
+                                <td><code className="api-code-inline">quantity</code></td>
+                                <td>Updates real-time available stock count</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Price (Optional)</strong></td>
+                                <td><code className="api-code-inline">price</code></td>
+                                <td>Updates prices when wholesale catalogue rates change</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Product Images (Optional)</strong></td>
+                                <td><code className="api-code-inline">image</code></td>
+                                <td>Optional: Syncs variant photos if catalog imagery is refreshed</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">4</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Advanced Settings (Crucial for Stock Badges)</h4>
+                        <p className="api-step-body">
+                          On <strong>Step 4: Advanced settings</strong>, configure these rules to control how Shopify badges and pages behave:
+                        </p>
+
+                        <div className="api-table-scroll">
+                          <table className="api-flat-table">
+                            <thead>
+                              <tr>
+                                <th>Setting Option</th>
+                                <th>Value to Select</th>
+                                <th>Behavior &amp; Purpose</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><strong>Auto publish</strong></td>
+                                <td><code className="api-code-inline">Publish</code></td>
+                                <td>Automatically makes items active &amp; purchasable when stock is available (&gt; 0)</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Auto unpublish / archive</strong></td>
+                                <td><code className="api-code-inline">No action</code></td>
+                                <td>Keeps product page live so your theme shows the <strong>&quot;Sold Out&quot;</strong> badge while preserving SEO ranking</td>
+                              </tr>
+                              <tr>
+                                <td><strong>Out of stock strategy</strong></td>
+                                <td><code className="api-code-inline">OFF</code></td>
+                                <td>Prevents deleting or unpublishing listings when inventory hits 0</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <p className="api-step-body">
+                          Click the dark <strong>Finish &rarr;</strong> button at the top right to save the feed.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">5</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Set Automated Schedule &amp; Price Markup</h4>
+                        <p className="api-step-body">
+                          Under <strong>Schedule</strong>, select your desired sync frequency (e.g. <em>Every 1 hour</em> or <em>Daily at 08:00 AM</em>).
+                          <br />
+                          To automatically apply a standard <strong>+30% retail margin</strong> over wholesale prices, click <strong>Edit / Smart Settings</strong> on the Price field and paste:
+                        </p>
+                        <div className="api-code-block">
+                          <div className="api-code-topbar">
+                            <span className="api-code-label">Liquid Price Markup (+30%)</span>
+                            <button
+                              type="button"
+                              className="api-code-copy-btn"
+                              onClick={() => copyToClipboard(`{{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}`, 'syncx-markup')}
+                            >
+                              {copiedKey === 'syncx-markup' ? <Check size={12} /> : <Copy size={12} />}
+                              <span>{copiedKey === 'syncx-markup' ? 'Copied' : 'Copy'}</span>
+                            </button>
+                          </div>
+                          <pre className="api-code-content">{`{{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}`}</pre>
+                        </div>
                       </div>
                     </div>
                   </div>

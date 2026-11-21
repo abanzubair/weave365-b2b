@@ -979,3 +979,74 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   Clean Workflow Cards for Shopify Stock Sync
+   ========================================================================== */
+.api-workflow-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.api-workflow-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.api-workflow-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.api-workflow-badge.primary {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.api-workflow-badge.accent {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.api-workflow-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.api-workflow-desc {
+  font-size: 0.9375rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0 0 1.25rem 0;
+}
+
+.api-gear-callout {
+  margin-top: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #92400e;
+  line-height: 1.55;
+}
+
+.api-gear-callout strong {
+  color: #78350f;
+}
