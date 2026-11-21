@@ -253,6 +253,26 @@ export async function verifyHmac(requestOrParams, searchParamsOrSecret, secretMa
 }
 
 /**
+ * Retrieve Shopify App configuration from Supabase sheet_data
+ */
+export async function getShopifyAppConfig(supabase) {
+  if (!supabase) return null;
+  try {
+    const { data: row } = await supabase
+      .from('sheet_data')
+      .select('csv_data')
+      .eq('id', 'shopify_app_config')
+      .maybeSingle();
+
+    if (!row?.csv_data) return null;
+    return typeof row.csv_data === 'string' ? JSON.parse(row.csv_data) : row.csv_data;
+  } catch (e) {
+    console.warn('Failed to load shopify_app_config from Supabase:', e);
+    return null;
+  }
+}
+
+/**
  * Retrieve all connected stores from Supabase sheet_data
  */
 export async function getConnectedStores(supabase) {
@@ -451,7 +471,9 @@ export async function handleShopifyAuth(request, searchParams) {
     );
   }
 
-  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
+  const supabase = getSupabase();
+  const appConfig = await getShopifyAppConfig(supabase);
+  const clientId = appConfig?.client_id || process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
   const redirectUri = `${siteUrl.replace(/\/$/, '')}/api/shopify/callback`;
 
@@ -509,7 +531,11 @@ export async function handleShopifyCallback(request, searchParams) {
     return Response.redirect(errorUrl, 302);
   }
 
+  const supabase = getSupabase();
+  const appConfig = await getShopifyAppConfig(supabase);
+
   const candidateSecrets = [
+    appConfig?.client_secret,
     process.env.SHOPIFY_CLIENT_SECRET,
     process.env.SHOPIFY_SECRET,
   ].filter(Boolean);
@@ -530,8 +556,8 @@ export async function handleShopifyCallback(request, searchParams) {
     }
   }
 
-  const clientSecret = verifiedSecret || candidateSecrets[0] || '';
-  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
+  const clientSecret = verifiedSecret || appConfig?.client_secret || candidateSecrets[0] || '';
+  const clientId = appConfig?.client_id || process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
 
   // Exchange authorization code for permanent access token
   let accessToken = null;
@@ -572,7 +598,6 @@ export async function handleShopifyCallback(request, searchParams) {
   const locationId = await getShopifyPrimaryLocation(shop, accessToken);
 
   // Save integration to Supabase sheet_data
-  const supabase = getSupabase();
   if (supabase) {
     await saveConnectedStore(supabase, shop, {
       shop,

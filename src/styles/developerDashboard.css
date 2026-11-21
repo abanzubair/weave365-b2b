@@ -6577,6 +6577,87 @@
   margin-top: 0.5rem;
 }
 
+.shopify-steps-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.shopify-step-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shopify-step-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.shopify-step-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 2px;
+}
+
+.shopify-step-desc {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.shopify-step-desc code {
+  background: #e2e8f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.875rem;
+}
+
+.shopify-whitelist-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.shopify-whitelist-note svg {
+  flex-shrink: 0;
+  color: #0f172a;
+}
+
+.shopify-wa-link {
+  color: #0f172a;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.shopify-wa-link:hover {
+  color: #047857;
+}
+
 .shopify-input-label {
   display: block;
   font-size: 0.875rem;

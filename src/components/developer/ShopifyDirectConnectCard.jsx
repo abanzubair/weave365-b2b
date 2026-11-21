@@ -274,7 +274,7 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
             <ShoppingBag size={20} />
           </div>
           <div>
-            <h3 className="shopify-card-title">1-Click Direct Shopify Integration</h3>
+            <h3 className="shopify-card-title">Direct Shopify Integration</h3>
             <p className="shopify-card-desc">
               Zero third-party apps. Real-time automatic inventory sync directly from Weave365 for ₹0/mo.
             </p>
@@ -438,6 +438,25 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
       ) : (
         /* STATE 2: Store NOT Connected */
         <form onSubmit={handleConnect} className="shopify-connect-form">
+          {/* Quick Setup Guide: Simple, clean & minimal */}
+          <div className="shopify-steps-strip">
+            <div className="shopify-step-card">
+              <span className="shopify-step-badge">Step 1</span>
+              <strong className="shopify-step-title">Enter Store Domain</strong>
+              <p className="shopify-step-desc">Type your <code>.myshopify.com</code> store URL below.</p>
+            </div>
+            <div className="shopify-step-card">
+              <span className="shopify-step-badge">Step 2</span>
+              <strong className="shopify-step-title">Admin Whitelist</strong>
+              <p className="shopify-step-desc">We authorize your store in our private custom app.</p>
+            </div>
+            <div className="shopify-step-card">
+              <span className="shopify-step-badge">Step 3</span>
+              <strong className="shopify-step-title">Connect &amp; Sync</strong>
+              <p className="shopify-step-desc">Click Connect to install &amp; start live inventory sync.</p>
+            </div>
+          </div>
+
           <label className="shopify-input-label">Enter your Shopify Store Domain:</label>
           <div className="shopify-input-group">
             <input
@@ -451,6 +470,23 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
               <span>Connect Shopify Store</span>
               <ArrowRight size={14} />
             </button>
+          </div>
+
+          <div className="shopify-whitelist-note">
+            <ShieldCheck size={16} />
+            <span>
+              <strong>Private Partner App (₹0 Fees):</strong> Because this direct integration bypasses third-party fees, stores must be whitelisted once before installing. Need quick approval?{' '}
+              <a
+                href={`https://wa.me/919919101369?text=${encodeURIComponent(
+                  `Hi Weave365, please whitelist my Shopify store for direct sync: ${shopDomain || 'my-store.myshopify.com'}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shopify-wa-link"
+              >
+                Send store URL on WhatsApp &rarr;
+              </a>
+            </span>
           </div>
 
           <div className="shopify-benefits-grid">
