@@ -1118,6 +1118,253 @@ export function formatForStockSync(products, cacheKey = null) {
   return items;
 }
 
+function escapeCsvCell(value) {
+  if (value === null || value === undefined) return '';
+  const str = String(value);
+  if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+const SHOPIFY_CSV_HEADERS = [
+  'Handle',
+  'Title',
+  'Body (HTML)',
+  'Vendor',
+  'Standardized Product Type',
+  'Custom Product Type',
+  'Tags',
+  'Published',
+  'Option1 Name',
+  'Option1 Value',
+  'Option2 Name',
+  'Option2 Value',
+  'Option3 Name',
+  'Option3 Value',
+  'Variant SKU',
+  'Variant Grams',
+  'Variant Inventory Tracker',
+  'Variant Inventory Qty',
+  'Variant Inventory Policy',
+  'Variant Fulfillment Service',
+  'Variant Price',
+  'Variant Compare At Price',
+  'Variant Requires Shipping',
+  'Variant Taxable',
+  'Variant Barcode',
+  'Image Src',
+  'Image Position',
+  'Image Alt Text',
+  'Gift Card',
+  'SEO Title',
+  'SEO Description',
+  'Google Shopping / Google Product Category',
+  'Google Shopping / Gender',
+  'Google Shopping / Age Group',
+  'Google Shopping / MPN',
+  'Google Shopping / Condition',
+  'Google Shopping / Custom Product',
+  'Google Shopping / Custom Label 0',
+  'Google Shopping / Custom Label 1',
+  'Google Shopping / Custom Label 2',
+  'Google Shopping / Custom Label 3',
+  'Google Shopping / Custom Label 4',
+  'Variant Image',
+  'Variant Weight Unit',
+  'Variant Tax Code',
+  'Cost per item',
+  'Status',
+];
+
+/**
+ * Transform standard products into Matrixify / Shopify standard CSV feed.
+ * Fully compliant with Matrixify import engine and Shopify native bulk product importer.
+ * Produces handle-grouped rows for color variants and all gallery images.
+ */
+function formatForMatrixifyCsv(products, effectiveKey = null) {
+  if (effectiveKey) {
+    const cached = syncFeedCache.get(effectiveKey);
+    if (cached && (Date.now() - cached.timestamp < SYNC_FEED_CACHE_TTL_MS)) {
+      return cached.data;
+    }
+  }
+
+  const rows = [];
+  rows.push(SHOPIFY_CSV_HEADERS.map(escapeCsvCell).join(','));
+
+  for (const p of products) {
+    const baseSlug = (p.title || p.name || 'product')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const idSlug = String(p.id || p.groupKey || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const handle = idSlug && !baseSlug.endsWith(idSlug) ? `${baseSlug}-${idSlug}` : baseSlug;
+
+    const firstPrices = p.variants?.[0]?.prices || {};
+    const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
+    const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
+    const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
+    const productQty = getProductQuantity(p, isOutOfStock);
+    const weightInfo = getAdjustedWeight(p);
+    const descHtml = buildProductDescriptionHtml(p, weightInfo);
+
+    const tagsStr = [
+      p.fabric,
+      p.weave,
+      p.work,
+      p.pattern,
+      p.purity,
+      p.type,
+      p.style,
+      p.occasion,
+      p.category,
+      p.subCategory,
+      p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
+    ].filter(Boolean).join(', ');
+
+    const rawImages = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
+    const cleanImageList = rawImages.map(s => String(s || '').trim()).filter(s => s.startsWith('http'));
+    const primaryImage = cleanImageList[0] || (typeof p.image === 'string' ? p.image.trim() : '');
+    if (primaryImage && !cleanImageList.includes(primaryImage)) cleanImageList.unshift(primaryImage);
+
+    const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
+    const variantList = hasExplicitVariants
+      ? p.variants.map((v, idx) => {
+          const vPrices = v.prices || {};
+          const vPrice = (vPrices.b2r !== undefined && vPrices.b2r !== null && vPrices.b2r !== '') ? Number(vPrices.b2r) : resellerPrice;
+          const vMrp = (vPrices.single !== undefined && vPrices.single !== null && vPrices.single !== '') ? Number(vPrices.single) : suggestedMrp;
+          const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
+          const vStock = getVariantQuantity(v, p, isOutOfStock);
+          return {
+            sku: vSku,
+            color: v.color || `Option ${idx + 1}`,
+            price: vPrice,
+            compare_at_price: vMrp,
+            stock: vStock,
+            image: (v.image || '').trim(),
+          };
+        })
+      : (Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : ['Default']).map((c, idx) => {
+          const vSku = `${p.id || p.groupKey}-${c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `C${idx + 1}`}-${idx + 1}`;
+          return {
+            sku: vSku,
+            color: c,
+            price: resellerPrice,
+            compare_at_price: suggestedMrp,
+            stock: productQty,
+            image: primaryImage,
+          };
+        });
+
+    const totalRowsForProduct = Math.max(variantList.length, cleanImageList.length, 1);
+
+    for (let i = 0; i < totalRowsForProduct; i++) {
+      const isFirst = (i === 0);
+      const variant = variantList[i] || null;
+      const imgSrc = cleanImageList[i] || '';
+      const imgPos = imgSrc ? i + 1 : '';
+      const imgAlt = imgSrc ? `${p.title || p.name} - View ${i + 1}` : '';
+
+      // Product-level attributes (populated only on the primary row)
+      const titleVal = isFirst ? (p.title || p.name) : '';
+      const bodyVal = isFirst ? descHtml : '';
+      const vendorVal = isFirst ? 'Weave365 Wholesale' : '';
+      const stdTypeVal = isFirst ? (p.category || 'Sarees') : '';
+      const custTypeVal = isFirst ? (p.subCategory || '') : '';
+      const tagsVal = isFirst ? tagsStr : '';
+      const pubVal = isFirst ? (!isOutOfStock ? 'TRUE' : 'FALSE') : '';
+      const opt1Name = isFirst ? (variantList.length > 0 ? 'Color' : 'Title') : '';
+      const statusVal = isFirst ? (isOutOfStock ? 'draft' : 'active') : '';
+      const giftCardVal = isFirst ? 'FALSE' : '';
+      const seoTitleVal = isFirst ? (p.title || p.name) : '';
+      const seoDescVal = isFirst ? (p.description || p.fullDescription || p.summary || p.title || '') : '';
+
+      // Variant-level attributes
+      const opt1Val = variant ? (variant.color || 'Default') : '';
+      const skuVal = variant ? variant.sku : '';
+      const gramsVal = variant ? weightInfo.grams : '';
+      const invTrackerVal = variant ? 'shopify' : '';
+      const invQtyVal = variant ? variant.stock : '';
+      const invPolicyVal = variant ? 'deny' : '';
+      const fulfillVal = variant ? 'manual' : '';
+      const priceVal = variant ? variant.price : '';
+      const comparePriceVal = variant ? variant.compare_at_price : '';
+      const reqShipVal = variant ? 'TRUE' : '';
+      const taxableVal = variant ? 'TRUE' : '';
+      const barcodeVal = variant ? variant.sku : '';
+      const variantImgVal = variant ? (variant.image || (isFirst ? primaryImage : '')) : '';
+      const weightUnitVal = variant ? 'kg' : '';
+
+      const row = [
+        handle,
+        titleVal,
+        bodyVal,
+        vendorVal,
+        stdTypeVal,
+        custTypeVal,
+        tagsVal,
+        pubVal,
+        opt1Name,
+        opt1Val,
+        '', // Option2 Name
+        '', // Option2 Value
+        '', // Option3 Name
+        '', // Option3 Value
+        skuVal,
+        gramsVal,
+        invTrackerVal,
+        invQtyVal,
+        invPolicyVal,
+        fulfillVal,
+        priceVal,
+        comparePriceVal,
+        reqShipVal,
+        taxableVal,
+        barcodeVal,
+        imgSrc,
+        imgPos,
+        imgAlt,
+        giftCardVal,
+        seoTitleVal,
+        seoDescVal,
+        '', // Google Shopping Category
+        '', // Gender
+        '', // Age Group
+        '', // MPN
+        '', // Condition
+        '', // Custom Product
+        '', // Custom Label 0
+        '', // Custom Label 1
+        '', // Custom Label 2
+        '', // Custom Label 3
+        '', // Custom Label 4
+        variantImgVal,
+        weightUnitVal,
+        '', // Variant Tax Code
+        '', // Cost per item
+        statusVal,
+      ];
+
+      rows.push(row.map(escapeCsvCell).join(','));
+    }
+  }
+
+  const csvResult = rows.join('\r\n');
+
+  if (effectiveKey) {
+    setBoundedCache(syncFeedCache, effectiveKey, {
+      data: csvResult,
+      timestamp: Date.now(),
+    });
+  }
+
+  return csvResult;
+}
+
 /**
  * Ultra-fast stock status route handler (<0.5ms CPU).
  * Directly reads decoupled stock_map from memory cache or sheet_data (id: 'stock_map'),
@@ -1230,9 +1477,10 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     return Response.json({ status: 'error', code: 'DATABASE_ERROR', message: 'Database unconfigured' }, { status: 500, headers: defaultCorsHeaders });
   }
 
-  const rawEndpoint = pathSegments[1] || ''; // e.g. 'catalog', 'catalog.json', 'stock-status', 'products', 'me'
-  const endpoint = rawEndpoint.replace(/\.json$/i, '');
+  const rawEndpoint = pathSegments[1] || ''; // e.g. 'catalog', 'catalog.json', 'catalog.csv', 'stock-status', 'products', 'me'
+  const endpoint = rawEndpoint.replace(/\.(json|csv)$/i, '');
   const isJsonExtension = rawEndpoint.toLowerCase().endsWith('.json');
+  const isCsvExtension = rawEndpoint.toLowerCase().endsWith('.csv');
   const { searchParams } = new URL(request.url);
 
   // 0. Automated Cron Endpoint for Subscription Renewal Reminders (7-day and 3-day notices)
@@ -1277,12 +1525,23 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     };
 
-    // Feed format detection: explicit query param or automated Stock Sync / syncX crawler detection
+    const csvHeaders = {
+      ...securePrivateHeaders,
+      ...cors,
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="weave365-catalog.csv"',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    };
+
+    // Feed format detection: explicit query param or automated Stock Sync / Matrixify crawler detection
     const userAgent = request.headers.get('user-agent') || '';
     const isStockSyncAgent = /stock[-_]?sync|syncx/i.test(userAgent);
-    const format = (searchParams.get('format') || (isStockSyncAgent ? 'stocksync' : '')).toLowerCase();
+    const isMatrixifyAgent = /matrixify|excelify/i.test(userAgent);
+    const requestedFormat = (searchParams.get('format') || '').toLowerCase();
+    const format = requestedFormat || (isStockSyncAgent ? 'stocksync' : (isMatrixifyAgent || isCsvExtension ? 'matrixify' : ''));
+    const isCsvRequested = isCsvExtension || format === 'matrixify' || format === 'csv' || format === 'matrixify_csv';
     const isRaw = searchParams.get('raw') === 'true' || searchParams.get('array') === 'true';
-    const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || format === 'matrixify';
+    const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || isCsvRequested;
 
     const authScope = (auth.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0))
       ? `curated:${auth.keyRecord.id || auth.keyRecord.key_hash}`
@@ -1302,6 +1561,12 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     if (syncResponseKey) {
       const cachedResponse = syncFeedResponseCache.get(syncResponseKey);
       if (cachedResponse && (Date.now() - cachedResponse.timestamp < SYNC_FEED_CACHE_TTL_MS)) {
+        if (isCsvRequested) {
+          return new Response(cachedResponse.data, {
+            status: 200,
+            headers: csvHeaders,
+          });
+        }
         return Response.json(cachedResponse.data, {
           status: 200,
           headers: feedHeaders,
@@ -1373,6 +1638,23 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     // Slice products BEFORE running CPU-heavy variant/color mappings
     const paginatedProducts = resultProducts.slice(offset, offset + limit);
 
+    // Format for Matrixify / Shopify Native CSV Import:
+    // Emits a standard RFC-4180 Shopify CSV feed for Matrixify & direct Shopify bulk imports
+    if (isCsvRequested) {
+      const feedFormatKey = `matrixify_csv:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}`;
+      const csvString = formatForMatrixifyCsv(paginatedProducts, feedFormatKey);
+      if (syncResponseKey) {
+        setBoundedCache(syncFeedResponseCache, syncResponseKey, {
+          data: csvString,
+          timestamp: Date.now(),
+        });
+      }
+      return new Response(csvString, {
+        status: 200,
+        headers: csvHeaders,
+      });
+    }
+
     // Format for Stock Sync / syncX:
     // Emits a direct JSON array of variant rows for out-of-the-box auto-mapping
     if (format === 'stocksync' || format === 'syncx') {
@@ -1402,8 +1684,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       });
     }
 
-    // Format for Shopify / Matrixify (Nested Shopify REST structure + root fallbacks)
-    if (format === 'shopify' || format === 'matrixify') {
+    // Format for Shopify REST API (Nested Shopify REST structure + root fallbacks)
+    if (format === 'shopify') {
       const feedFormatKey = `shopify:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}`;
       const shopifyFeed = formatForShopify(paginatedProducts, feedFormatKey);
       let responsePayload;

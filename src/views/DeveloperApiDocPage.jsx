@@ -159,16 +159,16 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
 
   const codeSnippets = {
     shopify: `# ============================================================================
-# Weave365 Shopify Sync Feed URL (SyncX / Stock Sync / Matrixify)
+# Weave365 Shopify Sync Feed URLs (SyncX & Matrixify)
 # ============================================================================
 
-# 1. Dedicated Source Feed URL (Flat JSON Variant Array - Auto-detected by SyncX):
-https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=stocksync
+# OPTION 1: Stock Sync (SyncX) Live Feed (Flat JSON Variant Array):
+https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=syncx
 
-# 2. Standard Nested Shopify REST Payload (Matrixify):
-https://www.weave365.com/api/v1/catalog.json?key=w365_live_YOUR_API_KEY&format=shopify
+# OPTION 2: Matrixify / Shopify Native Import Feed (Standard Shopify CSV):
+https://www.weave365.com/api/v1/catalog.csv?key=w365_live_YOUR_API_KEY&format=matrixify
 
-# 3. Optional Liquid Formula for Price Markup (+30% Profit Margin in SyncX):
+# Optional Liquid Formula for Price Markup (+30% Profit Margin in SyncX):
 {{ data | jmespath: '"price"' | times: 1.3 | round: 2 }}
 
 # NOTE: For complete column matching, color variants & image delimiter setup,
@@ -984,7 +984,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                         <td><span className="api-param-name">format</span></td>
                         <td><span className="api-param-type">string (optional)</span></td>
                         <td>
-                          Set to <code>stocksync</code> (or <code>syncx</code>) to emit flattened variant rows with out-of-the-box field auto-matching for Shopify sync apps. Set to <code>shopify</code> or <code>matrixify</code> for standard nested Shopify REST payload.
+                          Set to <code>syncx</code> (or <code>stocksync</code>) to emit flattened variant rows with out-of-the-box field auto-matching for Stock Sync. Set to <code>matrixify</code> (or use <code>/catalog.csv</code>) for standard Shopify &amp; Matrixify CSV format. Set to <code>shopify</code> for standard nested Shopify REST JSON payload.
                         </td>
                       </tr>
                     </tbody>

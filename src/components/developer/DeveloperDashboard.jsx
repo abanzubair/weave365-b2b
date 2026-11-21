@@ -3225,6 +3225,36 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                   </div>
                 </div>
 
+                <div className="dev-shopify-box" style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                    <label className="dev-shopify-label" style={{ marginBottom: 0 }}>
+                      📊 <strong>Matrixify / Shopify Native CSV Feed URL:</strong>
+                    </label>
+                    <span style={{ fontSize: '11px', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                      Standard Shopify Products CSV
+                    </span>
+                  </div>
+                  <div className="dev-feed-input-group">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=matrixify`}
+                      className="dev-feed-input"
+                    />
+                    <button
+                      type="button"
+                      className="dev-feed-copy-btn"
+                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=matrixify`, 'matrixify-url')}
+                    >
+                      {copiedField === 'matrixify-url' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedField === 'matrixify-url' ? 'Copied' : 'Copy CSV URL'}</span>
+                    </button>
+                  </div>
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>
+                    Paste into Matrixify <strong>From URL</strong> for automated imports, or open in browser to download <code>weave365-catalog.csv</code> for direct drag-and-drop into Matrixify or Shopify Admin.
+                  </div>
+                </div>
+
                 <div className="dev-shopify-box">
                   <label className="dev-shopify-label">Standard Shopify REST API Feed (Nested Variants):</label>
                   <div className="dev-feed-input-group">
