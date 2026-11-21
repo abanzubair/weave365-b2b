@@ -66,3 +66,7 @@ SEO_AEO_CHECKLIST.md
 
 # Email Campaigns & Fan-out scripts (Internal only)
 email-campaigns/
+
+# Generated local export CSVs & scripts
+*.csv
+scripts/generate_shopify_csv.js
