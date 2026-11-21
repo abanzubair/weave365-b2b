@@ -401,7 +401,7 @@ export async function handleShopifyAuth(request, searchParams) {
     );
   }
 
-  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3e1d62702b73c6c5278413e7b2fc7a99';
+  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
   const redirectUri = `${siteUrl.replace(/\/$/, '')}/api/shopify/callback`;
 
@@ -447,7 +447,7 @@ export async function handleShopifyCallback(request, searchParams) {
   }
 
   const clientSecret = process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_SECRET;
-  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3e1d62702b73c6c5278413e7b2fc7a99';
+  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
 
   // Verify HMAC signature
   if (clientSecret) {
