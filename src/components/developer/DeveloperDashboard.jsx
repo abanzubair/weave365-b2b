@@ -3251,7 +3251,7 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
                     </button>
                   </div>
                   <div style={{ marginTop: '6px', fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>
-                    Paste into Matrixify <strong>From URL</strong> for automated imports, or open in browser to download <code>weave365-catalog.csv</code> for direct drag-and-drop into Matrixify or Shopify Admin.
+                    Paste into Matrixify <strong>From URL</strong> (when prompted under <em>&quot;Select Entity&quot;</em>, select <strong>Products</strong>), or open in browser to download <code>weave365-catalog.csv</code> for direct drag-and-drop into Matrixify or Shopify Admin.
                   </div>
                 </div>
 

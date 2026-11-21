@@ -441,6 +441,18 @@ export async function authenticateApiKey(request, supabase) {
   try {
     const url = new URL(request.url);
     queryKey = url.searchParams.get('api_key') || url.searchParams.get('key') || '';
+    // Smart fallback: if user accidentally omitted 'key=' (e.g. ?w365_live_...&format=matrixify)
+    if (!queryKey) {
+      for (const [paramName, paramVal] of url.searchParams.entries()) {
+        if (paramName.startsWith('w365_')) {
+          queryKey = paramName;
+          break;
+        } else if (typeof paramVal === 'string' && paramVal.startsWith('w365_')) {
+          queryKey = paramVal;
+          break;
+        }
+      }
+    }
   } catch {}
 
   const rawKey = (
@@ -1232,33 +1244,54 @@ function formatForMatrixifyCsv(products, effectiveKey = null) {
     if (primaryImage && !cleanImageList.includes(primaryImage)) cleanImageList.unshift(primaryImage);
 
     const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
-    const variantList = hasExplicitVariants
-      ? p.variants.map((v, idx) => {
-          const vPrices = v.prices || {};
-          const vPrice = (vPrices.b2r !== undefined && vPrices.b2r !== null && vPrices.b2r !== '') ? Number(vPrices.b2r) : resellerPrice;
-          const vMrp = (vPrices.single !== undefined && vPrices.single !== null && vPrices.single !== '') ? Number(vPrices.single) : suggestedMrp;
-          const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
-          const vStock = getVariantQuantity(v, p, isOutOfStock);
-          return {
-            sku: vSku,
-            color: v.color || `Option ${idx + 1}`,
-            price: vPrice,
-            compare_at_price: vMrp,
-            stock: vStock,
-            image: (v.image || '').trim(),
-          };
-        })
-      : (Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : ['Default']).map((c, idx) => {
-          const vSku = `${p.id || p.groupKey}-${c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `C${idx + 1}`}-${idx + 1}`;
-          return {
-            sku: vSku,
-            color: c,
-            price: resellerPrice,
-            compare_at_price: suggestedMrp,
-            stock: productQty,
-            image: primaryImage,
-          };
-        });
+    
+    // Deduplicate variants strictly by unique color name to prevent Shopify variant collision errors
+    const seenColors = new Set();
+    const uniqueVariantsRaw = [];
+    if (hasExplicitVariants) {
+      for (let idx = 0; idx < p.variants.length; idx++) {
+        const v = p.variants[idx];
+        const rawColor = String(v.color || `Option ${idx + 1}`).trim();
+        const colorKey = rawColor.toLowerCase();
+        if (seenColors.has(colorKey)) {
+          if (v.image && !cleanImageList.includes(v.image.trim())) {
+            cleanImageList.push(v.image.trim());
+          }
+          continue;
+        }
+        seenColors.add(colorKey);
+        uniqueVariantsRaw.push({ ...v, color: rawColor, _index: idx });
+      }
+    } else {
+      const colorArr = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : ['Default'];
+      for (let idx = 0; idx < colorArr.length; idx++) {
+        const c = String(colorArr[idx] || `Option ${idx + 1}`).trim();
+        const colorKey = c.toLowerCase();
+        if (seenColors.has(colorKey)) continue;
+        seenColors.add(colorKey);
+        uniqueVariantsRaw.push({ color: c, _index: idx });
+      }
+    }
+
+    const variantList = uniqueVariantsRaw.map((v, idx) => {
+      const vPrices = v.prices || {};
+      const vPrice = (vPrices.b2r !== undefined && vPrices.b2r !== null && vPrices.b2r !== '') ? Number(vPrices.b2r) : resellerPrice;
+      const vMrp = (vPrices.single !== undefined && vPrices.single !== null && vPrices.single !== '') ? Number(vPrices.single) : suggestedMrp;
+      const vSku = v.code || `${p.id || p.groupKey}-${(v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`}-${idx + 1}`;
+      const vStock = getVariantQuantity(v, p, isOutOfStock);
+      const vImg = (v.image || '').trim();
+      if (vImg && !cleanImageList.includes(vImg)) {
+        cleanImageList.push(vImg);
+      }
+      return {
+        sku: vSku,
+        color: v.color,
+        price: vPrice,
+        compare_at_price: vMrp,
+        stock: vStock,
+        image: vImg,
+      };
+    });
 
     const totalRowsForProduct = Math.max(variantList.length, cleanImageList.length, 1);
 
