@@ -456,7 +456,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <div className="api-step-row">
                     <span className="api-step-circle">3</span>
                     <div className="api-step-content">
-                      <h4 className="api-step-heading">Map Product &amp; Variant Fields</h4>
+                      <h4 className="api-step-heading">Map Product, Variant &amp; Image Fields</h4>
                       <p className="api-step-body">
                         Map the feed columns into your Shopify store fields:
                         <br />
@@ -470,7 +470,9 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         <br />
                         • <strong>Quantity:</strong> <code>quantity</code>
                         <br />
-                        • <strong>Images:</strong> <code>images</code> (set delimiter to comma <code>,</code> in Smart Settings)
+                        • <strong>Variant Image URL (Crucial for Color Swatches):</strong> <code>variant_image_url</code> (or <code>variant_image</code>) &mdash; This links each specific color photo (e.g. Pink, Navy, Rani, Black) to its own variant so that color swatches show the exact saree photo rather than just the first cover image.
+                        <br />
+                        • <strong>Product Gallery Images:</strong> <code>product_images</code> (set delimiter to comma <code>,</code> in Smart Settings)
                         <br />
                         • <strong>Variant Grouping:</strong> Under <em>Combine rows into one product</em>, map Handle to <code>handle</code> and Option 1 (Color) to <code>color</code>.
                       </p>
@@ -539,7 +541,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <div className="api-step-row">
                     <span className="api-step-circle">4</span>
                     <div className="api-step-content">
-                      <h4 className="api-step-heading">Map Matching &amp; Inventory Columns</h4>
+                      <h4 className="api-step-heading">Map Matching, Inventory &amp; Variant Fields</h4>
                       <p className="api-step-body">
                         In <strong>Matching column</strong>, map:
                         <br />
@@ -548,6 +550,8 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         • <strong>Quantity (Inventory):</strong> <code>quantity</code>
                         <br />
                         • <strong>Price (Optional):</strong> <code>price</code> (optional retail price updates)
+                        <br />
+                        • <strong>Variant Image URL (Optional):</strong> <code>variant_image_url</code> (attaches or refreshes specific color images per variant)
                         <br />
                         • Click <strong>Next</strong>.
                       </p>
