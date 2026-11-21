@@ -447,10 +447,19 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <div className="api-step-row">
                     <span className="api-step-circle">4</span>
                     <div className="api-step-content">
-                      <h4 className="api-step-heading">Live Automatic Synchronization Active</h4>
+                      <h4 className="api-step-heading">Publish Products &amp; Live Automatic Synchronization</h4>
                       <p className="api-step-body">
-                        Your store will display <strong>🟢 Connected &amp; Live</strong>. Weave365 automatically syncs inventory numbers every hour, and you can click <strong>&quot;Sync Stock Now&quot;</strong> anytime for an instant 1-second refresh.
+                        Your store will display <strong>🟢 Connected &amp; Live</strong>. You can click <strong>&quot;Publish Catalog to Shopify&quot;</strong> to push all saree designs and color swatches directly to your Shopify store in 1 click, or click <strong>&quot;Sync Stock Now&quot;</strong> for instant inventory updates.
                       </p>
+                      <div className="api-note-text" style={{ marginTop: '0.75rem' }}>
+                        <strong>Plan Rate Limits &amp; Automated Sync Cadence:</strong>
+                        <br />
+                        • <strong>Pro Scale (₹499/mo):</strong> 5 RPS, 25,000 monthly quota, 10s cooldown, hourly background sync.
+                        <br />
+                        • <strong>Growth Partner (₹299/mo):</strong> 3 RPS, 10,000 monthly quota, 60s cooldown, 4-6h background sync.
+                        <br />
+                        • <strong>Starter Tier (₹0):</strong> 1 RPS, 1,000 monthly quota, 300s cooldown, daily background sync.
+                      </div>
                     </div>
                   </div>
                 </div>

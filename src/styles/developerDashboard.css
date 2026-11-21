@@ -6672,3 +6672,44 @@
   justify-content: flex-end;
   gap: 10px;
 }
+
+.shopify-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.shopify-plan-pill.pro {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+
+.shopify-plan-pill.growth {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.shopify-plan-pill.free {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.shopify-btn.in-cooldown {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: #475569 !important;
+  border-color: #475569 !important;
+}
+
+.shopify-btn.in-cooldown:hover {
+  background: #475569 !important;
+}

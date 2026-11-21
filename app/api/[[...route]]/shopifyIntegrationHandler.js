@@ -1,11 +1,13 @@
 /**
  * @file shopifyIntegrationHandler.js
  * @description Native 1-Click Shopify Storefront Integration for Weave365.
- * Enables zero-app, zero-cost direct connection with Shopify stores:
+ * Features:
  * - 1-Click OAuth handshake (no 3rd-party apps required)
+ * - Strict Plan-Aware Rate Limiting & Quota Enforcement (Free, Growth, Pro)
  * - Real-time bulk inventory synchronization via Shopify GraphQL Admin API
- * - 1-Click product publishing with variants, descriptions, and color photos
+ * - Plan-based sync cooldowns (Pro: 10s, Growth: 60s, Free: 300s)
  * - Automated stock status tracking & out-of-stock badge management
+ * - Curated Catalog boundary enforcement
  * 
  * Complies with Cloudflare Pages Edge Runtime (uses crypto.subtle and fetch).
  * 
@@ -25,6 +27,83 @@ const DEFAULT_SCOPES = [
   'read_inventory',
   'read_locations'
 ].join(',');
+
+/**
+ * Plan configuration specifications with strict rate limits and quotas
+ */
+export const PLAN_LIMITS = {
+  pro: {
+    tier: 'pro',
+    name: 'Pro Scale',
+    price: 499,
+    rateLimitRps: 5,
+    monthlyQuota: 25000,
+    syncCooldownSec: 10, // 10s cooldown for high-velocity stores
+    burstAllowance: 15,
+  },
+  growth: {
+    tier: 'growth',
+    name: 'Growth Partner',
+    price: 299,
+    rateLimitRps: 3,
+    monthlyQuota: 10000,
+    syncCooldownSec: 60, // 60s cooldown
+    burstAllowance: 9,
+  },
+  free: {
+    tier: 'free',
+    name: 'Starter Tier',
+    price: 0,
+    rateLimitRps: 1,
+    monthlyQuota: 1000,
+    syncCooldownSec: 300, // 5 min cooldown for starter testing
+    burstAllowance: 3,
+  },
+};
+
+/**
+ * In-memory sliding window RPS rate limiter
+ */
+const rpsBuckets = new Map();
+
+/**
+ * Check RPS limit for a given key or shop identifier
+ */
+function checkRpsLimit(keyId, limitRps = 1) {
+  const now = Date.now();
+  const bucket = rpsBuckets.get(keyId);
+
+  if (!bucket || now - bucket.windowStart >= 1000) {
+    rpsBuckets.set(keyId, { windowStart: now, count: 1 });
+    return { allowed: true, remaining: limitRps - 1 };
+  }
+
+  if (bucket.count < limitRps) {
+    bucket.count += 1;
+    return { allowed: true, remaining: limitRps - bucket.count };
+  }
+
+  const retryAfterSec = Math.max(1, Math.ceil((bucket.windowStart + 1000 - now) / 1000));
+  return { allowed: false, retryAfterSec };
+}
+
+/**
+ * Check sync cooldown between manual/scheduled syncs based on plan tier
+ */
+function checkSyncCooldown(store, cooldownSec) {
+  if (!store?.last_synced_at) return { allowed: true, remainingSec: 0 };
+  const lastSyncTime = new Date(store.last_synced_at).getTime();
+  if (Number.isNaN(lastSyncTime)) return { allowed: true, remainingSec: 0 };
+
+  const elapsedSec = (Date.now() - lastSyncTime) / 1000;
+  if (elapsedSec < cooldownSec) {
+    return {
+      allowed: false,
+      remainingSec: Math.ceil(cooldownSec - elapsedSec),
+    };
+  }
+  return { allowed: true, remainingSec: 0 };
+}
 
 /**
  * Lazy-init Supabase client for store credentials persistence
@@ -51,9 +130,6 @@ const apiHeaders = {
 
 /**
  * Clean and normalize a shop domain.
- * Supports:
- * - 'eleganceofbanaras' -> 'eleganceofbanaras.myshopify.com'
- * - 'https://eleganceofbanaras.myshopify.com/' -> 'eleganceofbanaras.myshopify.com'
  */
 export function normalizeShopDomain(shop) {
   if (!shop || typeof shop !== 'string') return null;
@@ -62,7 +138,6 @@ export function normalizeShopDomain(shop) {
   if (!cleaned.includes('.')) {
     cleaned = `${cleaned}.myshopify.com`;
   }
-  // Validate shop domain format
   const shopifyRegex = /^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/;
   return shopifyRegex.test(cleaned) ? cleaned : null;
 }
@@ -71,11 +146,10 @@ export function normalizeShopDomain(shop) {
  * Verifies Shopify OAuth HMAC signature using Web Crypto API (Edge compliant)
  */
 async function verifyHmac(searchParams, secret) {
-  if (!secret) return true; // In development if secret not configured
+  if (!secret) return true;
   const hmac = searchParams.get('hmac');
   if (!hmac) return false;
 
-  // Build query string excluding 'hmac' and 'signature', sorted alphabetically
   const entries = [];
   for (const [key, value] of searchParams.entries()) {
     if (key !== 'hmac' && key !== 'signature') {
@@ -208,6 +282,67 @@ export async function getShopifyPrimaryLocation(shop, accessToken) {
   } catch (e) {
     console.warn(`Failed to fetch location for ${shop}:`, e);
     return null;
+  }
+}
+
+/**
+ * Resolve api_keys record for a connected store to inspect plan, tier, and quotas
+ */
+async function resolveKeyRecordForStore(supabase, shop, storeKeyId = null) {
+  if (!supabase) return null;
+
+  // 1. If key_id directly linked
+  if (storeKeyId) {
+    const { data: keyRecord } = await supabase
+      .from('api_keys')
+      .select('*')
+      .eq('id', storeKeyId)
+      .maybeSingle();
+    if (keyRecord) return keyRecord;
+  }
+
+  // 2. Lookup by client_website matching shop domain
+  if (shop) {
+    const { data: keyByWebsite } = await supabase
+      .from('api_keys')
+      .select('*')
+      .ilike('client_website', `%${shop}%`)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (keyByWebsite) return keyByWebsite;
+  }
+
+  return null;
+}
+
+/**
+ * Calculate month-to-date total API requests across user account
+ */
+async function getMonthTotalUsage(supabase, keyRecord) {
+  if (!supabase || !keyRecord) return 0;
+  try {
+    const nowDate = new Date();
+    const year = nowDate.getUTCFullYear();
+    const month = String(nowDate.getUTCMonth() + 1).padStart(2, '0');
+    const dateStr = `${year}-${month}-01`;
+
+    let usageQuery = supabase
+      .from('api_usage_daily')
+      .select('total_requests')
+      .gte('usage_date', dateStr);
+
+    if (keyRecord.user_id) {
+      usageQuery = usageQuery.or(`api_key_id.eq.${keyRecord.id},user_id.eq.${keyRecord.user_id}`);
+    } else {
+      usageQuery = usageQuery.eq('api_key_id', keyRecord.id);
+    }
+
+    const { data: usageData } = await usageQuery;
+    return (usageData || []).reduce((sum, r) => sum + (r.total_requests || 0), 0);
+  } catch (e) {
+    console.warn('Failed to calculate month total usage:', e);
+    return 0;
   }
 }
 
@@ -361,11 +496,12 @@ export async function handleShopifyCallback(request, searchParams) {
 
 /**
  * GET /api/shopify/status
- * Returns connection state and metadata for a shop
+ * Returns connection state, plan tier, rate limits, and quota metadata for a shop
  */
 export async function handleShopifyStatus(request, searchParams) {
   const rawShop = searchParams.get('shop') || searchParams.get('store');
   const shop = normalizeShopDomain(rawShop);
+  const keyIdParam = searchParams.get('key_id') || searchParams.get('key');
   const supabase = getSupabase();
 
   if (!supabase) {
@@ -374,81 +510,102 @@ export async function handleShopifyStatus(request, searchParams) {
 
   const stores = await getConnectedStores(supabase);
 
-  // If specific shop requested
-  if (shop) {
-    const store = stores[shop];
-    if (!store) {
-      return Response.json({ connected: false, shop }, { status: 200, headers: apiHeaders });
+  // Match store by shop domain or keyId
+  let targetStore = null;
+  if (shop && stores[shop]) {
+    targetStore = stores[shop];
+  } else if (keyIdParam) {
+    targetStore = Object.values(stores).find(s => s.key_id === keyIdParam || s.shop === shop);
+  }
+
+  if (!targetStore) {
+    let plan = PLAN_LIMITS.free;
+    let monthUsed = 0;
+    let monthlyQuota = plan.monthlyQuota;
+    let rpsLimit = plan.rateLimitRps;
+    let isExpired = false;
+
+    if (keyIdParam || shop) {
+      const keyRecord = await resolveKeyRecordForStore(supabase, shop, keyIdParam);
+      if (keyRecord) {
+        const rawTier = (keyRecord?.tier || 'free').toLowerCase();
+        plan = PLAN_LIMITS[rawTier] || PLAN_LIMITS.free;
+        monthUsed = await getMonthTotalUsage(supabase, keyRecord);
+        monthlyQuota = keyRecord?.monthly_quota || plan.monthlyQuota;
+        rpsLimit = keyRecord?.rate_limit_rps || plan.rateLimitRps;
+        isExpired = keyRecord?.subscription_status === 'expired' || (keyRecord?.subscription_expires_at && new Date(keyRecord.subscription_expires_at).getTime() < Date.now());
+      }
     }
+
     return Response.json({
-      connected: true,
-      shop: store.shop,
-      status: store.status || 'active',
-      auto_sync: Boolean(store.auto_sync),
-      location_id: store.location_id,
-      connected_at: store.connected_at,
-      last_synced_at: store.last_synced_at,
-      total_mapped_products: Object.keys(store.product_mappings || {}).length,
+      connected: false,
+      shop,
+      plan: {
+        tier: plan.tier,
+        name: plan.name,
+        rate_limit_rps: rpsLimit,
+        monthly_quota: monthlyQuota,
+        month_used: monthUsed,
+        remaining_quota: Math.max(0, monthlyQuota - monthUsed),
+        sync_cooldown_sec: plan.syncCooldownSec,
+        cooldown_remaining_sec: 0,
+        is_quota_exceeded: monthUsed >= monthlyQuota,
+        is_subscription_active: !isExpired,
+      },
     }, { status: 200, headers: apiHeaders });
   }
 
-  // Return all stores matching key_id if provided
-  const keyId = searchParams.get('key_id');
-  if (keyId) {
-    const matching = Object.values(stores).find(s => s.key_id === keyId);
-    if (matching) {
-      return Response.json({
-        connected: true,
-        shop: matching.shop,
-        status: matching.status || 'active',
-        auto_sync: Boolean(matching.auto_sync),
-        location_id: matching.location_id,
-        connected_at: matching.connected_at,
-        last_synced_at: matching.last_synced_at,
-        total_mapped_products: Object.keys(matching.product_mappings || {}).length,
-      }, { status: 200, headers: apiHeaders });
-    }
-  }
+  // Resolve plan and rate limits for this store
+  const keyRecord = await resolveKeyRecordForStore(supabase, targetStore.shop, targetStore.key_id || keyIdParam);
+  const rawTier = (keyRecord?.tier || 'free').toLowerCase();
+  const plan = PLAN_LIMITS[rawTier] || PLAN_LIMITS.free;
 
-  return Response.json({ connected: false }, { status: 200, headers: apiHeaders });
+  const monthUsed = await getMonthTotalUsage(supabase, keyRecord);
+  const monthlyQuota = keyRecord?.monthly_quota || plan.monthlyQuota;
+  const remainingQuota = Math.max(0, monthlyQuota - monthUsed);
+  const rpsLimit = keyRecord?.rate_limit_rps || plan.rateLimitRps;
+
+  // Calculate remaining cooldown if any
+  const cooldownCheck = checkSyncCooldown(targetStore, plan.syncCooldownSec);
+
+  return Response.json({
+    connected: true,
+    shop: targetStore.shop,
+    status: targetStore.status || 'active',
+    auto_sync: Boolean(targetStore.auto_sync),
+    location_id: targetStore.location_id,
+    connected_at: targetStore.connected_at,
+    last_synced_at: targetStore.last_synced_at,
+    total_mapped_products: Object.keys(targetStore.product_mappings || {}).length,
+    plan: {
+      tier: plan.tier,
+      name: plan.name,
+      rate_limit_rps: rpsLimit,
+      monthly_quota: monthlyQuota,
+      month_used: monthUsed,
+      remaining_quota: remainingQuota,
+      sync_cooldown_sec: plan.syncCooldownSec,
+      cooldown_remaining_sec: cooldownCheck.allowed ? 0 : cooldownCheck.remainingSec,
+      is_quota_exceeded: monthUsed >= monthlyQuota,
+      is_subscription_active: keyRecord?.subscription_status !== 'expired' && (!keyRecord?.subscription_expires_at || new Date(keyRecord.subscription_expires_at).getTime() > Date.now()),
+    },
+  }, { status: 200, headers: apiHeaders });
 }
 
 /**
  * POST /api/shopify/sync
  * Bulk updates inventory quantities directly in the merchant's Shopify store
- * using Shopify's high-speed GraphQL Admin API.
+ * Enforces:
+ * 1. Subscription active status
+ * 2. Monthly quota limits
+ * 3. Sliding-window RPS limits
+ * 4. Plan-based sync cooldowns (Pro: 10s, Growth: 60s, Free: 300s)
+ * 5. Curated Catalog access boundaries
  */
-export async function handleShopifySync(request) {
-  let body = {};
-  try {
-    body = await request.json();
-  } catch {
-    // Body optional if query params provided
-  }
-
-  const url = new URL(request.url);
-  const rawShop = body.shop || url.searchParams.get('shop');
-  const shop = normalizeShopDomain(rawShop);
-  const supabase = getSupabase();
-
-  if (!supabase || !shop) {
-    return Response.json(
-      { error: 'Valid shop domain and database connection required' },
-      { status: 400, headers: apiHeaders }
-    );
-  }
-
-  const stores = await getConnectedStores(supabase);
-  const store = stores[shop];
-
-  if (!store || !store.access_token) {
-    return Response.json(
-      { error: `Store ${shop} is not connected or missing access token. Please connect via OAuth first.` },
-      { status: 404, headers: apiHeaders }
-    );
-  }
-
-  // 1. Fetch live stock map from Weave365 sheet_data
+/**
+ * Helper to fetch live stock map from sheet_data or fallback
+ */
+async function getLiveStockMap(supabase) {
   let stockMap = {};
   try {
     const { data: stockRow } = await supabase
@@ -464,7 +621,6 @@ export async function handleShopifySync(request) {
     console.warn('Failed to load live stock_map:', e);
   }
 
-  // Fallback to vendor_product_stock if stockMap empty
   if (Object.keys(stockMap).length === 0) {
     try {
       const { data: vendorStocks } = await supabase.from('vendor_product_stock').select('sku, stock_status, quantity');
@@ -477,8 +633,135 @@ export async function handleShopifySync(request) {
       console.warn('Failed to load vendor_product_stock:', e);
     }
   }
+  return stockMap;
+}
 
-  // 2. Fetch or confirm primary location ID
+/**
+ * Core inventory synchronization logic for a single store
+ * Shared by manual trigger (/api/shopify/sync) and automated cron (/api/shopify/cron-sync)
+ */
+export async function executeStockSyncForStore({
+  supabase,
+  shop,
+  store,
+  keyRecord,
+  stockMap = null,
+  isCron = false,
+}) {
+  const rawTier = (keyRecord?.tier || 'free').toLowerCase();
+  const plan = PLAN_LIMITS[rawTier] || PLAN_LIMITS.free;
+  const rateLimitRps = keyRecord?.rate_limit_rps || plan.rateLimitRps;
+  const monthlyQuota = keyRecord?.monthly_quota || plan.monthlyQuota;
+  const now = Date.now();
+
+  // 1. Enforce Subscription Expiry
+  if (keyRecord) {
+    if (keyRecord.subscription_expires_at) {
+      const expiresAt = new Date(keyRecord.subscription_expires_at).getTime();
+      if (!Number.isNaN(expiresAt) && expiresAt < now) {
+        return {
+          success: false,
+          status: 403,
+          code: 'SUBSCRIPTION_EXPIRED',
+          error: `Your API subscription (${plan.name}) has expired. Please renew your plan in the developer dashboard to restore inventory sync.`,
+          plan: plan.name,
+        };
+      }
+    }
+
+    if (keyRecord.subscription_status === 'expired') {
+      return {
+        success: false,
+        status: 403,
+        code: 'SUBSCRIPTION_EXPIRED',
+        error: `Your API subscription (${plan.name}) is expired. Please renew your plan in the developer dashboard to restore inventory sync.`,
+        plan: plan.name,
+      };
+    }
+
+    if (!keyRecord.is_active) {
+      return {
+        success: false,
+        status: 403,
+        code: 'KEY_DEACTIVATED',
+        error: 'Your API key is currently deactivated. Please contact Weave365 admin.',
+      };
+    }
+  }
+
+  // 2. Enforce Monthly Quota
+  const monthTotal = await getMonthTotalUsage(supabase, keyRecord);
+  if (monthTotal >= monthlyQuota) {
+    if (keyRecord?.id) {
+      void supabase.rpc('record_api_request', {
+        p_key_id: keyRecord.id,
+        p_is_success: false,
+        p_is_rate_limited: true,
+      }).catch(() => {});
+    }
+
+    return {
+      success: false,
+      status: 429,
+      code: 'QUOTA_EXCEEDED',
+      error: `Monthly request quota reached (${monthlyQuota.toLocaleString()} requests on ${plan.name}). Upgrade your plan to increase limits.`,
+      monthly_quota: monthlyQuota,
+      month_total: monthTotal,
+      plan: plan.name,
+    };
+  }
+
+  // 3. Enforce Sliding-Window RPS & Cooldown
+  if (!isCron) {
+    const rpsKey = keyRecord?.id || shop;
+    const rpsCheck = checkRpsLimit(rpsKey, rateLimitRps);
+    if (!rpsCheck.allowed) {
+      return {
+        success: false,
+        status: 429,
+        code: 'RATE_LIMIT_EXCEEDED',
+        retryAfterSec: rpsCheck.retryAfterSec,
+        error: `Rate limit exceeded (${rateLimitRps} RPS on ${plan.name}). Please retry in ${rpsCheck.retryAfterSec}s.`,
+        plan: plan.name,
+        rate_limit_rps: rateLimitRps,
+      };
+    }
+
+    const cooldownCheck = checkSyncCooldown(store, plan.syncCooldownSec);
+    if (!cooldownCheck.allowed) {
+      return {
+        success: false,
+        status: 429,
+        code: 'SYNC_COOLDOWN_ACTIVE',
+        remainingSec: cooldownCheck.remainingSec,
+        error: `Sync cooldown active for ${plan.name}. Please wait ${cooldownCheck.remainingSec}s before triggering another stock sync.`,
+        plan: plan.name,
+        sync_cooldown_sec: plan.syncCooldownSec,
+      };
+    }
+  } else {
+    // In automated cron: Respect plan sync cadence
+    const minCronIntervalSec = rawTier === 'pro' ? 3600 : (rawTier === 'growth' ? 14400 : 86400);
+    const cooldownCheck = checkSyncCooldown(store, minCronIntervalSec);
+    if (!cooldownCheck.allowed) {
+      return {
+        success: false,
+        skipped: true,
+        reason: `Sync cadence for ${plan.name} not elapsed yet (next eligible in ${cooldownCheck.remainingSec}s)`,
+      };
+    }
+  }
+
+  // 4. Fetch live stock map if not passed
+  if (!stockMap || Object.keys(stockMap).length === 0) {
+    stockMap = await getLiveStockMap(supabase);
+  }
+
+  // 5. Enforce Curated Catalog boundary
+  const isCurated = keyRecord?.catalog_mode === 'curated' && Array.isArray(keyRecord?.selected_skus) && keyRecord.selected_skus.length > 0;
+  const authorizedSkuSet = isCurated ? new Set(keyRecord.selected_skus.map(s => String(s).trim().toLowerCase())) : null;
+
+  // 6. Primary location
   let locationId = store.location_id;
   if (!locationId) {
     locationId = await getShopifyPrimaryLocation(shop, store.access_token);
@@ -489,13 +772,14 @@ export async function handleShopifySync(request) {
   }
 
   if (!locationId) {
-    return Response.json(
-      { error: `No active location found in Shopify store ${shop}. Please configure a location in Shopify Settings.` },
-      { status: 400, headers: apiHeaders }
-    );
+    return {
+      success: false,
+      status: 400,
+      error: `No active location found in Shopify store ${shop}. Please configure a location in Shopify Settings.`,
+    };
   }
 
-  // 3. Query existing product variants and inventory item IDs from Shopify via GraphQL
+  // 7. Query variants from Shopify Admin GraphQL API
   let variants = [];
   try {
     const variantsQuery = `
@@ -540,13 +824,14 @@ export async function handleShopifySync(request) {
     }
   } catch (e) {
     console.error(`Failed to query variants from ${shop}:`, e);
-    return Response.json(
-      { error: 'Failed to query existing product variants from Shopify store' },
-      { status: 502, headers: apiHeaders }
-    );
+    return {
+      success: false,
+      status: 502,
+      error: 'Failed to query existing product variants from Shopify store',
+    };
   }
 
-  // 4. Build inventory quantities update payload
+  // 8. Build inventory quantities update payload
   const quantitiesToSet = [];
   let updatedCount = 0;
 
@@ -554,10 +839,15 @@ export async function handleShopifySync(request) {
     const rawSku = (v.sku || v.barcode || '').trim();
     if (!rawSku || !v.inventoryItem?.id) continue;
 
-    // Check if SKU exists in Weave365 stock map
-    let liveQty = stockMap[rawSku];
+    if (authorizedSkuSet) {
+      const lowerSku = rawSku.toLowerCase();
+      const lowerBase = lowerSku.replace(/-[0-9]+$/, '');
+      if (!authorizedSkuSet.has(lowerSku) && !authorizedSkuSet.has(lowerBase)) {
+        continue;
+      }
+    }
 
-    // If exact SKU not found, check base SKU (e.g. 102008 from 102008-1)
+    let liveQty = stockMap[rawSku];
     if (liveQty === undefined) {
       const baseSku = rawSku.replace(/-[0-9]+$/, '');
       if (stockMap[baseSku] !== undefined) liveQty = stockMap[baseSku];
@@ -574,7 +864,7 @@ export async function handleShopifySync(request) {
     }
   }
 
-  // 5. Execute bulk inventorySetQuantities mutation in chunks of 100
+  // 9. Execute bulk inventorySetQuantities mutation in chunks of 100
   const CHUNK_SIZE = 100;
   let successCount = 0;
   const userErrors = [];
@@ -632,17 +922,335 @@ export async function handleShopifySync(request) {
     }
   }
 
-  // 6. Update store metadata in Supabase
+  // 10. Record successful API request in Supabase usage aggregation
+  if (keyRecord?.id) {
+    void supabase.rpc('record_api_request', {
+      p_key_id: keyRecord.id,
+      p_is_success: true,
+      p_is_rate_limited: false,
+    }).catch(() => {});
+  }
+
+  // 11. Update store metadata in Supabase
   store.last_synced_at = new Date().toISOString();
   await saveConnectedStore(supabase, shop, store);
 
-  return Response.json({
+  return {
     success: true,
     shop,
+    plan: {
+      name: plan.name,
+      tier: plan.tier,
+      rate_limit_rps: rateLimitRps,
+      monthly_quota: monthlyQuota,
+      month_used: monthTotal + 1,
+      remaining_quota: Math.max(0, monthlyQuota - (monthTotal + 1)),
+      sync_cooldown_sec: plan.syncCooldownSec,
+    },
     matched_variants: updatedCount,
     quantities_updated: successCount,
     errors: userErrors,
     timestamp: store.last_synced_at,
+  };
+}
+
+/**
+ * POST /api/shopify/sync
+ * Bulk updates inventory quantities directly in the merchant's Shopify store
+ */
+export async function handleShopifySync(request) {
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {}
+
+  const url = new URL(request.url);
+  const rawShop = body.shop || url.searchParams.get('shop');
+  const shop = normalizeShopDomain(rawShop);
+  const explicitKeyId = body.key_id || url.searchParams.get('key_id') || url.searchParams.get('key');
+  const supabase = getSupabase();
+
+  if (!supabase || !shop) {
+    return Response.json(
+      { error: 'Valid shop domain and database connection required' },
+      { status: 400, headers: apiHeaders }
+    );
+  }
+
+  const stores = await getConnectedStores(supabase);
+  const store = stores[shop];
+
+  if (!store || !store.access_token) {
+    return Response.json(
+      { error: `Store ${shop} is not connected or missing access token. Please connect via OAuth first.` },
+      { status: 404, headers: apiHeaders }
+    );
+  }
+
+  const keyRecord = await resolveKeyRecordForStore(supabase, shop, store.key_id || explicitKeyId);
+  const result = await executeStockSyncForStore({
+    supabase,
+    shop,
+    store,
+    keyRecord,
+    isCron: false,
+  });
+
+  if (!result.success) {
+    const headers = { ...apiHeaders };
+    if (result.retryAfterSec) headers['Retry-After'] = String(result.retryAfterSec);
+    if (result.remainingSec) headers['Retry-After'] = String(result.remainingSec);
+    return Response.json(result, { status: result.status || 400, headers });
+  }
+
+  return Response.json(result, { status: 200, headers: apiHeaders });
+}
+
+/**
+ * GET/POST /api/shopify/cron-sync
+ * Scheduled background inventory synchronization across all connected stores
+ */
+export async function handleShopifyCronSync(request) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return Response.json({ error: 'Database unavailable' }, { status: 500, headers: apiHeaders });
+  }
+
+  const url = new URL(request.url);
+  const cronSecret = process.env.CRON_SECRET;
+  const providedSecret = url.searchParams.get('secret') || request.headers.get('x-cron-secret') || (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+
+  if (cronSecret && providedSecret !== cronSecret) {
+    return Response.json({ error: 'Unauthorized cron request' }, { status: 401, headers: apiHeaders });
+  }
+
+  const stores = await getConnectedStores(supabase);
+  const storeEntries = Object.entries(stores);
+
+  if (storeEntries.length === 0) {
+    return Response.json({ message: 'No connected stores configured for sync', processed: 0 }, { status: 200, headers: apiHeaders });
+  }
+
+  const stockMap = await getLiveStockMap(supabase);
+  const results = {
+    total_stores: storeEntries.length,
+    synced: [],
+    skipped: [],
+    failed: [],
+    timestamp: new Date().toISOString(),
+  };
+
+  for (const [shop, store] of storeEntries) {
+    if (store.auto_sync === false || !store.access_token) {
+      results.skipped.push({ shop, reason: 'auto_sync disabled or missing token' });
+      continue;
+    }
+
+    const keyRecord = await resolveKeyRecordForStore(supabase, shop, store.key_id);
+    const syncRes = await executeStockSyncForStore({
+      supabase,
+      shop,
+      store,
+      keyRecord,
+      stockMap,
+      isCron: true,
+    });
+
+    if (syncRes.success) {
+      results.synced.push({
+        shop,
+        plan: syncRes.plan?.name,
+        matched_variants: syncRes.matched_variants,
+        quantities_updated: syncRes.quantities_updated,
+      });
+    } else if (syncRes.skipped) {
+      results.skipped.push({ shop, reason: syncRes.reason });
+    } else {
+      results.failed.push({ shop, error: syncRes.error, code: syncRes.code });
+    }
+  }
+
+  return Response.json(results, { status: 200, headers: apiHeaders });
+}
+
+/**
+ * POST /api/shopify/push-catalog
+ * 1-Click product publishing directly into reseller's Shopify storefront
+ */
+export async function handleShopifyPushCatalog(request) {
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {}
+
+  const url = new URL(request.url);
+  const rawShop = body.shop || url.searchParams.get('shop');
+  const shop = normalizeShopDomain(rawShop);
+  const explicitKeyId = body.key_id || url.searchParams.get('key_id') || url.searchParams.get('key');
+  const limit = Math.min(Math.max(1, parseInt(body.limit || url.searchParams.get('limit') || '20', 10)), 101);
+  const supabase = getSupabase();
+
+  if (!supabase || !shop) {
+    return Response.json({ error: 'Valid shop domain and database connection required' }, { status: 400, headers: apiHeaders });
+  }
+
+  const stores = await getConnectedStores(supabase);
+  const store = stores[shop];
+  if (!store || !store.access_token) {
+    return Response.json({ error: `Store ${shop} is not connected. Please connect via OAuth first.` }, { status: 404, headers: apiHeaders });
+  }
+
+  const keyRecord = await resolveKeyRecordForStore(supabase, shop, store.key_id || explicitKeyId);
+  const rawTier = (keyRecord?.tier || 'free').toLowerCase();
+  const plan = PLAN_LIMITS[rawTier] || PLAN_LIMITS.free;
+
+  // Subscription expiry & quota checks
+  if (keyRecord) {
+    if (keyRecord.subscription_expires_at && new Date(keyRecord.subscription_expires_at).getTime() < Date.now()) {
+      return Response.json({ error: 'Subscription expired', code: 'SUBSCRIPTION_EXPIRED' }, { status: 403, headers: apiHeaders });
+    }
+    if (keyRecord.subscription_status === 'expired') {
+      return Response.json({ error: 'Subscription expired', code: 'SUBSCRIPTION_EXPIRED' }, { status: 403, headers: apiHeaders });
+    }
+    if (!keyRecord.is_active) {
+      return Response.json({ error: 'API key deactivated', code: 'KEY_DEACTIVATED' }, { status: 403, headers: apiHeaders });
+    }
+  }
+
+  const monthTotal = await getMonthTotalUsage(supabase, keyRecord);
+  if (monthTotal >= (keyRecord?.monthly_quota || plan.monthlyQuota)) {
+    return Response.json({ error: 'Monthly quota exceeded', code: 'QUOTA_EXCEEDED' }, { status: 429, headers: apiHeaders });
+  }
+
+  // Load products from sheet_data
+  let allProducts = [];
+  try {
+    const { data: prodRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').maybeSingle();
+    if (prodRow?.csv_data) {
+      allProducts = typeof prodRow.csv_data === 'string' ? JSON.parse(prodRow.csv_data) : prodRow.csv_data;
+    }
+  } catch (e) {
+    console.error('Failed to load products_json:', e);
+  }
+
+  if (!Array.isArray(allProducts) || allProducts.length === 0) {
+    return Response.json({ error: 'Catalog products currently unavailable' }, { status: 500, headers: apiHeaders });
+  }
+
+  // Filter curated
+  const isCurated = keyRecord?.catalog_mode === 'curated' && Array.isArray(keyRecord?.selected_skus) && keyRecord.selected_skus.length > 0;
+  const authorizedSkuSet = isCurated ? new Set(keyRecord.selected_skus.map(s => String(s).trim().toLowerCase())) : null;
+
+  let filteredProducts = allProducts;
+  if (authorizedSkuSet) {
+    filteredProducts = allProducts.filter(p => {
+      const matchGroup = authorizedSkuSet.has(String(p.id || p.designCode || '').toLowerCase());
+      const matchVariant = (p.variants || []).some(v => authorizedSkuSet.has(String(v.code || '').toLowerCase()));
+      return matchGroup || matchVariant;
+    });
+  }
+
+  // Slice by requested limit
+  const targetProducts = filteredProducts.slice(0, limit);
+  const createdProducts = [];
+  const errors = [];
+
+  for (const prod of targetProducts) {
+    try {
+      const media = (prod.images || []).slice(0, 6).map(imgUrl => ({
+        mediaContentType: 'IMAGE',
+        originalSource: imgUrl,
+      }));
+
+      const descHtml = `
+        <p><strong>Fabric:</strong> ${prod.fabric || 'Pure Banarasi Silk'}</p>
+        <p><strong>Work / Weave:</strong> ${prod.work || prod.weave || 'Zari Woven'}</p>
+        <p><strong>Occasion:</strong> ${prod.occasion || 'Bridal, Festive, Party'}</p>
+        <p><strong>Length:</strong> ${prod.length || '6.3 Meters with Blouse Piece'}</p>
+        <p>${prod.description || prod.subtitle || ''}</p>
+        <p><em>Authentic Handloom Banarasi directly sourced from Varanasi weavers by Weave365.</em></p>
+      `.trim();
+
+      const productInput = {
+        title: prod.title || 'Authentic Banarasi Silk Saree',
+        descriptionHtml: descHtml,
+        vendor: 'Weave365',
+        productType: 'Banarasi Saree',
+        tags: ['Banarasi Saree', 'Weave365', prod.fabric, prod.occasion].filter(Boolean),
+        status: 'ACTIVE',
+      };
+
+      const prodCreateMutation = `
+        mutation productCreate($input: ProductInput!, $media: [CreateMediaInput!]) {
+          productCreate(input: $input, media: $media) {
+            product {
+              id
+              title
+              handle
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+      `;
+
+      const pRes = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': store.access_token,
+        },
+        body: JSON.stringify({
+          query: prodCreateMutation,
+          variables: { input: productInput, media: media.length > 0 ? media : undefined },
+        }),
+      });
+
+      const pJson = await pRes.json();
+      const pData = pJson?.data?.productCreate;
+      if (pData?.userErrors?.length > 0) {
+        errors.push({ title: prod.title, userErrors: pData.userErrors });
+        continue;
+      }
+
+      const createdProduct = pData?.product;
+      if (createdProduct?.id) {
+        createdProducts.push({
+          id: createdProduct.id,
+          title: createdProduct.title,
+          handle: createdProduct.handle,
+        });
+
+        store.product_mappings = store.product_mappings || {};
+        store.product_mappings[prod.id || prod.designCode] = {
+          shopify_product_id: createdProduct.id,
+          pushed_at: new Date().toISOString(),
+        };
+      }
+    } catch (err) {
+      console.error(`Error creating product ${prod.title} in ${shop}:`, err);
+      errors.push({ title: prod.title, error: err.message });
+    }
+  }
+
+  await saveConnectedStore(supabase, shop, store);
+
+  if (keyRecord?.id) {
+    void supabase.rpc('record_api_request', {
+      p_key_id: keyRecord.id,
+      p_is_success: true,
+      p_is_rate_limited: false,
+    }).catch(() => {});
+  }
+
+  return Response.json({
+    success: true,
+    shop,
+    products_created: createdProducts.length,
+    products: createdProducts,
+    errors,
   }, { status: 200, headers: apiHeaders });
 }
 
@@ -699,8 +1307,16 @@ export async function handleShopifyRoute(request, routeArray) {
       return handleShopifyStatus(request, searchParams);
 
     case 'sync':
-      if (request.method === 'POST') return handleShopifySync(request);
       return handleShopifySync(request);
+
+    case 'cron-sync':
+    case 'cron':
+    case 'sync-all':
+      return handleShopifyCronSync(request);
+
+    case 'push-catalog':
+    case 'publish':
+      return handleShopifyPushCatalog(request);
 
     case 'disconnect':
       return handleShopifyDisconnect(request);

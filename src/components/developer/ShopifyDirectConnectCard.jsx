@@ -1,8 +1,8 @@
 /**
  * @file ShopifyDirectConnectCard.jsx
  * @description 1-Click Native Shopify Integration Card for Weave365 Reseller Dashboard.
- * Eliminates 3rd-party apps (Stock Sync / Matrixify).
- * Provides 1-click OAuth connection, live connection badge, and 1-click manual & auto stock sync.
+ * Plan-Aware: Respects plan tiers (Free, Growth, Pro), rate limits (RPS), monthly quotas,
+ * and plan-based sync cooldowns with live countdown timers.
  * 
  * @module components/developer/ShopifyDirectConnectCard
  */
@@ -20,16 +20,22 @@ import {
   Power,
   AlertTriangle,
   ArrowRight,
+  CreditCard,
+  Activity,
+  Clock,
+  Upload,
 } from '../icons.jsx';
 
 export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
   const [shopDomain, setShopDomain] = useState('');
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [pushingCatalog, setPushingCatalog] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
   const [storeStatus, setStoreStatus] = useState(null);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   // Extract initial shop domain from API key client website if available
   useEffect(() => {
@@ -40,6 +46,15 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
       }
     }
   }, [apiKey?.client_website]);
+
+  // Cooldown countdown interval
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const interval = setInterval(() => {
+      setCooldownRemaining((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldownRemaining]);
 
   // Check connection status on mount and on return from OAuth
   useEffect(() => {
@@ -58,8 +73,11 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
         if (res.ok) {
           const data = await res.json();
           if (isMounted) {
-            setStoreStatus(data?.connected ? data : null);
+            setStoreStatus(data);
             if (data?.shop) setShopDomain(data.shop);
+            if (data?.plan?.cooldown_remaining_sec > 0) {
+              setCooldownRemaining(data.plan.cooldown_remaining_sec);
+            }
             if (onStatusChange) onStatusChange(data);
           }
         }
@@ -82,7 +100,6 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
           success: true,
           message: `Shopify store ${shop || ''} successfully connected via 1-Click integration!`,
         });
-        // Clear query param from address bar without reloading
         window.history.replaceState({}, document.title, window.location.pathname);
       } else if (urlParams.get('shopify_error')) {
         setErrorMsg(`Shopify connection error: ${urlParams.get('shopify_error').replace(/_/g, ' ')}`);
@@ -110,14 +127,12 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
     }
 
     const authUrl = `/api/shopify/auth?shop=${encodeURIComponent(cleaned)}&key_id=${encodeURIComponent(apiKey?.id || '')}&return_to=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/account')}`;
-
-    // Redirect to Shopify OAuth handshake
     window.location.href = authUrl;
   };
 
   // Handle Manual Live Sync
   const handleTriggerSync = async () => {
-    if (!storeStatus?.shop || syncing) return;
+    if (!storeStatus?.shop || syncing || cooldownRemaining > 0) return;
     setSyncing(true);
     setSyncResult(null);
     setErrorMsg('');
@@ -126,7 +141,10 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
       const res = await fetch('/api/shopify/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shop: storeStatus.shop }),
+        body: JSON.stringify({
+          shop: storeStatus.shop,
+          key_id: apiKey?.id,
+        }),
       });
 
       const data = await res.json();
@@ -135,18 +153,70 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
           success: true,
           message: `Successfully synchronized ${data.quantities_updated || data.matched_variants || 0} variants directly with Shopify!`,
         });
-        // Update local status timestamp
+
+        // Set cooldown timer from plan response
+        const cooldown = data.plan?.sync_cooldown_sec || 10;
+        setCooldownRemaining(cooldown);
+
+        // Update local status timestamp & quota
         setStoreStatus((prev) => ({
           ...prev,
           last_synced_at: data.timestamp || new Date().toISOString(),
+          plan: {
+            ...(prev?.plan || {}),
+            ...(data.plan || {}),
+          },
         }));
       } else {
-        setErrorMsg(data?.error || 'Stock synchronization failed. Please verify store permissions.');
+        setErrorMsg(data?.error || 'Stock synchronization failed. Please check rate limits.');
+        if (data?.remaining_cooldown_sec) {
+          setCooldownRemaining(data.remaining_cooldown_sec);
+        }
       }
     } catch (e) {
       setErrorMsg('Network error while triggering stock sync.');
     } finally {
       setSyncing(false);
+    }
+  };
+
+  // Handle Publishing / Pushing Catalog to Shopify
+  const handlePushCatalog = async () => {
+    if (!storeStatus?.shop || pushingCatalog) return;
+    setPushingCatalog(true);
+    setSyncResult(null);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/shopify/push-catalog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop: storeStatus.shop,
+          key_id: apiKey?.id,
+          limit: 25,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data?.success) {
+        setSyncResult({
+          success: true,
+          message: `Successfully published ${data.products_created || 0} sarees with all colors and variants directly into your Shopify store!`,
+        });
+        if (apiKey?.id) {
+          fetch(`/api/shopify/status?key_id=${apiKey.id}`)
+            .then((r) => r.json())
+            .then((d) => { if (d) setStoreStatus(d); })
+            .catch(() => {});
+        }
+      } else {
+        setErrorMsg(data?.error || 'Failed to push catalog to Shopify.');
+      }
+    } catch (e) {
+      setErrorMsg('Network error while publishing catalog.');
+    } finally {
+      setPushingCatalog(false);
     }
   };
 
@@ -181,10 +251,20 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
     return (
       <div className="shopify-direct-card loading-state">
         <RefreshCw size={20} className="spin-icon" style={{ color: '#0f172a' }} />
-        <span>Checking Shopify connection status...</span>
+        <span>Checking Shopify connection status &amp; plan limits...</span>
       </div>
     );
   }
+
+  const plan = storeStatus?.plan || {
+    name: apiKey?.tier === 'pro' ? 'Pro Scale' : (apiKey?.tier === 'growth' ? 'Growth Partner' : 'Starter Tier'),
+    tier: apiKey?.tier || 'growth',
+    rate_limit_rps: apiKey?.rate_limit_rps || (apiKey?.tier === 'pro' ? 5 : (apiKey?.tier === 'growth' ? 3 : 1)),
+    monthly_quota: apiKey?.monthly_quota || (apiKey?.tier === 'pro' ? 25000 : (apiKey?.tier === 'growth' ? 10000 : 1000)),
+    month_used: 0,
+    remaining_quota: apiKey?.monthly_quota || 10000,
+    sync_cooldown_sec: apiKey?.tier === 'pro' ? 10 : (apiKey?.tier === 'growth' ? 60 : 300),
+  };
 
   return (
     <div className="shopify-direct-card">
@@ -201,12 +281,17 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
           </div>
         </div>
 
-        {storeStatus?.connected && (
-          <span className="shopify-connected-badge">
-            <span className="shopify-pulse-dot" />
-            Connected &amp; Live
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span className={`shopify-plan-pill ${plan.tier}`}>
+            {plan.name} • {plan.rate_limit_rps} RPS
           </span>
-        )}
+          {storeStatus?.connected && (
+            <span className="shopify-connected-badge">
+              <span className="shopify-pulse-dot" />
+              Connected &amp; Live
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Notifications / Alerts */}
@@ -256,10 +341,16 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
             </div>
 
             <div className="shopify-meta-item">
-              <span className="shopify-meta-label">Auto Stock Sync</span>
-              <span className="shopify-sync-pill active">
-                <Zap size={13} />
-                Real-Time (Hourly Active)
+              <span className="shopify-meta-label">Plan &amp; Rate Limit</span>
+              <span className="shopify-meta-val">
+                <strong>{plan.name}</strong> ({plan.rate_limit_rps} req/sec)
+              </span>
+            </div>
+
+            <div className="shopify-meta-item">
+              <span className="shopify-meta-label">Monthly Quota</span>
+              <span className="shopify-meta-val">
+                <strong>{plan.month_used?.toLocaleString() || 0}</strong> / {plan.monthly_quota?.toLocaleString() || 0} req
               </span>
             </div>
 
@@ -276,19 +367,43 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
           <div className="shopify-actions-row">
             <button
               type="button"
-              className="shopify-btn primary"
+              className={`shopify-btn primary ${cooldownRemaining > 0 ? 'in-cooldown' : ''}`}
               onClick={handleTriggerSync}
-              disabled={syncing}
+              disabled={syncing || cooldownRemaining > 0}
             >
               {syncing ? (
                 <>
                   <RefreshCw size={14} className="spin-icon" />
                   <span>Syncing Live Stock...</span>
                 </>
+              ) : cooldownRemaining > 0 ? (
+                <>
+                  <Clock size={14} />
+                  <span>Cooldown ({cooldownRemaining}s)</span>
+                </>
               ) : (
                 <>
                   <Zap size={14} />
                   <span>Sync Stock Now (1-Click)</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="shopify-btn secondary"
+              onClick={handlePushCatalog}
+              disabled={pushingCatalog}
+            >
+              {pushingCatalog ? (
+                <>
+                  <RefreshCw size={14} className="spin-icon" />
+                  <span>Publishing Products...</span>
+                </>
+              ) : (
+                <>
+                  <Upload size={14} />
+                  <span>Publish Catalog to Shopify</span>
                 </>
               )}
             </button>
@@ -316,7 +431,7 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
           <div className="shopify-security-note">
             <ShieldCheck size={14} />
             <span>
-              Connected securely via Shopify GraphQL Admin API. Out-of-stock items are automatically protected against overselling.
+              Connected securely via Shopify GraphQL Admin API. Minimum interval between manual syncs: <strong>{plan.sync_cooldown_sec}s</strong> on {plan.name}.
             </span>
           </div>
         </div>
@@ -345,7 +460,7 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
             </div>
             <div className="shopify-benefit-item">
               <span className="benefit-check">✓</span>
-              <span><strong>Zero Field Mapping:</strong> Colors, swatches, SKUs, and images map automatically.</span>
+              <span><strong>Plan-Aware Sync:</strong> Up to {apiKey?.rate_limit_rps || 5} req/sec with high-speed GraphQL updates.</span>
             </div>
             <div className="shopify-benefit-item">
               <span className="benefit-check">✓</span>
