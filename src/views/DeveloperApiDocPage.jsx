@@ -89,7 +89,7 @@ const SECTION_IDS = [
 
 export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [copiedKey, setCopiedKey] = useState(null);
-  const [activeShopifyTab, setActiveShopifyTab] = useState('syncx'); // 'syncx' | 'matrixify'
+  const [activeShopifyTab, setActiveShopifyTab] = useState('direct'); // 'direct' | 'syncx' | 'matrixify'
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
   const [activeSection, setActiveSection] = useState('overview');
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -366,38 +366,96 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
             </div>
           </section>
 
-          {/* 4. Shopify Integrations (SyncX & Matrixify) */}
+          {/* 4. Shopify Integrations (Direct 1-Click, SyncX & Matrixify) */}
           <section id="shopify-sync" className="api-section">
             <h2 className="api-section-title">Shopify Storefront Integration</h2>
             <p className="api-section-desc">
-              Connect your Shopify store using <strong>Stock Sync (SyncX)</strong> for automated real-time inventory updates, or <strong>Matrixify / Native CSV</strong> for spreadsheet imports.
+              Connect your Shopify store using our <strong>1-Click Direct Integration (₹0/mo, zero third-party apps)</strong>, or use our automated feeds with <strong>Stock Sync (syncX)</strong> and <strong>Native CSV</strong>.
             </p>
 
             <div className="api-note-text">
-              <strong>Why Stock Sync (SyncX) is recommended over Matrixify:</strong>
+              <strong>Why 1-Click Direct Integration is recommended:</strong>
               <br />
-              • <strong>Free for up to 2,000 SKUs:</strong> Stock Sync includes automated hourly and daily scheduling on its free plan, whereas Matrixify&apos;s Demo plan is strictly limited to 10 products per import.
+              • <strong>100% Free Forever (₹0/month):</strong> No \$7/mo Stock Sync or \$20/mo Matrixify fees.
               <br />
-              • <strong>Dedicated Stock Automation:</strong> SyncX runs in seconds, specifically refreshing quantities and prices without re-processing entire product sheets.
+              • <strong>Zero Manual Configuration:</strong> No CSV editing, delimiters, or gear icon settings. Saree titles, authentic descriptions, color swatches, and live quantities sync directly into your Shopify store via Shopify's GraphQL Admin API.
             </div>
 
             {/* Clean, Flat Tabs */}
             <div className="api-tabs-nav">
               <button
                 type="button"
+                className={`api-tab-btn ${activeShopifyTab === 'direct' ? 'active' : ''}`}
+                onClick={() => setActiveShopifyTab('direct')}
+              >
+                <span>1-Click Direct Sync (Recommended — ₹0/mo)</span>
+              </button>
+              <button
+                type="button"
                 className={`api-tab-btn ${activeShopifyTab === 'syncx' ? 'active' : ''}`}
                 onClick={() => setActiveShopifyTab('syncx')}
               >
-                <span>Stock Sync (SyncX) — Recommended</span>
+                <span>Stock Sync (syncX) Feed</span>
               </button>
               <button
                 type="button"
                 className={`api-tab-btn ${activeShopifyTab === 'matrixify' ? 'active' : ''}`}
                 onClick={() => setActiveShopifyTab('matrixify')}
               >
-                <span>Matrixify &amp; Native CSV (Alternative)</span>
+                <span>Matrixify &amp; Native CSV</span>
               </button>
             </div>
+
+            {/* TAB 0: 1-Click Direct Integration */}
+            {activeShopifyTab === 'direct' && (
+              <div>
+                <p className="api-text">
+                  Connect your store directly from the <strong>Weave365 Reseller Dashboard</strong>. Weave365 uses Shopify&apos;s GraphQL Admin API to push live stock updates directly to your store.
+                </p>
+
+                <div className="api-clean-steps">
+                  <div className="api-step-row">
+                    <span className="api-step-circle">1</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Open Weave365 Dashboard &rarr; Shopify 1-Click Sync</h4>
+                      <p className="api-step-body">
+                        In your <strong>Reseller / Developer Dashboard</strong>, navigate to the <strong>Shopify 1-Click Sync</strong> tab.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">2</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Enter Your Shopify Store Domain</h4>
+                      <p className="api-step-body">
+                        Enter your store URL (e.g. <code>eleganceofbanaras.myshopify.com</code>) &rarr; Click <strong>Connect Shopify Store &rarr;</strong>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">3</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Authorize Weave365 in Shopify (1 Click)</h4>
+                      <p className="api-step-body">
+                        Shopify will display the standard app installation screen requesting permissions to manage inventory and products. Click <strong>Install app</strong>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">4</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Live Automatic Synchronization Active</h4>
+                      <p className="api-step-body">
+                        Your store will display <strong>🟢 Connected &amp; Live</strong>. Weave365 automatically syncs inventory numbers every hour, and you can click <strong>&quot;Sync Stock Now&quot;</strong> anytime for an instant 1-second refresh.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* TAB 1: SyncX / Stock Sync */}
             {activeShopifyTab === 'syncx' && (
