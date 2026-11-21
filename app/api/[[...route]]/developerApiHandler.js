@@ -3766,6 +3766,53 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       }
 
       const resolvedResellerOrderId = String(reseller_order_id || body?.order_number || body?.name || body?.id || '').trim() || null;
+
+      // Idempotency / Deduplication: Prevent duplicate orders from webhook retries (e.g. Shopify orders/create + orders/paid)
+      if (resolvedResellerOrderId) {
+        try {
+          const cleanResellerId = resolvedResellerOrderId.replace(/^#/, '');
+          const idVariants = Array.from(new Set([resolvedResellerOrderId, cleanResellerId, `#${cleanResellerId}`]));
+          let existingCheck = supabase
+            .from('api_orders')
+            .select('*')
+            .in('reseller_order_id', idVariants);
+
+          if (auth.keyRecord?.id) {
+            existingCheck = existingCheck.eq('api_key_id', auth.keyRecord.id);
+          } else if (auth.keyRecord?.user_id) {
+            existingCheck = existingCheck.eq('user_id', auth.keyRecord.user_id);
+          }
+
+          const { data: existingOrder } = await existingCheck.maybeSingle();
+
+          if (existingOrder) {
+            const requestOrigin = request.headers.get('origin');
+            const requestHost = request.headers.get('host');
+            let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+            if (requestOrigin && (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1'))) {
+              siteUrl = requestOrigin;
+            } else if (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1'))) {
+              siteUrl = `http://${requestHost}`;
+            }
+
+            return Response.json({
+              status: 'success',
+              order_id: existingOrder.id,
+              order_number: existingOrder.order_number || null,
+              reseller_order_id: existingOrder.reseller_order_id,
+              order_status: existingOrder.status,
+              payment_status: existingOrder.status === 'paid' ? 'paid' : 'pending',
+              payment_link: `${siteUrl}/order-tracking/${existingOrder.id}?pay=1`,
+              is_duplicate: true,
+              message: `Order #${resolvedResellerOrderId} was already received and processed. Duplicate webhook ignored safely.`,
+              order: existingOrder,
+            }, { status: 200, headers: cors });
+          }
+        } catch (dupErr) {
+          console.warn('[developerApi POST /orders] Deduplication check warning:', dupErr);
+        }
+      }
+
       const resolvedPlatform = platform || (isShopify ? 'shopify' : 'api');
       const filterNote = isMixedOrder ? `[Shopify Multi-Vendor: ${normalizedItems.length} of ${rawItems.length} items fulfilled by Weave 365]` : '';
       const resolvedNotes = [shipping_notes || body?.note || body?.notes || '', filterNote].filter(Boolean).join(' | ');
