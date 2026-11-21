@@ -456,7 +456,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <div className="api-step-row">
                     <span className="api-step-circle">3</span>
                     <div className="api-step-content">
-                      <h4 className="api-step-heading">Map Product, Variant &amp; Image Fields</h4>
+                      <h4 className="api-step-heading">Map Product &amp; Variant Fields</h4>
                       <p className="api-step-body">
                         Map the feed columns into your Shopify store fields:
                         <br />
@@ -470,9 +470,9 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         <br />
                         • <strong>Quantity:</strong> <code>quantity</code>
                         <br />
-                        • <strong>Variant Image URL (Crucial for Color Swatches):</strong> <code>variant_image_url</code> (or <code>variant_image</code>) &mdash; This links each specific color photo (e.g. Pink, Navy, Rani, Black) to its own variant so that color swatches show the exact saree photo rather than just the first cover image.
+                        • <strong>Product Images:</strong> Select <code>Product Images</code> &rarr; Map to <code>image</code> (or <code>variant_image_url</code>).
                         <br />
-                        • <strong>Product Gallery Images:</strong> <code>product_images</code> (set delimiter to comma <code>,</code> in Smart Settings)
+                        &nbsp;&nbsp;↳ <em>Crucial Setting:</em> Click the <strong>gear icon (⚙️)</strong> next to <strong>Product Images</strong> &rarr; In the <strong>Variant Image Mapping</strong> section, select <strong>&quot;Link image to variant when image URL is same row as variant&quot;</strong> and make sure <strong>&quot;Assign first product images to all variants&quot;</strong> is <strong>unchecked</strong>. This ensures each color swatch (Pink, Navy, Rani, etc.) receives its own matching saree photo instead of displaying only the first cover image!
                         <br />
                         • <strong>Variant Grouping:</strong> Under <em>Combine rows into one product</em>, map Handle to <code>handle</code> and Option 1 (Color) to <code>color</code>.
                       </p>
@@ -541,7 +541,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <div className="api-step-row">
                     <span className="api-step-circle">4</span>
                     <div className="api-step-content">
-                      <h4 className="api-step-heading">Map Matching, Inventory &amp; Variant Fields</h4>
+                      <h4 className="api-step-heading">Map Matching &amp; Inventory Columns</h4>
                       <p className="api-step-body">
                         In <strong>Matching column</strong>, map:
                         <br />
@@ -551,7 +551,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         <br />
                         • <strong>Price (Optional):</strong> <code>price</code> (optional retail price updates)
                         <br />
-                        • <strong>Variant Image URL (Optional):</strong> <code>variant_image_url</code> (attaches or refreshes specific color images per variant)
+                        • <strong>Product Images (Optional to fix variant photos):</strong> Select <code>Product Images</code> &rarr; Map to <code>image</code> &rarr; Click <strong>gear icon (⚙️)</strong> &rarr; Select <em>&quot;Link image to variant when image URL is same row as variant&quot;</em>.
                         <br />
                         • Click <strong>Next</strong>.
                       </p>

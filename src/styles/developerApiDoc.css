@@ -161,9 +161,9 @@
   gap: 6px;
   background: none;
   border: none;
-  color: #334155;
+  color: #0f172a;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   padding: 6px 0;
   margin-bottom: 1.5rem;
@@ -180,10 +180,10 @@
 
 .api-sidebar-title {
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #475569;
+  color: #0f172a;
   margin: 0 0 0.5rem 0;
   padding-left: 0.5rem;
 }
