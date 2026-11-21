@@ -165,39 +165,89 @@ export function normalizeShopDomain(shop) {
 
 /**
  * Verifies Shopify OAuth HMAC signature using Web Crypto API (Edge compliant)
+ * Validates against both the raw query string (what Shopify signs in OAuth redirects)
+ * and the parsed searchParams entries (for compatibility with simulated callers/tests).
  */
-async function verifyHmac(searchParams, secret) {
+export async function verifyHmac(requestOrParams, searchParamsOrSecret, secretMaybe) {
+  let request = null;
+  let searchParams = null;
+  let secret = null;
+
+  if (secretMaybe !== undefined) {
+    request = requestOrParams;
+    searchParams = searchParamsOrSecret;
+    secret = secretMaybe;
+  } else if (requestOrParams?.searchParams || (requestOrParams && typeof requestOrParams.get === 'function')) {
+    searchParams = requestOrParams;
+    secret = searchParamsOrSecret;
+  } else {
+    request = requestOrParams;
+    searchParams = searchParamsOrSecret;
+    secret = secretMaybe;
+  }
+
   if (!secret) return true;
+  if (!searchParams) return false;
+
   const hmac = searchParams.get('hmac');
   if (!hmac) return false;
 
-  const entries = [];
-  for (const [key, value] of searchParams.entries()) {
-    if (key !== 'hmac' && key !== 'signature') {
-      entries.push(`${key}=${value}`);
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+
+  async function calculateHmac(str) {
+    try {
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(str));
+      return Array.from(new Uint8Array(signatureBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    } catch {
+      return null;
     }
   }
-  entries.sort();
-  const message = entries.join('&');
 
+  // 1. Try raw query string directly from request.url
+  // Shopify generates HMAC over the raw query string where parameters
+  // like state might contain %3D or other percent-encoded characters.
   try {
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(secret);
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(message));
-    const computedHmac = Array.from(new Uint8Array(signatureBuffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
+    const rawUrl = typeof request === 'string' ? request : request?.url;
+    if (rawUrl && rawUrl.includes('?')) {
+      const rawQuery = rawUrl.slice(rawUrl.indexOf('?') + 1);
+      const rawPairs = rawQuery
+        .split('&')
+        .filter(p => p && !p.startsWith('hmac=') && !p.startsWith('signature='));
+      rawPairs.sort();
+      const rawMessage = rawPairs.join('&');
+      const rawComputed = await calculateHmac(rawMessage);
+      if (rawComputed && rawComputed === hmac) {
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('Raw query string HMAC check error:', e);
+  }
 
+  // 2. Standard parsed searchParams entries check (reconstructed key=value)
+  try {
+    const entries = [];
+    for (const [key, value] of searchParams.entries()) {
+      if (key !== 'hmac' && key !== 'signature') {
+        entries.push(`${key}=${value}`);
+      }
+    }
+    entries.sort();
+    const message = entries.join('&');
+    const computedHmac = await calculateHmac(message);
     return computedHmac === hmac;
   } catch (e) {
-    console.error('HMAC verification error:', e);
+    console.error('Parsed params HMAC verification error:', e);
     return false;
   }
 }
@@ -405,13 +455,16 @@ export async function handleShopifyAuth(request, searchParams) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
   const redirectUri = `${siteUrl.replace(/\/$/, '')}/api/shopify/callback`;
 
-  // Encode state with API key and return URL
+  // Encode state with API key and return URL (using URL-safe base64 without padding to prevent encoding mismatches)
   const statePayload = JSON.stringify({
     keyId: apiKeyId,
     returnTo,
     nonce: Math.random().toString(36).slice(2),
   });
-  const state = encodeURIComponent(btoa(statePayload));
+  const state = btoa(unescape(encodeURIComponent(statePayload)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 
   const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${encodeURIComponent(clientId)}&scope=${encodeURIComponent(DEFAULT_SCOPES)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
@@ -433,11 +486,21 @@ export async function handleShopifyCallback(request, searchParams) {
 
   if (rawState) {
     try {
-      const parsedState = JSON.parse(atob(decodeURIComponent(rawState)));
+      let normalized = decodeURIComponent(rawState).replace(/-/g, '+').replace(/_/g, '/');
+      while (normalized.length % 4) {
+        normalized += '=';
+      }
+      const parsedState = JSON.parse(decodeURIComponent(escape(atob(normalized))));
       if (parsedState.returnTo) returnTo = parsedState.returnTo;
       if (parsedState.keyId) keyId = parsedState.keyId;
     } catch {
-      // Fallback to default
+      try {
+        const parsedState = JSON.parse(atob(decodeURIComponent(rawState)));
+        if (parsedState.returnTo) returnTo = parsedState.returnTo;
+        if (parsedState.keyId) keyId = parsedState.keyId;
+      } catch {
+        // Fallback to default
+      }
     }
   }
 
@@ -446,18 +509,29 @@ export async function handleShopifyCallback(request, searchParams) {
     return Response.redirect(errorUrl, 302);
   }
 
-  const clientSecret = process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_SECRET;
-  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
+  const candidateSecrets = [
+    process.env.SHOPIFY_CLIENT_SECRET,
+    process.env.SHOPIFY_SECRET,
+  ].filter(Boolean);
 
-  // Verify HMAC signature
-  if (clientSecret) {
-    const isValid = await verifyHmac(searchParams, clientSecret);
-    if (!isValid) {
+  let verifiedSecret = null;
+  if (candidateSecrets.length > 0) {
+    for (const sec of candidateSecrets) {
+      if (await verifyHmac(request, searchParams, sec)) {
+        verifiedSecret = sec;
+        break;
+      }
+    }
+
+    if (!verifiedSecret) {
       console.warn('Shopify callback HMAC signature verification failed for shop:', shop);
       const errorUrl = `${siteUrl}${returnTo}${returnTo.includes('?') ? '&' : '?'}shopify_error=invalid_hmac`;
       return Response.redirect(errorUrl, 302);
     }
   }
+
+  const clientSecret = verifiedSecret || candidateSecrets[0] || '';
+  const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || '3c6c76997388a070f8ae474f0e9046e9';
 
   // Exchange authorization code for permanent access token
   let accessToken = null;

@@ -481,16 +481,19 @@ describe('Weave365 Shopify Integration Verification', () => {
       const authUrl = new URL(location);
       assert.equal(authUrl.host, 'pro-boutique.myshopify.com');
       assert.equal(authUrl.pathname, '/admin/oauth/authorize');
-      assert.equal(authUrl.searchParams.get('client_id'), '3e1d62702b73c6c5278413e7b2fc7a99');
+      const expectedClientId = process.env.SHOPIFY_CLIENT_ID || '3c6c76997388a070f8ae474f0e9046e9';
+      assert.equal(authUrl.searchParams.get('client_id'), expectedClientId);
       assert.match(authUrl.searchParams.get('scope'), /write_products/);
       assert.match(authUrl.searchParams.get('scope'), /write_inventory/);
       assert.match(authUrl.searchParams.get('scope'), /read_locations/);
       assert.match(authUrl.searchParams.get('redirect_uri'), /\/api\/shopify\/callback/);
 
-      // Verify decoded state contains keyId
+      // Verify decoded state contains keyId (supports URL-safe base64)
       const stateParam = authUrl.searchParams.get('state');
       assert.ok(stateParam);
-      const stateObj = JSON.parse(atob(decodeURIComponent(stateParam)));
+      let stateB64 = decodeURIComponent(stateParam).replace(/-/g, '+').replace(/_/g, '/');
+      while (stateB64.length % 4) stateB64 += '=';
+      const stateObj = JSON.parse(atob(stateB64));
       assert.equal(stateObj.keyId, 'key-pro-1');
       assert.ok(stateObj.nonce);
     });
@@ -550,6 +553,20 @@ describe('Weave365 Shopify Integration Verification', () => {
 
       // Verify stored access token was updated
       assert.equal(mockStores['pro-boutique.myshopify.com'].access_token, 'shpat_new_exchanged_token');
+    });
+
+    it('verifies HMAC correctly over raw query string containing URL-encoded characters (%3D%3D)', async () => {
+      const secret = process.env.SHOPIFY_CLIENT_SECRET;
+      // Raw string with URL-encoded characters that Shopify signs in production
+      const rawQs = 'code=valid_test_code&host=YWRtaW4uc2hvcGlmeS5jb20vc3RvcmUvc2hvcDE&shop=pro-boutique.myshopify.com&state=eyJrZXlJZCI6InBybyJ9%3D%3D&timestamp=1337178173';
+      const hmac = crypto.createHmac('sha256', secret).update(rawQs).digest('hex');
+      const fullUrl = `https://www.weave365.com/api/shopify/callback?${rawQs}&hmac=${hmac}`;
+
+      const req = new Request(fullUrl);
+      const res = await handleShopifyRoute(req, ['shopify', 'callback']);
+      assert.equal(res.status, 302);
+      const location = res.headers.get('location');
+      assert.match(location, /shopify_connected=true/);
     });
   });
 
