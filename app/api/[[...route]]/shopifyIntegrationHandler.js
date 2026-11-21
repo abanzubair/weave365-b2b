@@ -66,11 +66,25 @@ export const PLAN_LIMITS = {
  */
 const rpsBuckets = new Map();
 
+export function _clearRpsBucketsForTesting() {
+  rpsBuckets.clear();
+}
+
 /**
  * Check RPS limit for a given key or shop identifier
  */
-function checkRpsLimit(keyId, limitRps = 1) {
+export function checkRpsLimit(keyId, limitRps = 1) {
   const now = Date.now();
+
+  // Prune expired buckets if map exceeds 200 entries to prevent memory leak on Edge
+  if (rpsBuckets.size > 200) {
+    for (const [k, v] of rpsBuckets.entries()) {
+      if (now - v.windowStart > 5000) {
+        rpsBuckets.delete(k);
+      }
+    }
+  }
+
   const bucket = rpsBuckets.get(keyId);
 
   if (!bucket || now - bucket.windowStart >= 1000) {
@@ -90,7 +104,7 @@ function checkRpsLimit(keyId, limitRps = 1) {
 /**
  * Check sync cooldown between manual/scheduled syncs based on plan tier
  */
-function checkSyncCooldown(store, cooldownSec) {
+export function checkSyncCooldown(store, cooldownSec) {
   if (!store?.last_synced_at) return { allowed: true, remainingSec: 0 };
   const lastSyncTime = new Date(store.last_synced_at).getTime();
   if (Number.isNaN(lastSyncTime)) return { allowed: true, remainingSec: 0 };
@@ -105,10 +119,17 @@ function checkSyncCooldown(store, cooldownSec) {
   return { allowed: true, remainingSec: 0 };
 }
 
+let supabaseInstance = null;
+
+export function _setSupabaseClientForTesting(client) {
+  supabaseInstance = client;
+}
+
 /**
  * Lazy-init Supabase client for store credentials persistence
  */
 function getSupabase() {
+  if (supabaseInstance) return supabaseInstance;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
@@ -316,11 +337,19 @@ async function resolveKeyRecordForStore(supabase, shop, storeKeyId = null) {
   return null;
 }
 
+const monthUsageCache = new Map();
+
 /**
- * Calculate month-to-date total API requests across user account
+ * Calculate month-to-date total API requests across user account (with 15s in-memory Edge cache)
  */
 async function getMonthTotalUsage(supabase, keyRecord) {
   if (!supabase || !keyRecord) return 0;
+  const now = Date.now();
+  const cached = monthUsageCache.get(keyRecord.id);
+  if (cached && now < cached.expiresAt) {
+    return cached.count;
+  }
+
   try {
     const nowDate = new Date();
     const year = nowDate.getUTCFullYear();
@@ -339,7 +368,16 @@ async function getMonthTotalUsage(supabase, keyRecord) {
     }
 
     const { data: usageData } = await usageQuery;
-    return (usageData || []).reduce((sum, r) => sum + (r.total_requests || 0), 0);
+    const total = (usageData || []).reduce((sum, r) => sum + (r.total_requests || 0), 0);
+
+    // Prune cache if map grows large
+    if (monthUsageCache.size > 200) {
+      for (const [k, v] of monthUsageCache.entries()) {
+        if (now > v.expiresAt) monthUsageCache.delete(k);
+      }
+    }
+    monthUsageCache.set(keyRecord.id, { count: total, expiresAt: now + 15000 });
+    return total;
   } catch (e) {
     console.warn('Failed to calculate month total usage:', e);
     return 0;
@@ -602,10 +640,17 @@ export async function handleShopifyStatus(request, searchParams) {
  * 4. Plan-based sync cooldowns (Pro: 10s, Growth: 60s, Free: 300s)
  * 5. Curated Catalog access boundaries
  */
+let cachedStockMap = { data: null, expiresAt: 0 };
+
 /**
- * Helper to fetch live stock map from sheet_data or fallback
+ * Helper to fetch live stock map from sheet_data or fallback (with 30s Edge cache)
  */
 async function getLiveStockMap(supabase) {
+  const now = Date.now();
+  if (cachedStockMap.data && now < cachedStockMap.expiresAt) {
+    return cachedStockMap.data;
+  }
+
   let stockMap = {};
   try {
     const { data: stockRow } = await supabase
@@ -632,6 +677,10 @@ async function getLiveStockMap(supabase) {
     } catch (e) {
       console.warn('Failed to load vendor_product_stock:', e);
     }
+  }
+
+  if (Object.keys(stockMap).length > 0) {
+    cachedStockMap = { data: stockMap, expiresAt: now + 30000 };
   }
   return stockMap;
 }
@@ -911,10 +960,13 @@ export async function executeStockSyncForStore({
       });
 
       const mutJson = await mutRes.json();
-      const errors = mutJson?.data?.inventorySetQuantities?.userErrors || [];
-      if (errors.length > 0) {
-        userErrors.push(...errors);
-      } else {
+      const topLevelErrors = mutJson?.errors || [];
+      const userErrorsList = mutJson?.data?.inventorySetQuantities?.userErrors || [];
+      if (topLevelErrors.length > 0) {
+        userErrors.push(...topLevelErrors);
+      } else if (userErrorsList.length > 0) {
+        userErrors.push(...userErrorsList);
+      } else if (mutJson?.data?.inventorySetQuantities) {
         successCount += chunk.length;
       }
     } catch (e) {
@@ -1073,6 +1125,28 @@ export async function handleShopifyCronSync(request) {
   return Response.json(results, { status: 200, headers: apiHeaders });
 }
 
+let cachedProductsJson = { data: null, expiresAt: 0 };
+
+async function getCachedProductsJson(supabase) {
+  const now = Date.now();
+  if (cachedProductsJson.data && now < cachedProductsJson.expiresAt) {
+    return cachedProductsJson.data;
+  }
+  let allProducts = [];
+  try {
+    const { data: prodRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').maybeSingle();
+    if (prodRow?.csv_data) {
+      allProducts = typeof prodRow.csv_data === 'string' ? JSON.parse(prodRow.csv_data) : prodRow.csv_data;
+    }
+  } catch (e) {
+    console.error('Failed to load products_json:', e);
+  }
+  if (Array.isArray(allProducts) && allProducts.length > 0) {
+    cachedProductsJson = { data: allProducts, expiresAt: now + 60000 };
+  }
+  return allProducts;
+}
+
 /**
  * POST /api/shopify/push-catalog
  * 1-Click product publishing directly into reseller's Shopify storefront
@@ -1122,16 +1196,8 @@ export async function handleShopifyPushCatalog(request) {
     return Response.json({ error: 'Monthly quota exceeded', code: 'QUOTA_EXCEEDED' }, { status: 429, headers: apiHeaders });
   }
 
-  // Load products from sheet_data
-  let allProducts = [];
-  try {
-    const { data: prodRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').maybeSingle();
-    if (prodRow?.csv_data) {
-      allProducts = typeof prodRow.csv_data === 'string' ? JSON.parse(prodRow.csv_data) : prodRow.csv_data;
-    }
-  } catch (e) {
-    console.error('Failed to load products_json:', e);
-  }
+  // Load products from sheet_data (with 60s cache)
+  const allProducts = await getCachedProductsJson(supabase);
 
   if (!Array.isArray(allProducts) || allProducts.length === 0) {
     return Response.json({ error: 'Catalog products currently unavailable' }, { status: 500, headers: apiHeaders });

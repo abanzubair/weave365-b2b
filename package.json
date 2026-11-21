@@ -7,7 +7,7 @@
     "dev": "next dev -H 0.0.0.0 --webpack",
     "build": "next build --webpack",
     "start": "next start -H 0.0.0.0",
-    "test": "echo \"No tests configured\" && exit 0",
+    "test": "node --env-file=.env.local tests/api-verification.runner.js",
     "check-supabase-allowance": "node scripts/check-supabase-allowance.js",
     "pages:build": "npx @cloudflare/next-on-pages && node scripts/apply-routes.js",
     "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"

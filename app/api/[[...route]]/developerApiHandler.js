@@ -162,8 +162,8 @@ function buildProductDescriptionHtml(p, weightInfo) {
  */
 function formatStandardProduct(p) {
   const firstPrices = p.variants?.[0]?.prices || {};
-  const resellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
-  const suggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(resellerPrice * 1.5));
+  const resellerPrice = Number(firstPrices.b2r || p.reseller_price || p.resellerPrice || p.price || (firstPrices.single ? firstPrices.single : 0));
+  const suggestedMrp = Number(firstPrices.single || p.mrp || p.suggestedMrp || Math.round(resellerPrice * 1.5));
   
   const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
   const productQty = getProductQuantity(p, isOutOfStock);
@@ -180,7 +180,7 @@ function formatStandardProduct(p) {
 
   const structuredVariants = (p.variants || []).map((v, idx) => {
     const vPrices = v.prices || {};
-    const vPrice = Number(vPrices.b2r || resellerPrice);
+    const vPrice = Number(vPrices.b2r || v.price || resellerPrice);
     const vStock = getVariantQuantity(v, p, isOutOfStock);
     return {
       code: v.code || `${p.id || p.groupKey}-${idx + 1}`,
@@ -871,8 +871,8 @@ export function formatForStockSync(products, cacheKey = null) {
     const handle = idSlug && !baseSlug.endsWith(idSlug) ? `${baseSlug}-${idSlug}` : baseSlug;
 
     const firstPrices = p.variants?.[0]?.prices || {};
-    const baseResellerPrice = Number(firstPrices.b2r || p.resellerPrice || (firstPrices.single ? firstPrices.single : 0));
-    const baseSuggestedMrp = Number(firstPrices.single || p.suggestedMrp || Math.round(baseResellerPrice * 1.5));
+    const baseResellerPrice = Number(firstPrices.b2r || p.reseller_price || p.resellerPrice || p.price || (firstPrices.single ? firstPrices.single : 0));
+    const baseSuggestedMrp = Number(firstPrices.single || p.mrp || p.suggestedMrp || Math.round(baseResellerPrice * 1.5));
     const rawImages = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
     const cleanImageList = rawImages.map(s => String(s || '').trim()).filter(s => s.startsWith('http'));
     const primaryImage = cleanImageList[0] || (typeof p.image === 'string' ? p.image.trim() : '');
@@ -943,6 +943,8 @@ export function formatForStockSync(products, cacheKey = null) {
           available_quantity: vStock,
           Available_Quantity: vStock,
           is_available: !isOutOfStock && vStock > 0,
+          stock_status: p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock'),
+          stock_status_label: p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
           inventory_management: 'shopify',
           inventory_policy: 'deny',
           option1_name: 'Color',
@@ -1056,6 +1058,8 @@ export function formatForStockSync(products, cacheKey = null) {
           available_quantity: vStock,
           Available_Quantity: vStock,
           is_available: !isOutOfStock && vStock > 0,
+          stock_status: p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock'),
+          stock_status_label: p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
           inventory_management: 'shopify',
           inventory_policy: 'deny',
           option1_name: 'Color',
@@ -1559,8 +1563,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     return Response.json(errorBody, { status: auth.status, headers: defaultCorsHeaders });
   }
 
-  // 2. Route: /api/v1/catalog
-  if (endpoint === 'catalog') {
+  // 2. Route: /api/v1/catalog (and aliases catalog-feed, reseller-pricing)
+  if (endpoint === 'catalog' || endpoint === 'catalog-feed' || endpoint === 'reseller-pricing') {
     const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
 
     // Common file download & live sync headers (guarantees Stock Sync auto-detects JSON without CSV fallback)
@@ -1783,8 +1787,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     });
   }
 
-  // 3. Route: /api/v1/stock-status
-  if (endpoint === 'stock-status') {
+  // 3. Route: /api/v1/stock-status (and alias stock)
+  if (endpoint === 'stock-status' || endpoint === 'stock') {
     return handleStockStatusRequest(request, supabase, auth, searchParams);
   }
 
