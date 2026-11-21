@@ -100,10 +100,17 @@ export function ShopifyDirectConnectCard({ apiKey, user, onStatusChange }) {
           success: true,
           message: `Shopify store ${shop || ''} successfully connected via 1-Click integration!`,
         });
-        window.history.replaceState({}, document.title, window.location.pathname);
+        const cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete('shopify_connected');
+        cleanParams.delete('shop');
+        const qs = cleanParams.toString();
+        window.history.replaceState({}, document.title, `${window.location.pathname}${qs ? '?' + qs : ''}`);
       } else if (urlParams.get('shopify_error')) {
         setErrorMsg(`Shopify connection error: ${urlParams.get('shopify_error').replace(/_/g, ' ')}`);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        const cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete('shopify_error');
+        const qs = cleanParams.toString();
+        window.history.replaceState({}, document.title, `${window.location.pathname}${qs ? '?' + qs : ''}`);
       }
     }
 
