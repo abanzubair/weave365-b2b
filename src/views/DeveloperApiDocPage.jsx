@@ -35,6 +35,8 @@ import {
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
+// Shopify SyncX Catalog API Integration Video Walkthrough
+const SHOPIFY_SYNCX_VIDEO_URL = 'https://assets.weave365.com/API%20Guide/catalogue-api-shopify-integration.mp4';
 // Shopify Webhook Order API Integration Video Walkthrough
 const SHOPIFY_ORDER_VIDEO_URL = 'https://assets.weave365.com/API%20Guide/order-api-shopify-integration.mp4';
 
@@ -514,6 +516,33 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     {copiedKey === 'syncx-feed' ? <Check size={13} /> : <Copy size={13} />}
                     <span>{copiedKey === 'syncx-feed' ? 'Copied' : 'Copy Feed URL'}</span>
                   </button>
+                </div>
+
+                {/* Video Walkthrough: Shopify SyncX Integration */}
+                <div className="api-video-card">
+                  <div className="api-video-header">
+                    <div className="api-video-title-wrap">
+                      <PlayIcon size={18} style={{ color: '#0f172a' }} />
+                      <h3 className="api-video-title">Video Walkthrough: Stock Sync (SyncX) Setup</h3>
+                    </div>
+                    <span className="api-video-badge">2m 38s Quick Guide</span>
+                  </div>
+
+                  <div className="api-video-container">
+                    <video
+                      controls
+                      playsInline
+                      preload="metadata"
+                      loading="lazy"
+                      width={1920}
+                      height={1080}
+                      className="api-video-element"
+                      title="Shopify Stock Sync (SyncX) Video Walkthrough"
+                    >
+                      <source src={SHOPIFY_SYNCX_VIDEO_URL} type="video/mp4" />
+                      Your browser does not support video playback.
+                    </video>
+                  </div>
                 </div>
 
                 {/* Phase 1: Initial Import with "Add" */}

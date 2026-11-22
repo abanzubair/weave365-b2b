@@ -1285,9 +1285,13 @@
   cursor: pointer;
 }
 
-.api-video-element::-webkit-media-controls,
-.api-video-element::-webkit-media-controls-enclosure,
-.api-video-element::-webkit-media-controls-panel {
+.api-video-element[controls] {
+  cursor: default;
+}
+
+.api-video-element:not([controls])::-webkit-media-controls,
+.api-video-element:not([controls])::-webkit-media-controls-enclosure,
+.api-video-element:not([controls])::-webkit-media-controls-panel {
   display: none !important;
   -webkit-appearance: none !important;
 }
