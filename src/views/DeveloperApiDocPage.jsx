@@ -24,14 +24,14 @@ import {
   Sliders,
   DollarSign,
   FileCode2,
-  Sparkles,
   BookOpen,
   Settings,
   FileSpreadsheet,
   Truck,
   PlayIcon,
   Bell,
-  GitBranch
+  GitBranch,
+  ShieldCheck
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
@@ -43,7 +43,7 @@ const NAV_GROUPS = [
     title: 'Getting Started',
     items: [
       { id: 'overview', label: 'Overview', icon: BookOpen },
-      { id: 'quickstart', label: '3-Step Integration', icon: Sparkles },
+      { id: 'quickstart', label: '3-Step Integration', icon: Layers },
       { id: 'authentication', label: 'Authentication', icon: KeyRound },
     ],
   },
@@ -855,23 +855,40 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
               </div>
             </div>
 
-            {/* Smart Protections Callout */}
-            <div className="api-gear-callout">
-              <div className="api-gear-callout-title">
-                <Sparkles size={16} />
-                <span>Built-In Smart Fulfillment Protections</span>
+            {/* Built-In Smart Fulfillment Protections */}
+            <div style={{ margin: '2rem 0 1.75rem 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+                <ShieldCheck size={16} style={{ color: '#0f172a' }} />
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0f172a', margin: 0, letterSpacing: '-0.01em' }}>
+                  Built-In Fulfillment Protections
+                </h3>
               </div>
-              <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', color: '#475569', fontSize: '0.875rem', lineHeight: '1.6' }}>
-                <li>
-                  <strong>Smart SKU Auto-Filtering:</strong> If an order contains both Weave 365 sarees and items from other suppliers (e.g. jewelry or third-party garments), Weave 365 automatically filters and fulfills <em>only</em> the Weave 365 items. Non-Weave items are safely ignored and acknowledged with <code>200 OK</code>.
-                </li>
-                <li>
-                  <strong>Automatic Deduplication (Idempotency):</strong> Shopify occasionally retries webhooks. Weave 365 automatically matches incoming <code>reseller_order_id</code> (Shopify Order ID) against existing orders to prevent double-charging or duplicate shipments.
-                </li>
-                <li>
-                  <strong>100% Blind Dropshipping:</strong> All customer packages are shipped using your boutique store name and contact details on the shipping label and tax invoice. Weave 365 warehouse branding never appears to your customer.
-                </li>
-              </ul>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.25rem' }}>
+                    Smart SKU Filtering
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: '#475569', lineHeight: '1.55' }}>
+                    If an order contains both Weave 365 sarees and other items, Weave 365 filters and fulfills <em>only</em> the Weave items. Non-Weave items are safely ignored.
+                  </p>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.25rem' }}>
+                    Automatic Deduplication
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: '#475569', lineHeight: '1.55' }}>
+                    Shopify occasionally retries webhooks. Weave 365 automatically deduplicates incoming Shopify Order IDs to prevent duplicate fulfillment.
+                  </p>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.25rem' }}>
+                    100% Blind Dropshipping
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: '#475569', lineHeight: '1.55' }}>
+                    Packages ship directly under your boutique name and details on the label and invoice. Weave 365 warehouse branding never appears.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Method Tabs */}
@@ -897,9 +914,9 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
             {/* TAB 1: Method 1 (Shopify Native Webhooks) */}
             {activeShopifyOrderTab === 'notifications' && (
               <div>
-                <div className="api-note-text" style={{ margin: '0.875rem 0 1.25rem 0' }}>
-                  <strong>Recommended for all stores:</strong> Works on <strong>every Shopify plan</strong> (including Shopify Basic $39/mo, Shopify, Advanced, and Plus). It requires zero apps and sends instant real-time order payloads directly from Shopify.
-                </div>
+                <p style={{ fontSize: '0.875rem', color: '#475569', lineHeight: '1.6', margin: '1rem 0 1.25rem 0' }}>
+                  <strong style={{ color: '#0f172a' }}>Recommended for all stores:</strong> Works on <strong>every Shopify plan</strong> (including Shopify Basic $39/mo, Shopify, Advanced, and Plus). It requires zero apps and sends instant real-time order payloads directly from Shopify.
+                </p>
 
                 <div style={{ margin: '1.25rem 0 1.5rem 0' }}>
                   <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#334155', marginBottom: '0.45rem', letterSpacing: '0.01em' }}>
@@ -1008,9 +1025,9 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
             {/* TAB 2: Method 2 (Shopify Flow App) */}
             {activeShopifyOrderTab === 'flow' && (
               <div>
-                <div className="api-note-text" style={{ margin: '0.875rem 0 1.25rem 0' }}>
-                  <strong>Plan Requirement:</strong> Shopify Flow is available on the <strong>Shopify plan ($105/mo)</strong>, <strong>Advanced ($399/mo)</strong>, and <strong>Shopify Plus</strong>. It provides a visual canvas for multi-step automation, tag filters, and conditional routing.
-                </div>
+                <p style={{ fontSize: '0.875rem', color: '#475569', lineHeight: '1.6', margin: '1rem 0 1.25rem 0' }}>
+                  <strong style={{ color: '#0f172a' }}>Plan Requirement:</strong> Shopify Flow is available on the <strong>Shopify plan ($105/mo)</strong>, <strong>Advanced ($399/mo)</strong>, and <strong>Shopify Plus</strong>. It provides a visual canvas for multi-step automation, tag filters, and conditional routing.
+                </p>
 
                 <div className="api-clean-steps">
                   <div className="api-step-row">
@@ -1131,13 +1148,15 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
               </div>
             )}
 
-            {/* Quick Testing Walkthrough Box */}
-            <div className="api-gear-callout" style={{ marginTop: '1.5rem' }}>
-              <div className="api-gear-callout-title">
-                <Check size={16} />
-                <span>How to Test in 2 Minutes</span>
+            {/* Quick Testing Walkthrough */}
+            <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.625rem' }}>
+                <Check size={16} style={{ color: '#0f172a' }} />
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                  How to Test in 2 Minutes
+                </h3>
               </div>
-              <p className="api-step-body" style={{ margin: '0.25rem 0 0 0' }}>
+              <p style={{ color: '#475569', fontSize: '0.875rem', lineHeight: '1.65', margin: 0 }}>
                 1. Enable Shopify&apos;s <strong>Bogus Gateway</strong> (in <strong>Settings &rarr; Payments</strong>) or enable <strong>Cash on Delivery (COD)</strong> for testing.
                 <br />
                 2. Add any synced Weave 365 saree to your cart on your storefront (e.g., SKU <code>102001-1</code>) and complete checkout.

@@ -1090,11 +1090,7 @@
    Clean Video Embed & Walkthrough Container
    ========================================================================== */
 .api-video-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin: 1.25rem 0 1.75rem 0;
+  margin: 1.5rem 0 2rem 0;
 }
 
 .api-video-header {
