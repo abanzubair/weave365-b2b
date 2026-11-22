@@ -215,7 +215,6 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
             <div className="api-title-row">
               <h1 className="api-main-title">Weave365 Developer API</h1>
               <div className="api-badges-row">
-                <span className="api-pill live">v1.0 Production</span>
                 <span className="api-pill">REST / JSON / CSV</span>
                 <span className="api-pill">&lt;1ms Edge Cache</span>
               </div>
@@ -229,14 +228,6 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
               <a href="/account" className="api-btn primary">
                 Open Developer Dashboard &rarr;
               </a>
-              <button
-                type="button"
-                className="api-btn secondary"
-                onClick={() => copyToClipboard('https://www.weave365.com/api/v1', 'base-url')}
-              >
-                {copiedKey === 'base-url' ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copiedKey === 'base-url' ? 'Base URL Copied' : 'https://www.weave365.com/api/v1'}</span>
-              </button>
             </div>
           </header>
 
