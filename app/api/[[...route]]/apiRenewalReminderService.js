@@ -1,20 +1,24 @@
 /**
  * @file app/api/[[...route]]/apiRenewalReminderService.js
- * @description Developer API 30-Day Subscription Renewal Reminder Email Service.
+ * @description Developer API Subscription Renewal Reminder Email Service.
  * Ultra-minimal, modern notifications at:
- *  - 7 Days Remaining (Early Renewal Notice)
+ *  - 10 Days Remaining (Early Renewal Notice)
+ *  - 7 Days Remaining (Mid Renewal Notice)
  *  - 3 Days Remaining (Final Notice before HTTP 403 pause)
  */
 
 export const runtime = 'edge';
 
 /**
- * 7-Day Renewal Reminder Email HTML Template (Ultra-Minimal)
+ * Early Renewal Reminder Email HTML Template (10-Day or 7-Day Notice)
  */
-export function renderApiRenewalReminder7dHtml({
+export function renderApiRenewalReminderEarlyHtml({
   clientName = 'Partner',
   planName = 'Growth Partner',
   planAmount = 299,
+  quarterlyAmount = 852,
+  isQuarterly = false,
+  daysRemaining = 10,
   expiresAtStr = '',
   renewalUrl = 'https://www.weave365.com/account?tab=developer',
   supportWhatsApp = '919919101369',
@@ -46,7 +50,7 @@ export function renderApiRenewalReminder7dHtml({
                   </td>
                   <td align="right">
                     <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #71717a; background: #f4f4f5; border-radius: 6px;">
-                      7 Days Remaining
+                      ${daysRemaining} Days Remaining
                     </span>
                   </td>
                 </tr>
@@ -61,27 +65,30 @@ export function renderApiRenewalReminder7dHtml({
                 API Subscription Renewal
               </h1>
               <p style="margin: 0 0 20px 0; font-size: 13.5px; line-height: 1.6; color: #71717a;">
-                Hi <strong>${clientName}</strong>, your Developer API subscription is set to complete in 7 days on <strong>${expiresAtStr}</strong>.
+                Hi <strong>${clientName}</strong>, your Developer API subscription is set to complete in ${daysRemaining} days on <strong>${expiresAtStr}</strong>.
               </p>
 
               <!-- Minimal Summary Table -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 0 0 20px 0; border-top: 1px solid #f4f4f5; border-bottom: 1px solid #f4f4f5;">
                 <tr>
                   <td style="padding: 11px 0; font-size: 13px; color: #71717a;">Current Plan</td>
-                  <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b;">${planName}</td>
+                  <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b;">${planName} ${isQuarterly ? '(90 Days)' : '(30 Days)'}</td>
                 </tr>
                 <tr>
                   <td style="padding: 11px 0; font-size: 13px; color: #71717a; border-top: 1px solid #f4f4f5;">Valid Until</td>
                   <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b; border-top: 1px solid #f4f4f5;">${expiresAtStr}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 11px 0; font-size: 13px; color: #71717a; border-top: 1px solid #f4f4f5;">Renewal Amount</td>
-                  <td align="right" style="padding: 11px 0; font-size: 13.5px; font-weight: 700; color: #18181b; border-top: 1px solid #f4f4f5;">₹${planAmount} / month</td>
+                  <td style="padding: 11px 0; font-size: 13px; color: #71717a; border-top: 1px solid #f4f4f5;">Renewal Options</td>
+                  <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b; border-top: 1px solid #f4f4f5;">
+                    ₹${quarterlyAmount} / 3 months <span style="color: #047857; font-weight: 700;">(Save 5%)</span><br>
+                    <span style="font-size: 11.5px; color: #71717a; font-weight: 400;">or ₹${planAmount} / month</span>
+                  </td>
                 </tr>
               </table>
 
-              <p style="margin: 0 0 24px 0; font-size: 12.5px; line-height: 1.55; color: #a1a1aa;">
-                Renewing early extends your access by 30 days from your expiry date. Your API key and storefront syncing continue without interruption.
+              <p style="margin: 0 0 24px 0; font-size: 12.5px; line-height: 1.55; color: #71717a;">
+                Renewing early extends your access by 90 days (or 30 days) from your expiry date. Your API key and storefront syncing continue without interruption.
               </p>
 
               <!-- CTA Button -->
@@ -89,7 +96,7 @@ export function renderApiRenewalReminder7dHtml({
                 <tr>
                   <td>
                     <a href="${renewalUrl}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; text-align: center; background-color: #18181b; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; padding: 12px 20px; border-radius: 8px;">
-                      Renew Subscription (₹${planAmount}) &rarr;
+                      Renew API Subscription &rarr;
                     </a>
                   </td>
                 </tr>
@@ -115,12 +122,28 @@ export function renderApiRenewalReminder7dHtml({
 }
 
 /**
+ * Backward compatibility alias for 7-day reminder
+ */
+export function renderApiRenewalReminder7dHtml(params) {
+  return renderApiRenewalReminderEarlyHtml({ ...params, daysRemaining: 7 });
+}
+
+/**
+ * 10-Day Reminder HTML Template
+ */
+export function renderApiRenewalReminder10dHtml(params) {
+  return renderApiRenewalReminderEarlyHtml({ ...params, daysRemaining: 10 });
+}
+
+/**
  * 3-Day Final Notice Email HTML Template (Ultra-Minimal)
  */
 export function renderApiRenewalReminder3dHtml({
   clientName = 'Partner',
   planName = 'Growth Partner',
   planAmount = 299,
+  quarterlyAmount = 852,
+  isQuarterly = false,
   expiresAtStr = '',
   renewalUrl = 'https://www.weave365.com/account?tab=developer',
   supportWhatsApp = '919919101369',
@@ -174,15 +197,18 @@ export function renderApiRenewalReminder3dHtml({
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 0 0 20px 0; border-top: 1px solid #f4f4f5; border-bottom: 1px solid #f4f4f5;">
                 <tr>
                   <td style="padding: 11px 0; font-size: 13px; color: #71717a;">Current Plan</td>
-                  <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b;">${planName}</td>
+                  <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b;">${planName} ${isQuarterly ? '(90 Days)' : '(30 Days)'}</td>
                 </tr>
                 <tr>
                   <td style="padding: 11px 0; font-size: 13px; color: #71717a; border-top: 1px solid #f4f4f5;">Valid Until</td>
                   <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b; border-top: 1px solid #f4f4f5;">${expiresAtStr}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 11px 0; font-size: 13px; color: #71717a; border-top: 1px solid #f4f4f5;">Renewal Amount</td>
-                  <td align="right" style="padding: 11px 0; font-size: 13.5px; font-weight: 700; color: #18181b; border-top: 1px solid #f4f4f5;">₹${planAmount} / month</td>
+                  <td style="padding: 11px 0; font-size: 13px; color: #71717a; border-top: 1px solid #f4f4f5;">Renewal Options</td>
+                  <td align="right" style="padding: 11px 0; font-size: 13px; font-weight: 600; color: #18181b; border-top: 1px solid #f4f4f5;">
+                    ₹${quarterlyAmount} / 3 months <span style="color: #047857; font-weight: 700;">(Save 5%)</span><br>
+                    <span style="font-size: 11.5px; color: #71717a; font-weight: 400;">or ₹${planAmount} / month</span>
+                  </td>
                 </tr>
               </table>
 
@@ -198,7 +224,7 @@ export function renderApiRenewalReminder3dHtml({
                 <tr>
                   <td>
                     <a href="${renewalUrl}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; text-align: center; background-color: #18181b; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; padding: 12px 20px; border-radius: 8px;">
-                      Renew Subscription (₹${planAmount}) &rarr;
+                      Renew Subscription Now &rarr;
                     </a>
                   </td>
                 </tr>
@@ -227,11 +253,14 @@ export function renderApiRenewalReminder3dHtml({
  * Dispatch an API renewal reminder email via Resend
  */
 export async function sendApiRenewalEmail({
-  type = '7d', // '7d' | '3d'
+  type = '10d', // '10d' | '7d' | '3d'
   recipientEmail,
   clientName = 'Partner',
   planName = 'Growth Partner',
   planAmount = 299,
+  quarterlyAmount = 852,
+  isQuarterly = false,
+  daysRemaining = 10,
   expiresAt = null,
   renewalUrl = 'https://www.weave365.com/account?tab=developer',
 }) {
@@ -247,7 +276,8 @@ export async function sendApiRenewalEmail({
     return { success: false, reason: 'invalid_recipient_email' };
   }
 
-  const expiresDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + (type === '7d' ? 7 : 3) * 24 * 60 * 60 * 1000);
+  const defaultDays = type === '10d' ? 10 : (type === '7d' ? 7 : 3);
+  const expiresDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + defaultDays * 24 * 60 * 60 * 1000);
   const expiresAtStr = expiresDate.toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -259,23 +289,33 @@ export async function sendApiRenewalEmail({
   const supportWhatsApp = process.env.NEXT_PUBLIC_STORE_WHATSAPP || '919919101369';
 
   const is3d = type === '3d';
-  const subject = is3d
-    ? `Final Notice: Weave 365 Developer API Subscription Expires in 3 Days (${expiresAtStr})`
-    : `Reminder: Your Weave 365 Developer API Subscription Renews in 7 Days (${expiresAtStr})`;
+  let subject = `Reminder: Your Weave 365 Developer API Subscription Renews in ${daysRemaining || 10} Days (${expiresAtStr})`;
+  if (type === '3d') {
+    subject = `Final Notice: Weave 365 Developer API Subscription Expires in 3 Days (${expiresAtStr})`;
+  } else if (type === '7d') {
+    subject = `Reminder: Your Weave 365 Developer API Subscription Renews in 7 Days (${expiresAtStr})`;
+  } else if (type === '10d') {
+    subject = `Reminder: Your Weave 365 Developer API Subscription Renews in 10 Days (${expiresAtStr})`;
+  }
 
   const html = is3d
     ? renderApiRenewalReminder3dHtml({
         clientName,
         planName,
         planAmount,
+        quarterlyAmount,
+        isQuarterly,
         expiresAtStr,
         renewalUrl,
         supportWhatsApp,
       })
-    : renderApiRenewalReminder7dHtml({
+    : renderApiRenewalReminderEarlyHtml({
         clientName,
         planName,
         planAmount,
+        quarterlyAmount,
+        isQuarterly,
+        daysRemaining: daysRemaining || (type === '10d' ? 10 : 7),
         expiresAtStr,
         renewalUrl,
         supportWhatsApp,
@@ -317,15 +357,15 @@ export async function sendApiRenewalEmail({
 }
 
 /**
- * Scan active keys and automatically dispatch 7d and 3d reminders.
+ * Scan active keys and automatically dispatch 10d, 7d, and 3d reminders.
  */
 export async function checkAndSendRenewalReminders(supabase) {
   if (!supabase) return { count: 0, dispatched: [] };
 
   const now = new Date();
-  const eightDaysFromNow = new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000).toISOString();
+  const twelveDaysFromNow = new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Find active keys expiring within the next 8 days
+  // Find active keys expiring within the next 12 days
   const { data: keys, error } = await supabase
     .from('api_keys')
     .select(`
@@ -337,6 +377,7 @@ export async function checkAndSendRenewalReminders(supabase) {
       subscription_expires_at,
       subscription_status,
       orders_enabled,
+      request_details,
       profiles:user_id (
         email,
         full_name,
@@ -347,7 +388,7 @@ export async function checkAndSendRenewalReminders(supabase) {
     .eq('subscription_status', 'active')
     .not('subscription_expires_at', 'is', null)
     .gte('subscription_expires_at', now.toISOString())
-    .lte('subscription_expires_at', eightDaysFromNow);
+    .lte('subscription_expires_at', twelveDaysFromNow);
 
   if (error || !Array.isArray(keys)) {
     console.warn('[apiRenewalReminderService] Error fetching keys for reminders:', error);
@@ -368,28 +409,60 @@ export async function checkAndSendRenewalReminders(supabase) {
     const isPro = k.subscription_plan === 'pro' || k.orders_enabled;
     const planName = isPro ? 'Pro Scale' : 'Growth Partner';
     const planAmount = isPro ? 499 : 299;
+    const quarterlyAmount = isPro ? 1422 : 852;
+    const isQuarterly = Number(k.subscription_amount) > 500;
     const clientName = k.client_name || k.profiles?.business_name || k.profiles?.full_name || 'Partner';
 
     let reminderType = null;
     if (daysRemaining <= 3 && daysRemaining >= 1) {
       reminderType = '3d';
-    } else if (daysRemaining <= 7 && daysRemaining > 3) {
+    } else if (daysRemaining <= 7 && daysRemaining >= 4) {
       reminderType = '7d';
+    } else if (daysRemaining <= 10 && daysRemaining >= 8) {
+      reminderType = '10d';
     }
 
-    if (reminderType) {
-      const result = await sendApiRenewalEmail({
-        type: reminderType,
-        recipientEmail: userEmail,
-        clientName,
-        planName,
-        planAmount,
-        expiresAt: k.subscription_expires_at,
-        renewalUrl,
-      });
+    if (!reminderType) continue;
 
-      if (result.success) {
-        dispatched.push({ keyId: k.id, userEmail, daysRemaining, type: reminderType });
+    // Deduplication: Avoid re-sending same notification within 48 hours
+    const reqDetails = (k.request_details && typeof k.request_details === 'object') ? k.request_details : {};
+    const lastReminderType = reqDetails.last_renewal_reminder_type;
+    const lastReminderAt = reqDetails.last_renewal_reminder_at;
+    if (lastReminderType === reminderType && lastReminderAt) {
+      const msSinceLast = now.getTime() - new Date(lastReminderAt).getTime();
+      if (msSinceLast < 48 * 60 * 60 * 1000) {
+        continue;
+      }
+    }
+
+    const result = await sendApiRenewalEmail({
+      type: reminderType,
+      recipientEmail: userEmail,
+      clientName,
+      planName,
+      planAmount,
+      quarterlyAmount,
+      isQuarterly,
+      daysRemaining,
+      expiresAt: k.subscription_expires_at,
+      renewalUrl,
+    });
+
+    if (result.success) {
+      dispatched.push({ keyId: k.id, userEmail, daysRemaining, type: reminderType });
+      try {
+        await supabase
+          .from('api_keys')
+          .update({
+            request_details: {
+              ...reqDetails,
+              last_renewal_reminder_type: reminderType,
+              last_renewal_reminder_at: now.toISOString(),
+            },
+          })
+          .eq('id', k.id);
+      } catch (metaErr) {
+        console.warn('[apiRenewalReminderService] Failed to record reminder timestamp:', metaErr?.message);
       }
     }
   }
