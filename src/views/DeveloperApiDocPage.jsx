@@ -28,7 +28,6 @@ import {
   FileSpreadsheet,
   Truck,
   PlayIcon,
-  PauseIcon,
   Bell,
   GitBranch,
   ShieldCheck
@@ -606,25 +605,6 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         <PlayIcon size={28} />
                       </button>
                     )}
-
-                    <button
-                      type="button"
-                      className={`api-video-play-toggle-btn ${!isSyncxPlaying ? 'paused' : ''}`}
-                      onClick={toggleSyncxPlayback}
-                      aria-label={isSyncxPlaying ? 'Pause video' : 'Play video'}
-                    >
-                      {isSyncxPlaying ? (
-                        <>
-                          <PauseIcon size={13} />
-                          <span>Pause</span>
-                        </>
-                      ) : (
-                        <>
-                          <PlayIcon size={13} />
-                          <span>Play</span>
-                        </>
-                      )}
-                    </button>
                   </div>
                 </div>
 
