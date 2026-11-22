@@ -18,7 +18,7 @@ export function isAdminUser(user) {
 
 export async function safeSelect(table, query = '*') {
   let req = supabase.from(table).select(query);
-  const tablesWithCreatedAt = ['site_analytics', 'inquiries', 'orders', 'api_orders'];
+  const tablesWithCreatedAt = ['site_analytics', 'inquiries', 'orders', 'api_orders', 'api_keys'];
   if (tablesWithCreatedAt.includes(table)) {
     req = req.order('created_at', { ascending: false });
   } else if (table === 'download_logs') {

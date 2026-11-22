@@ -84,6 +84,7 @@ const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'orders', label: 'Orders' },
   { key: 'api_orders', label: 'API Orders' },
+  { key: 'api_keys', label: 'API Keys' },
   { key: 'addresses', label: 'Addresses' },
   { key: 'download_logs', label: 'Download Logs' },
   { key: 'site_analytics', label: 'Site Analytics' },
@@ -701,13 +702,53 @@ export function Admin({
   }, [allowed, activeUser?.id]);
 
   useEffect(() => {
-    if ((activeTab === 'partners' || activeTab === 'enquires' || activeTab === 'tracking') && allowed) {
+    if ((activeTab === 'partners' || activeTab === 'enquires' || activeTab === 'tracking' || activeTab === 'api-manager') && allowed) {
       void loadAdminData();
     }
     if (activeTab === 'reviews' && allowed) {
       void loadSiteReviews();
     }
   }, [activeTab, allowed]);
+
+  // Real-time synchronization for new Developer API requests, Orders, and Inquiries
+  useEffect(() => {
+    if (!isSupabaseConfigured || !allowed) return;
+
+    const channel = supabase
+      .channel('admin-realtime-notifications')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'api_keys' },
+        () => {
+          void loadAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'inquiries' },
+        () => {
+          void loadAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          void loadAdminData();
+        }
+      )
+      .subscribe();
+
+    const handleWindowFocus = () => {
+      void loadAdminData();
+    };
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [allowed]);
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
@@ -904,6 +945,22 @@ export function Admin({
     }).length;
   }, [adminData.optional.inquiries]);
 
+  const pendingApiRequestsCount = useMemo(() => {
+    const keys = adminData?.optional?.api_keys || [];
+    const profiles = adminData?.profiles || [];
+    const profileMap = new Map(profiles.map(p => [p.id, p]));
+
+    return keys.filter(k => {
+      if (k.is_active) return false;
+      if (k.approval_status === 'approved' || k.approval_status === 'rejected') return false;
+      const p = k.profiles || profileMap.get(k.user_id);
+      const hasAccessRequest = k.approval_status === 'pending' ||
+        Boolean(p?.qualification?.api_access_request) ||
+        Boolean(k.request_details);
+      return hasAccessRequest;
+    }).length;
+  }, [adminData?.optional?.api_keys, adminData?.profiles]);
+
   const sidebarSections = [
     {
       title: 'General',
@@ -935,7 +992,7 @@ export function Admin({
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },
         { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
-        { key: 'api-manager', label: 'Developer API', icon: Code2, badge: null },
+        { key: 'api-manager', label: 'Developer API', icon: Code2, badge: pendingApiRequestsCount > 0 ? pendingApiRequestsCount : null },
       ],
     },
   ];

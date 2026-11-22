@@ -337,6 +337,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
           if (error) throw error;
           setAllKeys((prev) => prev.filter((k) => k.id !== keyId));
           if (inspectedKeyId === keyId) setInspectedKeyId(null);
+          if (loadAdminData) loadAdminData();
           alert('API Key revoked and deleted successfully.');
         } catch (err) {
           alert('Failed to delete key: ' + err.message);
@@ -362,6 +363,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       });
       setNewlyCreatedKeySecret(rawSecretKey);
       await fetchOverview();
+      if (loadAdminData) loadAdminData();
     } catch (err) {
       alert('Failed to create API Key: ' + err.message);
     } finally {
@@ -1460,6 +1462,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       if (error) throw error;
                       setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, approval_status: 'approved', subscription_status: 'pending_payment', is_active: false } : k)));
                       setReviewRequestItem((prev) => (prev ? { ...prev, approval_status: 'approved', subscription_status: 'pending_payment', is_active: false } : null));
+                      if (loadAdminData) loadAdminData();
                       alert('API Access approved! The partner can now select either Growth Partner (₹299/mo) or Pro Scale (₹499/mo) plan to activate their API key.');
                     } catch (err) {
                       alert('Failed to approve API access: ' + err.message);
@@ -1512,6 +1515,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       if (error) throw error;
                       setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true, approval_status: 'approved', subscription_status: 'active', subscription_expires_at: expiresAt } : k)));
                       setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true, approval_status: 'approved', subscription_status: 'active', subscription_expires_at: expiresAt } : null));
+                      if (loadAdminData) loadAdminData();
                       alert('Key directly activated by Admin override.');
                     } catch (err) {
                       alert('Failed to activate key: ' + err.message);
