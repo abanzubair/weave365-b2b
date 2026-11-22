@@ -148,18 +148,30 @@
 
 .api-sidebar {
   position: sticky;
-  top: 96px;
-  max-height: calc(100vh - 120px);
+  top: 76px;
+  max-height: calc(100vh - 84px);
   overflow-y: auto;
   padding-right: 0.5rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  scroll-behavior: smooth;
 }
 
 .api-sidebar::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+  width: 4px;
+}
+
+.api-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.api-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.api-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .api-sidebar-back-btn {
@@ -169,11 +181,11 @@
   background: none;
   border: none;
   color: #0f172a;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 0;
-  margin-bottom: 1.5rem;
+  padding: 4px 0;
+  margin-bottom: 0.875rem;
   transition: color 0.15s ease;
 }
 
@@ -182,16 +194,16 @@
 }
 
 .api-sidebar-group {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.125rem;
 }
 
 .api-sidebar-title {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #0f172a;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.35rem 0;
   padding-left: 0.5rem;
 }
 
@@ -201,21 +213,21 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .api-sidebar-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
+  padding: 5.5px 8px;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
   text-decoration: none;
   transition: all 0.15s ease;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .api-sidebar-link:hover {

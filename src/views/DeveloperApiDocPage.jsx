@@ -105,6 +105,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const shopifyVideoRef = useRef(null);
   const mobileTocRef = useRef(null);
+  const desktopSidebarRef = useRef(null);
   const isClickScrollingRef = useRef(false);
   const clickScrollTimerRef = useRef(null);
 
@@ -147,6 +148,31 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
         left: Math.max(0, targetScrollLeft),
         behavior: 'smooth',
       });
+    }
+  }, [activeSection]);
+
+  // Automatically scroll desktop left sidebar to keep the active section link visible
+  useEffect(() => {
+    if (!desktopSidebarRef.current) return;
+    const activeLink = desktopSidebarRef.current.querySelector(`.api-sidebar-link[data-section="${activeSection}"]`);
+    if (activeLink) {
+      const container = desktopSidebarRef.current;
+      const linkRect = activeLink.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      // Check if active link is out of view (above or below visible region)
+      const isAbove = linkRect.top < containerRect.top + 24;
+      const isBelow = linkRect.bottom > containerRect.bottom - 24;
+
+      if (isAbove || isBelow) {
+        const linkTopRelative = linkRect.top - containerRect.top + container.scrollTop;
+        const targetScrollTop = linkTopRelative - (container.clientHeight / 2) + (linkRect.height / 2);
+
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: 'smooth',
+        });
+      }
     }
   }, [activeSection]);
 
@@ -219,7 +245,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
       <div className="api-docs-container">
         {/* Sticky Desktop Left Navigation Sidebar */}
         <aside className="api-sidebar-wrapper">
-          <div className="api-sidebar">
+          <div className="api-sidebar" ref={desktopSidebarRef}>
             {onSwitchToLanding && (
               <button type="button" onClick={onSwitchToLanding} className="api-sidebar-back-btn">
                 &larr; Back to Portal
@@ -236,6 +262,8 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       <li key={item.id}>
                         <a
                           href={`#${item.id}`}
+                          data-section={item.id}
+                          aria-current={isActive ? 'true' : undefined}
                           onClick={(e) => {
                             e.preventDefault();
                             scrollToSection(item.id);
