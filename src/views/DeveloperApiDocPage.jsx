@@ -262,7 +262,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   </tr>
                   <tr>
                     <td><strong>Edge Performance</strong></td>
-                    <td>Global Cloudflare CDN caching; sub-0.5ms stock status lookups with 0ms database lag</td>
+                    <td>Sub-0.5ms stock status lookups with 0ms database lag via global edge network</td>
                   </tr>
                   <tr>
                     <td><strong>Wholesale Pricing</strong></td>

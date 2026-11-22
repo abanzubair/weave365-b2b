@@ -2570,7 +2570,7 @@ export function DeveloperDashboard({
                 <div className="dev-cred-row">
                   <div className="dev-cred-info">
                     <span className="dev-cred-name">Base API URL</span>
-                    <span className="dev-cred-desc">Production Cloudflare Edge endpoint</span>
+                    <span className="dev-cred-desc">Production Edge endpoint</span>
                   </div>
                   <div className="dev-cred-input-wrap">
                     <input
