@@ -167,7 +167,7 @@ export function ConfirmActionModal({
             )}
           </div>
           <button type="button" className="dev-confirm-close-btn" onClick={onCancel} aria-label="Close">
-            ✕
+            <X size={14} />
           </button>
         </div>
 
@@ -656,7 +656,7 @@ export function PlanSelectionCard({
       });
 
       if (verifyRes?.success && verifyRes.is_paid) {
-        setSuccessMsg(`🎉 Payment confirmed! Your ${isQuarterly ? '90-day' : '30-day'} Developer API subscription is now active.`);
+        setSuccessMsg(`Payment confirmed! Your ${isQuarterly ? '90-day' : '30-day'} Developer API subscription is now active.`);
         if (onActivated) {
           onActivated(verifyRes.keyRecord);
         }
@@ -998,7 +998,7 @@ export function DeveloperDashboard({
           if (res?.success && res.keyRecord) {
             setApiKey(res.keyRecord);
             const is90Days = (res.keyRecord?.subscription_amount > 500) || String(subOrderId).includes('_3M_');
-            setSubNotice({ type: 'success', message: `🎉 Payment successful! Your ${is90Days ? '90-day' : '30-day'} Developer API subscription is active.` });
+            setSubNotice({ type: 'success', message: `Payment successful! Your ${is90Days ? '90-day' : '30-day'} Developer API subscription is active.` });
             const cleanUrl = window.location.pathname + '?tab=developer';
             window.history.replaceState({}, document.title, cleanUrl);
             if (onAdminUpdate) onAdminUpdate(res.keyRecord);
@@ -1390,11 +1390,26 @@ export function DeveloperDashboard({
     });
   };
 
-  const copyToClipboard = (text, fieldId) => {
+  const copyToClipboard = async (text, fieldId) => {
     if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopiedField(fieldId);
-    setTimeout(() => setCopiedField(null), 2000);
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedField(fieldId);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      console.warn('Clipboard write failed:', err);
+    }
   };
 
   const handleToggleUseCase = (useCase) => {
@@ -2236,10 +2251,10 @@ export function DeveloperDashboard({
           <button
             type="button"
             onClick={() => setSubNotice(null)}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'inherit' }}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'inherit', display: 'inline-flex', alignItems: 'center' }}
             aria-label="Dismiss message"
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
       )}
@@ -2378,7 +2393,7 @@ export function DeveloperDashboard({
             onClick={() => setNewGeneratedSecret(null)}
             aria-label="Dismiss notification"
           >
-            ✕
+            <X size={14} />
           </button>
 
           <div className="dev-alert-left">
@@ -2542,7 +2557,8 @@ export function DeveloperDashboard({
               className="dev-studio-docs-link"
             >
               <BookOpen size={14} />
-              <span>API Documentation ↗</span>
+              <span>API Documentation</span>
+              <ExternalLink size={12} />
             </a>
           </div>
         </aside>
@@ -2595,7 +2611,9 @@ export function DeveloperDashboard({
                     <span className="dev-cred-name">API Secret Key</span>
                     <span className="dev-cred-desc">
                       {!apiKey?.is_active ? (
-                        <span style={{ color: '#dc2626', fontWeight: 600 }}>⚠️ Inactive: Incoming requests with this key will return 403 Forbidden</span>
+                        <span style={{ color: '#dc2626', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <AlertTriangle size={13} /> Inactive: Incoming requests with this key will return 403 Forbidden
+                        </span>
                       ) : (
                         <>Pass in HTTP header: <code className="dev-header-code-pill">X-API-Key:&nbsp;&lt;your_key&gt;</code></>
                       )}
@@ -2896,7 +2914,9 @@ export function DeveloperDashboard({
                   className="dev-curator-search-input"
                 />
                 {curatorSearch && (
-                  <button type="button" onClick={() => setCuratorSearch('')} className="dev-clear-search">✕</button>
+                  <button type="button" onClick={() => setCuratorSearch('')} className="dev-clear-search" aria-label="Clear search">
+                    <X size={12} />
+                  </button>
                 )}
               </div>
 
@@ -3071,11 +3091,11 @@ export function DeveloperDashboard({
 
     {/* TAB 4: Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) - Reseller User Mode Only */}
     {activeDevTab === 'guides' && !isAdminMode && (
-      <div className="dev-card">
-          <div className="dev-card-head">
+      <div className="dev-guides-surface">
+          <div className="dev-card-head dev-guides-head">
             <div className="dev-card-title">
-              <Code2 size={18} />
-              <h3>Platform Integration Guides & Ready-Made Scripts</h3>
+              <Code2 size={16} />
+              <h3>Platform Integration Guides &amp; Ready-Made Scripts</h3>
             </div>
             <a
               href="/developer-api"
@@ -3084,13 +3104,17 @@ export function DeveloperDashboard({
               className="dev-card-docs-link"
               title="Read complete REST API documentation and payload schemas"
             >
-              <ExternalLink size={13} /> Full API Reference
+              <ExternalLink size={12} /> Full API Reference
             </a>
           </div>
 
-          <div className="dev-platform-tabs">
+          <div className="dev-platform-tabs" role="tablist" aria-label="Platform Integration Guides">
             <button
               type="button"
+              role="tab"
+              id="plat-tab-woocommerce"
+              aria-controls="plat-panel-woocommerce"
+              aria-selected={activePlatformTab === 'woocommerce'}
               className={`dev-plat-tab ${activePlatformTab === 'woocommerce' ? 'active' : ''}`}
               onClick={() => setActivePlatformTab('woocommerce')}
             >
@@ -3098,6 +3122,10 @@ export function DeveloperDashboard({
             </button>
             <button
               type="button"
+              role="tab"
+              id="plat-tab-shopify"
+              aria-controls="plat-panel-shopify"
+              aria-selected={activePlatformTab === 'shopify'}
               className={`dev-plat-tab ${activePlatformTab === 'shopify' ? 'active' : ''}`}
               onClick={() => setActivePlatformTab('shopify')}
             >
@@ -3105,6 +3133,10 @@ export function DeveloperDashboard({
             </button>
             <button
               type="button"
+              role="tab"
+              id="plat-tab-prestashop"
+              aria-controls="plat-panel-prestashop"
+              aria-selected={activePlatformTab === 'prestashop'}
               className={`dev-plat-tab ${activePlatformTab === 'prestashop' ? 'active' : ''}`}
               onClick={() => setActivePlatformTab('prestashop')}
             >
@@ -3112,6 +3144,10 @@ export function DeveloperDashboard({
             </button>
             <button
               type="button"
+              role="tab"
+              id="plat-tab-curl"
+              aria-controls="plat-panel-curl"
+              aria-selected={activePlatformTab === 'curl'}
               className={`dev-plat-tab ${activePlatformTab === 'curl' ? 'active' : ''}`}
               onClick={() => setActivePlatformTab('curl')}
             >
@@ -3119,6 +3155,10 @@ export function DeveloperDashboard({
             </button>
             <button
               type="button"
+              role="tab"
+              id="plat-tab-javascript"
+              aria-controls="plat-panel-javascript"
+              aria-selected={activePlatformTab === 'javascript'}
               className={`dev-plat-tab ${activePlatformTab === 'javascript' ? 'active' : ''}`}
               onClick={() => setActivePlatformTab('javascript')}
             >
@@ -3126,16 +3166,73 @@ export function DeveloperDashboard({
             </button>
           </div>
 
-          <div className="dev-platform-content">
+          <div
+            className="dev-platform-content"
+            role="tabpanel"
+            id={`plat-panel-${activePlatformTab}`}
+            aria-labelledby={`plat-tab-${activePlatformTab}`}
+            tabIndex={0}
+          >
             {activePlatformTab === 'woocommerce' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet:</h4>
+                  <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet</h4>
                   <p>
                     Paste this snippet into your child theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It automatically queries Weave365 hourly and updates inventory status for all products matching your catalog SKUs.
                   </p>
                 </div>
                 <div className="dev-code-block-wrap">
+                  <div className="dev-code-header">
+                    <span className="dev-code-lang">PHP · functions.php</span>
+                    <button
+                      type="button"
+                      className={`dev-code-copy-btn ${copiedField === 'woo-code' ? 'copied' : ''}`}
+                      onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
+add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
+
+function sync_weave365_inventory() {
+    $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
+    $url = 'https://www.weave365.com/api/v1/stock-status';
+    
+    $response = wp_remote_get($url, [
+        'headers' => ['X-API-Key' => $api_key],
+        'timeout' => 25,
+        'sslverify' => true,
+    ]);
+    
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+        return;
+    }
+    
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (!empty($body['stock_map']) && is_array($body['stock_map'])) {
+        foreach ($body['stock_map'] as $sku => $data) {
+            $product_id = wc_get_product_id_by_sku((string)$sku);
+            if ($product_id) {
+                $product = wc_get_product($product_id);
+                if ($product) {
+                    $is_available = !empty($data['is_available']);
+                    $product->set_stock_status($is_available ? 'instock' : 'outofstock');
+                    if ($product->get_manage_stock()) {
+                        $product->set_stock_quantity($is_available ? 5 : 0);
+                    }
+                    $product->save();
+                    wc_delete_product_transients($product_id);
+                }
+            }
+        }
+    }
+}
+
+if (!wp_next_scheduled('weave365_cron_stock_sync')) {
+    wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
+}`, 'woo-code')}
+                      aria-label="Copy WooCommerce PHP snippet"
+                    >
+                      {copiedField === 'woo-code' ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedField === 'woo-code' ? 'Copied' : 'Copy PHP Snippet'}</span>
+                    </button>
+                  </div>
                   <pre>
                     {`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
 add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
@@ -3179,52 +3276,6 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
     wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
 }`}
                   </pre>
-                  <button
-                    type="button"
-                    className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
-add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
-
-function sync_weave365_inventory() {
-    $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
-    $url = 'https://www.weave365.com/api/v1/stock-status';
-    
-    $response = wp_remote_get($url, [
-        'headers' => ['X-API-Key' => $api_key],
-        'timeout' => 25,
-        'sslverify' => true,
-    ]);
-    
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-        return;
-    }
-    
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    if (!empty($body['stock_map']) && is_array($body['stock_map'])) {
-        foreach ($body['stock_map'] as $sku => $data) {
-            $product_id = wc_get_product_id_by_sku((string)$sku);
-            if ($product_id) {
-                $product = wc_get_product($product_id);
-                if ($product) {
-                    $is_available = !empty($data['is_available']);
-                    $product->set_stock_status($is_available ? 'instock' : 'outofstock');
-                    if ($product->get_manage_stock()) {
-                        $product->set_stock_quantity($is_available ? 5 : 0);
-                    }
-                    $product->save();
-                    wc_delete_product_transients($product_id);
-                }
-            }
-        }
-    }
-}
-
-if (!wp_next_scheduled('weave365_cron_stock_sync')) {
-    wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
-}`, 'woo-code')}
-                  >
-                    {copiedField === 'woo-code' ? <Check size={14} /> : <Copy size={14} />} Copy PHP Snippet
-                  </button>
                 </div>
               </div>
             )}
@@ -3232,130 +3283,258 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
             {activePlatformTab === 'shopify' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">Shopify Automated Inventory Sync:</h4>
+                  <h4 className="dev-plat-title">Shopify Automated Inventory Sync</h4>
                   <p>
                     Connect using Shopify inventory apps such as <strong>Stock Sync (syncX)</strong> or <strong>Matrixify</strong>. Weave365 provides out-of-the-box auto-mapping with zero manual field matching.
                   </p>
                 </div>
 
-                <div className="dev-shopify-box" style={{ marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                    <label className="dev-shopify-label" style={{ marginBottom: 0 }}>
-                      ⚡ <strong>Stock Sync (syncX) Feed URL (Recommended & Zero Config):</strong>
-                    </label>
-                    <span style={{ fontSize: '11px', color: '#059669', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
-                      Auto-Detects JSON & Auto-Maps Fields
-                    </span>
+                {/* Section 1: Stock Sync (syncX) Feed */}
+                <section className="dev-guide-section" aria-labelledby="heading-stocksync">
+                  <div className="dev-guide-section-header">
+                    <div className="dev-guide-section-title-wrap">
+                      <h5 id="heading-stocksync" className="dev-guide-section-title">
+                        Stock Sync (syncX) Feed URL
+                      </h5>
+                      <span className="dev-guide-pill dev-pill-recommended">
+                        Recommended · Auto-maps fields
+                      </span>
+                    </div>
                   </div>
-                  <div className="dev-feed-input-group">
+
+                  <div className="dev-endpoint-bar">
+                    <span className="dev-endpoint-tag">JSON Feed</span>
                     <input
                       type="text"
                       readOnly
                       value={`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=stocksync`}
-                      className="dev-feed-input"
+                      className="dev-endpoint-url"
+                      aria-label="Stock Sync feed URL"
                     />
                     <button
                       type="button"
-                      className="dev-feed-copy-btn"
+                      className={`dev-endpoint-copy-btn ${copiedField === 'stocksync-url' ? 'copied' : ''}`}
                       onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=stocksync`, 'stocksync-url')}
+                      aria-label="Copy Stock Sync feed URL"
                     >
-                      {copiedField === 'stocksync-url' ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedField === 'stocksync-url' ? <Check size={13} /> : <Copy size={13} />}
                       <span>{copiedField === 'stocksync-url' ? 'Copied' : 'Copy Feed URL'}</span>
                     </button>
                   </div>
-                  <div className="dev-shopify-steps">
-                    <div className="dev-step-item">
-                      <span className="dev-step-num">1</span>
-                      <div className="dev-step-text">In Shopify, open <strong>Stock Sync (SyncX)</strong> &rarr; Select <strong>Add New Update / Add Products</strong>.</div>
+
+                  <div className="dev-guide-steps">
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">1.</span>
+                      <div className="dev-guide-step-body">
+                        In Shopify, open <strong>Stock Sync (SyncX)</strong> <ArrowRight size={12} className="dev-inline-svg-arrow" aria-hidden="true" /> Select <strong>Add New Update / Add Products</strong>.
+                      </div>
                     </div>
-                    <div className="dev-step-item">
-                      <span className="dev-step-num">2</span>
-                      <div className="dev-step-text">Choose <strong>REST API / URL</strong> and paste the URL above. No custom headers or root node required!</div>
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">2.</span>
+                      <div className="dev-guide-step-body">
+                        Choose <strong>REST API / URL</strong> and paste the URL above. No custom headers or root node required!
+                      </div>
                     </div>
-                    <div className="dev-step-item">
-                      <span className="dev-step-num">3</span>
-                      <div className="dev-step-text">
-                        In <strong>Step 2: Matching column</strong>, map:
-                        <div style={{ marginTop: '4px', fontSize: '11.5px', color: '#475569', lineHeight: 1.5 }}>
-                          • <strong>Identifier:</strong> SKU &rarr; <code>sku</code><br />
-                          • <strong>Store fields:</strong> Title &rarr; <code>title</code>, Price &rarr; <code>price</code>, Quantity &rarr; <code>quantity</code><br />
-                          • <strong>Images:</strong> Gallery &rarr; <code>images</code> <em>(Set delimiter to comma <code>,</code> in Smart Setting)</em>, Variant image &rarr; <code>variant_image</code><br />
-                          • <strong>Variants:</strong> Group by <code>handle</code>, Variant Option 1 &rarr; <code>color</code>
-                        </div>
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">3.</span>
+                      <div className="dev-guide-step-body">
+                        In <strong>Step 2 Matching Column</strong>, map the following fields
+                        <ul className="dev-mapping-list">
+                          <li className="dev-mapping-item">
+                            <span className="dev-mapping-label">Identifier</span>
+                            <ArrowRight size={12} className="dev-inline-svg-arrow" aria-hidden="true" />
+                            <span className="dev-mapping-code">sku</span>
+                          </li>
+                          <li className="dev-mapping-item">
+                            <span className="dev-mapping-label">Store fields</span>
+                            <ArrowRight size={12} className="dev-inline-svg-arrow" aria-hidden="true" />
+                            <span className="dev-mapping-tokens">
+                              <span>Title <span className="dev-mapping-code">title</span></span>
+                              <span className="dev-mapping-bullet" aria-hidden="true">&bull;</span>
+                              <span>Price <span className="dev-mapping-code">price</span></span>
+                              <span className="dev-mapping-bullet" aria-hidden="true">&bull;</span>
+                              <span>Quantity <span className="dev-mapping-code">quantity</span></span>
+                            </span>
+                          </li>
+                          <li className="dev-mapping-item">
+                            <span className="dev-mapping-label">Images</span>
+                            <ArrowRight size={12} className="dev-inline-svg-arrow" aria-hidden="true" />
+                            <span className="dev-mapping-tokens">
+                              <span>Gallery <span className="dev-mapping-code">images</span> <span className="dev-mapping-hint">(comma delimiter in Smart Setting)</span></span>
+                              <span className="dev-mapping-bullet" aria-hidden="true">&bull;</span>
+                              <span>Variant image <span className="dev-mapping-code">variant_image</span></span>
+                            </span>
+                          </li>
+                          <li className="dev-mapping-item">
+                            <span className="dev-mapping-label">Variants</span>
+                            <ArrowRight size={12} className="dev-inline-svg-arrow" aria-hidden="true" />
+                            <span className="dev-mapping-tokens">
+                              <span>Group by <span className="dev-mapping-code">handle</span></span>
+                              <span className="dev-mapping-bullet" aria-hidden="true">&bull;</span>
+                              <span>Option 1 <span className="dev-mapping-code">color</span></span>
+                            </span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </div>
-                  <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+
+                  <div className="dev-guide-link-wrap">
                     <a
                       href="/developer-api#shopify-guide"
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+                      className="dev-guide-link"
                     >
-                      📖 View Complete SyncX Setup Guide (30% Price Markup, Images &amp; Variants) &rarr;
+                      <BookOpen size={13} />
+                      <span>View Complete SyncX Setup Guide (30% Price Markup, Images &amp; Variants)</span>
+                      <ArrowRight size={12} className="dev-guide-link-arrow" />
                     </a>
                   </div>
-                </div>
+                </section>
 
-                <div className="dev-shopify-box" style={{ marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                    <label className="dev-shopify-label" style={{ marginBottom: 0 }}>
-                      📊 <strong>Matrixify / Shopify Native CSV Feed URL:</strong>
-                    </label>
-                    <span style={{ fontSize: '11px', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
-                      Standard Shopify Products CSV
-                    </span>
+                {/* Section 2: Matrixify / Shopify Native CSV Feed */}
+                <section className="dev-guide-section" aria-labelledby="heading-matrixify">
+                  <div className="dev-guide-section-header">
+                    <div className="dev-guide-section-title-wrap">
+                      <h5 id="heading-matrixify" className="dev-guide-section-title">
+                        Matrixify / Shopify Native CSV Feed URL
+                      </h5>
+                      <span className="dev-guide-pill dev-pill-info">
+                        Standard Shopify CSV
+                      </span>
+                    </div>
+                    <p className="dev-guide-section-desc">
+                      Paste into Matrixify <strong>From URL</strong> (when prompted under <em>Select Entity</em>, select <strong>Products</strong>), or open in browser to download <code>weave365-catalog.csv</code> for direct drag-and-drop into Matrixify or Shopify Admin.
+                    </p>
                   </div>
-                  <div className="dev-feed-input-group">
+
+                  <div className="dev-endpoint-bar">
+                    <span className="dev-endpoint-tag">CSV Feed</span>
                     <input
                       type="text"
                       readOnly
                       value={`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=matrixify`}
-                      className="dev-feed-input"
+                      className="dev-endpoint-url"
+                      aria-label="Matrixify CSV feed URL"
                     />
                     <button
                       type="button"
-                      className="dev-feed-copy-btn"
+                      className={`dev-endpoint-copy-btn ${copiedField === 'matrixify-url' ? 'copied' : ''}`}
                       onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=matrixify`, 'matrixify-url')}
+                      aria-label="Copy Matrixify CSV feed URL"
                     >
-                      {copiedField === 'matrixify-url' ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedField === 'matrixify-url' ? <Check size={13} /> : <Copy size={13} />}
                       <span>{copiedField === 'matrixify-url' ? 'Copied' : 'Copy CSV URL'}</span>
                     </button>
                   </div>
-                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>
-                    Paste into Matrixify <strong>From URL</strong> (when prompted under <em>&quot;Select Entity&quot;</em>, select <strong>Products</strong>), or open in browser to download <code>weave365-catalog.csv</code> for direct drag-and-drop into Matrixify or Shopify Admin.
-                  </div>
-                </div>
+                </section>
 
-                <div className="dev-shopify-box">
-                  <label className="dev-shopify-label">Standard Shopify REST API Feed (Nested Variants):</label>
-                  <div className="dev-feed-input-group">
+                {/* Section 3: Standard Shopify REST API Feed */}
+                <section className="dev-guide-section" aria-labelledby="heading-shopify-rest">
+                  <div className="dev-guide-section-header">
+                    <div className="dev-guide-section-title-wrap">
+                      <h5 id="heading-shopify-rest" className="dev-guide-section-title">
+                        Standard Shopify REST API Feed (Nested Variants)
+                      </h5>
+                      <span className="dev-guide-pill dev-pill-neutral">
+                        REST JSON
+                      </span>
+                    </div>
+                    <p className="dev-guide-section-desc">
+                      Direct REST API endpoint with nested variant structures compatible with standard Shopify store sync scripts and custom ERP integrations.
+                    </p>
+                  </div>
+
+                  <div className="dev-endpoint-bar">
+                    <span className="dev-endpoint-tag">REST JSON</span>
                     <input
                       type="text"
                       readOnly
                       value={`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=shopify`}
-                      className="dev-feed-input"
+                      className="dev-endpoint-url"
+                      aria-label="Shopify REST API feed URL"
                     />
                     <button
                       type="button"
-                      className="dev-feed-copy-btn"
+                      className={`dev-endpoint-copy-btn ${copiedField === 'shopify-url' ? 'copied' : ''}`}
                       onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.json?key=${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}&format=shopify`, 'shopify-url')}
+                      aria-label="Copy Shopify REST feed URL"
                     >
-                      {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedField === 'shopify-url' ? <Check size={13} /> : <Copy size={13} />}
                       <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
                     </button>
                   </div>
-                </div>
+                </section>
               </div>
             )}
 
             {activePlatformTab === 'prestashop' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">PrestaShop Sync Script:</h4>
-                  <p>Run via PrestaShop Cron or custom module connector to synchronize warehouse quantities:</p>
+                  <h4 className="dev-plat-title">PrestaShop Sync Script</h4>
+                  <p>Run via PrestaShop Cron or custom module connector to synchronize warehouse quantities.</p>
                 </div>
                 <div className="dev-code-block-wrap">
+                  <div className="dev-code-header">
+                    <span className="dev-code-lang">PHP · PrestaShop 1.7 / 8.x Synchronizer</span>
+                    <button
+                      type="button"
+                      className={`dev-code-copy-btn ${copiedField === 'prestashop-code' ? 'copied' : ''}`}
+                      onClick={() => copyToClipboard(`<?php
+// === Weave365 PrestaShop 1.7 / 8.x Stock Synchronizer ===
+require_once dirname(__FILE__) . '/config/config.inc.php';
+
+$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
+$url = 'https://www.weave365.com/api/v1/stock-status';
+
+$ch = curl_init($url);
+curl_setopt_array($ch, [
+    CURLOPT_HTTPHEADER => ["X-API-Key: $apiKey"],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 25,
+    CURLOPT_SSL_VERIFYPEER => true,
+]);
+
+$res = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($http_code === 200 && $res) {
+    $data = json_decode($res, true);
+    if (!empty($data['stock_map']) && is_array($data['stock_map'])) {
+        $count = 0;
+        foreach ($data['stock_map'] as $sku => $item) {
+            $is_available = !empty($item['is_available']);
+            $qty = $is_available ? 5 : 0;
+            
+            // 1. Check standard product reference
+            $id_product = (int)Db::getInstance()->getValue(
+                'SELECT id_product FROM ' . _DB_PREFIX_ . 'product WHERE reference = "' . pSQL($sku) . '"'
+            );
+            if ($id_product > 0) {
+                StockAvailable::setQuantity($id_product, 0, $qty);
+                $count++;
+            } else {
+                // 2. Check product combinations / variant attributes
+                $comb = Db::getInstance()->getRow(
+                    'SELECT id_product, id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE reference = "' . pSQL($sku) . '"'
+                );
+                if (!empty($comb['id_product'])) {
+                    StockAvailable::setQuantity((int)$comb['id_product'], (int)$comb['id_product_attribute'], $qty);
+                    $count++;
+                }
+            }
+        }
+        echo "Successfully synced stock for {$count} products from Weave365.\\n";
+    }
+}`, 'prestashop-code')}
+                      aria-label="Copy PrestaShop PHP snippet"
+                    >
+                      {copiedField === 'prestashop-code' ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedField === 'prestashop-code' ? 'Copied' : 'Copy PHP Snippet'}</span>
+                    </button>
+                  </div>
                   <pre>
                     {`<?php
 // === Weave365 PrestaShop 1.7 / 8.x Stock Synchronizer ===
@@ -3406,60 +3585,6 @@ if ($http_code === 200 && $res) {
     }
 }`}
                   </pre>
-                  <button
-                    type="button"
-                    className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`<?php
-// === Weave365 PrestaShop 1.7 / 8.x Stock Synchronizer ===
-require_once dirname(__FILE__) . '/config/config.inc.php';
-
-$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
-$url = 'https://www.weave365.com/api/v1/stock-status';
-
-$ch = curl_init($url);
-curl_setopt_array($ch, [
-    CURLOPT_HTTPHEADER => ["X-API-Key: $apiKey"],
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 25,
-    CURLOPT_SSL_VERIFYPEER => true,
-]);
-
-$res = curl_exec($ch);
-$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-if ($http_code === 200 && $res) {
-    $data = json_decode($res, true);
-    if (!empty($data['stock_map']) && is_array($data['stock_map'])) {
-        $count = 0;
-        foreach ($data['stock_map'] as $sku => $item) {
-            $is_available = !empty($item['is_available']);
-            $qty = $is_available ? 5 : 0;
-            
-            // 1. Check standard product reference
-            $id_product = (int)Db::getInstance()->getValue(
-                'SELECT id_product FROM ' . _DB_PREFIX_ . 'product WHERE reference = "' . pSQL($sku) . '"'
-            );
-            if ($id_product > 0) {
-                StockAvailable::setQuantity($id_product, 0, $qty);
-                $count++;
-            } else {
-                // 2. Check product combinations / variant attributes
-                $comb = Db::getInstance()->getRow(
-                    'SELECT id_product, id_product_attribute FROM ' . _DB_PREFIX_ . 'product_attribute WHERE reference = "' . pSQL($sku) . '"'
-                );
-                if (!empty($comb['id_product'])) {
-                    StockAvailable::setQuantity((int)$comb['id_product'], (int)$comb['id_product_attribute'], $qty);
-                    $count++;
-                }
-            }
-        }
-        echo "Successfully synced stock for {$count} products from Weave365.\\n";
-    }
-}`, 'prestashop-code')}
-                  >
-                    {copiedField === 'prestashop-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'prestashop-code' ? 'Copied' : 'Copy PHP Snippet'}
-                  </button>
                 </div>
               </div>
             )}
@@ -3467,9 +3592,55 @@ if ($http_code === 200 && $res) {
             {activePlatformTab === 'curl' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">cURL Command Examples:</h4>
+                  <h4 className="dev-plat-title">cURL Command Examples</h4>
                 </div>
                 <div className="dev-code-block-wrap">
+                  <div className="dev-code-header">
+                    <span className="dev-code-lang">Bash / Terminal · cURL Examples</span>
+                    <button
+                      type="button"
+                      className={`dev-code-copy-btn ${copiedField === 'curl-code' ? 'copied' : ''}`}
+                      onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog (Paginated: page=1, limit=50)
+curl -X GET "https://www.weave365.com/api/v1/catalog?page=1&limit=50" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 2. Fetch Lightweight Stock Availability Map
+curl -X GET "https://www.weave365.com/api/v1/stock-status" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 3. Query Specific Product by SKU
+curl -X GET "https://www.weave365.com/api/v1/products/602008" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
+
+# 4. Place Automated Dropship Order via API (Pro Tier)
+curl -X POST "https://www.weave365.com/api/v1/orders" \\
+  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "reseller_order_id": "ORD-101",
+    "customer": {
+      "name": "Priya Sharma",
+      "phone": "9876543210",
+      "pincode": "560038",
+      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka"
+    },
+    "items": [
+      {
+        "sku": "602008",
+        "color": "Green",
+        "quantity": 1,
+        "selling_price": 1149
+      }
+    ]
+  }'`, 'curl-code')}
+                      aria-label="Copy cURL commands"
+                    >
+                      {copiedField === 'curl-code' ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}</span>
+                    </button>
+                  </div>
                   <pre>
                     {`# 1. Fetch Complete Wholesale Catalog (Paginated: page=1, limit=50)
 curl -X GET "https://www.weave365.com/api/v1/catalog?page=1&limit=50" \\
@@ -3507,47 +3678,6 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
     ]
   }'`}
                   </pre>
-                  <button
-                    type="button"
-                    className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog (Paginated: page=1, limit=50)
-curl -X GET "https://www.weave365.com/api/v1/catalog?page=1&limit=50" \\
-  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
-
-# 2. Fetch Lightweight Stock Availability Map
-curl -X GET "https://www.weave365.com/api/v1/stock-status" \\
-  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
-
-# 3. Query Specific Product by SKU
-curl -X GET "https://www.weave365.com/api/v1/products/602008" \\
-  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
-
-# 4. Place Automated Dropship Order via API (Pro Tier)
-curl -X POST "https://www.weave365.com/api/v1/orders" \\
-  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "reseller_order_id": "ORD-101",
-    "customer": {
-      "name": "Priya Sharma",
-      "phone": "9876543210",
-      "pincode": "560038",
-      "address_line1": "Flat 402, Lotus Orchid, Indiranagar",
-      "city": "Bengaluru",
-      "state": "Karnataka"
-    },
-    "items": [
-      {
-        "sku": "602008",
-        "color": "Green",
-        "quantity": 1,
-        "selling_price": 1149
-      }
-    ]
-  }'`, 'curl-code')}
-                  >
-                    {copiedField === 'curl-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}
-                  </button>
                 </div>
               </div>
             )}
@@ -3555,9 +3685,66 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
             {activePlatformTab === 'javascript' && (
               <div>
                 <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">JavaScript / Node.js SDK Examples:</h4>
+                  <h4 className="dev-plat-title">JavaScript / Node.js SDK Examples</h4>
                 </div>
                 <div className="dev-code-block-wrap">
+                  <div className="dev-code-header">
+                    <span className="dev-code-lang">JavaScript / Node.js SDK</span>
+                    <button
+                      type="button"
+                      className={`dev-code-copy-btn ${copiedField === 'js-code' ? 'copied' : ''}`}
+                      onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
+const baseUrl = 'https://www.weave365.com/api/v1';
+
+// 1. Fetch Paginated Catalog Feed
+async function getCatalog(page = 1, limit = 50) {
+  const res = await fetch(\`\${baseUrl}/catalog?page=\${page}&limit=\${limit}\`, {
+    headers: { 'X-API-Key': apiKey },
+  });
+  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
+  const data = await res.json();
+  console.log(\`Synced \${data.page_products} of \${data.total_products} products\`);
+  return data.products;
+}
+
+// 2. Fetch Real-Time Stock Availability Map
+async function getStockStatus() {
+  const res = await fetch(\`\${baseUrl}/stock-status\`, {
+    headers: { 'X-API-Key': apiKey },
+  });
+  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
+  const data = await res.json();
+  console.log(\`Stock map updated for \${data.total_items} items\`);
+  return data.stock_map;
+}
+
+// 3. Place Automated Dropship Order (Pro Tier)
+async function createOrder(orderPayload) {
+  const res = await fetch(\`\${baseUrl}/orders\`, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderPayload),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(\`Order placement failed: \${err.message || res.statusText}\`);
+  }
+  const result = await res.json();
+  console.log('Order created successfully:', result.order_id);
+  return result;
+}
+
+// Example usage:
+fetchStockStatus();`, 'js-code')}
+                      aria-label="Copy JavaScript snippet"
+                    >
+                      {copiedField === 'js-code' ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedField === 'js-code' ? 'Copied' : 'Copy JavaScript'}</span>
+                    </button>
+                  </div>
                   <pre>
                     {`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
 const baseUrl = 'https://www.weave365.com/api/v1';
@@ -3606,64 +3793,13 @@ async function createOrder(orderPayload) {
 // Example usage:
 fetchStockStatus();`}
                   </pre>
-                  <button
-                    type="button"
-                    className="dev-code-copy-btn"
-                    onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
-const baseUrl = 'https://www.weave365.com/api/v1';
-
-// 1. Fetch Paginated Catalog Feed
-async function getCatalog(page = 1, limit = 50) {
-  const res = await fetch(\`\${baseUrl}/catalog?page=\${page}&limit=\${limit}\`, {
-    headers: { 'X-API-Key': apiKey },
-  });
-  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
-  const data = await res.json();
-  console.log(\`Synced \${data.page_products} of \${data.total_products} products\`);
-  return data.products;
-}
-
-// 2. Fetch Real-Time Stock Availability Map
-async function getStockStatus() {
-  const res = await fetch(\`\${baseUrl}/stock-status\`, {
-    headers: { 'X-API-Key': apiKey },
-  });
-  if (!res.ok) throw new Error(\`HTTP \${res.status}: \${res.statusText}\`);
-  const data = await res.json();
-  console.log(\`Stock map updated for \${data.total_items} items\`);
-  return data.stock_map;
-}
-
-// 3. Place Automated Dropship Order (Pro Tier)
-async function createOrder(orderPayload) {
-  const res = await fetch(\`\${baseUrl}/orders\`, {
-    method: 'POST',
-    headers: {
-      'X-API-Key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(orderPayload),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(\`Order placement failed: \${err.message || res.statusText}\`);
-  }
-  const result = await res.json();
-  console.log('Order created successfully:', result.order_id);
-  return result;
-}
-
-// Example usage:
-fetchStockStatus();`, 'js-code')}
-                  >
-                    {copiedField === 'js-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'js-code' ? 'Copied' : 'Copy JavaScript'}
-                  </button>
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
+
 
       {/* TAB 5: Interactive Live API Test Console - Reseller User Mode Only */}
       {activeDevTab === 'console' && !isAdminMode && (
@@ -3772,7 +3908,7 @@ fetchStockStatus();`, 'js-code')}
                 const is90 = (updatedRecord?.subscription_amount > 500);
                 setSubNotice({
                   type: 'success',
-                  message: `🎉 Subscription renewed successfully! Your ${is90 ? '90-day' : '30-day'} billing cycle is active.`,
+                  message: `Subscription renewed successfully! Your ${is90 ? '90-day' : '30-day'} billing cycle is active.`,
                 });
                 if (onAdminUpdate) onAdminUpdate(updatedRecord);
               }}
