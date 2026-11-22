@@ -752,6 +752,27 @@
   border-bottom: none;
 }
 
+/* Custom column widths for field mapping tables */
+.api-field-mapping-table {
+  min-width: 620px;
+}
+
+.api-field-mapping-table th:nth-child(1),
+.api-field-mapping-table td:nth-child(1) {
+  width: 26%;
+}
+
+.api-field-mapping-table th:nth-child(2),
+.api-field-mapping-table td:nth-child(2) {
+  width: 28%;
+  min-width: 180px;
+}
+
+.api-field-mapping-table th:nth-child(3),
+.api-field-mapping-table td:nth-child(3) {
+  width: 46%;
+}
+
 .api-param-code {
   font-weight: 700;
   color: #0f172a;
@@ -1294,6 +1315,10 @@
   .api-flat-table {
     min-width: 460px;
     font-size: 0.8125rem;
+  }
+
+  .api-field-mapping-table {
+    min-width: 580px;
   }
 
   .api-flat-table th {

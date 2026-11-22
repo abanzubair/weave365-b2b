@@ -527,7 +527,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         </p>
 
                         <div className="api-table-scroll">
-                          <table className="api-flat-table">
+                          <table className="api-flat-table api-field-mapping-table">
                             <thead>
                               <tr>
                                 <th>Shopify Target Field</th>
@@ -569,8 +569,12 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                               <tr>
                                 <td><strong>Variant Grouping</strong></td>
                                 <td>
-                                  Handle: <code className="api-code-inline">handle</code><br />
-                                  Option 1: <code className="api-code-inline">color</code>
+                                  <div style={{ whiteSpace: 'nowrap', marginBottom: '4px' }}>
+                                    Handle: <code className="api-code-inline">handle</code>
+                                  </div>
+                                  <div style={{ whiteSpace: 'nowrap' }}>
+                                    Option 1: <code className="api-code-inline">color</code>
+                                  </div>
                                 </td>
                                 <td>
                                   Under <em>&quot;Combine rows into one product&quot;</em>, groups colors (Rani, Navy, Wine) under the same saree
@@ -642,7 +646,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                         </p>
 
                         <div className="api-table-scroll">
-                          <table className="api-flat-table">
+                          <table className="api-flat-table api-field-mapping-table">
                             <thead>
                               <tr>
                                 <th>Shopify Target Field</th>
