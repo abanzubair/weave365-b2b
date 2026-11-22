@@ -858,6 +858,86 @@
 /* ==========================================================================
    Pricing & Tiers Grid (Flat, Minimalist)
    ========================================================================== */
+.api-billing-toggle-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 1.25rem 0 1.5rem 0;
+}
+
+.api-billing-toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.api-billing-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+
+.api-billing-toggle-btn:hover {
+  color: #0f172a;
+}
+
+.api-billing-toggle-btn:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}
+
+.api-billing-toggle-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.api-billing-discount-text {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #047857;
+  margin-left: 2px;
+}
+
+.api-tier-price-group {
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.api-tier-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+}
+
+.api-tier-original-price {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.api-tier-savings-line {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #047857;
+  margin-top: 2px;
+}
+
 .api-tiers-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

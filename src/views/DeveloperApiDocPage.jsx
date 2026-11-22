@@ -98,6 +98,7 @@ const SECTION_IDS = [
 
 export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [copiedKey, setCopiedKey] = useState(null);
+  const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'quarterly'
   const [activeShopifyTab, setActiveShopifyTab] = useState('syncx'); // 'syncx' | 'matrixify'
   const [activeShopifyOrderTab, setActiveShopifyOrderTab] = useState('notifications'); // 'notifications' | 'flow'
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
@@ -1894,11 +1895,52 @@ console.log('Total live products:', data.total_products);`}</pre>
               Simple, transparent pricing for growing boutiques and high-volume dropshippers:
             </p>
 
+            {/* Billing Frequency Segmented Toggle */}
+            <div className="api-billing-toggle-container">
+              <div
+                role="radiogroup"
+                aria-label="Billing frequency"
+                className="api-billing-toggle-wrap"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={billingCycle === 'monthly'}
+                  className={`api-billing-toggle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
+                  onClick={() => setBillingCycle('monthly')}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={billingCycle === 'quarterly'}
+                  className={`api-billing-toggle-btn ${billingCycle === 'quarterly' ? 'active' : ''}`}
+                  onClick={() => setBillingCycle('quarterly')}
+                >
+                  <span>3 Months</span>
+                  <span className="api-billing-discount-text">(5% Off)</span>
+                </button>
+              </div>
+            </div>
+
             <div className="api-tiers-grid">
               <div className="api-tier-item">
                 <div className="api-tier-name">Growth Tier</div>
-                <div className="api-tier-price">₹299 <span>/ month</span></div>
-                <div className="api-tier-quota">10,000 requests / month</div>
+                {billingCycle === 'quarterly' ? (
+                  <div className="api-tier-price-group">
+                    <div className="api-tier-price-row">
+                      <span className="api-tier-original-price">₹897</span>
+                      <div className="api-tier-price">₹852 <span>/ 3 months</span></div>
+                    </div>
+                    <div className="api-tier-savings-line">₹284 / month · Save 5%</div>
+                  </div>
+                ) : (
+                  <div className="api-tier-price">₹299 <span>/ month</span></div>
+                )}
+                <div className="api-tier-quota">
+                  {billingCycle === 'quarterly' ? '10,000 requests / month (90-day access)' : '10,000 requests / month'}
+                </div>
                 <ul className="api-tier-features">
                   <li><Check size={14} /> Full B2R Wholesale Catalog Feed</li>
                   <li><Check size={14} /> Real-Time Stock Status Lookups</li>
@@ -1906,8 +1948,12 @@ console.log('Total live products:', data.total_products);`}</pre>
                   <li><Check size={14} /> WooCommerce &amp; PrestaShop Connectors</li>
                   <li><Check size={14} /> 10 req/sec Burst Throughput</li>
                 </ul>
-                <a href="/account" className="api-btn secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                  Select Growth Tier
+                <a
+                  href={`/account?tab=developer&plan=growth&cycle=${billingCycle}`}
+                  className="api-btn secondary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  {billingCycle === 'quarterly' ? 'Select Growth Tier (₹852)' : 'Select Growth Tier'}
                 </a>
               </div>
 
@@ -1916,8 +1962,20 @@ console.log('Total live products:', data.total_products);`}</pre>
                   <span>Pro Tier</span>
                   <span className="api-tier-badge">Recommended</span>
                 </div>
-                <div className="api-tier-price">₹499 <span>/ month</span></div>
-                <div className="api-tier-quota">25,000 requests / month</div>
+                {billingCycle === 'quarterly' ? (
+                  <div className="api-tier-price-group">
+                    <div className="api-tier-price-row">
+                      <span className="api-tier-original-price">₹1,497</span>
+                      <div className="api-tier-price">₹1,422 <span>/ 3 months</span></div>
+                    </div>
+                    <div className="api-tier-savings-line">₹474 / month · Save 5%</div>
+                  </div>
+                ) : (
+                  <div className="api-tier-price">₹499 <span>/ month</span></div>
+                )}
+                <div className="api-tier-quota">
+                  {billingCycle === 'quarterly' ? '25,000 requests / month (90-day access)' : '25,000 requests / month'}
+                </div>
                 <ul className="api-tier-features">
                   <li><Check size={14} /> Everything in Growth Tier</li>
                   <li><Check size={14} /> <strong>Automated Dropship Order Placement API</strong></li>
@@ -1925,8 +1983,12 @@ console.log('Total live products:', data.total_products);`}</pre>
                   <li><Check size={14} /> 25 req/sec High-Volume Burst Rate</li>
                   <li><Check size={14} /> Priority Loom Warehouse Dispatch</li>
                 </ul>
-                <a href="/account" className="api-btn primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  Upgrade to Pro Tier
+                <a
+                  href={`/account?tab=developer&plan=pro&cycle=${billingCycle}`}
+                  className="api-btn primary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  {billingCycle === 'quarterly' ? 'Upgrade to Pro Tier (₹1,422)' : 'Upgrade to Pro Tier'}
                 </a>
               </div>
             </div>

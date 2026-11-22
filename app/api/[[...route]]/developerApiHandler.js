@@ -2456,7 +2456,7 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
     body = await request.json();
   } catch { }
 
-  const { keyId, plan = 'growth', gateway = 'cashfree', returnUrl } = body || {};
+  const { keyId, plan = 'growth', billingCycle = 'monthly', gateway = 'cashfree', returnUrl } = body || {};
 
   if (!keyId) {
     return Response.json({
@@ -2466,8 +2466,14 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
     }, { status: 400, headers: cors });
   }
 
+  const isQuarterly = (billingCycle === 'quarterly' || billingCycle === '3_months' || billingCycle === '3months');
   const planKey = (plan === 'pro') ? 'pro' : 'growth';
-  const planAmount = planKey === 'pro' ? 499 : 299;
+  let planAmount = 299;
+  if (planKey === 'pro') {
+    planAmount = isQuarterly ? 1422 : 499;
+  } else {
+    planAmount = isQuarterly ? 852 : 299;
+  }
 
   // 2. Fetch target API key record
   const { data: keyRecord, error: keyError } = await supabase
@@ -2544,7 +2550,8 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
       }, { status: 500, headers: cors });
     }
 
-    const merchantOrderId = `PP_SUB_${cleanKeyId}_${Date.now().toString().slice(-8)}`;
+    const cycleTag = isQuarterly ? '3M' : '1M';
+    const merchantOrderId = `PP_SUB_${cleanKeyId}_${cycleTag}_${Date.now().toString().slice(-8)}`;
     const amountPaise = planAmount * 100;
 
     let finalRedirectUrl = returnUrl || `${siteUrl}/account?tab=developer`;
@@ -2561,12 +2568,12 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
         expireAfter: 1200,
         paymentFlow: {
           type: 'PG_CHECKOUT',
-          message: `Weave365 API Subscription - ${planKey === 'pro' ? 'Pro Scale (₹499/mo)' : 'Growth Partner (₹299/mo)'}`,
+          message: `Weave365 API Subscription - ${planKey === 'pro' ? (isQuarterly ? 'Pro Scale (₹1,422 / 3 Months - 5% OFF)' : 'Pro Scale (₹499/mo)') : (isQuarterly ? 'Growth Partner (₹852 / 3 Months - 5% OFF)' : 'Growth Partner (₹299/mo)')}`,
           merchantUrls: {
             redirectUrl: finalRedirectUrl,
           },
         },
-        metaInfo: { udf1: keyId, udf2: planKey },
+        metaInfo: { udf1: keyId, udf2: planKey, udf3: isQuarterly ? 'quarterly' : 'monthly' },
       }),
     });
 
@@ -2609,7 +2616,8 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
       }, { status: 500, headers: cors });
     }
 
-    const cfOrderId = `CF_SUB_${cleanKeyId}_${Date.now().toString().slice(-6)}`;
+    const cycleTag = isQuarterly ? '3M' : '1M';
+    const cfOrderId = `CF_SUB_${cleanKeyId}_${cycleTag}_${Date.now().toString().slice(-6)}`;
     const customerPhone = (keyRecord.profiles?.whatsapp || '').replace(/[^0-9]/g, '').slice(-10) || '9999999999';
     const customerName = (keyRecord.domain_owner_name || keyRecord.client_name || authUser.email || 'Developer Partner').slice(0, 50);
 
@@ -2636,8 +2644,9 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
       order_tags: {
         key_id: keyId,
         plan: planKey,
+        billing_cycle: isQuarterly ? 'quarterly' : 'monthly',
       },
-      order_note: `Weave365 API Subscription - ${planKey === 'pro' ? 'Pro Scale (₹499/mo)' : 'Growth Partner (₹299/mo)'}`,
+      order_note: `Weave365 API Subscription - ${planKey === 'pro' ? (isQuarterly ? 'Pro Scale (₹1,422 / 3 Months - 5% OFF)' : 'Pro Scale (₹499/mo)') : (isQuarterly ? 'Growth Partner (₹852 / 3 Months - 5% OFF)' : 'Growth Partner (₹299/mo)')}`,
     };
 
     const cfRes = await fetch(`${cf.baseUrl}/orders`, {
@@ -2821,18 +2830,21 @@ export async function handleVerifySubscription(request, supabase) {
     }, { status: 400, headers: cors });
   }
 
-  // Payment verified! Apply 30-day billing cycle
+  // Payment verified! Apply billing cycle duration (30 days vs 90 days for quarterly / 3 months)
+  const isQuarterly = (Number(keyRecord.subscription_amount) > 500) || cleanOrderId.includes('_3M_');
+  const durationDays = isQuarterly ? 90 : 30;
+
   const now = new Date();
   const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
-  // If user renews early, add 30 days to existing expiry date; otherwise 30 days from now
+  // If user renews early, add durationDays to existing expiry date; otherwise durationDays from now
   const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
-  const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(baseMs + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
   const plan = keyRecord.subscription_plan || 'growth';
   const isPro = plan === 'pro';
   const monthlyQuota = isPro ? 25000 : 10000;
   const rateLimitRps = isPro ? 5 : 3;
-  const price = isPro ? 499 : 299;
+  const price = Number(keyRecord.subscription_amount) || (isQuarterly ? (isPro ? 1422 : 852) : (isPro ? 499 : 299));
 
   const updatePayload = {
     approval_status: 'approved',
@@ -2894,7 +2906,7 @@ export async function handleVerifySubscription(request, supabase) {
         gateway_order_id: order_id,
         gateway_payment_id: paymentId ? String(paymentId) : (isPhonePe ? 'phonepe_verified' : 'cashfree_verified'),
         status: 'completed',
-        billing_cycle_days: 30,
+        billing_cycle_days: durationDays,
         orders_enabled: isPro,
         allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
         period_start: now.toISOString(),
@@ -2911,7 +2923,7 @@ export async function handleVerifySubscription(request, supabase) {
   return Response.json({
     success: true,
     is_paid: true,
-    message: 'Subscription successfully activated for 30 days!',
+    message: `Subscription successfully activated for ${durationDays} days!`,
     keyRecord: updatedKey,
   }, { status: 200, headers: cors });
 }

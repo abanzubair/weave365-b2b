@@ -647,12 +647,19 @@ export async function handleWebhook(request) {
               return Response.json({ status: 'OK', subscription: 'already_active' }, { status: 200 });
             }
 
+            const isQuarterly = (payload.metaInfo?.udf3 === 'quarterly')
+              || (Number(keyRecord.subscription_amount) > 500)
+              || merchantOrderId.includes('_3M_')
+              || (Number(payload?.amount) > 50000);
+            const durationDays = isQuarterly ? 90 : 30;
+
             const now = new Date();
             const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
             const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
-            const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
+            const expiresAt = new Date(baseMs + durationDays * 24 * 60 * 60 * 1000).toISOString();
             const plan = payload.metaInfo?.udf2 || keyRecord.subscription_plan || 'growth';
             const isPro = plan === 'pro';
+            const price = (Number(payload?.amount) ? Number(payload.amount) / 100 : 0) || Number(keyRecord.subscription_amount) || (isQuarterly ? (isPro ? 1422 : 852) : (isPro ? 499 : 299));
 
             await supabase
               .from('api_keys')
@@ -660,7 +667,7 @@ export async function handleWebhook(request) {
                 approval_status: 'approved',
                 subscription_status: 'active',
                 subscription_plan: plan,
-                subscription_amount: isPro ? 499 : 299,
+                subscription_amount: price,
                 subscription_started_at: keyRecord.subscription_started_at || now.toISOString(),
                 subscription_expires_at: expiresAt,
                 is_active: true,
@@ -682,13 +689,13 @@ export async function handleWebhook(request) {
                   api_key_id: keyRecord.id,
                   user_id: keyRecord.user_id || null,
                   plan,
-                  amount: isPro ? 499 : 299,
+                  amount: price,
                   currency: 'INR',
                   payment_gateway: 'phonepe',
                   gateway_order_id: merchantOrderId,
                   gateway_payment_id: transactionId || 'phonepe_webhook',
                   status: 'completed',
-                  billing_cycle_days: 30,
+                  billing_cycle_days: durationDays,
                   orders_enabled: isPro,
                   allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
                   period_start: now.toISOString(),

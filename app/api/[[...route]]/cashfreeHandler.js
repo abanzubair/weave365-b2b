@@ -610,12 +610,19 @@ export async function handleWebhook(request) {
                 return new Response('Subscription already active', { status: 200 });
               }
 
+              const isQuarterly = (orderData?.order_tags?.billing_cycle === 'quarterly')
+                || (Number(keyRecord.subscription_amount) > 500)
+                || cfOrderId.includes('_3M_')
+                || (Number(orderData?.order_amount) > 500);
+              const durationDays = isQuarterly ? 90 : 30;
+
               const now = new Date();
               const currentExpiryMs = keyRecord.subscription_expires_at ? new Date(keyRecord.subscription_expires_at).getTime() : 0;
               const baseMs = (currentExpiryMs > now.getTime()) ? currentExpiryMs : now.getTime();
-              const expiresAt = new Date(baseMs + 30 * 24 * 60 * 60 * 1000).toISOString();
+              const expiresAt = new Date(baseMs + durationDays * 24 * 60 * 60 * 1000).toISOString();
               const plan = orderData?.order_tags?.plan || keyRecord.subscription_plan || 'growth';
               const isPro = plan === 'pro';
+              const price = Number(orderData?.order_amount) || Number(keyRecord.subscription_amount) || (isQuarterly ? (isPro ? 1422 : 852) : (isPro ? 499 : 299));
 
               await supabase
                 .from('api_keys')
@@ -623,7 +630,7 @@ export async function handleWebhook(request) {
                   approval_status: 'approved',
                   subscription_status: 'active',
                   subscription_plan: plan,
-                  subscription_amount: isPro ? 499 : 299,
+                  subscription_amount: price,
                   subscription_started_at: keyRecord.subscription_started_at || now.toISOString(),
                   subscription_expires_at: expiresAt,
                   is_active: true,
@@ -645,13 +652,13 @@ export async function handleWebhook(request) {
                     api_key_id: keyRecord.id,
                     user_id: keyRecord.user_id || null,
                     plan,
-                    amount: isPro ? 499 : 299,
+                    amount: price,
                     currency: 'INR',
                     payment_gateway: 'cashfree',
                     gateway_order_id: cfOrderId,
                     gateway_payment_id: paymentId ? String(paymentId) : 'cashfree_webhook',
                     status: 'completed',
-                    billing_cycle_days: 30,
+                    billing_cycle_days: durationDays,
                     orders_enabled: isPro,
                     allowed_endpoints: isPro ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
                     period_start: now.toISOString(),

@@ -682,7 +682,7 @@ export const developerService = {
   /**
    * Initialize a developer subscription payment order with Cashfree or PhonePe
    */
-  async createSubscriptionOrder({ keyId, plan = 'growth', gateway = 'cashfree', returnUrl }) {
+  async createSubscriptionOrder({ keyId, plan = 'growth', billingCycle = 'monthly', gateway = 'cashfree', returnUrl }) {
     if (!keyId) throw new Error('Missing keyId');
     const session = (await supabase?.auth?.getSession())?.data?.session;
     const token = session?.access_token;
@@ -694,7 +694,7 @@ export const developerService = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ keyId, plan, gateway, returnUrl }),
+      body: JSON.stringify({ keyId, plan, billingCycle, gateway, returnUrl }),
     });
 
     const data = await res.json();

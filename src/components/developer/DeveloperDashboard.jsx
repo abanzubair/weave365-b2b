@@ -547,28 +547,37 @@ export function PlanSelectionCard({
   isRenewal = false,
   isExpired = false,
   onClose = null,
+  initialPlan = null,
+  initialCycle = null,
 }) {
+  const [billingCycle, setBillingCycle] = useState(
+    initialCycle === 'quarterly' ? 'quarterly' : 'monthly'
+  );
   const [selectedPlan, setSelectedPlan] = useState(
-    apiKey?.subscription_plan === 'pro' || apiKey?.tier === 'pro' ? 'pro' : 'growth'
+    initialPlan || (apiKey?.subscription_plan === 'pro' || apiKey?.tier === 'pro' ? 'pro' : 'growth')
   );
   const [selectedGateway, setSelectedGateway] = useState('cashfree'); // 'cashfree' | 'phonepe'
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  const isQuarterly = billingCycle === 'quarterly';
+
   const plans = [
     {
       id: 'growth',
       name: 'Growth Partner',
-      price: 299,
-      priceLabel: '₹299',
-      period: '/ month',
+      price: isQuarterly ? 852 : 299,
+      originalPrice: isQuarterly ? 897 : null,
+      effectiveMonthly: isQuarterly ? '₹284 / mo' : null,
+      priceLabel: isQuarterly ? '₹852' : '₹299',
+      period: isQuarterly ? '/ 3 months' : '/ month',
       badge: 'Stock Sync',
       tagline: 'Sync live stock & wholesale catalog automatically.',
       features: [
         { text: 'Live stock status sync (Shopify & WooCommerce)', included: true },
         { text: 'Real-time wholesale catalog & pricing feeds', included: true },
-        { text: '10,000 API requests / month (3 req/sec)', included: true },
+        { text: isQuarterly ? '10,000 API requests / month (90-day access)' : '10,000 API requests / month (3 req/sec)', included: true },
         { text: 'Automated order placement', included: false, notice: 'Manual Orders' },
       ],
       ordersEnabled: false,
@@ -576,9 +585,11 @@ export function PlanSelectionCard({
     {
       id: 'pro',
       name: 'Pro Scale',
-      price: 499,
-      priceLabel: '₹499',
-      period: '/ month',
+      price: isQuarterly ? 1422 : 499,
+      originalPrice: isQuarterly ? 1497 : null,
+      effectiveMonthly: isQuarterly ? '₹474 / mo' : null,
+      priceLabel: isQuarterly ? '₹1,422' : '₹499',
+      period: isQuarterly ? '/ 3 months' : '/ month',
       badge: 'Recommended • Full Automation',
       recommended: true,
       tagline: 'Continuous stock synchronization plus automated order routing.',
@@ -586,7 +597,7 @@ export function PlanSelectionCard({
         { text: 'Everything in Growth Partner plan', included: true },
         { text: 'Automated order placement API (/api/v1/orders)', included: true, highlightNotice: 'Full Automation' },
         { text: 'Multi-store SKU routing & priority warehouse queue', included: true },
-        { text: '25,000 API requests / month & priority dispatch', included: true },
+        { text: isQuarterly ? '25,000 API requests / month (90-day access)' : '25,000 API requests / month & priority dispatch', included: true },
       ],
       ordersEnabled: true,
     },
@@ -605,6 +616,7 @@ export function PlanSelectionCard({
       const data = await developerService.createSubscriptionOrder({
         keyId: apiKey.id,
         plan: selectedPlan,
+        billingCycle,
         gateway: selectedGateway,
         returnUrl: selectedGateway === 'phonepe' ? `${returnUrl}&gateway=phonepe` : returnUrl,
       });
@@ -644,7 +656,7 @@ export function PlanSelectionCard({
       });
 
       if (verifyRes?.success && verifyRes.is_paid) {
-        setSuccessMsg('🎉 Payment confirmed! Your 30-day Developer API subscription is now active.');
+        setSuccessMsg(`🎉 Payment confirmed! Your ${isQuarterly ? '90-day' : '30-day'} Developer API subscription is now active.`);
         if (onActivated) {
           onActivated(verifyRes.keyRecord);
         }
@@ -689,10 +701,10 @@ export function PlanSelectionCard({
         </h2>
         <p className="dev-plan-subtitle">
           {isExpired
-            ? 'Choose a plan to restore your API credentials and live feeds.'
+            ? (isQuarterly ? 'Choose a plan to restore your credentials with 90-day coverage & 5% savings.' : 'Choose a plan to restore your API credentials and live feeds.')
             : isRenewal
-              ? 'Add 30 days or upgrade to full order automation.'
-              : 'Choose a monthly plan to activate your credentials.'}
+              ? (isQuarterly ? 'Extend your plan by 90 days with 5% discount.' : 'Add 30 days or upgrade to full order automation.')
+              : (isQuarterly ? 'Pay for 3 months with 5% discount to activate your credentials.' : 'Choose a monthly plan to activate your credentials.')}
         </p>
       </div>
 
@@ -709,6 +721,35 @@ export function PlanSelectionCard({
           <span>{successMsg}</span>
         </div>
       )}
+
+      {/* Billing Frequency Toggle */}
+      <div className="dev-plan-cycle-toggle-wrap">
+        <div
+          role="radiogroup"
+          aria-label="Billing frequency"
+          className="dev-plan-cycle-toggle"
+        >
+          <button
+            type="button"
+            role="radio"
+            aria-checked={billingCycle === 'monthly'}
+            className={`dev-plan-cycle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
+            onClick={() => setBillingCycle('monthly')}
+          >
+            <span>Monthly</span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={billingCycle === 'quarterly'}
+            className={`dev-plan-cycle-btn ${billingCycle === 'quarterly' ? 'active' : ''}`}
+            onClick={() => setBillingCycle('quarterly')}
+          >
+            <span>3 Months</span>
+            <span className="dev-plan-discount-text">(5% Off)</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2 Plans Grid */}
       <div className="dev-plans-grid">
@@ -745,9 +786,18 @@ export function PlanSelectionCard({
               </div>
 
               <div className="dev-plan-price-block">
+                {p.originalPrice && (
+                  <span className="dev-plan-original-price">₹{p.originalPrice}</span>
+                )}
                 <span className="dev-plan-amount">{p.priceLabel}</span>
                 <span className="dev-plan-period">{p.period}</span>
               </div>
+              {p.effectiveMonthly && (
+                <div className="dev-plan-effective-monthly">
+                  <span>{p.effectiveMonthly}</span>
+                  <span className="dev-plan-saved-tag">5% Saved</span>
+                </div>
+              )}
 
               <div className="dev-plan-divider" />
 
@@ -843,7 +893,7 @@ export function PlanSelectionCard({
       <div className="dev-plan-footer">
         <div className="dev-plan-security-inline">
           <Shield size={14} className="dev-shield-icon" />
-          <span>Prepaid 30-day access • Instant automatic activation</span>
+          <span>{isQuarterly ? 'Prepaid 90-day access (5% OFF applied) • Instant automatic activation' : 'Prepaid 30-day access • Instant automatic activation'}</span>
         </div>
 
         <div className="dev-plan-footer-actions">
@@ -872,7 +922,7 @@ export function PlanSelectionCard({
             ) : (
               <>
                 <Lock size={14} />
-                <span>Pay ₹{currentSelected.price} & Activate →</span>
+                <span>Pay ₹{currentSelected.price} & Activate {isQuarterly ? '(3 Months)' : ''} →</span>
               </>
             )}
           </button>
@@ -907,6 +957,25 @@ export function DeveloperDashboard({
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [verifyingSub, setVerifyingSub] = useState(false);
   const [subNotice, setSubNotice] = useState(null);
+  const [initialPlanFromUrl, setInitialPlanFromUrl] = useState(null);
+  const [initialCycleFromUrl, setInitialCycleFromUrl] = useState(null);
+
+  // Check URL params for pre-selected plan or billing cycle from documentation
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const planParam = urlParams.get('plan');
+    const cycleParam = urlParams.get('cycle');
+    if (planParam === 'growth' || planParam === 'pro') {
+      setInitialPlanFromUrl(planParam);
+      if (apiKey && apiKey.subscription_status === 'active') {
+        setPlanModalOpen(true);
+      }
+    }
+    if (cycleParam === 'quarterly' || cycleParam === 'monthly') {
+      setInitialCycleFromUrl(cycleParam);
+    }
+  }, [apiKey]);
 
   // Auto-verify subscription if returning from gateway redirect (PhonePe / Cashfree)
   useEffect(() => {
@@ -928,7 +997,8 @@ export function DeveloperDashboard({
         .then((res) => {
           if (res?.success && res.keyRecord) {
             setApiKey(res.keyRecord);
-            setSubNotice({ type: 'success', message: '🎉 Payment successful! Your 30-day Developer API subscription is active.' });
+            const is90Days = (res.keyRecord?.subscription_amount > 500) || String(subOrderId).includes('_3M_');
+            setSubNotice({ type: 'success', message: `🎉 Payment successful! Your ${is90Days ? '90-day' : '30-day'} Developer API subscription is active.` });
             const cleanUrl = window.location.pathname + '?tab=developer';
             window.history.replaceState({}, document.title, cleanUrl);
             if (onAdminUpdate) onAdminUpdate(res.keyRecord);
@@ -1826,6 +1896,8 @@ export function DeveloperDashboard({
         <PlanSelectionCard
           apiKey={apiKey}
           user={user}
+          initialPlan={initialPlanFromUrl}
+          initialCycle={initialCycleFromUrl}
           onActivated={(updatedRecord) => {
             setApiKey(updatedRecord);
             if (onAdminUpdate) onAdminUpdate(updatedRecord);
@@ -3691,13 +3763,16 @@ fetchStockStatus();`, 'js-code')}
               user={user}
               isRenewal={true}
               isExpired={isSubscriptionExpired}
+              initialPlan={initialPlanFromUrl}
+              initialCycle={initialCycleFromUrl}
               onClose={() => setPlanModalOpen(false)}
               onActivated={(updatedRecord) => {
                 setApiKey(updatedRecord);
                 setPlanModalOpen(false);
+                const is90 = (updatedRecord?.subscription_amount > 500);
                 setSubNotice({
                   type: 'success',
-                  message: '🎉 Subscription renewed successfully! Your 30-day billing cycle is active.',
+                  message: `🎉 Subscription renewed successfully! Your ${is90 ? '90-day' : '30-day'} billing cycle is active.`,
                 });
                 if (onAdminUpdate) onAdminUpdate(updatedRecord);
               }}
