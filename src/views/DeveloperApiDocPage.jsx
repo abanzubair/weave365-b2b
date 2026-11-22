@@ -19,7 +19,6 @@ import {
   Check,
   Layers,
   ArrowRight,
-  ArrowUpIcon,
   ShoppingBag,
   Sliders,
   DollarSign,
@@ -106,7 +105,6 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [activeShopifyOrderTab, setActiveShopifyOrderTab] = useState('notifications'); // 'notifications' | 'flow'
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
   const [activeSection, setActiveSection] = useState('overview');
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const shopifyVideoRef = useRef(null);
   const syncxVideoRef = useRef(null);
   const [isSyncxPlaying, setIsSyncxPlaying] = useState(false);
@@ -239,7 +237,6 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
       if (isClickScrollingRef.current) return;
 
       const scrollPos = window.scrollY + 130;
@@ -2156,18 +2153,6 @@ console.log('Total live products:', data.total_products);`}</pre>
           </section>
         </main>
       </div>
-
-      {/* Floating Scroll To Top Button */}
-      {showScrollTop && (
-        <button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="api-scroll-top"
-          aria-label="Scroll to top"
-        >
-          <ArrowUpIcon size={16} />
-        </button>
-      )}
     </div>
   );
 }

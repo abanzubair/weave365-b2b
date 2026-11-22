@@ -1013,31 +1013,6 @@
   gap: 7px;
 }
 
-/* Scroll To Top Button */
-.api-scroll-top {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #0f172a;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.15s ease;
-  z-index: 50;
-}
-
-.api-scroll-top:hover {
-  background: #1e293b;
-  transform: translateY(-2px);
-}
-
 /* ==========================================================================
    Mobile Responsive Adjustments (<960px)
    ========================================================================== */
