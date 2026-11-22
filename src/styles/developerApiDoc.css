@@ -947,16 +947,21 @@
     background: #ffffff;
     z-index: 30;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
     margin-bottom: 1.5rem;
   }
 
   .api-mobile-toc-scroll {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     overflow-x: auto;
-    padding: 2px 0;
+    padding: 0.375rem 1rem;
+    scroll-padding: 0 1rem;
     scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    position: relative;
   }
 
   .api-mobile-toc-scroll::-webkit-scrollbar {
@@ -967,7 +972,7 @@
     background: #f8fafc;
     border: 1px solid #cbd5e1;
     border-radius: 9999px;
-    padding: 5px 14px;
+    padding: 6px 14px;
     font-size: 0.875rem;
     font-weight: 600;
     color: #334155;
@@ -976,12 +981,26 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  .api-mobile-toc-chip:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
   }
 
   .api-mobile-toc-chip.active {
     background: #0f172a;
     color: #ffffff;
     border-color: #0f172a;
+    font-weight: 700;
+  }
+
+  .api-section {
+    scroll-margin-top: 115px;
   }
 
   .api-main-title {

@@ -104,6 +104,9 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [activeSection, setActiveSection] = useState('overview');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const shopifyVideoRef = useRef(null);
+  const mobileTocRef = useRef(null);
+  const isClickScrollingRef = useRef(false);
+  const clickScrollTimerRef = useRef(null);
 
   useEffect(() => {
     const videoEl = shopifyVideoRef.current;
@@ -129,10 +132,36 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
     };
   }, []);
 
+  // Automatically scroll mobile TOC pill rail to keep the active section in view
+  useEffect(() => {
+    if (!mobileTocRef.current) return;
+    const activeChip = mobileTocRef.current.querySelector(`.api-mobile-toc-chip[data-section="${activeSection}"]`);
+    if (activeChip) {
+      const container = mobileTocRef.current;
+      const chipLeft = activeChip.offsetLeft;
+      const chipWidth = activeChip.offsetWidth;
+      const containerWidth = container.clientWidth;
+      const targetScrollLeft = chipLeft - (containerWidth / 2) + (chipWidth / 2);
+
+      container.scrollTo({
+        left: Math.max(0, targetScrollLeft),
+        behavior: 'smooth',
+      });
+    }
+  }, [activeSection]);
+
+  useEffect(() => {
+    return () => {
+      if (clickScrollTimerRef.current) clearTimeout(clickScrollTimerRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 120;
       setShowScrollTop(window.scrollY > 400);
+      if (isClickScrollingRef.current) return;
+
+      const scrollPos = window.scrollY + 130;
 
       for (let i = SECTION_IDS.length - 1; i >= 0; i--) {
         const el = document.getElementById(SECTION_IDS[i]);
@@ -156,6 +185,12 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
+      isClickScrollingRef.current = true;
+      if (clickScrollTimerRef.current) clearTimeout(clickScrollTimerRef.current);
+      clickScrollTimerRef.current = setTimeout(() => {
+        isClickScrollingRef.current = false;
+      }, 800);
+
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setActiveSection(id);
     }
@@ -165,12 +200,14 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
     <div className="api-docs-page">
       {/* Mobile Horizontal Navigation Chips */}
       <nav className="api-mobile-toc" aria-label="Mobile Table of Contents">
-        <div className="api-mobile-toc-scroll">
+        <div className="api-mobile-toc-scroll" ref={mobileTocRef}>
           {SECTION_IDS.map((id) => (
             <button
               key={id}
               type="button"
+              data-section={id}
               className={`api-mobile-toc-chip ${activeSection === id ? 'active' : ''}`}
+              aria-current={activeSection === id ? 'true' : undefined}
               onClick={() => scrollToSection(id)}
             >
               {id === 'shopify-sync' ? 'Shopify Sync' : id === 'shopify-orders' ? 'Shopify Orders' : id.replace('endpoint-', '/').replace('-', ' ')}
