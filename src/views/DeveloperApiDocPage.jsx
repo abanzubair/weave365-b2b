@@ -840,20 +840,22 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
             </div>
 
             {/* Method Tabs */}
-            <div className="api-tabs-nav" style={{ marginTop: '1.5rem' }}>
+            <div className="api-tabs-nav" style={{ marginTop: '1.75rem' }}>
               <button
                 type="button"
                 className={`api-tab-btn ${activeShopifyOrderTab === 'notifications' ? 'active' : ''}`}
                 onClick={() => setActiveShopifyOrderTab('notifications')}
               >
-                <span>Method 1: Shopify Native Webhook (Recommended &amp; 100% Free)</span>
+                <Bell size={15} />
+                <span>Shopify Native Webhook (Free)</span>
               </button>
               <button
                 type="button"
                 className={`api-tab-btn ${activeShopifyOrderTab === 'flow' ? 'active' : ''}`}
                 onClick={() => setActiveShopifyOrderTab('flow')}
               >
-                <span>Method 2: Shopify Flow App (Advanced Workflows)</span>
+                <Zap size={15} />
+                <span>Shopify Flow App (Advanced)</span>
               </button>
             </div>
 
@@ -864,14 +866,18 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <strong>Recommended for all stores:</strong> Works on <strong>every Shopify plan</strong> (including Shopify Basic $39/mo, Shopify, Advanced, and Plus). It requires zero apps and sends instant real-time order payloads directly from Shopify.
                 </div>
 
-                <div className="api-code-input-group">
-                  <label className="api-code-input-label">Your Shopify Webhook Endpoint URL</label>
-                  <div className="api-code-input-row">
+                <div style={{ margin: '1.25rem 0 1.5rem 0' }}>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#334155', marginBottom: '0.45rem', letterSpacing: '0.01em' }}>
+                    Shopify Webhook Endpoint URL
+                  </label>
+                  <div className="api-feed-box" style={{ margin: 0 }}>
+                    <span className="api-feed-method">POST JSON</span>
                     <input
                       type="text"
                       readOnly
                       value="https://www.weave365.com/api/v1/orders?key=w365_live_YOUR_API_KEY"
-                      className="api-code-input-field"
+                      className="api-feed-input"
+                      aria-label="Shopify Webhook Endpoint URL"
                     />
                     <button
                       type="button"
@@ -882,7 +888,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       <span>{copiedKey === 'webhook-url' ? 'Copied' : 'Copy Webhook URL'}</span>
                     </button>
                   </div>
-                  <small style={{ color: '#64748b', fontSize: '0.8rem', display: 'block', marginTop: '0.35rem' }}>
+                  <small style={{ color: '#64748b', fontSize: '0.8rem', display: 'block', marginTop: '0.45rem' }}>
                     * Replace <code>w365_live_YOUR_API_KEY</code> with your live API key from the Developer Dashboard.
                   </small>
                 </div>

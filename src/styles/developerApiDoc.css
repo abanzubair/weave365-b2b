@@ -505,11 +505,19 @@
    ========================================================================== */
 .api-tabs-nav {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   border-bottom: 1px solid #e2e8f0;
   margin-bottom: 1.5rem;
   overflow-x: auto;
-  padding-bottom: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 0;
+}
+
+.api-tabs-nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .api-tab-btn {
@@ -517,7 +525,7 @@
   border: none;
   padding: 8px 14px;
   border-radius: 6px 6px 0 0;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
@@ -528,6 +536,10 @@
   white-space: nowrap;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+}
+
+.api-tab-btn svg {
+  flex-shrink: 0;
 }
 
 .api-tab-btn:hover {
@@ -1036,18 +1048,42 @@
 }
 
 .api-gear-callout {
-  margin-top: 0.875rem;
-  padding: 0.875rem 1rem;
+  margin-top: 1rem;
+  padding: 1.125rem 1.25rem;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.875rem;
   color: #334155;
-  line-height: 1.55;
+  line-height: 1.6;
+}
+
+.api-gear-callout-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.625rem;
+}
+
+.api-gear-callout-title svg {
+  color: #0f172a;
+  flex-shrink: 0;
 }
 
 .api-gear-callout strong {
   color: #0f172a;
+}
+
+.api-gear-callout code {
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 /* ==========================================================================
