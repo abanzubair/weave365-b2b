@@ -34,9 +34,8 @@ import {
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
-// Paste your YouTube, Vimeo, or direct MP4 video URL below (e.g. 'https://www.youtube.com/embed/...' or direct MP4 link)
-// When left empty (''), a clean modern placeholder card is displayed ready for attachment.
-const SHOPIFY_ORDER_VIDEO_URL = '';
+// Shopify Webhook Order API Integration Video Walkthrough
+const SHOPIFY_ORDER_VIDEO_URL = 'https://assets.weave365.com/API%20Guide/order-api-shopify-integration.mp4';
 
 const NAV_GROUPS = [
   {
@@ -800,7 +799,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       className="api-video-element"
                       controls
                       preload="metadata"
-                      loading="lazy"
+                      playsInline
                     >
                       <source src={SHOPIFY_ORDER_VIDEO_URL} type="video/mp4" />
                       Your browser does not support video playback.
