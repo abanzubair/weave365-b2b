@@ -29,6 +29,7 @@ import {
   FileSpreadsheet,
   Truck,
   PlayIcon,
+  PauseIcon,
   Bell,
   GitBranch,
   ShieldCheck
@@ -107,10 +108,61 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [activeSection, setActiveSection] = useState('overview');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const shopifyVideoRef = useRef(null);
+  const syncxVideoRef = useRef(null);
+  const [isSyncxPlaying, setIsSyncxPlaying] = useState(false);
+  const userPausedSyncxRef = useRef(false);
   const mobileTocRef = useRef(null);
   const desktopSidebarRef = useRef(null);
   const isClickScrollingRef = useRef(false);
   const clickScrollTimerRef = useRef(null);
+
+  // SyncX Video Walkthrough: Autoplay on 25% viewport visibility & loop
+  useEffect(() => {
+    const videoEl = syncxVideoRef.current;
+    if (!videoEl || typeof IntersectionObserver === 'undefined') return;
+
+    const onPlay = () => setIsSyncxPlaying(true);
+    const onPause = () => setIsSyncxPlaying(false);
+    videoEl.addEventListener('play', onPlay);
+    videoEl.addEventListener('pause', onPause);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry && entry.isIntersecting) {
+          // Start playing only when at least 25% of video is in view unless user explicitly paused it
+          if (!userPausedSyncxRef.current) {
+            videoEl.play().catch(() => {});
+          }
+        } else if (entry && !entry.isIntersecting) {
+          // Pause when scrolling out of view
+          videoEl.pause();
+        }
+      },
+      {
+        threshold: 0.25,
+      }
+    );
+
+    observer.observe(videoEl);
+
+    return () => {
+      videoEl.removeEventListener('play', onPlay);
+      videoEl.removeEventListener('pause', onPause);
+      observer.disconnect();
+    };
+  }, [activeShopifyTab]);
+
+  const toggleSyncxPlayback = () => {
+    const videoEl = syncxVideoRef.current;
+    if (!videoEl) return;
+    if (videoEl.paused) {
+      userPausedSyncxRef.current = false;
+      videoEl.play().catch(() => {});
+    } else {
+      userPausedSyncxRef.current = true;
+      videoEl.pause();
+    }
+  };
 
   useEffect(() => {
     const videoEl = shopifyVideoRef.current;
@@ -530,18 +582,52 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
 
                   <div className="api-video-container">
                     <video
-                      controls
+                      ref={syncxVideoRef}
+                      className="api-video-element"
+                      muted
+                      loop
                       playsInline
                       preload="metadata"
                       loading="lazy"
                       width={1920}
                       height={1080}
-                      className="api-video-element"
-                      title="Shopify Stock Sync (SyncX) Video Walkthrough"
+                      onClick={toggleSyncxPlayback}
+                      title={isSyncxPlaying ? 'Click to pause video' : 'Click to play video'}
                     >
                       <source src={SHOPIFY_SYNCX_VIDEO_URL} type="video/mp4" />
                       Your browser does not support video playback.
                     </video>
+
+                    {/* Minimal Play / Pause Options without cluttered browser controls */}
+                    {!isSyncxPlaying && (
+                      <button
+                        type="button"
+                        className="api-video-center-play-btn"
+                        onClick={toggleSyncxPlayback}
+                        aria-label="Play video"
+                      >
+                        <PlayIcon size={28} />
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className={`api-video-play-toggle-btn ${!isSyncxPlaying ? 'paused' : ''}`}
+                      onClick={toggleSyncxPlayback}
+                      aria-label={isSyncxPlaying ? 'Pause video' : 'Play video'}
+                    >
+                      {isSyncxPlaying ? (
+                        <>
+                          <PauseIcon size={13} />
+                          <span>Pause</span>
+                        </>
+                      ) : (
+                        <>
+                          <PlayIcon size={13} />
+                          <span>Play</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 

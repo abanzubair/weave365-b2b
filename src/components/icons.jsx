@@ -90,6 +90,7 @@ import {
   MapPinIcon as Hero_MapPinIcon,
   MinusIcon as Hero_MinusIcon,
   PaperAirplaneIcon as Hero_PaperAirplaneIcon,
+  PauseIcon as Hero_PauseIcon,
   PencilIcon as Hero_PencilIcon,
   PencilSquareIcon as Hero_PencilSquareIcon,
   PercentBadgeIcon as Hero_PercentBadgeIcon,
@@ -380,6 +381,7 @@ export const Package = wrapIcon(Hero_CubeIcon, 'Package');
 export const PackageCheck = wrapIcon(Hero_CubeIcon, 'PackageCheck');
 export const PackagePlus = wrapIcon(Hero_CubeIcon, 'PackagePlus');
 export const Palette = wrapIcon(Hero_SwatchIcon, 'Palette');
+export const Pause = wrapIcon(Hero_PauseIcon, 'Pause');
 export const PenTool = wrapIcon(Hero_PencilIcon, 'PenTool');
 export const Percent = wrapIcon(Hero_PercentBadgeIcon, 'Percent');
 export const Phone = wrapIcon(Hero_PhoneIcon, 'Phone');
@@ -513,6 +515,7 @@ export const MagnifyingGlassPlusIcon = wrapIcon(Hero_MagnifyingGlassPlusIcon, 'M
 export const MapPinIcon = wrapIcon(Hero_MapPinIcon, 'MapPinIcon');
 export const MinusIcon = wrapIcon(Hero_MinusIcon, 'MinusIcon');
 export const PaperAirplaneIcon = wrapIcon(Hero_PaperAirplaneIcon, 'PaperAirplaneIcon');
+export const PauseIcon = wrapIcon(Hero_PauseIcon, 'PauseIcon');
 export const PencilIcon = wrapIcon(Hero_PencilIcon, 'PencilIcon');
 export const PencilSquareIcon = wrapIcon(Hero_PencilSquareIcon, 'PencilSquareIcon');
 export const PercentBadgeIcon = wrapIcon(Hero_PercentBadgeIcon, 'PercentBadgeIcon');
