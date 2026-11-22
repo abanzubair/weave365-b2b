@@ -798,9 +798,19 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   ) : (
                     <video
                       className="api-video-element"
-                      controls
-                      preload="metadata"
+                      autoPlay
+                      muted
+                      loop
                       playsInline
+                      preload="auto"
+                      onClick={(e) => {
+                        if (e.currentTarget.paused) {
+                          e.currentTarget.play();
+                        } else {
+                          e.currentTarget.pause();
+                        }
+                      }}
+                      title="Click to play / pause video"
                     >
                       <source src={SHOPIFY_ORDER_VIDEO_URL} type="video/mp4" />
                       Your browser does not support video playback.

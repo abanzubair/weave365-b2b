@@ -1154,6 +1154,14 @@
   object-fit: contain;
   display: block;
   background: #0f172a;
+  cursor: pointer;
+}
+
+.api-video-element::-webkit-media-controls,
+.api-video-element::-webkit-media-controls-enclosure,
+.api-video-element::-webkit-media-controls-panel {
+  display: none !important;
+  -webkit-appearance: none !important;
 }
 
 .api-video-placeholder {
