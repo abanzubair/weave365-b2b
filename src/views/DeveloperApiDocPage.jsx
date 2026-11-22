@@ -781,7 +781,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   <PlayIcon size={18} style={{ color: '#0f172a' }} />
                   <h3 className="api-video-title">Video Walkthrough: Shopify Order Webhook Setup</h3>
                 </div>
-                <span className="api-video-badge">2 Min Video Guide</span>
+                <span className="api-video-badge">40s Quick Guide</span>
               </div>
 
               <div className="api-video-container">
@@ -821,7 +821,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     <div className="api-video-play-icon-box">
                       <PlayIcon size={24} />
                     </div>
-                    <h4 className="api-video-placeholder-title">Video Walkthrough: 2-Minute Shopify Setup</h4>
+                    <h4 className="api-video-placeholder-title">Video Walkthrough: 40-Second Shopify Setup</h4>
                     <p className="api-video-placeholder-desc">
                       Step-by-step screen recording demonstrating how to create the Order Webhook in Shopify Admin and verify automated dropship orders in Weave 365.
                     </p>
