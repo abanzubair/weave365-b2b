@@ -27,9 +27,16 @@ import {
   Sparkles,
   BookOpen,
   Settings,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Truck,
+  PlayIcon,
+  Bell
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
+
+// Paste your YouTube, Vimeo, or direct MP4 video URL below (e.g. 'https://www.youtube.com/embed/...' or direct MP4 link)
+// When left empty (''), a clean modern placeholder card is displayed ready for attachment.
+const SHOPIFY_ORDER_VIDEO_URL = '';
 
 const NAV_GROUPS = [
   {
@@ -41,9 +48,10 @@ const NAV_GROUPS = [
     ],
   },
   {
-    title: 'Storefront Feeds',
+    title: 'Storefront Feeds & Orders',
     items: [
       { id: 'shopify-sync', label: 'Shopify (SyncX & Matrixify)', icon: ShoppingBag },
+      { id: 'shopify-orders', label: 'Shopify Order Webhooks', icon: Truck },
       { id: 'curated-catalog', label: 'Curated Catalog Sync', icon: Sliders },
       { id: 'platforms', label: 'Other Platforms (Woo, cURL)', icon: Layers },
     ],
@@ -74,6 +82,7 @@ const SECTION_IDS = [
   'quickstart',
   'authentication',
   'shopify-sync',
+  'shopify-orders',
   'curated-catalog',
   'platforms',
   'endpoint-catalog',
@@ -90,6 +99,7 @@ const SECTION_IDS = [
 export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [copiedKey, setCopiedKey] = useState(null);
   const [activeShopifyTab, setActiveShopifyTab] = useState('syncx'); // 'syncx' | 'matrixify'
+  const [activeShopifyOrderTab, setActiveShopifyOrderTab] = useState('notifications'); // 'notifications' | 'flow'
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
   const [activeSection, setActiveSection] = useState('overview');
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -138,7 +148,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
               className={`api-mobile-toc-chip ${activeSection === id ? 'active' : ''}`}
               onClick={() => scrollToSection(id)}
             >
-              {id === 'shopify-sync' ? 'Shopify Sync' : id.replace('endpoint-', '/').replace('-', ' ')}
+              {id === 'shopify-sync' ? 'Shopify Sync' : id === 'shopify-orders' ? 'Shopify Orders' : id.replace('endpoint-', '/').replace('-', ' ')}
             </button>
           ))}
         </div>
@@ -766,6 +776,345 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
             )}
           </section>
 
+          {/* Shopify Order Webhooks & Automated Fulfillment */}
+          <section id="shopify-orders" className="api-section">
+            <h2 className="api-section-title">Shopify Order Webhooks &amp; Automated Fulfillment</h2>
+            <p className="api-section-desc">
+              Instantly dispatch customer orders from your Shopify checkout directly to Weave 365 warehouse for automated packaging, blind dropshipping, and live courier tracking. No manual order entry or copy-pasting required.
+            </p>
+
+            {/* Video Walkthrough Card */}
+            <div className="api-video-card">
+              <div className="api-video-header">
+                <div className="api-video-title-wrap">
+                  <PlayIcon size={18} style={{ color: '#0f172a' }} />
+                  <h3 className="api-video-title">Video Walkthrough: Shopify Order Webhook Setup</h3>
+                </div>
+                <span className="api-video-badge">2 Min Video Guide</span>
+              </div>
+
+              <div className="api-video-container">
+                {SHOPIFY_ORDER_VIDEO_URL ? (
+                  SHOPIFY_ORDER_VIDEO_URL.includes('youtube.com') || SHOPIFY_ORDER_VIDEO_URL.includes('youtu.be') || SHOPIFY_ORDER_VIDEO_URL.includes('vimeo.com') ? (
+                    <iframe
+                      className="api-video-frame"
+                      src={SHOPIFY_ORDER_VIDEO_URL}
+                      title="Shopify Order Webhook Walkthrough"
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      className="api-video-element"
+                      controls
+                      preload="metadata"
+                      loading="lazy"
+                    >
+                      <source src={SHOPIFY_ORDER_VIDEO_URL} type="video/mp4" />
+                      Your browser does not support video playback.
+                    </video>
+                  )
+                ) : (
+                  <div className="api-video-placeholder">
+                    <div className="api-video-play-icon-box">
+                      <PlayIcon size={24} />
+                    </div>
+                    <h4 className="api-video-placeholder-title">Video Walkthrough: 2-Minute Shopify Setup</h4>
+                    <p className="api-video-placeholder-desc">
+                      Step-by-step screen recording demonstrating how to create the Order Webhook in Shopify Admin and verify automated dropship orders in Weave 365.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Smart Protections Callout */}
+            <div className="api-gear-callout">
+              <div className="api-gear-callout-title">
+                <Sparkles size={16} />
+                <span>Built-In Smart Fulfillment Protections</span>
+              </div>
+              <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', color: '#475569', fontSize: '0.875rem', lineHeight: '1.6' }}>
+                <li>
+                  <strong>Smart SKU Auto-Filtering:</strong> If an order contains both Weave 365 sarees and items from other suppliers (e.g. jewelry or third-party garments), Weave 365 automatically filters and fulfills <em>only</em> the Weave 365 items. Non-Weave items are safely ignored and acknowledged with <code>200 OK</code>.
+                </li>
+                <li>
+                  <strong>Automatic Deduplication (Idempotency):</strong> Shopify occasionally retries webhooks. Weave 365 automatically matches incoming <code>reseller_order_id</code> (Shopify Order ID) against existing orders to prevent double-charging or duplicate shipments.
+                </li>
+                <li>
+                  <strong>100% Blind Dropshipping:</strong> All customer packages are shipped using your boutique store name and contact details on the shipping label and tax invoice. Weave 365 warehouse branding never appears to your customer.
+                </li>
+              </ul>
+            </div>
+
+            {/* Method Tabs */}
+            <div className="api-tabs-nav" style={{ marginTop: '1.5rem' }}>
+              <button
+                type="button"
+                className={`api-tab-btn ${activeShopifyOrderTab === 'notifications' ? 'active' : ''}`}
+                onClick={() => setActiveShopifyOrderTab('notifications')}
+              >
+                <span>Method 1: Shopify Native Webhook (Recommended &amp; 100% Free)</span>
+              </button>
+              <button
+                type="button"
+                className={`api-tab-btn ${activeShopifyOrderTab === 'flow' ? 'active' : ''}`}
+                onClick={() => setActiveShopifyOrderTab('flow')}
+              >
+                <span>Method 2: Shopify Flow App (Advanced Workflows)</span>
+              </button>
+            </div>
+
+            {/* TAB 1: Method 1 (Shopify Native Webhooks) */}
+            {activeShopifyOrderTab === 'notifications' && (
+              <div>
+                <div className="api-note-text" style={{ margin: '0.875rem 0 1.25rem 0' }}>
+                  <strong>Recommended for all stores:</strong> Works on <strong>every Shopify plan</strong> (including Shopify Basic $39/mo, Shopify, Advanced, and Plus). It requires zero apps and sends instant real-time order payloads directly from Shopify.
+                </div>
+
+                <div className="api-code-input-group">
+                  <label className="api-code-input-label">Your Shopify Webhook Endpoint URL</label>
+                  <div className="api-code-input-row">
+                    <input
+                      type="text"
+                      readOnly
+                      value="https://www.weave365.com/api/v1/orders?key=w365_live_YOUR_API_KEY"
+                      className="api-code-input-field"
+                    />
+                    <button
+                      type="button"
+                      className={`api-feed-copy-btn ${copiedKey === 'webhook-url' ? 'copied' : ''}`}
+                      onClick={() => copyToClipboard('https://www.weave365.com/api/v1/orders?key=w365_live_YOUR_API_KEY', 'webhook-url')}
+                    >
+                      {copiedKey === 'webhook-url' ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedKey === 'webhook-url' ? 'Copied' : 'Copy Webhook URL'}</span>
+                    </button>
+                  </div>
+                  <small style={{ color: '#64748b', fontSize: '0.8rem', display: 'block', marginTop: '0.35rem' }}>
+                    * Replace <code>w365_live_YOUR_API_KEY</code> with your live API key from the Developer Dashboard.
+                  </small>
+                </div>
+
+                <div className="api-clean-steps" style={{ marginTop: '1.5rem' }}>
+                  <div className="api-step-row">
+                    <span className="api-step-circle">1</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Open Shopify Settings &rarr; Notifications</h4>
+                      <p className="api-step-body">
+                        In your <strong>Shopify Admin</strong>, click the <strong>Settings</strong> gear icon at the bottom-left corner &rarr; select <strong>Notifications</strong> from the left navigation bar.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">2</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Scroll Down to Webhooks &rarr; Click &quot;Create webhook&quot;</h4>
+                      <p className="api-step-body">
+                        Scroll all the way to the bottom of the Notifications page until you see the <strong>Webhooks</strong> section. Click the <strong>Create webhook</strong> button.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">3</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Configure Webhook Parameters</h4>
+                      <p className="api-step-body">
+                        Fill in the webhook fields exactly as follows:
+                      </p>
+                      <div className="api-table-scroll" style={{ margin: '0.75rem 0' }}>
+                        <table className="api-flat-table">
+                          <thead>
+                            <tr>
+                              <th>Field</th>
+                              <th>Setting / Value</th>
+                              <th>Description</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong>Event</strong></td>
+                              <td><code className="api-code-inline">Order creation</code></td>
+                              <td>Triggers automatically whenever a customer places an order</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Format</strong></td>
+                              <td><code className="api-code-inline">JSON</code></td>
+                              <td>Standard Shopify JSON payload format</td>
+                            </tr>
+                            <tr>
+                              <td><strong>URL</strong></td>
+                              <td><code className="api-code-inline">https://www.weave365.com/api/v1/orders?key=YOUR_KEY</code></td>
+                              <td>Your Weave 365 orders webhook URL with your live API key</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Webhook API version</strong></td>
+                              <td><code className="api-code-inline">Latest (Recommended)</code></td>
+                              <td>Uses the current stable Shopify Webhook API format</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">4</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Save and Verify</h4>
+                      <p className="api-step-body">
+                        Click <strong>Save</strong>. You can click <strong>Send test notification</strong> next to your newly created webhook to verify connectivity. Whenever a customer places an order on your Shopify store containing Weave 365 sarees, Shopify pushes it directly to Weave 365 for dropshipping.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: Method 2 (Shopify Flow App) */}
+            {activeShopifyOrderTab === 'flow' && (
+              <div>
+                <div className="api-note-text" style={{ margin: '0.875rem 0 1.25rem 0' }}>
+                  <strong>Plan Requirement:</strong> Shopify Flow is available on the <strong>Shopify plan ($105/mo)</strong>, <strong>Advanced ($399/mo)</strong>, and <strong>Shopify Plus</strong>. It provides a visual canvas for multi-step automation, tag filters, and conditional routing.
+                </div>
+
+                <div className="api-clean-steps">
+                  <div className="api-step-row">
+                    <span className="api-step-circle">1</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Install &amp; Open Shopify Flow</h4>
+                      <p className="api-step-body">
+                        In your Shopify Admin, install the free <strong>Shopify Flow</strong> app (if not already installed). Open Flow and click <strong>Create workflow</strong>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">2</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Set Trigger to &quot;Order created&quot;</h4>
+                      <p className="api-step-body">
+                        Click <strong>Select a trigger</strong> &rarr; choose <strong>Shopify &rarr; Order created</strong>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">3</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">(Optional) Add Condition Filter</h4>
+                      <p className="api-step-body">
+                        Click <strong>Add criteria / condition</strong> if you only want to forward orders meeting specific criteria (e.g. <code>Order / tags includes &quot;weave365&quot;</code> or <code>LineItems / vendor equals &quot;Weave365&quot;</code>). Note: If omitted, Weave 365&apos;s smart filter will automatically fulfill only Weave SKUs anyway!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">4</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Add Action &rarr; &quot;Send HTTP request&quot;</h4>
+                      <p className="api-step-body">
+                        Click <strong>Add action</strong> &rarr; select <strong>Shopify &rarr; Send HTTP request</strong>. Configure the action:
+                        <br />
+                        • <strong>HTTP method:</strong> <code>POST</code>
+                        <br />
+                        • <strong>URL:</strong> <code>https://www.weave365.com/api/v1/orders?key=w365_live_YOUR_API_KEY</code>
+                        <br />
+                        • <strong>Headers:</strong> Key: <code>Content-Type</code> &bull; Value: <code>application/json</code>
+                        <br />
+                        • <strong>Body:</strong> Paste the Liquid template below:
+                      </p>
+
+                      <div className="api-code-block" style={{ marginTop: '0.75rem' }}>
+                        <div className="api-code-topbar">
+                          <span className="api-code-label">Shopify Flow Liquid Body Template</span>
+                          <button
+                            type="button"
+                            className="api-code-copy-btn"
+                            onClick={() => copyToClipboard(`{
+  "reseller_order_id": "{{ order.name }}",
+  "customer": {
+    "name": "{{ order.shippingAddress.name }}",
+    "phone": "{{ order.shippingAddress.phone }}",
+    "email": "{{ order.customer.email }}",
+    "address_line1": "{{ order.shippingAddress.address1 }}",
+    "address_line2": "{{ order.shippingAddress.address2 }}",
+    "city": "{{ order.shippingAddress.city }}",
+    "state": "{{ order.shippingAddress.province }}",
+    "pincode": "{{ order.shippingAddress.zip }}"
+  },
+  "items": [
+    {% for lineItem in order.lineItems %}
+    {
+      "sku": "{{ lineItem.sku }}",
+      "quantity": {{ lineItem.quantity }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ],
+  "shipping_notes": "Dropship order from Shopify Flow"
+}`, 'flow-body')}
+                          >
+                            {copiedKey === 'flow-body' ? <Check size={12} /> : <Copy size={12} />}
+                            <span>{copiedKey === 'flow-body' ? 'Copied' : 'Copy Liquid Template'}</span>
+                          </button>
+                        </div>
+                        <pre className="api-code-content">{`{
+  "reseller_order_id": "{{ order.name }}",
+  "customer": {
+    "name": "{{ order.shippingAddress.name }}",
+    "phone": "{{ order.shippingAddress.phone }}",
+    "email": "{{ order.customer.email }}",
+    "address_line1": "{{ order.shippingAddress.address1 }}",
+    "address_line2": "{{ order.shippingAddress.address2 }}",
+    "city": "{{ order.shippingAddress.city }}",
+    "state": "{{ order.shippingAddress.province }}",
+    "pincode": "{{ order.shippingAddress.zip }}"
+  },
+  "items": [
+    {% for lineItem in order.lineItems %}
+    {
+      "sku": "{{ lineItem.sku }}",
+      "quantity": {{ lineItem.quantity }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ],
+  "shipping_notes": "Dropship order from Shopify Flow"
+}`}</pre>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">5</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">Turn On Workflow</h4>
+                      <p className="api-step-body">
+                        Click the green <strong>Turn on workflow</strong> button in the top right. Every matching order will now trigger an automated HTTP dispatch to Weave 365.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Testing Walkthrough Box */}
+            <div className="api-gear-callout" style={{ marginTop: '1.5rem' }}>
+              <div className="api-gear-callout-title">
+                <Check size={16} />
+                <span>How to Test in 2 Minutes</span>
+              </div>
+              <p className="api-step-body" style={{ margin: '0.25rem 0 0 0' }}>
+                1. Enable Shopify&apos;s <strong>Bogus Gateway</strong> (in <strong>Settings &rarr; Payments</strong>) or enable <strong>Cash on Delivery (COD)</strong> for testing.
+                <br />
+                2. Add any synced Weave 365 saree to your cart on your storefront (e.g., SKU <code>102001-1</code>) and complete checkout.
+                <br />
+                3. Open your <strong>Weave 365 Developer Dashboard &rarr; Orders</strong> tab. Your order will appear with status <code>Payment Pending</code>, along with the recipient address and items!
+              </p>
+            </div>
+          </section>
+
           {/* 5. Curated Catalog Selection */}
           <section id="curated-catalog" className="api-section">
             <h2 className="api-section-title">Curated Catalog Selection</h2>
@@ -1201,6 +1550,19 @@ console.log('Total live products:', data.total_products);`}</pre>
               <p className="api-endpoint-summary">
                 Automated Dropship Order Placement (Pro Tier). Dispatches white-label shipments directly to your customer with live tracking.
               </p>
+
+              <div className="api-gear-callout" style={{ margin: '1rem 0' }}>
+                <div className="api-gear-callout-title">
+                  <Truck size={15} />
+                  <span>Shopify Store Owners: Zero Code Automated Setup</span>
+                </div>
+                <p className="api-step-body" style={{ margin: 0 }}>
+                  You don&apos;t need to write custom code or make API calls to send orders. Use Shopify&apos;s free native webhook to automatically forward orders to Weave 365 on checkout.
+                  <a href="#shopify-orders" style={{ marginLeft: '6px', fontWeight: 600, color: '#0f172a', textDecoration: 'underline' }}>
+                    View Shopify Order Webhooks Setup Guide &rarr;
+                  </a>
+                </p>
+              </div>
 
               <div className="api-code-block">
                 <div className="api-code-topbar">
