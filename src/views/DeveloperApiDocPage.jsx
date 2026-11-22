@@ -105,6 +105,8 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
   const [activeSection, setActiveSection] = useState('overview');
   const shopifyVideoRef = useRef(null);
+  const [isShopifyOrderPlaying, setIsShopifyOrderPlaying] = useState(false);
+  const userPausedShopifyOrderRef = useRef(false);
   const syncxVideoRef = useRef(null);
   const [isSyncxPlaying, setIsSyncxPlaying] = useState(false);
   const userPausedSyncxRef = useRef(false);
@@ -165,10 +167,17 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
     const videoEl = shopifyVideoRef.current;
     if (!videoEl || typeof IntersectionObserver === 'undefined') return;
 
+    const onPlay = () => setIsShopifyOrderPlaying(true);
+    const onPause = () => setIsShopifyOrderPlaying(false);
+    videoEl.addEventListener('play', onPlay);
+    videoEl.addEventListener('pause', onPause);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry && entry.isIntersecting) {
-          videoEl.play().catch(() => {});
+          if (!userPausedShopifyOrderRef.current) {
+            videoEl.play().catch(() => {});
+          }
         } else if (entry && !entry.isIntersecting) {
           videoEl.pause();
         }
@@ -181,9 +190,23 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
     observer.observe(videoEl);
 
     return () => {
+      videoEl.removeEventListener('play', onPlay);
+      videoEl.removeEventListener('pause', onPause);
       observer.disconnect();
     };
   }, []);
+
+  const toggleShopifyOrderPlayback = () => {
+    const videoEl = shopifyVideoRef.current;
+    if (!videoEl) return;
+    if (videoEl.paused) {
+      userPausedShopifyOrderRef.current = false;
+      videoEl.play().catch(() => {});
+    } else {
+      userPausedShopifyOrderRef.current = true;
+      videoEl.pause();
+    }
+  };
 
   // Automatically scroll mobile TOC pill rail to keep the active section in view
   useEffect(() => {
@@ -983,25 +1006,34 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       allowFullScreen
                     />
                   ) : (
-                    <video
-                      ref={shopifyVideoRef}
-                      className="api-video-element"
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      onClick={(e) => {
-                        if (e.currentTarget.paused) {
-                          e.currentTarget.play().catch(() => {});
-                        } else {
-                          e.currentTarget.pause();
-                        }
-                      }}
-                      title="Click to play / pause video"
-                    >
-                      <source src={SHOPIFY_ORDER_VIDEO_URL} type="video/mp4" />
-                      Your browser does not support video playback.
-                    </video>
+                    <>
+                      <video
+                        ref={shopifyVideoRef}
+                        className="api-video-element"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        width={1280}
+                        height={720}
+                        onClick={toggleShopifyOrderPlayback}
+                        title={isShopifyOrderPlaying ? 'Click to pause video' : 'Click to play video'}
+                      >
+                        <source src={SHOPIFY_ORDER_VIDEO_URL} type="video/mp4" />
+                        Your browser does not support video playback.
+                      </video>
+
+                      {!isShopifyOrderPlaying && (
+                        <button
+                          type="button"
+                          className="api-video-center-play-btn"
+                          onClick={toggleShopifyOrderPlayback}
+                          aria-label="Play video"
+                        >
+                          <PlayIcon size={28} />
+                        </button>
+                      )}
+                    </>
                   )
                 ) : (
                   <div className="api-video-placeholder">
