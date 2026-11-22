@@ -1919,7 +1919,7 @@ console.log('Total live products:', data.total_products);`}</pre>
                   onClick={() => setBillingCycle('quarterly')}
                 >
                   <span>3 Months</span>
-                  <span className="api-billing-discount-text">(5% Off)</span>
+                  <span className="api-billing-discount-text">5% Off</span>
                 </button>
               </div>
             </div>
@@ -1953,7 +1953,7 @@ console.log('Total live products:', data.total_products);`}</pre>
                   className="api-btn secondary"
                   style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  {billingCycle === 'quarterly' ? 'Select Growth Tier (₹852)' : 'Select Growth Tier'}
+                  Select Growth Tier
                 </a>
               </div>
 
@@ -1988,7 +1988,7 @@ console.log('Total live products:', data.total_products);`}</pre>
                   className="api-btn primary"
                   style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  {billingCycle === 'quarterly' ? 'Upgrade to Pro Tier (₹1,422)' : 'Upgrade to Pro Tier'}
+                  Upgrade to Pro Tier
                 </a>
               </div>
             </div>

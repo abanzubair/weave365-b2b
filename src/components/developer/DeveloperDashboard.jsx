@@ -746,7 +746,7 @@ export function PlanSelectionCard({
             onClick={() => setBillingCycle('quarterly')}
           >
             <span>3 Months</span>
-            <span className="dev-plan-discount-text">(5% Off)</span>
+            <span className="dev-plan-discount-text">5% Off</span>
           </button>
         </div>
       </div>
