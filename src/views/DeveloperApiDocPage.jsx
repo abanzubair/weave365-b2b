@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Code2,
   Terminal,
@@ -103,6 +103,31 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
   const [activeSection, setActiveSection] = useState('overview');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const shopifyVideoRef = useRef(null);
+
+  useEffect(() => {
+    const videoEl = shopifyVideoRef.current;
+    if (!videoEl || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry && entry.isIntersecting) {
+          videoEl.play().catch(() => {});
+        } else if (entry && !entry.isIntersecting) {
+          videoEl.pause();
+        }
+      },
+      {
+        threshold: 0.25, // Play when at least 25% of the video is in the viewport
+      }
+    );
+
+    observer.observe(videoEl);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -797,15 +822,15 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     />
                   ) : (
                     <video
+                      ref={shopifyVideoRef}
                       className="api-video-element"
-                      autoPlay
                       muted
                       loop
                       playsInline
-                      preload="auto"
+                      preload="metadata"
                       onClick={(e) => {
                         if (e.currentTarget.paused) {
-                          e.currentTarget.play();
+                          e.currentTarget.play().catch(() => {});
                         } else {
                           e.currentTarget.pause();
                         }
