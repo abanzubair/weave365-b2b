@@ -30,7 +30,8 @@ import {
   FileSpreadsheet,
   Truck,
   PlayIcon,
-  Bell
+  Bell,
+  GitBranch
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
@@ -853,7 +854,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                 className={`api-tab-btn ${activeShopifyOrderTab === 'flow' ? 'active' : ''}`}
                 onClick={() => setActiveShopifyOrderTab('flow')}
               >
-                <Zap size={15} />
+                <GitBranch size={15} />
                 <span>Shopify Flow App (Advanced)</span>
               </button>
             </div>

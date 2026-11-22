@@ -244,6 +244,32 @@ export const Github = createCustomSvg(
   'currentColor'
 );
 
+export const GitBranch = createCustomSvg(
+  <>
+    <line x1="6" y1="9" x2="6" y2="15" />
+    <circle cx="6" cy="6" r="3" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="6" r="3" />
+    <path d="M18 9a9 9 0 0 1-9 9" />
+  </>,
+  '0 0 24 24',
+  'GitBranch',
+  'none',
+  'currentColor'
+);
+
+export const Workflow = createCustomSvg(
+  <>
+    <rect x="3" y="3" width="8" height="8" rx="2" />
+    <path d="M7 11v4a2 2 0 0 0 2 2h4" />
+    <rect x="13" y="13" width="8" height="8" rx="2" />
+  </>,
+  '0 0 24 24',
+  'Workflow',
+  'none',
+  'currentColor'
+);
+
 // Heroicons Mapped Components
 export const Activity = wrapIcon(Hero_ChartBarSquareIcon, 'Activity');
 export const AlertCircle = wrapIcon(Hero_ExclamationCircleIcon, 'AlertCircle');
