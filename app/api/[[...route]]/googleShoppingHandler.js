@@ -88,6 +88,55 @@ let cachedShoppingXml = null;
 let shoppingCacheTime = 0;
 const SHOPPING_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+function formatGoogleShoppingTitle(product, variant, brandName = 'Weave 365') {
+  let base = (product.title || product.metaTitle || 'Banarasi Collection')
+    .replace(new RegExp(`\\s*\\|?\\s*${brandName}\\s*$`, 'i'), '')
+    .trim();
+
+  const cat = String(product.category || '').toLowerCase();
+  const targetCategoryPhrase = cat === 'suit' 
+    ? 'Banarasi Suit' 
+    : cat === 'dupatta' 
+    ? 'Banarasi Dupatta'
+    : cat === 'lehenga' 
+    ? 'Banarasi Lehenga'
+    : 'Banarasi Saree';
+
+  if (!base.toLowerCase().includes('banarasi')) {
+    base = `${base} ${targetCategoryPhrase}`;
+  } else if (cat === 'saree' && !base.toLowerCase().includes('saree')) {
+    base = `${base} Saree`;
+  } else if (cat === 'suit' && !base.toLowerCase().includes('suit')) {
+    base = `${base} Suit`;
+  }
+
+  if (!base.toLowerCase().startsWith(brandName.toLowerCase())) {
+    base = `${brandName} ${base}`;
+  }
+
+  if (variant?.color && !base.toLowerCase().includes(variant.color.toLowerCase())) {
+    base = `${base} - ${variant.color}`;
+  }
+
+  if (base.length > 145) {
+    base = base.substring(0, 142).trim() + '...';
+  }
+
+  return base;
+}
+
+function formatGoogleShoppingDescription(product, title, cat, brandName = 'Weave 365') {
+  const baseDesc = (product.summary || product.description || '').trim();
+  const fabricStr = product.fabric ? `in ${product.fabric}` : 'in authentic handloom silk';
+  const workStr = product.work ? `featuring exquisite ${product.work} work` : 'with intricate gold and silver zari craftsmanship';
+  const itemType = cat === 'suit' ? 'Banarasi suit' : cat === 'dupatta' ? 'Banarasi dupatta' : cat === 'lehenga' ? 'Banarasi lehenga' : 'Banarasi saree';
+
+  if (baseDesc && baseDesc.length > 30) {
+    return `${baseDesc}. Authentic handwoven ${itemType} ${fabricStr} ${workStr}, sourced directly from heritage Varanasi master weavers. Authentic Indian ethnic wear by ${brandName}.`;
+  }
+  return `Authentic handwoven ${title} ${fabricStr} ${workStr}. Sourced directly from heritage master weavers in Varanasi. Wholesale direct pricing with Silk Mark grade authenticity by ${brandName}.`;
+}
+
 /**
  * Builds the complete Google Shopping XML feed RSS string from a list of products.
  */
@@ -129,13 +178,27 @@ export function buildGoogleShoppingXml(products, siteUrlOverride = null) {
     }
 
     const brandName = storeConfig?.name || 'Weave 365';
-    const size = String(product.category || '').toLowerCase() === 'saree' ? '6.3m' : 'one size';
+    const cat = String(product.category || '').toLowerCase();
+    const size = cat === 'saree' ? '6.3m' : 'one size';
     const weight = Number(product.weight) || 0.8;
     const availability = product.isOutOfStock ? 'out_of_stock' : 'in_stock';
 
-    const googleCategory = String(product.category || '').toLowerCase() === 'saree'
-      ? 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Sarees'
-      : 'Apparel & Accessories > Clothing';
+    let googleCategory = 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Sarees';
+    let productType = 'Ethnic Wear > Traditional Sarees > Banarasi Sarees';
+
+    if (cat === 'suit') {
+      googleCategory = 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Salwar Kameez';
+      productType = 'Ethnic Wear > Suits & Dress Materials > Banarasi Suits';
+    } else if (cat === 'dupatta') {
+      googleCategory = 'Apparel & Accessories > Clothing Accessories > Scarves & Shawls';
+      productType = 'Ethnic Wear > Dupattas > Banarasi Dupattas';
+    } else if (cat === 'lehenga') {
+      googleCategory = 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Lehengas';
+      productType = 'Ethnic Wear > Lehengas > Banarasi Lehengas';
+    } else if (cat === 'under 999') {
+      googleCategory = 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Sarees';
+      productType = 'Ethnic Wear > Traditional Sarees > Budget Banarasi Sarees';
+    }
 
     for (const variant of activeVariants) {
       const displayPrice = variant.prices?.single || variant.prices?.mrp || 2500;
@@ -146,11 +209,11 @@ export function buildGoogleShoppingXml(products, siteUrlOverride = null) {
         ? `${prodUrl}?color=${encodeURIComponent(variant.color.toLowerCase())}` 
         : prodUrl;
 
-      // Enhance title to include the variant color name if not already present
-      let title = product.title || product.metaTitle || 'Premium Banarasi Collection';
-      if (variant.color && !title.toLowerCase().includes(variant.color.toLowerCase())) {
-        title = `${title} - ${variant.color}`;
-      }
+      // Enhance title with high-intent keywords: Brand + Fabric + Banarasi Saree/Suit + Work + Color
+      const title = formatGoogleShoppingTitle(product, variant, brandName);
+
+      // Enhance description with Varanasi origin and fabric details
+      const description = formatGoogleShoppingDescription(product, title, cat, brandName);
 
       // Map variant images (first is main image, subsequent are additional images)
       const variantImages = getImagesForVariant(product, variant, hasSubVariants);
@@ -171,7 +234,7 @@ export function buildGoogleShoppingXml(products, siteUrlOverride = null) {
     <item>
       <g:id>${escapeXml(variant.code)}</g:id>${itemGroupIdXml}
       <g:title>${escapeXml(title)}</g:title>
-      <g:description>${escapeXml(product.summary || product.description || `Premium handwoven Banarasi collection in ${product.fabric || 'pure silk'}.`)}</g:description>
+      <g:description>${escapeXml(description)}</g:description>
       <g:link>${escapeXml(variantUrl)}</g:link>
       <g:image_link>${escapeXml(mainImage)}</g:image_link>${additionalImageXml}
       <g:availability>${escapeXml(availability)}</g:availability>
@@ -184,6 +247,7 @@ export function buildGoogleShoppingXml(products, siteUrlOverride = null) {
       <g:size>${escapeXml(size)}</g:size>
       <g:shipping_weight>${weight} kg</g:shipping_weight>
       <g:google_product_category>${escapeXml(googleCategory)}</g:google_product_category>
+      <g:product_type>${escapeXml(productType)}</g:product_type>
     </item>`;
     }
   }
@@ -245,8 +309,11 @@ export async function GET(request) {
       'Cloudflare-CDN-Cache-Control': 'max-age=86400',
     };
 
+    const urlObj = request?.url ? new URL(request.url) : null;
+    const forceRefresh = urlObj?.searchParams?.get('refresh') === 'true' || urlObj?.searchParams?.get('nocache') === '1';
+
     // 1. In-memory cache check (returns in < 0.05ms CPU)
-    if (cachedShoppingXml && (Date.now() - shoppingCacheTime < SHOPPING_TTL_MS)) {
+    if (!forceRefresh && cachedShoppingXml && (Date.now() - shoppingCacheTime < SHOPPING_TTL_MS)) {
       return new Response(cachedShoppingXml, {
         status: 200,
         headers: shoppingResponseHeaders,
@@ -258,7 +325,7 @@ export async function GET(request) {
     const cacheUrl = request?.url || `${siteUrl}/api/feed/google-shopping`;
     const cacheKey = new Request(cacheUrl, { method: 'GET' });
 
-    if (cache) {
+    if (!forceRefresh && cache) {
       try {
         const match = await cache.match(cacheKey);
         if (match) {
@@ -271,7 +338,7 @@ export async function GET(request) {
 
     // 3. Fast Database Read of Pre-generated Feed (< 0.5ms CPU)
     const supabase = await getSupabase();
-    if (supabase) {
+    if (!forceRefresh && supabase) {
       try {
         const { data: sheetRow } = await supabase
           .from('sheet_data')
