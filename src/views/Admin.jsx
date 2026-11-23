@@ -5,7 +5,7 @@
  * inspired by the Dashtar Admin interface.
  */
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import {
   Users,
   FileText,
@@ -196,6 +196,8 @@ export function Admin({
   const [status, setStatus] = useState('loading');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
+  const lastFetchTimeRef = useRef(0);
+  const hasLoadedRef = useRef(false);
 
   // Auth checking state: display loading screen while resolving Supabase session
   const [localUser, setLocalUser] = useState(user);
@@ -360,7 +362,7 @@ export function Admin({
   }, []);
 
   // API Call: Fetch all admin database tables
-  async function loadAdminData() {
+  async function loadAdminData(options = {}) {
     if (!isSupabaseConfigured) {
       setStatus('ready');
       return;
@@ -370,7 +372,11 @@ export function Admin({
       return;
     }
 
-    setStatus('loading');
+    const isSilent = Boolean(options?.silent || hasLoadedRef.current);
+    if (!isSilent) {
+      setStatus('loading');
+    }
+    lastFetchTimeRef.current = Date.now();
     try {
       const [profiles, cartItems, favorites] = await Promise.all([
         safeSelect('profiles'),
@@ -454,6 +460,7 @@ export function Admin({
         };
       });
 
+      hasLoadedRef.current = true;
       setAdminData({
         profiles: enrichedProfiles,
         cartItems: cartItems.data,
@@ -465,6 +472,7 @@ export function Admin({
       });
     } catch (err) {
       console.error('[Admin] Error loading admin data:', err);
+      hasLoadedRef.current = true;
       setAdminData((prev) => ({
         ...prev,
         hasLoaded: true,
@@ -703,7 +711,7 @@ export function Admin({
 
   useEffect(() => {
     if ((activeTab === 'partners' || activeTab === 'enquires' || activeTab === 'tracking' || activeTab === 'api-manager') && allowed) {
-      void loadAdminData();
+      void loadAdminData({ silent: true });
     }
     if (activeTab === 'reviews' && allowed) {
       void loadSiteReviews();
@@ -720,27 +728,32 @@ export function Admin({
         'postgres_changes',
         { event: '*', schema: 'public', table: 'api_keys' },
         () => {
-          void loadAdminData();
+          void loadAdminData({ silent: true });
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'inquiries' },
         () => {
-          void loadAdminData();
+          void loadAdminData({ silent: true });
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
         () => {
-          void loadAdminData();
+          void loadAdminData({ silent: true });
         }
       )
       .subscribe();
 
     const handleWindowFocus = () => {
-      void loadAdminData();
+      // Throttle window focus revalidation to at least 60 seconds interval and always run silently in background
+      const now = Date.now();
+      if (now - lastFetchTimeRef.current < 60000) {
+        return;
+      }
+      void loadAdminData({ silent: true });
     };
     window.addEventListener('focus', handleWindowFocus);
 
@@ -1005,7 +1018,8 @@ export function Admin({
     return { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard };
   }, [activeTab, sidebarSections]);
 
-  const isDataLoading = status === 'loading' || !adminData?.hasLoaded;
+  // Only show the blocking full-page loading screen on initial mount before records are loaded
+  const isDataLoading = !adminData?.hasLoaded && status === 'loading';
 
   if (authChecking) {
     return (
