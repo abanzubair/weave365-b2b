@@ -100,6 +100,7 @@ export function renderBuyerConfirmationEmailHtml({
   const destCity = deliveryAddr?.city || order.dropship_recipient_city || '';
   const destState = deliveryAddr?.state || order.dropship_recipient_state || '';
   const destPincode = deliveryAddr?.pincode || order.dropship_recipient_pincode || order.pincode || '';
+  const destCountry = deliveryAddr?.country || order.country_name || (order.message?.match(/Country:\s*([^\n\r]+)/i)?.[1]?.trim()) || 'India';
 
   const rawItems = (Array.isArray(order.order_items) && order.order_items.length > 0)
     ? order.order_items
@@ -337,7 +338,7 @@ export function renderBuyerConfirmationEmailHtml({
                 ${destPhone ? `<div>Phone: ${destPhone}</div>` : ''}
                 <div>${destAddress}</div>
                 <div>${[destCity, destState, destPincode].filter(Boolean).join(', ')}</div>
-                <div>India</div>
+                <div>${destCountry}</div>
               </div>
             </td>
           </tr>

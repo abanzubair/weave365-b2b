@@ -2280,6 +2280,7 @@ create table if not exists public.country_pricing_configs (
   currency text not null,                  -- ISO currency code (e.g. 'INR', 'USD', 'QAR', 'AED')
   currency_symbol text not null,           -- Currency symbol (e.g. '₹', '$', 'QAR', 'AED')
   markup_percent numeric not null default 0, -- Markup % applied to base INR product price
+  shipping_fee numeric not null default 0, -- Standard shipping/delivery charge for destination
   flag text default '🌐',                  -- Emoji flag
   enabled boolean not null default true,   -- Whether country is selectable
   is_base boolean not null default false,  -- Base reference currency (India/INR)
@@ -2287,6 +2288,10 @@ create table if not exists public.country_pricing_configs (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+ALTER TABLE public.country_pricing_configs ADD COLUMN IF NOT EXISTS shipping_fee numeric DEFAULT 0;
+ALTER TABLE public.country_pricing_configs ADD COLUMN IF NOT EXISTS shipping_rate numeric DEFAULT 0;
+ALTER TABLE public.country_pricing_configs ADD COLUMN IF NOT EXISTS shipping_unit text DEFAULT 'kg';
 
 create index if not exists idx_country_pricing_configs_code on public.country_pricing_configs(code);
 create index if not exists idx_country_pricing_configs_enabled on public.country_pricing_configs(enabled);

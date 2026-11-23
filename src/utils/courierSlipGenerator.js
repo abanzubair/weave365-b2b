@@ -139,7 +139,13 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
   const recipientCity = rawRecipientCity || 'Chapra';
   const recipientState = rawRecipientState || 'Bihar';
   const recipientPincode = rawRecipientPin || '841301';
-  const recipientCityStatePin = [recipientCity, recipientState, recipientPincode].filter(Boolean).join(', ');
+  const recipientCountry = deliveryAddr?.country || inquiry.country_name || (inquiry.message?.match(/Country:\s*([^\n\r]+)/i)?.[1]?.trim()) || '';
+  const recipientCityStatePin = [
+    recipientCity,
+    recipientState,
+    recipientPincode,
+    recipientCountry && recipientCountry !== 'India' ? recipientCountry : null,
+  ].filter(Boolean).join(', ');
 
   // 2. Sender Details (Ship From)
   const senderName = dropshipSender?.sender_name || inquiry.dropship_sender_name || inquiry.business_name || 'Weave 365 Partner';

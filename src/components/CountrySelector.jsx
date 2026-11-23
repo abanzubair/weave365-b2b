@@ -60,7 +60,7 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
   }, [isOpen, variant]);
 
   const enabledCountries = useMemo(() => {
-    return countries.filter((c) => c.enabled !== false);
+    return countries.filter((c) => c && c.enabled === true);
   }, [countries]);
 
   const filteredCountries = useMemo(() => {

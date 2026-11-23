@@ -68,6 +68,68 @@
   flex-shrink: 0;
 }
 
+/* Auto-save Status Indicator */
+.cpa-autosave-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  font-size: var(--admin-font-size-12, 0.75rem);
+  font-weight: 500;
+  border-radius: var(--admin-radius-sm, 6px);
+  transition: all 0.2s ease;
+  user-select: none;
+  line-height: 1.25;
+}
+
+.cpa-autosave-saved {
+  color: var(--admin-success-text);
+  background: var(--admin-success-bg);
+  border: 1px solid var(--admin-success-border);
+}
+
+.cpa-autosave-check {
+  color: var(--admin-success-text);
+  flex-shrink: 0;
+}
+
+.cpa-autosave-unsaved {
+  color: var(--admin-warning-text, #b45309);
+  background: var(--admin-warning-bg, #fffbeb);
+  border: 1px solid var(--admin-warning-border, #fef3c7);
+}
+
+.cpa-autosave-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--admin-warning-text, #d97706);
+  flex-shrink: 0;
+  animation: cpaPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes cpaPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.cpa-autosave-saving {
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-subtle);
+  border: 1px solid var(--admin-border);
+}
+
+.cpa-autosave-error {
+  color: var(--admin-danger-text);
+  background: var(--admin-danger-bg);
+  border: 1px solid var(--admin-danger-border);
+}
+
+.cpa-autosave-alert {
+  color: var(--admin-danger-text);
+  flex-shrink: 0;
+}
+
 /* Buttons */
 .cpa-btn {
   display: inline-flex;
@@ -547,6 +609,83 @@
   color: var(--admin-text-muted);
   pointer-events: none;
   font-weight: 500;
+}
+
+/* Shipping / Delivery Fee Input */
+.cpa-shipping-cell-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cpa-shipping-controls-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cpa-shipping-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  width: 90px;
+}
+
+.cpa-shipping-prefix {
+  position: absolute;
+  left: 0.45rem;
+  font-size: var(--admin-font-size-12);
+  color: var(--admin-text-muted);
+  pointer-events: none;
+  font-weight: 500;
+}
+
+.cpa-shipping-input {
+  width: 100%;
+  padding: 0.35rem 0.45rem 0.35rem 1.15rem;
+  font-size: var(--admin-font-size-14);
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--admin-text-heading);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  outline: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.cpa-shipping-unit-select {
+  padding: 0.35rem 1.25rem 0.35rem 0.45rem;
+  font-size: var(--admin-font-size-12);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-subtle);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='m1 1 4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.35rem center;
+  background-size: 8px 5px;
+}
+
+.cpa-shipping-input:focus,
+.cpa-shipping-unit-select:focus {
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.cpa-shipping-converted {
+  font-size: 0.72rem;
+  color: var(--admin-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Rate Cell */

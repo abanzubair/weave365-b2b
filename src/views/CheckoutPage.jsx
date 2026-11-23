@@ -24,9 +24,11 @@ import {
   customerPrice,
   formatMoney,
   getLocalizedPrice,
+  roundCurrency,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
 import { useCountryCurrency } from '../store/useCountryCurrency.js';
+import { ALL_EXISTING_COUNTRIES } from '../constants/allCountries.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -68,6 +70,18 @@ export function CheckoutPage({
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [useCustomAddress, setUseCustomAddress] = useState(false);
 
+  // Country and currency state
+  const { currentCountry, countries, setCountry, exchangeRates } = useCountryCurrency();
+
+  const availableCountries = useMemo(() => {
+    const list = Array.isArray(countries) && countries.length > 0 ? countries : ALL_EXISTING_COUNTRIES;
+    return list.filter((c) => c && c.enabled === true);
+  }, [countries]);
+
+  const handleCountryChange = (countryCode) => {
+    setCountry(countryCode, true);
+  };
+
   // Standard Recipient form fields
   const [email, setEmail] = useState(user?.email || '');
   const [formName, setFormName] = useState(
@@ -94,6 +108,7 @@ export function CheckoutPage({
   const [senderCity, setSenderCity] = useState('');
   const [senderState, setSenderState] = useState('');
   const [senderPincode, setSenderPincode] = useState('');
+  const [senderCountry, setSenderCountry] = useState('India');
   const [packingPreference, setPackingPreference] = useState(
     'Blind Packaging (Zero Supplier Branding / No Price Tags)'
   );
@@ -291,6 +306,16 @@ export function CheckoutPage({
     setFormCity(addr.city || '');
     setFormState(addr.state || '');
     setFormPincode(addr.pincode || '');
+    if (addr.country) {
+      const match = (availableCountries || []).find(
+        (c) =>
+          c.code?.toUpperCase() === addr.country?.toUpperCase() ||
+          c.name?.toLowerCase() === addr.country?.toLowerCase()
+      );
+      if (match) {
+        setCountry(match.code, true);
+      }
+    }
     if (setPincode && addr.pincode) {
       setPincode(addr.pincode);
     }
@@ -316,7 +341,6 @@ export function CheckoutPage({
 
   // Financial calculations
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const { currentCountry, exchangeRates } = useCountryCurrency();
   const { subtotal, discount, baseTotal, productPricing } = useMemo(() => {
     if (!canViewPrices || !items.length) {
       return { subtotal: 0, discount: 0, baseTotal: 0, productPricing: {} };
@@ -342,7 +366,7 @@ export function CheckoutPage({
   const hasSets = Object.values(productPricing || {}).some((p) => p.completeSets > 0);
 
   // Weight & Shipping Fee calculation
-  const { totalWeightKg, billedWeightKg, standardShippingFee, expeditedShippingFee, shippingFee } = useMemo(() => {
+  const { totalWeightKg, billedWeightKg, baseShippingInr, standardShippingFee, expeditedShippingFee, shippingFee } = useMemo(() => {
     let totalGrams = 0;
     (items || []).forEach((item) => {
       const qty = Number(item.quantity) || 1;
@@ -357,18 +381,49 @@ export function CheckoutPage({
 
     const totalKg = totalGrams / 1000;
     const billedKg = Math.max(1, Math.ceil(totalGrams / 1000));
-    // Standard shipping: Free across all orders
-    const stdFee = 0;
-    const expFeeInr = billedKg * 150;
+
+    // Base shipping rate & unit configured in Admin panel for this country (in INR)
+    const shippingRate = Number(currentCountry?.shippingRate ?? currentCountry?.shippingFee ?? currentCountry?.shipping_fee ?? 0);
+    const shippingUnit = (currentCountry?.shippingUnit || 'kg').toLowerCase();
+
+    // Weight-based base shipping charge in INR
+    let baseShippingInr = 0;
+    if (shippingRate > 0) {
+      if (shippingUnit === 'g') {
+        baseShippingInr = Math.round(totalGrams * shippingRate);
+      } else {
+        baseShippingInr = Math.round(totalKg * shippingRate);
+      }
+    }
+
     const isForeignCurrency = currentCountry?.currency && currentCountry.currency !== 'INR';
-    const expFee = isForeignCurrency
-      ? getLocalizedPrice(expFeeInr, currentCountry, exchangeRates).finalPrice
-      : expFeeInr;
+
+    // Standard shipping: Uses admin configured weight rate (converted to local currency if foreign)
+    let stdFee = 0;
+    if (baseShippingInr > 0) {
+      if (isForeignCurrency) {
+        const rate = Number(exchangeRates?.[currentCountry.currency]) || 0;
+        stdFee = rate > 0 ? roundCurrency(baseShippingInr * rate, currentCountry.currency) : baseShippingInr;
+      } else {
+        stdFee = baseShippingInr;
+      }
+    }
+
+    // Expedited shipping: Standard fee + expedited weight charge (billedKg * 150 INR)
+    const expExtraInr = billedKg * 150;
+    let expExtra = expExtraInr;
+    if (isForeignCurrency) {
+      const rate = Number(exchangeRates?.[currentCountry.currency]) || 0;
+      expExtra = rate > 0 ? roundCurrency(expExtraInr * rate, currentCountry.currency) : expExtraInr;
+    }
+    const expFee = stdFee + expExtra;
+
     const actualFee = shippingSpeed === 'expedited' ? expFee : stdFee;
 
     return {
       totalWeightKg: totalKg,
       billedWeightKg: billedKg,
+      baseShippingInr,
       standardShippingFee: stdFee,
       expeditedShippingFee: expFee,
       shippingFee: actualFee,
@@ -436,9 +491,9 @@ export function CheckoutPage({
       markupPercent: countryMarkup,
     };
     const inrTotals = calculateLocalizedHybridCartTotals(items, priceAccess, countryInrConfig, exchangeRates);
-    const inrShipping = shippingSpeed === 'expedited' ? (billedWeightKg * 150) : 0;
+    const inrShipping = (baseShippingInr || 0) + (shippingSpeed === 'expedited' ? (billedWeightKg * 150) : 0);
     return Math.max(0, (inrTotals.total || 0) - (inrTotals.discount || 0) - (couponDiscount || 0)) + inrShipping;
-  }, [items, priceAccess, currentCountry, exchangeRates, shippingSpeed, billedWeightKg, couponDiscount]);
+  }, [items, priceAccess, currentCountry, exchangeRates, shippingSpeed, billedWeightKg, baseShippingInr, couponDiscount]);
 
   const { baseAmount, gstAmount } = useMemo(() => {
     const netItems = Math.max(0, (baseTotal || 0) - (discount || 0) - (couponDiscount || 0));
@@ -536,6 +591,8 @@ export function CheckoutPage({
       city: formCity.trim(),
       state: formState.trim(),
       pincode: formPincode.trim(),
+      country: currentCountry?.name || 'India',
+      country_code: currentCountry?.code || 'IN',
       is_dropship: shippingMode === 'dropship',
       dropship_sender_name: shippingMode === 'dropship' ? senderName.trim() : null,
       dropship_sender_phone: shippingMode === 'dropship' ? senderPhone.trim() : null,
@@ -543,6 +600,7 @@ export function CheckoutPage({
       dropship_sender_city: shippingMode === 'dropship' ? senderCity.trim() : null,
       dropship_sender_state: shippingMode === 'dropship' ? senderState.trim() : null,
       dropship_sender_pincode: shippingMode === 'dropship' ? senderPincode.trim() : null,
+      dropship_sender_country: shippingMode === 'dropship' ? senderCountry : null,
       dropship_packing_preference: shippingMode === 'dropship' ? packingPreference : null,
       dropship_billed_price: shippingMode === 'dropship' && dropshipBilledPrice ? Number(dropshipBilledPrice) : null,
       dropship_discount: shippingMode === 'dropship' && dropshipDiscount ? Number(dropshipDiscount) : null,
@@ -576,6 +634,7 @@ export function CheckoutPage({
         sender_city: senderCity,
         sender_state: senderState,
         sender_pincode: senderPincode,
+        sender_country: senderCountry,
         packing_preference: packingPreference,
         custom_billed_price: customBilledPriceNum,
         custom_discount: customDiscountNum,
@@ -635,7 +694,7 @@ export function CheckoutPage({
           city: deliveryDetails.city,
           state: deliveryDetails.state,
           pincode: deliveryDetails.pincode,
-          country: 'India',
+          country: deliveryDetails.country || currentCountry?.name || 'India',
         });
       } catch (err) {
         console.error('Error saving address:', err);
@@ -938,7 +997,7 @@ export function CheckoutPage({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
               <span style={{ color: '#64748b' }}>Destination</span>
               <span style={{ color: '#0f172a', textAlign: 'right', maxWidth: '280px' }}>
-                {recipient.address_line1 || formAddr1}, {recipient.city || formCity}, {recipient.state || formState} - {recipient.pincode || formPincode}
+                {recipient.address_line1 || formAddr1}, {recipient.city || formCity}, {recipient.state || formState} - {recipient.pincode || formPincode}{recipient.country || currentCountry?.name ? `, ${recipient.country || currentCountry?.name}` : ''}
               </span>
             </div>
 
@@ -1214,9 +1273,9 @@ export function CheckoutPage({
               <div className="checkout-summary-row">
                 <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard'})</span>
                 <span style={{ color: '#0f172a', fontWeight: '500' }}>
-                  {shippingSpeed === 'expedited'
-                    ? formatMoney(expeditedShippingFee, { currency: currentCountry?.currency, fractionDigits: 2 })
-                    : formatMoney(0, { currency: currentCountry?.currency, fractionDigits: 2 })}
+                  {shippingFee > 0
+                    ? formatMoney(shippingFee, { currency: currentCountry?.currency, fractionDigits: 2 })
+                    : (currentCountry?.code === 'IN' ? 'FREE' : formatMoney(0, { currency: currentCountry?.currency, fractionDigits: 2 }))}
                 </span>
               </div>
 
@@ -1315,7 +1374,7 @@ export function CheckoutPage({
                               <div className="saved-address-text">
                                 <strong>{addr.full_name}</strong> ({addr.phone_number})<br />
                                 {addr.address_line1}, {addr.address_line2 ? addr.address_line2 + ', ' : ''}
-                                {addr.city}, {addr.state} - {addr.pincode}
+                                {addr.city}, {addr.state} - {addr.pincode}{addr.country ? `, ${addr.country}` : ''}
                               </div>
                             </label>
                           ))}
@@ -1420,21 +1479,38 @@ export function CheckoutPage({
 
                         <div className="checkout-input-row">
                           <div className="checkout-field">
-                            <label htmlFor="checkout-pincode">Postal / Pincode *</label>
+                            <label htmlFor="checkout-pincode">
+                              {currentCountry?.code === 'IN' ? 'Postal / Pincode *' : 'ZIP / Postal Code *'}
+                            </label>
                             <input
                               id="checkout-pincode"
                               type="text"
                               className="checkout-input"
-                              placeholder="Postal / Pincode"
+                              placeholder={currentCountry?.code === 'IN' ? 'Postal / Pincode' : 'ZIP / Postal Code'}
                               maxLength={12}
                               value={formPincode}
                               onChange={(e) => handlePincodeChange(e.target.value)}
+                              autoComplete="postal-code"
                               required
                             />
                           </div>
                           <div className="checkout-field">
-                            <label>Country</label>
-                            <input type="text" className="checkout-input" value="India" disabled />
+                            <label htmlFor="checkout-country">Country *</label>
+                            <select
+                              id="checkout-country"
+                              name="country"
+                              className="checkout-select"
+                              value={currentCountry?.code || 'IN'}
+                              onChange={(e) => handleCountryChange(e.target.value)}
+                              autoComplete="country"
+                              required
+                            >
+                              {availableCountries.map((c) => (
+                                <option key={c.code} value={c.code}>
+                                  {c.flag ? `${c.flag} ` : ''}{c.name} ({c.currency})
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         </div>
 
@@ -1537,12 +1613,27 @@ export function CheckoutPage({
                           maxLength={12}
                           value={senderPincode}
                           onChange={(e) => setSenderPincode(e.target.value)}
+                          autoComplete="postal-code"
                           required
                         />
                       </div>
                       <div className="checkout-field">
-                        <label>Country</label>
-                        <input type="text" className="checkout-input" value="India" disabled />
+                        <label htmlFor="sender-country">Country *</label>
+                        <select
+                          id="sender-country"
+                          name="sender_country"
+                          className="checkout-select"
+                          value={senderCountry}
+                          onChange={(e) => setSenderCountry(e.target.value)}
+                          autoComplete="country-name"
+                          required
+                        >
+                          {availableCountries.map((c) => (
+                            <option key={c.code} value={c.name}>
+                              {c.flag ? `${c.flag} ` : ''}{c.name} ({c.code})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
@@ -1619,21 +1710,38 @@ export function CheckoutPage({
 
                     <div className="checkout-input-row">
                       <div className="checkout-field">
-                        <label htmlFor="recipient-pincode">Postal / Pincode *</label>
+                        <label htmlFor="recipient-pincode">
+                          {currentCountry?.code === 'IN' ? 'Postal / Pincode *' : 'ZIP / Postal Code *'}
+                        </label>
                         <input
                           id="recipient-pincode"
                           type="text"
                           className="checkout-input"
-                          placeholder="Postal / Pincode"
+                          placeholder={currentCountry?.code === 'IN' ? 'Postal / Pincode' : 'ZIP / Postal Code'}
                           maxLength={12}
                           value={formPincode}
                           onChange={(e) => handlePincodeChange(e.target.value)}
+                          autoComplete="postal-code"
                           required
                         />
                       </div>
                       <div className="checkout-field">
-                        <label>Country</label>
-                        <input type="text" className="checkout-input" value="India" disabled />
+                        <label htmlFor="recipient-country">Country *</label>
+                        <select
+                          id="recipient-country"
+                          name="country"
+                          className="checkout-select"
+                          value={currentCountry?.code || 'IN'}
+                          onChange={(e) => handleCountryChange(e.target.value)}
+                          autoComplete="country"
+                          required
+                        >
+                          {availableCountries.map((c) => (
+                            <option key={c.code} value={c.code}>
+                              {c.flag ? `${c.flag} ` : ''}{c.name} ({c.currency})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
@@ -1694,7 +1802,11 @@ export function CheckoutPage({
                       <div className="shipping-speed-text">
                         <div className="shipping-speed-title">
                           <strong>Standard Shipping:</strong>{' '}
-                          <span style={{ color: '#16a34a', fontWeight: '600' }}>FREE</span>
+                          <span style={{ color: standardShippingFee > 0 ? '#0f172a' : '#16a34a', fontWeight: '600' }}>
+                            {standardShippingFee > 0
+                              ? formatMoney(standardShippingFee, { currency: currentCountry?.currency, fractionDigits: 2 })
+                              : 'FREE'}
+                          </span>
                         </div>
                         <div className="shipping-delivery-days">
                           Estimated Delivery: <strong>{hasSets ? '6–8 Business Days' : '4–5 Business Days'}</strong>

@@ -5,24 +5,46 @@
  * Styled with Impeccable 'distill' & 'quieter' principles.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Globe,
   RefreshCw,
   Plus,
   Trash2,
   Check,
+  CheckCircle2,
   AlertCircle,
   TrendingUp,
   Calculator,
   Lock,
   X,
+  Loader2,
 } from '../../components/icons.jsx';
 import { useCountryCurrency, PRESET_ADDITIONAL_COUNTRIES } from '../../store/useCountryCurrency.js';
+import { ALL_EXISTING_COUNTRIES } from '../../constants/allCountries.js';
 import { getLocalizedPrice } from '../../services/pricingService.js';
 import { supabase } from '../../supabaseClient.js';
 import '../../styles/countryPricingAdmin.css';
 import AdminLoadingScreen from './AdminLoadingScreen.jsx';
+
+// Serializes country configuration into a deterministic string for dirty checking
+function serializeCountriesForDiff(list) {
+  if (!Array.isArray(list)) return '';
+  return JSON.stringify(
+    list.map((c) => ({
+      code: String(c.code || '').toUpperCase(),
+      name: String(c.name || '').trim(),
+      currency: String(c.currency || 'INR').toUpperCase(),
+      currencySymbol: String(c.currencySymbol || c.currency || ''),
+      markupPercent: Number(c.markupPercent) || 0,
+      shippingFee: Number(c.shippingRate ?? c.shippingFee ?? 0),
+      shippingRate: Number(c.shippingRate ?? c.shippingFee ?? 0),
+      shippingUnit: (c.shippingUnit || 'kg').toLowerCase() === 'g' ? 'g' : 'kg',
+      enabled: c.enabled !== false,
+      flag: c.flag || '🌐',
+    }))
+  );
+}
 
 export default function CountryPricingManager({ adminData, loading = false }) {
   const {
@@ -41,11 +63,27 @@ export default function CountryPricingManager({ adminData, loading = false }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
 
+  // Auto-save state and lifecycle refs
+  const [autoSaveStatus, setAutoSaveStatus] = useState('saved'); // 'saved' | 'unsaved' | 'saving' | 'error'
+  const [lastSavedTime, setLastSavedTime] = useState(null);
+
+  const isInitializedRef = useRef(false);
+  const isSavingRef = useRef(false);
+  const pendingSaveRef = useRef(false);
+  const lastSavedHashRef = useRef('');
+  const debounceTimerRef = useRef(null);
+  const latestCountriesRef = useRef(countries);
+
+  // Keep latestCountriesRef in sync
+  latestCountriesRef.current = countries;
+
   // Add Country Modal state
   const [showAddModal, setShowAddModal] = useState(false);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [selectedPresetCode, setSelectedPresetCode] = useState('');
   const [customMarkup, setCustomMarkup] = useState('10');
+  const [customShippingFee, setCustomShippingFee] = useState('0');
+  const [customShippingUnit, setCustomShippingUnit] = useState('kg');
   const [customFields, setCustomFields] = useState({
     code: '',
     name: '',
@@ -68,6 +106,8 @@ export default function CountryPricingManager({ adminData, loading = false }) {
           if (Array.isArray(data.countries) && data.countries.length > 0) {
             setLocalCountries(data.countries);
             setCountries(data.countries);
+            latestCountriesRef.current = data.countries;
+            lastSavedHashRef.current = serializeCountriesForDiff(data.countries);
           }
           if (data.exchangeRates) {
             setLocalRates(data.exchangeRates);
@@ -77,19 +117,69 @@ export default function CountryPricingManager({ adminData, loading = false }) {
         }
       } catch (err) {
         console.warn('[CountryPricingManager] Fresh load error:', err);
+      } finally {
+        setTimeout(() => {
+          isInitializedRef.current = true;
+          setAutoSaveStatus('saved');
+        }, 300);
       }
     }
     loadFreshFromDb();
   }, [setCountries, setExchangeRates]);
 
   useEffect(() => {
-    setLocalCountries(storeCountries);
+    if (!isInitializedRef.current && storeCountries?.length > 0) {
+      setLocalCountries(storeCountries);
+      latestCountriesRef.current = storeCountries;
+      lastSavedHashRef.current = serializeCountriesForDiff(storeCountries);
+    }
   }, [storeCountries]);
 
   useEffect(() => {
     setLocalRates(storeRates);
     setLocalMeta(storeMeta);
   }, [storeRates, storeMeta]);
+
+  // Debounced auto-save listener on countries changes
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    const currentHash = serializeCountriesForDiff(countries);
+    if (currentHash === lastSavedHashRef.current) {
+      setAutoSaveStatus('saved');
+      return;
+    }
+
+    setAutoSaveStatus('unsaved');
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // 850ms debounce window prevents overwhelming the database while user is actively typing or editing
+    debounceTimerRef.current = setTimeout(() => {
+      executeSave(latestCountriesRef.current, true);
+    }, 850);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [countries]);
+
+  // Warn if leaving tab with pending unsaved edits
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (autoSaveStatus === 'unsaved' || autoSaveStatus === 'saving') {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [autoSaveStatus]);
 
   // Handle markup input change
   const handleMarkupChange = (code, val) => {
@@ -98,6 +188,32 @@ export default function CountryPricingManager({ adminData, loading = false }) {
         if (c.code === code) {
           const num = parseFloat(val);
           return { ...c, markupPercent: isNaN(num) ? 0 : num };
+        }
+        return c;
+      })
+    );
+  };
+
+  // Handle shipping / delivery charge input change
+  const handleShippingChange = (code, val) => {
+    setLocalCountries((prev) =>
+      prev.map((c) => {
+        if (c.code === code) {
+          const num = parseFloat(val);
+          const safeNum = isNaN(num) ? 0 : Math.max(0, num);
+          return { ...c, shippingFee: safeNum, shippingRate: safeNum };
+        }
+        return c;
+      })
+    );
+  };
+
+  // Handle shipping weight unit change (kg vs g)
+  const handleShippingUnitChange = (code, unit) => {
+    setLocalCountries((prev) =>
+      prev.map((c) => {
+        if (c.code === code) {
+          return { ...c, shippingUnit: unit === 'g' ? 'g' : 'kg' };
         }
         return c;
       })
@@ -127,6 +243,9 @@ export default function CountryPricingManager({ adminData, loading = false }) {
     let newCountry = null;
     const numMarkup = parseFloat(customMarkup);
     const validMarkup = isNaN(numMarkup) ? 10 : numMarkup;
+    const numShipping = parseFloat(customShippingFee);
+    const validShipping = isNaN(numShipping) ? 0 : Math.max(0, numShipping);
+    const validUnit = customShippingUnit === 'g' ? 'g' : 'kg';
 
     if (isCustomMode) {
       const code = (customFields.code || '').trim().toUpperCase();
@@ -154,12 +273,16 @@ export default function CountryPricingManager({ adminData, loading = false }) {
         currencySymbol: currencySymbol || currency,
         flag: flag || '🌐',
         markupPercent: validMarkup,
+        shippingFee: validShipping,
+        shippingRate: validShipping,
+        shippingUnit: validUnit,
         enabled: true,
         isBase: false,
       };
     } else {
       if (!selectedPresetCode) return;
-      const preset = PRESET_ADDITIONAL_COUNTRIES.find((c) => c.code === selectedPresetCode);
+      const preset = ALL_EXISTING_COUNTRIES.find((c) => c.code === selectedPresetCode) ||
+        PRESET_ADDITIONAL_COUNTRIES.find((c) => c.code === selectedPresetCode);
       if (!preset) return;
 
       if (countries.some((c) => c.code === preset.code)) {
@@ -171,6 +294,9 @@ export default function CountryPricingManager({ adminData, loading = false }) {
       newCountry = {
         ...preset,
         markupPercent: validMarkup,
+        shippingFee: validShipping,
+        shippingRate: validShipping,
+        shippingUnit: validUnit,
         enabled: true,
         isBase: false,
       };
@@ -179,9 +305,11 @@ export default function CountryPricingManager({ adminData, loading = false }) {
     setLocalCountries((prev) => [...prev, newCountry]);
     setSelectedPresetCode('');
     setCustomFields({ code: '', name: '', currency: '', currencySymbol: '', flag: '🌐' });
+    setCustomShippingFee('0');
+    setCustomShippingUnit('kg');
     setIsCustomMode(false);
     setShowAddModal(false);
-    setSaveStatus({ type: 'success', message: `Added ${newCountry.name}. Remember to click "Save Changes" to save to Supabase.` });
+    setSaveStatus({ type: 'success', message: `Added ${newCountry.name}. Auto-saving changes...` });
     setTimeout(() => setSaveStatus({ type: '', message: '' }), 4000);
   };
 
@@ -222,9 +350,26 @@ export default function CountryPricingManager({ adminData, loading = false }) {
   };
 
   // Save country configurations to database (Direct Supabase + API sync)
-  const handleSaveChanges = async () => {
-    setIsSaving(true);
-    setSaveStatus({ type: '', message: '' });
+  const executeSave = async (countriesToSave = latestCountriesRef.current, isAuto = false) => {
+    if (!countriesToSave || !countriesToSave.length) return;
+
+    const currentHash = serializeCountriesForDiff(countriesToSave);
+    if (currentHash === lastSavedHashRef.current) {
+      setAutoSaveStatus('saved');
+      return;
+    }
+
+    if (isSavingRef.current) {
+      pendingSaveRef.current = true;
+      return;
+    }
+
+    isSavingRef.current = true;
+    setAutoSaveStatus('saving');
+    if (!isAuto) {
+      setIsSaving(true);
+      setSaveStatus({ type: '', message: '' });
+    }
 
     try {
       let clientDbSaved = false;
@@ -232,7 +377,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
       // 1. Direct write from client to Supabase country_pricing_configs
       if (supabase) {
         try {
-          const rowsToUpsert = countries.map((c, index) => ({
+          const rowsToUpsert = countriesToSave.map((c, index) => ({
             code: c.code.toUpperCase(),
             name: c.name,
             currency: c.currency.toUpperCase(),
@@ -252,7 +397,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
           if (!dbError) {
             clientDbSaved = true;
             // Clean up removed countries
-            const currentCodes = countries.map((c) => c.code.toUpperCase());
+            const currentCodes = countriesToSave.map((c) => c.code.toUpperCase());
             const { data: existingRows } = await supabase
               .from('country_pricing_configs')
               .select('code, is_base');
@@ -269,15 +414,13 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                   .in('code', toDelete);
               }
             }
-          } else {
-            console.warn('Client-side Supabase save notice:', dbError.message);
           }
         } catch (dbErr) {
           console.warn('Client-side Supabase note:', dbErr);
         }
       }
 
-      // 2. Also call the Edge API endpoint with session token
+      // 2. Also call the Edge API endpoint with session token (preserves shippingRate, shippingUnit, shippingFee)
       const session = (await supabase?.auth.getSession())?.data?.session;
       const token = session?.access_token;
 
@@ -289,7 +432,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
         },
         body: JSON.stringify({
           action: 'save_country_pricing',
-          countries,
+          countries: countriesToSave,
         }),
       });
 
@@ -300,15 +443,37 @@ export default function CountryPricingManager({ adminData, loading = false }) {
         }
       }
 
-      setCountries(countries);
-      setSaveStatus({ type: 'success', message: 'Country pricing configuration saved successfully in Supabase.' });
+      lastSavedHashRef.current = serializeCountriesForDiff(countriesToSave);
+      setCountries(countriesToSave);
+      setAutoSaveStatus('saved');
+      setLastSavedTime(new Date());
+
+      if (!isAuto) {
+        setSaveStatus({ type: 'success', message: 'Country pricing configuration saved successfully in Supabase.' });
+        setTimeout(() => setSaveStatus({ type: '', message: '' }), 4000);
+      }
     } catch (err) {
       console.error('Save error:', err);
+      setAutoSaveStatus('error');
       setSaveStatus({ type: 'error', message: err.message || 'Failed to save changes.' });
-    } finally {
-      setIsSaving(false);
       setTimeout(() => setSaveStatus({ type: '', message: '' }), 5000);
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
+
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+        executeSave(latestCountriesRef.current, true);
+      }
     }
+  };
+
+  // Immediate manual save trigger
+  const handleManualSave = async () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    await executeSave(latestCountriesRef.current, false);
   };
 
   // Calculated preview simulation
@@ -318,8 +483,8 @@ export default function CountryPricingManager({ adminData, loading = false }) {
   }, [previewBasePrice, previewCountryCode, countries, exchangeRates]);
 
   const availablePresets = useMemo(() => {
-    const existingCodes = new Set(countries.map((c) => c.code));
-    return PRESET_ADDITIONAL_COUNTRIES.filter((c) => !existingCodes.has(c.code));
+    const existingCodes = new Set(countries.map((c) => c.code?.toUpperCase()));
+    return ALL_EXISTING_COUNTRIES.filter((c) => !c.isBase && !existingCodes.has(c.code?.toUpperCase()));
   }, [countries]);
 
   // Clean provider display
@@ -363,6 +528,47 @@ export default function CountryPricingManager({ adminData, loading = false }) {
         </div>
 
         <div className="cpa-header-actions">
+          {/* Accessible Auto-save Status Indicator */}
+          <div
+            className={`cpa-autosave-indicator cpa-autosave-${autoSaveStatus}`}
+            role="status"
+            aria-live="polite"
+            title={
+              autoSaveStatus === 'saving'
+                ? 'Saving changes to database...'
+                : autoSaveStatus === 'unsaved'
+                ? 'Unsaved changes (will auto-save in a moment)'
+                : autoSaveStatus === 'error'
+                ? 'Auto-save failed — click Save Changes to retry'
+                : 'All changes are automatically saved'
+            }
+          >
+            {autoSaveStatus === 'saving' && (
+              <>
+                <Loader2 size={13} className="cpa-spin" />
+                <span>Saving...</span>
+              </>
+            )}
+            {autoSaveStatus === 'unsaved' && (
+              <>
+                <span className="cpa-autosave-dot" />
+                <span>Unsaved changes</span>
+              </>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <>
+                <CheckCircle2 size={13} className="cpa-autosave-check" />
+                <span>{lastSavedTime ? 'Saved' : 'Auto-save active'}</span>
+              </>
+            )}
+            {autoSaveStatus === 'error' && (
+              <>
+                <AlertCircle size={13} className="cpa-autosave-alert" />
+                <span>Save failed</span>
+              </>
+            )}
+          </div>
+
           <button
             type="button"
             className="cpa-btn cpa-btn-secondary"
@@ -375,12 +581,26 @@ export default function CountryPricingManager({ adminData, loading = false }) {
 
           <button
             type="button"
-            className="cpa-btn cpa-btn-primary"
-            onClick={handleSaveChanges}
+            className={`cpa-btn ${autoSaveStatus === 'unsaved' || autoSaveStatus === 'error' ? 'cpa-btn-primary' : 'cpa-btn-secondary'}`}
+            onClick={handleManualSave}
             disabled={isSaving}
           >
-            <Check size={14} />
-            <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+            {isSaving ? (
+              <>
+                <Loader2 size={14} className="cpa-spin" />
+                <span>Saving...</span>
+              </>
+            ) : autoSaveStatus === 'saved' ? (
+              <>
+                <Check size={14} />
+                <span>Saved</span>
+              </>
+            ) : (
+              <>
+                <Check size={14} />
+                <span>Save Changes</span>
+              </>
+            )}
           </button>
         </div>
       </header>
@@ -509,6 +729,24 @@ export default function CountryPricingManager({ adminData, loading = false }) {
               </span>
             </div>
 
+            <div className="cpa-sim-row">
+              <span>Standard Delivery / Shipping Fee</span>
+              <span className="cpa-sim-val">
+                {(() => {
+                  const targetCountry = countries.find((c) => c.code === previewCountryCode) || countries[0];
+                  const fee = Number(targetCountry?.shippingRate ?? targetCountry?.shippingFee ?? 0);
+                  const unit = targetCountry?.shippingUnit || 'kg';
+                  if (fee === 0) return 'FREE';
+                  if (previewCalculation.currency === 'INR') return `₹${fee.toLocaleString('en-IN')} / ${unit}`;
+                  if (typeof previewCalculation.exchangeRate === 'number' && previewCalculation.exchangeRate > 0) {
+                    const loc = (fee * previewCalculation.exchangeRate).toFixed(2);
+                    return `₹${fee.toLocaleString('en-IN')} / ${unit} (≈ ${previewCalculation.currencySymbol || previewCalculation.currency} ${loc} / ${unit})`;
+                  }
+                  return `₹${fee.toLocaleString('en-IN')} / ${unit}`;
+                })()}
+              </span>
+            </div>
+
             <div className="cpa-sim-total">
               <span className="cpa-sim-total-label">Estimated Local Price</span>
               <span className="cpa-sim-total-val">{previewCalculation.formatted}</span>
@@ -550,6 +788,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                 <th>Country</th>
                 <th>Currency</th>
                 <th>Price Markup</th>
+                <th>Delivery / Shipping</th>
                 <th>Exchange Rate</th>
                 <th>Status</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
@@ -599,6 +838,50 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                           aria-label={`Markup for ${country.name}`}
                         />
                         <span className="cpa-markup-suffix">%</span>
+                      </div>
+                    </td>
+
+                    {/* Delivery / Shipping Fee */}
+                    <td>
+                      <div className="cpa-shipping-cell-wrap">
+                        <div className="cpa-shipping-controls-row">
+                          <div className="cpa-shipping-input-wrap">
+                            <span className="cpa-shipping-prefix">₹</span>
+                            <input
+                              type="number"
+                              className="cpa-shipping-input"
+                              value={country.shippingRate ?? country.shippingFee ?? (country.isBase ? 0 : '')}
+                              onChange={(e) => handleShippingChange(country.code, e.target.value)}
+                              placeholder={country.isBase ? '0 (Free)' : 'e.g. 1500'}
+                              min="0"
+                              step={country.shippingUnit === 'g' ? '0.1' : '50'}
+                              aria-label={`Delivery rate for ${country.name}`}
+                            />
+                          </div>
+                          <select
+                            className="cpa-shipping-unit-select"
+                            value={country.shippingUnit || 'kg'}
+                            onChange={(e) => handleShippingUnitChange(country.code, e.target.value)}
+                            aria-label={`Shipping unit for ${country.name}`}
+                          >
+                            <option value="kg">/ kg</option>
+                            <option value="g">/ g</option>
+                          </select>
+                        </div>
+                        <span className="cpa-shipping-converted">
+                          {(() => {
+                            const fee = Number(country.shippingRate ?? country.shippingFee ?? 0);
+                            const unit = country.shippingUnit || 'kg';
+                            if (fee === 0) return 'Free Delivery';
+                            if (country.currency === 'INR') return `₹${fee} / ${unit}`;
+                            const rate = exchangeRates?.[country.currency];
+                            if (typeof rate === 'number' && rate > 0) {
+                              const converted = (fee * rate).toFixed(2);
+                              return `≈ ${country.currencySymbol || country.currency} ${converted} / ${unit}`;
+                            }
+                            return `₹${fee} / ${unit}`;
+                          })()}
+                        </span>
                       </div>
                     </td>
 
@@ -800,6 +1083,39 @@ export default function CountryPricingManager({ adminData, loading = false }) {
                 </div>
                 <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)' }}>
                   Applied to the base INR product price before currency conversion.
+                </span>
+              </div>
+
+              <div className="cpa-field-group">
+                <label htmlFor="cpa-shipping-charge" className="cpa-label">Delivery / Shipping Charge (Rate & Unit)</label>
+                <div className="cpa-shipping-controls-row" style={{ width: '100%', gap: '8px' }}>
+                  <div className="cpa-shipping-input-wrap" style={{ flex: 1 }}>
+                    <span className="cpa-shipping-prefix">₹</span>
+                    <input
+                      id="cpa-shipping-charge"
+                      type="number"
+                      className="cpa-shipping-input"
+                      value={customShippingFee}
+                      onChange={(e) => setCustomShippingFee(e.target.value)}
+                      placeholder="0 for Free Delivery, or e.g. 1500"
+                      min="0"
+                      step={customShippingUnit === 'g' ? '0.1' : '50'}
+                      style={{ textAlign: 'left', paddingLeft: '1.75rem' }}
+                    />
+                  </div>
+                  <select
+                    className="cpa-shipping-unit-select"
+                    value={customShippingUnit}
+                    onChange={(e) => setCustomShippingUnit(e.target.value)}
+                    style={{ height: '38px', padding: '0.45rem 1.75rem 0.45rem 0.75rem' }}
+                    aria-label="Shipping weight unit"
+                  >
+                    <option value="kg">per kilogram (/ kg)</option>
+                    <option value="g">per gram (/ g)</option>
+                  </select>
+                </div>
+                <span style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)' }}>
+                  Delivery rate per unit weight. Select unit (kg or g) and enter price in INR. Enter 0 for Free Shipping.
                 </span>
               </div>
             </div>

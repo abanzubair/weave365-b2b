@@ -81,27 +81,9 @@ export async function GET(request) {
 
     if (supabase) {
       try {
-        // 1. Primary: Fetch directly from country_pricing_configs table in Supabase
-        const { data: dbRows, error: dbError } = await supabase
-          .from('country_pricing_configs')
-          .select('code, name, currency, currency_symbol, markup_percent, flag, enabled, is_base, sort_order')
-          .order('sort_order', { ascending: true })
-          .order('created_at', { ascending: true });
-
-        if (!dbError && Array.isArray(dbRows) && dbRows.length > 0) {
-          countries = dbRows.map((r) => ({
-            code: r.code,
-            name: r.name,
-            currency: r.currency,
-            currencySymbol: r.currency_symbol || r.currency,
-            markupPercent: Number(r.markup_percent) || 0,
-            flag: r.flag || '🌐',
-            enabled: r.enabled !== false,
-            isBase: Boolean(r.is_base),
-            sortOrder: r.sort_order ?? 0,
-          }));
-        } else {
-          // 2. Fallback: sheet_data table if country_pricing_configs is not yet created
+        // 1. Fetch sheet_data table which stores full JSON with shippingFee
+        let sheetCountries = [];
+        try {
           const { data: sheetData } = await supabase
             .from('sheet_data')
             .select('csv_data')
@@ -111,9 +93,42 @@ export async function GET(request) {
           if (sheetData?.csv_data) {
             const parsed = JSON.parse(sheetData.csv_data);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              countries = parsed;
+              sheetCountries = parsed;
             }
           }
+        } catch (e) {
+          console.warn('[CountryPricingHandler] sheet_data fetch note:', e.message);
+        }
+
+        // 2. Fetch directly from country_pricing_configs table in Supabase
+        const { data: dbRows, error: dbError } = await supabase
+          .from('country_pricing_configs')
+          .select('*')
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (!dbError && Array.isArray(dbRows) && dbRows.length > 0) {
+          countries = dbRows.map((r) => {
+            const sheetMatch = sheetCountries.find((sc) => sc.code?.toUpperCase() === r.code?.toUpperCase());
+            const shippingFeeVal = Number(r.shipping_fee ?? r.shipping_rate ?? sheetMatch?.shippingRate ?? sheetMatch?.shippingFee ?? sheetMatch?.shipping_fee ?? 0);
+            const shippingUnitVal = (r.shipping_unit || sheetMatch?.shippingUnit || 'kg').toLowerCase() === 'g' ? 'g' : 'kg';
+            return {
+              code: r.code,
+              name: r.name,
+              currency: r.currency,
+              currencySymbol: r.currency_symbol || r.currency,
+              markupPercent: Number(r.markup_percent) || 0,
+              shippingFee: isNaN(shippingFeeVal) ? 0 : shippingFeeVal,
+              shippingRate: isNaN(shippingFeeVal) ? 0 : shippingFeeVal,
+              shippingUnit: shippingUnitVal,
+              flag: r.flag || '🌐',
+              enabled: r.enabled !== false,
+              isBase: Boolean(r.is_base),
+              sortOrder: r.sort_order ?? 0,
+            };
+          });
+        } else if (sheetCountries.length > 0) {
+          countries = sheetCountries;
         }
       } catch (err) {
         console.warn('[CountryPricingHandler] Supabase query error:', err.message);
@@ -261,15 +276,20 @@ export async function POST(request) {
         });
       }
 
-      // Validate countries structure & numeric markups
+      // Validate countries structure & numeric markups and shipping fees
       const validatedCountries = countries.map((c, index) => {
         const markup = Number(c.markupPercent);
+        const shipping = Number(c.shippingRate ?? c.shippingFee ?? 0);
+        const unit = (c.shippingUnit || 'kg').toLowerCase() === 'g' ? 'g' : 'kg';
         return {
           code: String(c.code || '').trim().toUpperCase(),
           name: String(c.name || '').trim(),
           currency: String(c.currency || 'INR').trim().toUpperCase(),
           currencySymbol: String(c.currencySymbol || c.currency || '').trim(),
           markupPercent: isNaN(markup) ? 0 : markup,
+          shippingFee: isNaN(shipping) ? 0 : Math.max(0, shipping),
+          shippingRate: isNaN(shipping) ? 0 : Math.max(0, shipping),
+          shippingUnit: unit,
           flag: c.flag || '🌐',
           enabled: c.enabled !== false,
           isBase: Boolean(c.isBase),
@@ -280,12 +300,15 @@ export async function POST(request) {
       const timestamp = new Date().toISOString();
 
       // 1. Save directly into Supabase country_pricing_configs table
-      const rowsToUpsert = validatedCountries.map((c) => ({
+      const rowsWithShipping = validatedCountries.map((c) => ({
         code: c.code,
         name: c.name,
         currency: c.currency,
         currency_symbol: c.currencySymbol,
         markup_percent: c.markupPercent,
+        shipping_fee: c.shippingFee,
+        shipping_rate: c.shippingRate,
+        shipping_unit: c.shippingUnit,
         flag: c.flag,
         enabled: c.enabled,
         is_base: c.isBase,
@@ -293,9 +316,29 @@ export async function POST(request) {
         updated_at: timestamp,
       }));
 
-      const { error: upsertError } = await supabase
+      let { error: upsertError } = await supabase
         .from('country_pricing_configs')
-        .upsert(rowsToUpsert, { onConflict: 'code' });
+        .upsert(rowsWithShipping, { onConflict: 'code' });
+
+      // If the table doesn't have shipping columns yet, fallback to saving without them
+      if (upsertError && (upsertError.code === '42703' || upsertError.message?.includes('shipping'))) {
+        const rowsWithoutShipping = validatedCountries.map((c) => ({
+          code: c.code,
+          name: c.name,
+          currency: c.currency,
+          currency_symbol: c.currencySymbol,
+          markup_percent: c.markupPercent,
+          flag: c.flag,
+          enabled: c.enabled,
+          is_base: c.isBase,
+          sort_order: c.sortOrder,
+          updated_at: timestamp,
+        }));
+        const retryResult = await supabase
+          .from('country_pricing_configs')
+          .upsert(rowsWithoutShipping, { onConflict: 'code' });
+        upsertError = retryResult.error;
+      }
 
       if (upsertError) {
         console.error('[CountryPricingHandler] country_pricing_configs upsert error:', upsertError);

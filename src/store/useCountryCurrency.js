@@ -126,18 +126,23 @@ export const useCountryCurrency = create((set, get) => ({
           ? data.countries
           : [];
 
-        // Merge custom DB markups/status with comprehensive country list
-        const mergedCountries = ALL_EXISTING_COUNTRIES.map((base) => {
-          const custom = serverCountries.find((sc) => sc.code?.toUpperCase() === base.code?.toUpperCase());
-          return custom ? { ...base, ...custom } : base;
-        });
-
-        // Retain any custom added countries from database
-        serverCountries.forEach((sc) => {
-          if (!mergedCountries.some((c) => c.code?.toUpperCase() === sc.code?.toUpperCase())) {
-            mergedCountries.push(sc);
-          }
-        });
+        // When admin has configured countries in database, use ONLY the admin-configured list.
+        // Fallback to ALL_EXISTING_COUNTRIES only if database has zero configured countries.
+        let resolvedCountries = [];
+        if (serverCountries.length > 0) {
+          resolvedCountries = serverCountries.map((sc) => {
+            const base = ALL_EXISTING_COUNTRIES.find((b) => b.code?.toUpperCase() === sc.code?.toUpperCase());
+            return {
+              ...base,
+              ...sc,
+              flag: sc.flag && sc.flag !== '🌐' ? sc.flag : (base?.flag || sc.flag || '🌐'),
+              shippingFee: Number(sc.shippingFee ?? sc.shipping_fee ?? 0),
+              enabled: sc.enabled !== false,
+            };
+          });
+        } else {
+          resolvedCountries = ALL_EXISTING_COUNTRIES;
+        }
 
         const serverRates = data.exchangeRates || DEFAULT_BASELINE_RATES;
         const serverMeta = data.exchangeRateMeta || {};
@@ -153,12 +158,13 @@ export const useCountryCurrency = create((set, get) => ({
           targetCode = detectedCode;
         }
 
-        const selectedCountry = mergedCountries.find((c) => c.code.toUpperCase() === targetCode && c.enabled !== false)
-          || mergedCountries.find((c) => c.code === 'IN')
-          || mergedCountries[0];
+        const selectedCountry = resolvedCountries.find((c) => c.code.toUpperCase() === targetCode && c.enabled !== false)
+          || resolvedCountries.find((c) => c.code === 'IN' && c.enabled !== false)
+          || resolvedCountries.find((c) => c.enabled !== false)
+          || resolvedCountries[0];
 
         set({
-          countries: mergedCountries,
+          countries: resolvedCountries,
           currentCountry: selectedCountry,
           exchangeRates: serverRates,
           exchangeRateMeta: serverMeta,
