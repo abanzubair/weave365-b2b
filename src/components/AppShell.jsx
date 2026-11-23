@@ -769,6 +769,7 @@ export function AppShell({ children }) {
   const isAdminRoute = pathname.startsWith('/admin');
   const isSharedRoute = pathname.startsWith('/s/') || pathname === '/s';
   const isAuthRoute = pathname.startsWith('/signup') || pathname.startsWith('/login') || pathname.startsWith('/register');
+  const isCheckoutRoute = pathname.startsWith('/checkout');
   const hideShellSections = isAdminRoute || isSharedRoute || isAuthRoute;
 
   const routeName = pathname === '/' ? 'home' : pathname.slice(1);
@@ -833,7 +834,7 @@ export function AppShell({ children }) {
         {children}
       </main>
 
-      {!hideShellSections && (
+      {!hideShellSections && !isCheckoutRoute && (
         <InternalLinkNetwork navigate={navigate} />
       )}
 

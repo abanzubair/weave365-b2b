@@ -1213,27 +1213,36 @@ export function CheckoutPage({
               {appliedCoupon ? (
                 <div className="checkout-coupon-applied-card">
                   <div className="checkout-coupon-applied-info">
-                    <span className="checkout-coupon-applied-badge">
-                      <Tag size={15} /> {appliedCoupon.code}
-                    </span>
-                    <span className="checkout-coupon-applied-savings">
-                      ({appliedCoupon.discount_summary || formatMoney(couponDiscount, { currency: currentCountry?.currency }) + ' off'})
-                    </span>
+                    <div className="checkout-coupon-applied-icon-wrap">
+                      <Tag size={13} aria-hidden="true" />
+                    </div>
+                    <div className="checkout-coupon-applied-text">
+                      <span className="checkout-coupon-applied-badge">
+                        {appliedCoupon.code}
+                      </span>
+                      <span className="checkout-coupon-applied-savings">
+                        {appliedCoupon.discount_summary || formatMoney(couponDiscount, { currency: currentCountry?.currency }) + ' discount applied'}
+                      </span>
+                    </div>
                   </div>
                   <button
                     type="button"
                     className="checkout-coupon-remove-btn"
                     onClick={handleRemoveCoupon}
                     title="Remove coupon"
+                    aria-label={`Remove coupon code ${appliedCoupon.code}`}
                   >
-                    <X size={14} /> Remove
+                    <X size={13} aria-hidden="true" /> Remove
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleApplyCoupon} className="checkout-coupon-form">
                   <div className="checkout-coupon-input-wrap">
-                    <Tag size={14} className="checkout-coupon-icon" />
+                    <Tag size={14} className="checkout-coupon-icon" aria-hidden="true" />
+                    <label htmlFor="checkout-coupon-input" className="sr-only">Coupon or Promo Code</label>
                     <input
+                      id="checkout-coupon-input"
+                      name="couponCode"
                       type="text"
                       className="checkout-coupon-input"
                       placeholder="Add coupon code"
@@ -1243,28 +1252,50 @@ export function CheckoutPage({
                         if (couponError) setCouponError('');
                       }}
                       maxLength={30}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="characters"
+                      spellCheck="false"
+                      enterKeyHint="done"
+                      aria-invalid={!!couponError}
+                      aria-describedby={couponError ? "checkout-coupon-error" : couponSuccessMessage ? "checkout-coupon-success" : undefined}
                     />
+                    {couponCodeInput && (
+                      <button
+                        type="button"
+                        className="checkout-coupon-clear-btn"
+                        onClick={() => {
+                          setCouponCodeInput('');
+                          if (couponError) setCouponError('');
+                        }}
+                        title="Clear coupon input"
+                        aria-label="Clear coupon code"
+                      >
+                        <X size={13} aria-hidden="true" />
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="checkout-coupon-apply-btn"
+                      disabled={isCouponValidating || !couponCodeInput.trim()}
+                      aria-busy={isCouponValidating}
+                    >
+                      {isCouponValidating ? 'Checking...' : 'Apply'}
+                    </button>
                   </div>
-                  <button
-                    type="submit"
-                    className="checkout-coupon-apply-btn"
-                    disabled={isCouponValidating || !couponCodeInput.trim()}
-                  >
-                    {isCouponValidating ? 'Checking...' : 'Apply'}
-                  </button>
                 </form>
               )}
 
               {couponError && (
-                <div className="checkout-coupon-alert-error">
-                  <AlertCircle size={14} style={{ flexShrink: 0 }} />
+                <div className="checkout-coupon-alert-error" id="checkout-coupon-error" role="alert">
+                  <AlertCircle size={14} style={{ flexShrink: 0 }} aria-hidden="true" />
                   <span>{couponError}</span>
                 </div>
               )}
 
               {couponSuccessMessage && !couponError && (
-                <div className="checkout-coupon-alert-success">
-                  <Check size={14} style={{ flexShrink: 0 }} />
+                <div className="checkout-coupon-alert-success" id="checkout-coupon-success" role="status">
+                  <Check size={14} style={{ flexShrink: 0 }} aria-hidden="true" />
                   <span>{couponSuccessMessage}</span>
                 </div>
               )}
