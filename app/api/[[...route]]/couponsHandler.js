@@ -22,6 +22,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { getExchangeRates, DEFAULT_BASELINE_RATES } from '../../../src/services/exchangeRateService.js';
+import { roundCurrency, formatCurrency } from '../../../src/services/pricingService.js';
 
 export const runtime = 'edge';
 
@@ -499,37 +501,68 @@ export async function handleValidateCoupon(request) {
       }
     }
 
-    // 6. Check minimum order requirement
-    const minOrder = Number(coupon.min_order_amount) || 0;
-    if (minOrder > 0 && cartTotalNum < minOrder) {
+    // Resolve currency conversion rate (coupon thresholds & fixed values are stored in INR)
+    const activeCurrency = String(currency || 'INR').trim().toUpperCase();
+    let fxRate = 1;
+    if (activeCurrency !== 'INR') {
+      try {
+        const { rates } = await getExchangeRates();
+        fxRate = Number(rates?.[activeCurrency] || DEFAULT_BASELINE_RATES[activeCurrency] || 0);
+      } catch {
+        fxRate = Number(DEFAULT_BASELINE_RATES[activeCurrency] || 0);
+      }
+      if (!Number.isFinite(fxRate) || fxRate <= 0) {
+        return Response.json({
+          valid: false,
+          error: `Unable to validate coupon for currency ${activeCurrency} at this time.`,
+        }, { status: 400, headers: corsHeaders });
+      }
+    }
+
+    const convertInrToActive = (inrVal) =>
+      activeCurrency === 'INR' ? Number(inrVal) : roundCurrency(Number(inrVal) * fxRate, activeCurrency);
+
+    // 6. Check minimum order requirement (converted to active currency)
+    const minOrderInr = Number(coupon.min_order_amount) || 0;
+    const minOrderLocalized = minOrderInr > 0 ? convertInrToActive(minOrderInr) : 0;
+    if (minOrderLocalized > 0 && cartTotalNum < minOrderLocalized) {
       return Response.json({
         valid: false,
-        error: `Minimum order amount of ₹${minOrder.toLocaleString('en-IN')} required to use this coupon.`,
+        error: `Minimum order amount of ${formatCurrency(minOrderLocalized, activeCurrency)} required to use this coupon.`,
       }, { status: 400, headers: corsHeaders });
     }
 
-    // 7. Calculate exact discount
+    // 7. Calculate exact discount in active currency (converting INR caps & fixed values)
+    const maxDiscountInr = Number(coupon.max_discount_amount) || 0;
+    const maxDiscountLocalized = maxDiscountInr > 0 ? convertInrToActive(maxDiscountInr) : 0;
+    const fixedDiscountLocalized = coupon.discount_type === 'percentage'
+      ? 0
+      : convertInrToActive(Number(coupon.discount_value) || 0);
+
     let rawDiscount = 0;
     if (coupon.discount_type === 'percentage') {
       rawDiscount = (cartTotalNum * Number(coupon.discount_value)) / 100;
-      if (coupon.max_discount_amount && Number(coupon.max_discount_amount) > 0) {
-        rawDiscount = Math.min(rawDiscount, Number(coupon.max_discount_amount));
+      if (maxDiscountLocalized > 0) {
+        rawDiscount = Math.min(rawDiscount, maxDiscountLocalized);
       }
     } else {
-      // Fixed discount
-      rawDiscount = Math.min(cartTotalNum, Number(coupon.discount_value));
+      // Fixed discount (stored in INR, converted to active currency)
+      rawDiscount = Math.min(cartTotalNum, fixedDiscountLocalized);
     }
 
-    const finalDiscount = Number(Number(rawDiscount).toFixed(2));
-    const newTotal = Math.max(0, Number((cartTotalNum - finalDiscount).toFixed(2)));
+    const finalDiscount = roundCurrency(rawDiscount, activeCurrency);
+    const discountAmountInr = activeCurrency === 'INR'
+      ? finalDiscount
+      : roundCurrency(finalDiscount / fxRate, 'INR');
+    const newTotal = Math.max(0, roundCurrency(cartTotalNum - finalDiscount, activeCurrency));
 
     const discountSummaryText = coupon.discount_type === 'percentage'
-      ? `${coupon.discount_value}% OFF${coupon.max_discount_amount ? ` (Up to ₹${coupon.max_discount_amount})` : ''}`
-      : `₹${coupon.discount_value} Flat OFF`;
+      ? `${coupon.discount_value}% OFF${maxDiscountLocalized > 0 ? ` (Up to ${formatCurrency(maxDiscountLocalized, activeCurrency)})` : ''}`
+      : `${formatCurrency(fixedDiscountLocalized, activeCurrency)} Flat OFF`;
 
     return Response.json({
       valid: true,
-      message: `Coupon "${coupon.code}" applied! You saved ₹${finalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}.`,
+      message: `Coupon "${coupon.code}" applied! You saved ${formatCurrency(finalDiscount, activeCurrency)}.`,
       coupon: {
         id: coupon.id,
         code: coupon.code,
@@ -542,7 +575,10 @@ export async function handleValidateCoupon(request) {
         times_used: coupon.times_used,
         remaining_uses: Math.max(0, usageLimit - timesUsed),
       },
+      currency: activeCurrency,
+      exchange_rate: fxRate,
       discount_amount: finalDiscount,
+      discount_amount_inr: discountAmountInr,
       final_total: newTotal,
     }, { status: 200, headers: corsHeaders });
   } catch (err) {

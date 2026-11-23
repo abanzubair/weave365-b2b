@@ -33,7 +33,7 @@ import {
   Code2,
   X,
   ShieldCheck,
-  Globe,
+  CurrencyDollarIcon,
   Tag,
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -1000,7 +1000,7 @@ export function Admin({
     {
       title: 'Settings',
       items: [
-        { key: 'country-pricing', label: 'Country Pricing', icon: Globe, badge: null },
+        { key: 'country-pricing', label: 'Country Pricing', icon: CurrencyDollarIcon, badge: null },
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },

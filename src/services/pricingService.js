@@ -17,6 +17,8 @@
  * FINAL DISPLAY PRICE
  */
 
+import { DEFAULT_BASELINE_RATES } from '../constants/currencyRates.js';
+
 // Zero decimal currencies according to ISO standards
 const ZERO_DECIMAL_CURRENCIES = new Set([
   'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'
@@ -130,13 +132,30 @@ export function getLocalizedPrice(basePrice, countryConfig, exchangeRates) {
   const markedUpBasePrice = base * (1 + markupPercent / 100);
 
   // 2. Resolve Current Exchange Rate (INR -> Target Currency)
-  const currency = (countryConfig?.currency || 'INR').toUpperCase();
+  let currency = (countryConfig?.currency || 'INR').toUpperCase();
+  let currencySymbol = countryConfig?.currencySymbol || currency;
   let rate = 1;
 
-  if (typeof exchangeRates === 'number') {
-    rate = exchangeRates;
-  } else if (exchangeRates && typeof exchangeRates === 'object') {
-    rate = Number(exchangeRates[currency] || (currency === 'INR' ? 1 : 0)) || 1;
+  if (currency !== 'INR') {
+    let resolvedRate = 0;
+    if (typeof exchangeRates === 'number' && Number.isFinite(exchangeRates) && exchangeRates > 0) {
+      resolvedRate = exchangeRates;
+    } else if (exchangeRates && typeof exchangeRates === 'object') {
+      resolvedRate = Number(exchangeRates[currency]) || 0;
+    }
+
+    if (resolvedRate <= 0) {
+      resolvedRate = Number(DEFAULT_BASELINE_RATES[currency]) || 0;
+    }
+
+    if (resolvedRate > 0) {
+      rate = resolvedRate;
+    } else {
+      // Never charge 1:1 INR face value in an unknown foreign currency; fall back safely to INR
+      currency = 'INR';
+      currencySymbol = '₹';
+      rate = 1;
+    }
   }
 
   // 3. Convert Marked-Up Amount
@@ -147,7 +166,7 @@ export function getLocalizedPrice(basePrice, countryConfig, exchangeRates) {
 
   // 5. Formatted Display String
   const formatted = formatCurrency(finalPrice, currency, {
-    currencySymbol: countryConfig?.currencySymbol,
+    currencySymbol,
   });
 
   return {
@@ -156,7 +175,7 @@ export function getLocalizedPrice(basePrice, countryConfig, exchangeRates) {
     markedUpBasePrice: roundCurrency(markedUpBasePrice, 'INR'),
     exchangeRate: rate,
     currency,
-    currencySymbol: countryConfig?.currencySymbol || currency,
+    currencySymbol,
     countryCode: countryConfig?.code || 'IN',
     countryName: countryConfig?.name || 'India',
     finalPrice,

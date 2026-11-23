@@ -29,6 +29,7 @@ import {
 } from '../storefrontShared.jsx';
 import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { ALL_EXISTING_COUNTRIES } from '../constants/allCountries.js';
+import { DEFAULT_BASELINE_RATES } from '../constants/currencyRates.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -396,14 +397,17 @@ export function CheckoutPage({
       }
     }
 
-    const isForeignCurrency = currentCountry?.currency && currentCountry.currency !== 'INR';
+    const activeCurrency = (currentCountry?.currency || 'INR').toUpperCase();
+    const isForeignCurrency = activeCurrency !== 'INR';
+    const shippingFxRate = isForeignCurrency
+      ? (Number(exchangeRates?.[activeCurrency]) || Number(DEFAULT_BASELINE_RATES[activeCurrency]) || 0)
+      : 1;
 
     // Standard shipping: Uses admin configured weight rate (converted to local currency if foreign)
     let stdFee = 0;
     if (baseShippingInr > 0) {
       if (isForeignCurrency) {
-        const rate = Number(exchangeRates?.[currentCountry.currency]) || 0;
-        stdFee = rate > 0 ? roundCurrency(baseShippingInr * rate, currentCountry.currency) : baseShippingInr;
+        stdFee = shippingFxRate > 0 ? roundCurrency(baseShippingInr * shippingFxRate, activeCurrency) : 0;
       } else {
         stdFee = baseShippingInr;
       }
@@ -413,10 +417,9 @@ export function CheckoutPage({
     const expExtraInr = billedKg * 150;
     let expExtra = expExtraInr;
     if (isForeignCurrency) {
-      const rate = Number(exchangeRates?.[currentCountry.currency]) || 0;
-      expExtra = rate > 0 ? roundCurrency(expExtraInr * rate, currentCountry.currency) : expExtraInr;
+      expExtra = shippingFxRate > 0 ? roundCurrency(expExtraInr * shippingFxRate, activeCurrency) : 0;
     }
-    const expFee = stdFee + expExtra;
+    const expFee = roundCurrency(stdFee + expExtra, activeCurrency);
 
     const actualFee = shippingSpeed === 'expedited' ? expFee : stdFee;
 
@@ -450,39 +453,58 @@ export function CheckoutPage({
       }
     });
 
-    return Math.max(0, Math.round(totalBulkDiscount));
-  }, [items, productPricing]);
+    return Math.max(0, roundCurrency(totalBulkDiscount, currentCountry?.currency || 'INR'));
+  }, [items, productPricing, currentCountry]);
 
-  // Dynamic coupon recalculation if cart items change while a coupon is applied
+  // Dynamic coupon recalculation if cart items or country/currency change while a coupon is applied
   useEffect(() => {
     if (appliedCoupon) {
+      const activeCurrency = (currentCountry?.currency || 'INR').toUpperCase();
+      const fxRate = activeCurrency === 'INR'
+        ? 1
+        : (Number(exchangeRates?.[activeCurrency]) || Number(DEFAULT_BASELINE_RATES[activeCurrency]) || 0);
+      if (activeCurrency !== 'INR' && fxRate <= 0) return;
+
+      const toActive = (inrVal) =>
+        activeCurrency === 'INR' ? Number(inrVal) : roundCurrency(Number(inrVal) * fxRate, activeCurrency);
+
       const cartItemsAmount = Math.max(0, (baseTotal || 0) - (discount || 0));
-      if (appliedCoupon.min_order_amount > 0 && cartItemsAmount < appliedCoupon.min_order_amount) {
-        setCouponError(`Coupon removed: Cart total is now below the minimum order requirement of ₹${appliedCoupon.min_order_amount}.`);
+      const minOrderLocalized = appliedCoupon.min_order_amount > 0 ? toActive(appliedCoupon.min_order_amount) : 0;
+      if (minOrderLocalized > 0 && cartItemsAmount < minOrderLocalized) {
+        setCouponError(`Coupon removed: Cart total is now below the minimum order requirement of ${formatMoney(minOrderLocalized, { currency: activeCurrency })}.`);
         setAppliedCoupon(null);
         setCouponDiscount(0);
         return;
       }
       if (appliedCoupon.discount_type === 'percentage') {
         let disc = (cartItemsAmount * Number(appliedCoupon.discount_value)) / 100;
-        if (appliedCoupon.max_discount_amount > 0) disc = Math.min(disc, Number(appliedCoupon.max_discount_amount));
-        setCouponDiscount(Number(Number(disc).toFixed(2)));
+        const maxDiscLocalized = appliedCoupon.max_discount_amount > 0 ? toActive(appliedCoupon.max_discount_amount) : 0;
+        if (maxDiscLocalized > 0) disc = Math.min(disc, maxDiscLocalized);
+        setCouponDiscount(roundCurrency(disc, activeCurrency));
       } else {
-        setCouponDiscount(Math.min(cartItemsAmount, Number(appliedCoupon.discount_value) || 0));
+        const fixedDiscLocalized = toActive(Number(appliedCoupon.discount_value) || 0);
+        setCouponDiscount(roundCurrency(Math.min(cartItemsAmount, fixedDiscLocalized), activeCurrency));
       }
     }
-  }, [baseTotal, discount, appliedCoupon]);
+  }, [baseTotal, discount, appliedCoupon, currentCountry, exchangeRates]);
 
   const grossItemsTotal = useMemo(() => {
-    return (baseTotal || 0) + bulkDiscount;
-  }, [baseTotal, bulkDiscount]);
+    return roundCurrency((baseTotal || 0) + bulkDiscount, currentCountry?.currency || 'INR');
+  }, [baseTotal, bulkDiscount, currentCountry]);
 
-  const total = Math.max(0, (baseTotal || 0) - (discount || 0) - (couponDiscount || 0)) + shippingFee;
+  const total = roundCurrency(
+    Math.max(0, (baseTotal || 0) - (discount || 0) - (couponDiscount || 0)) + shippingFee,
+    currentCountry?.currency || 'INR'
+  );
 
   // Marked-up INR total preserving the selected country's custom markup for gateways/fallbacks
-  const markedUpInrTotal = useMemo(() => {
-    if (!items || !items.length) return 0;
+  const { markedUpInrTotal, couponDiscountInr, shippingAmountInr } = useMemo(() => {
+    if (!items || !items.length) return { markedUpInrTotal: 0, couponDiscountInr: 0, shippingAmountInr: 0 };
     const countryMarkup = Number(currentCountry?.markupPercent || 0);
+    const activeCurrency = (currentCountry?.currency || 'INR').toUpperCase();
+    const fxRate = activeCurrency === 'INR'
+      ? 1
+      : (Number(exchangeRates?.[activeCurrency]) || Number(DEFAULT_BASELINE_RATES[activeCurrency]) || 0);
     const countryInrConfig = {
       code: currentCountry?.code || 'IN',
       name: currentCountry?.name || 'India',
@@ -492,15 +514,31 @@ export function CheckoutPage({
     };
     const inrTotals = calculateLocalizedHybridCartTotals(items, priceAccess, countryInrConfig, exchangeRates);
     const inrShipping = (baseShippingInr || 0) + (shippingSpeed === 'expedited' ? (billedWeightKg * 150) : 0);
-    return Math.max(0, (inrTotals.total || 0) - (inrTotals.discount || 0) - (couponDiscount || 0)) + inrShipping;
+    const inrCoupon = activeCurrency === 'INR'
+      ? (Number(couponDiscount) || 0)
+      : (fxRate > 0 ? roundCurrency((Number(couponDiscount) || 0) / fxRate, 'INR') : 0);
+    const inrTotal = roundCurrency(
+      Math.max(0, (inrTotals.total || 0) - (inrTotals.discount || 0) - inrCoupon) + inrShipping,
+      'INR'
+    );
+    return {
+      markedUpInrTotal: inrTotal,
+      couponDiscountInr: inrCoupon,
+      shippingAmountInr: inrShipping,
+    };
   }, [items, priceAccess, currentCountry, exchangeRates, shippingSpeed, billedWeightKg, baseShippingInr, couponDiscount]);
 
   const { baseAmount, gstAmount } = useMemo(() => {
+    const activeCurrency = (currentCountry?.currency || 'INR').toUpperCase();
+    const isIndiaOrder = (currentCountry?.code || 'IN').toUpperCase() === 'IN';
     const netItems = Math.max(0, (baseTotal || 0) - (discount || 0) - (couponDiscount || 0));
+    if (!isIndiaOrder) {
+      return { baseAmount: roundCurrency(netItems, activeCurrency), gstAmount: 0 };
+    }
     const base = Number((netItems / 1.05).toFixed(2));
     const gst = Number((netItems - base).toFixed(2));
     return { baseAmount: base, gstAmount: gst };
-  }, [baseTotal, discount, couponDiscount]);
+  }, [baseTotal, discount, couponDiscount, currentCountry]);
 
   // Handle Buyer Applying Private Coupon Code
   const handleApplyCoupon = async (e) => {
@@ -626,6 +664,7 @@ export function CheckoutPage({
       shipping_mode: shippingMode,
       shipping_speed: shippingSpeed,
       shipping_amount: shippingFee,
+      shipping_amount_inr: shippingAmountInr,
       delivery_details: deliveryDetails,
       dropship_details: {
         sender_name: senderName,
@@ -677,6 +716,7 @@ export function CheckoutPage({
       markup_percent: Number(currentCountry?.markupPercent || 0),
       coupon_code: appliedCoupon ? appliedCoupon.code : null,
       coupon_discount: couponDiscount || 0,
+      coupon_discount_inr: couponDiscountInr || 0,
       notes: resolvedNotes,
     };
   };
@@ -1251,10 +1291,12 @@ export function CheckoutPage({
                 <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(baseAmount, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
               </div>
 
-              <div className="checkout-summary-row">
-                <span>{currentCountry?.code === 'IN' ? 'GST 5%' : 'Estimated Tax / Duties (Included)'}</span>
-                <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(gstAmount, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
-              </div>
+              {(currentCountry?.code || 'IN').toUpperCase() === 'IN' && (
+                <div className="checkout-summary-row">
+                  <span>GST 5%</span>
+                  <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(gstAmount, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
+                </div>
+              )}
 
               {discount > 0 && (
                 <div className="checkout-summary-row" style={{ color: '#16a34a', fontWeight: '600' }}>
@@ -1832,7 +1874,7 @@ export function CheckoutPage({
                           <strong>Expedited Shipping:</strong>{' '}
                           <span style={{ color: '#64748b', fontWeight: '500' }}>
                             {expeditedShippingFee > 0
-                              ? `+${formatMoney(expeditedShippingFee, { currency: currentCountry?.currency, fractionDigits: 0 })}`
+                              ? `+${formatMoney(expeditedShippingFee, { currency: currentCountry?.currency, fractionDigits: 2 })}`
                               : 'Charges Apply'}
                           </span>
                         </div>

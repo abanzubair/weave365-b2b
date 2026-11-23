@@ -190,10 +190,15 @@ export function formatAddressBlock(address) {
   ].filter(Boolean).join('\n');
 }
 
-export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address, isPayment = false) {
+export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address, isPayment = false, countryConfig = null, exchangeRates = null) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
+  const activeCurrency = (countryConfig?.currency || 'INR').toUpperCase();
+  const isIndia = (countryConfig?.code || 'IN').toUpperCase() === 'IN';
+  const fmt = (val, opts = {}) => formatMoney(val, { currency: activeCurrency, ...opts });
 
-  const { groups, total: calculatedTotal } = calculateHybridCartTotals(items, priceAccess);
+  const { groups, total: calculatedTotal } = countryConfig
+    ? calculateLocalizedHybridCartTotals(items, priceAccess, countryConfig, exchangeRates)
+    : calculateHybridCartTotals(items, priceAccess);
   const finalTotal = total != null ? total : calculatedTotal;
 
   const itemLines = groups.map((group) => {
@@ -208,16 +213,18 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
       : null;
     const colorParam = singleColor ? `?color=${encodeURIComponent(singleColor)}` : '';
     const productUrl = `${siteUrl}/${catSlug}/${encodeURIComponent(product.id)}${colorParam}`;
-    const pricing = group.pricing || calculateHybridProductPrice(product, group.items);
+    const pricing = group.pricing || (countryConfig
+      ? calculateLocalizedHybridProductPrice(product, group.items, null, countryConfig, exchangeRates)
+      : calculateHybridProductPrice(product, group.items));
 
     let priceSummary = '';
     if (canViewPrices && pricing.totalPrice > 0) {
       if (pricing.completeSets > 0 && pricing.extraPieces === 0) {
-        priceSummary = ` | Qty: ${pricing.completeSets} Set${pricing.completeSets > 1 ? 's' : ''} (${pricing.totalQty} pcs) | Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.wholesalePrice)}/pc in Set)`;
+        priceSummary = ` | Qty: ${pricing.completeSets} Set${pricing.completeSets > 1 ? 's' : ''} (${pricing.totalQty} pcs) | Price: ${fmt(pricing.totalPrice)} (${fmt(pricing.wholesalePrice)}/pc in Set)`;
       } else if (pricing.completeSets === 0) {
-        priceSummary = ` | Qty: ${pricing.totalQty} pc${pricing.totalQty > 1 ? 's' : ''} | Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.resellerPrice)}/pc)`;
+        priceSummary = ` | Qty: ${pricing.totalQty} pc${pricing.totalQty > 1 ? 's' : ''} | Price: ${fmt(pricing.totalPrice)} (${fmt(pricing.resellerPrice)}/pc)`;
       } else {
-        priceSummary = ` | Qty: ${pricing.totalQty} pcs (${pricing.completeSets} Set @ Wholesale ${formatMoney(pricing.wholesalePrice)}/pc + ${pricing.extraPieces} extra pcs @ Reseller ${formatMoney(pricing.resellerPrice)}/pc) | Price: ${formatMoney(pricing.totalPrice)}`;
+        priceSummary = ` | Qty: ${pricing.totalQty} pcs (${pricing.completeSets} Set @ Wholesale ${fmt(pricing.wholesalePrice)}/pc + ${pricing.extraPieces} extra pcs @ Reseller ${fmt(pricing.resellerPrice)}/pc) | Price: ${fmt(pricing.totalPrice)}`;
       }
     } else {
       priceSummary = ` | Qty: ${pricing.totalQty} pcs`;
@@ -240,9 +247,12 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     : `Hello ${storeConfig.name}, I want to enquire about these items:`;
 
   const itemSection = itemLines.join('\n\n');
+  const totalSuffix = isIndia
+    ? ' (GST Included • Free Shipping Across India)'
+    : ` (${countryConfig?.name || activeCurrency} Export Pricing)`;
 
   const summarySection = [
-    canViewPrices && finalTotal != null ? `Total: ${formatMoney(finalTotal, 2)} (GST Included • Free Shipping Across India)` : '',
+    canViewPrices && finalTotal != null ? `Total: ${fmt(finalTotal, { fractionDigits: 2 })}${totalSuffix}` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean).join('\n');
@@ -272,9 +282,13 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(blocks.filter(Boolean).join('\n\n'))}`;
 }
 
-export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pincode, codStatus, priceAccess) {
+export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pincode, codStatus, priceAccess, countryConfig = null, exchangeRates = null) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const pricing = calculateHybridProductPrice(product, quantity, variant);
+  const activeCurrency = (countryConfig?.currency || 'INR').toUpperCase();
+  const fmt = (val) => formatMoney(val, { currency: activeCurrency });
+  const pricing = countryConfig
+    ? calculateLocalizedHybridProductPrice(product, quantity, variant, countryConfig, exchangeRates)
+    : calculateHybridProductPrice(product, quantity, variant);
   const catSlug = getProductCategorySlug(product.id, product.category);
   const colorQuery = variant?.color ? `?color=${encodeURIComponent(variant.color)}` : '';
   const productUrl = `${siteUrl}/${catSlug}/${product.id}${colorQuery}`;
@@ -282,11 +296,11 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pi
   let priceText = '';
   if (canViewPrices && pricing.totalPrice > 0) {
     if (pricing.completeSets > 0 && pricing.extraPieces === 0) {
-      priceText = `Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.wholesalePrice)}/pc in ${pricing.completeSets} Set${pricing.completeSets > 1 ? 's' : ''})`;
+      priceText = `Price: ${fmt(pricing.totalPrice)} (${fmt(pricing.wholesalePrice)}/pc in ${pricing.completeSets} Set${pricing.completeSets > 1 ? 's' : ''})`;
     } else if (pricing.completeSets === 0) {
-      priceText = `Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.resellerPrice)}/pc for ${pricing.totalQty} pc${pricing.totalQty > 1 ? 's' : ''})`;
+      priceText = `Price: ${fmt(pricing.totalPrice)} (${fmt(pricing.resellerPrice)}/pc for ${pricing.totalQty} pc${pricing.totalQty > 1 ? 's' : ''})`;
     } else {
-      priceText = `Price: ${formatMoney(pricing.totalPrice)} (${pricing.completeSets} Set @ ${formatMoney(pricing.wholesalePrice)}/pc + ${pricing.extraPieces} pcs @ ${formatMoney(pricing.resellerPrice)}/pc)`;
+      priceText = `Price: ${fmt(pricing.totalPrice)} (${pricing.completeSets} Set @ ${fmt(pricing.wholesalePrice)}/pc + ${pricing.extraPieces} pcs @ ${fmt(pricing.resellerPrice)}/pc)`;
     }
   }
 

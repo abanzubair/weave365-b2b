@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { Search, ArrowRight } from './icons.jsx';
-import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
+import { customerPrice, fallbackProductImage, formatMoney, getLocalizedPrice } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useStorefront } from '../store/useStorefront.js';
@@ -27,6 +28,7 @@ const scrollToSection = (id) => {
 
 export function SearchOverlay(props) {
   const store = useStorefront();
+  const { currentCountry, exchangeRates } = useCountryCurrency();
 
   const searchActive = props.searchActive ?? store.searchActive;
   const setSearchActive = props.setSearchActive || store.setSearchActive;
@@ -362,7 +364,7 @@ export function SearchOverlay(props) {
                             <div className="result-card-info">
                               <h4 className="result-product-title">{product.name || product.title}</h4>
                               <span className="result-product-price">
-                                {price != null && price > 0 ? formatMoney(price) : priceNoticeForAccess(priceAccess)}
+                                {price != null && price > 0 ? getLocalizedPrice(price, currentCountry, exchangeRates).formatted : priceNoticeForAccess(priceAccess)}
                               </span>
                             </div>
                           </div>

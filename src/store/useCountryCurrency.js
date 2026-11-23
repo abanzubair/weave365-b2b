@@ -28,6 +28,7 @@ export const PRESET_ADDITIONAL_COUNTRIES = [
 const STORAGE_KEY_COUNTRY = 'weave365_country';
 const STORAGE_KEY_MANUAL = 'weave365_country_manual';
 const COOKIE_KEY_COUNTRY = 'weave365_country';
+const COOKIE_KEY_DETECTED = 'weave365_detected_country';
 
 function getCookie(name) {
   if (typeof document === 'undefined') return null;
@@ -42,9 +43,26 @@ function setCookie(name, value, days = 365) {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${date.toUTCString()}; SameSite=Lax`;
 }
 
+function resolveInitialCountry() {
+  if (typeof window === 'undefined') return ALL_EXISTING_COUNTRIES[0];
+  try {
+    const isManual = localStorage.getItem(STORAGE_KEY_MANUAL) === 'true';
+    const manualCode = isManual ? (localStorage.getItem(STORAGE_KEY_COUNTRY) || getCookie(COOKIE_KEY_COUNTRY)) : null;
+    const middlewareDetected = getCookie(COOKIE_KEY_DETECTED);
+    const candidateCode = (manualCode || middlewareDetected || '').trim().toUpperCase();
+    if (candidateCode) {
+      const match = ALL_EXISTING_COUNTRIES.find((c) => c.code.toUpperCase() === candidateCode && c.enabled !== false);
+      if (match) return match;
+    }
+  } catch (e) {
+    // Ignore storage/cookie errors
+  }
+  return ALL_EXISTING_COUNTRIES[0];
+}
+
 export const useCountryCurrency = create((set, get) => ({
   // State
-  currentCountry: ALL_EXISTING_COUNTRIES[0], // Defaults to India
+  currentCountry: resolveInitialCountry(), // Immediately respects manual selection or middleware geo cookie
   countries: ALL_EXISTING_COUNTRIES,
   exchangeRates: DEFAULT_BASELINE_RATES,
   exchangeRateMeta: {
@@ -118,7 +136,7 @@ export const useCountryCurrency = create((set, get) => ({
     }
 
     try {
-      const res = await fetch('/api/country-pricing');
+      const res = await fetch('/api/country-pricing', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
 
@@ -148,14 +166,15 @@ export const useCountryCurrency = create((set, get) => ({
         const serverMeta = data.exchangeRateMeta || {};
         const detectedCode = (data.detectedCountry || 'IN').toUpperCase();
 
-        // MANUAL SELECTION ALWAYS TAKES PRIORITY OVER AUTOMATIC DETECTION
+        // MANUAL SELECTION ALWAYS TAKES PRIORITY OVER AUTOMATIC DETECTION.
+        // Non-manual saved codes must NEVER block live IP detection (e.g. when traveling or after cache fixes).
         let targetCode = 'IN';
         if (isManual && savedCode) {
           targetCode = savedCode.toUpperCase();
-        } else if (savedCode) {
-          targetCode = savedCode.toUpperCase();
         } else if (detectedCode) {
           targetCode = detectedCode;
+        } else if (savedCode) {
+          targetCode = savedCode.toUpperCase();
         }
 
         const selectedCountry = resolvedCountries.find((c) => c.code.toUpperCase() === targetCode && c.enabled !== false)
@@ -172,8 +191,8 @@ export const useCountryCurrency = create((set, get) => ({
           isInitialized: true,
         });
 
-        // Persist initial detected country if not set
-        if (typeof window !== 'undefined' && !savedCode) {
+        // Keep storage synced with current country without marking auto-detection as manual
+        if (typeof window !== 'undefined') {
           try {
             localStorage.setItem(STORAGE_KEY_COUNTRY, selectedCountry.code);
             setCookie(COOKIE_KEY_COUNTRY, selectedCountry.code);
@@ -185,9 +204,13 @@ export const useCountryCurrency = create((set, get) => ({
       console.warn('[useCountryCurrency] Failed to fetch country pricing:', err.message);
     }
 
-    // Fallback if API fails
+    // Fallback if API fails: respect manual selection, then middleware geo cookie, then savedCode
     const initialCountries = get().countries;
-    const selected = initialCountries.find((c) => c.code === (savedCode || 'IN')) || initialCountries[0];
+    const middlewareCode = typeof window !== 'undefined' ? getCookie(COOKIE_KEY_DETECTED) : null;
+    const fallbackCode = (isManual && savedCode)
+      ? savedCode.toUpperCase()
+      : (middlewareCode || savedCode || 'IN').toUpperCase();
+    const selected = initialCountries.find((c) => c.code.toUpperCase() === fallbackCode && c.enabled !== false) || initialCountries[0];
     set({
       countries: initialCountries,
       currentCountry: selected,

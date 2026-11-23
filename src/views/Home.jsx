@@ -7,7 +7,8 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import Image from 'next/image';
 import { ArrowRight, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Calendar, Clock } from '../components/icons.jsx';
-import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
+import { expandedProductCards, formatMoney, customerPrice, getLocalizedPrice } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { HomeProductRails } from '../components/HomeProductRails.jsx';
@@ -253,6 +254,7 @@ export function Home({
   reviews = [],
 }) {
   const [isMobile, setIsMobile] = useState(false);
+  const { currentCountry, exchangeRates } = useCountryCurrency();
   const handleLinkClick = (e, to, productId = null, shopName = null) => {
     if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
       return;
@@ -743,8 +745,8 @@ export function Home({
                   <div className="deal-price-row">
                     {priceAccess?.canViewPrices ? (
                       <>
-                        <span>{formatMoney(customerPrice(variant.prices, priceAccess))}</span>
-                        <del>{formatMoney(variant.prices.mrp)}</del>
+                        <span>{getLocalizedPrice(customerPrice(variant.prices, priceAccess), currentCountry, exchangeRates).formatted}</span>
+                        <del>{getLocalizedPrice(variant.prices.mrp, currentCountry, exchangeRates).formatted}</del>
                       </>
                     ) : (
                       <span className="price-locked-text">{priceNoticeForAccess(priceAccess)}</span>

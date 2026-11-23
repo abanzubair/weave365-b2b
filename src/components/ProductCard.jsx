@@ -29,6 +29,7 @@ import {
   customerPrice,
   formatMoney,
   getLocalizedPrice,
+  roundCurrency,
   isSareeProduct,
 } from '../storefrontShared.jsx';
 import { useCountryCurrency } from '../store/useCountryCurrency.js';
@@ -77,8 +78,16 @@ export const ProductCard = memo(function ProductCard({
   }, [wholesalePrice, currentCountry, exchangeRates]);
 
   const localizedSetPrice = useMemo(() => {
-    return getLocalizedPrice(setPrice, currentCountry, exchangeRates);
-  }, [setPrice, currentCountry, exchangeRates]);
+    const currency = localizedWholesale.currency || currentCountry?.currency || 'INR';
+    const finalPrice = roundCurrency(localizedWholesale.finalPrice * colorCount, currency);
+    return {
+      ...localizedWholesale,
+      basePrice: setPrice,
+      markedUpBasePrice: roundCurrency(localizedWholesale.markedUpBasePrice * colorCount, 'INR'),
+      finalPrice,
+      formatted: formatMoney(finalPrice, { currency, currencySymbol: localizedWholesale.currencySymbol }),
+    };
+  }, [localizedWholesale, colorCount, setPrice, currentCountry]);
 
   const descriptiveAlt = useMemo(() => {
     const parts = [];

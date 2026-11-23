@@ -9,6 +9,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { sendBuyerOrderConfirmationEmail } from './buyerEmailService.js';
 import { recordCouponUsage } from './couponsHandler.js';
+import { getExchangeRates, DEFAULT_BASELINE_RATES } from '../../../src/services/exchangeRateService.js';
+import { getLocalizedPrice, roundCurrency, formatCurrency } from '../../../src/services/pricingService.js';
 
 export const runtime = 'edge';
 
@@ -55,6 +57,10 @@ export async function POST(request) {
       dropship_details = {},
       items = [],
       total_amount = 0,
+      currency = 'INR',
+      country_code = 'IN',
+      country_name = 'India',
+      markup_percent = 0,
       coupon_code = null,
       coupon_discount = 0,
       notes = '',
@@ -124,6 +130,41 @@ export async function POST(request) {
       console.error('[orderHandler] Failed to load catalog for price verification:', catErr);
     }
 
+    // Resolve authoritative country config & exchange rates for international orders
+    const orderCountryCode = String(delivery_details.country_code || country_code || 'IN').trim().toUpperCase();
+    let orderCurrency = String(currency || 'INR').trim().toUpperCase();
+    let resolvedMarkupPercent = Number(markup_percent) || 0;
+    try {
+      const { data: countryRow } = await supabase
+        .from('country_pricing_configs')
+        .select('code, name, currency, currency_symbol, markup_percent, enabled')
+        .eq('code', orderCountryCode)
+        .maybeSingle();
+      if (countryRow && countryRow.enabled !== false) {
+        orderCurrency = String(countryRow.currency || orderCurrency).toUpperCase();
+        resolvedMarkupPercent = Number(countryRow.markup_percent) || 0;
+      }
+    } catch (countryErr) {
+      console.warn('[orderHandler] Country pricing lookup notice:', countryErr?.message);
+    }
+
+    let exchangeRates = DEFAULT_BASELINE_RATES;
+    if (orderCurrency !== 'INR') {
+      try {
+        const rateRes = await getExchangeRates();
+        if (rateRes?.rates) exchangeRates = rateRes.rates;
+      } catch (rateErr) {
+        console.warn('[orderHandler] Exchange rate fallback notice:', rateErr?.message);
+      }
+    }
+
+    const orderCountryConfig = {
+      code: orderCountryCode,
+      name: delivery_details.country || country_name || 'India',
+      currency: orderCurrency,
+      markupPercent: resolvedMarkupPercent,
+    };
+
     const verifiedItems = [];
     for (const rawItem of items) {
       const skuRaw = String(rawItem.variant_code || rawItem.sku || rawItem.product_id || rawItem.productGroupKey || '').trim();
@@ -140,14 +181,17 @@ export async function POST(request) {
 
       const matchedVariant = matchedProduct?.variants?.find((v) => String(v.code || '').toLowerCase() === skuLower) || matchedProduct?.variants?.[0];
       const prices = matchedVariant?.prices || {};
-      const catalogPrice = Number(prices.b2r || matchedProduct?.resellerPrice || prices.single || 0);
+      const catalogPriceInr = Number(prices.b2r || matchedProduct?.resellerPrice || prices.single || 0);
 
-      if (!matchedProduct || catalogPrice <= 0) {
+      if (!matchedProduct || catalogPriceInr <= 0) {
         return Response.json(
           { success: false, error: `Invalid or unpriced product SKU: ${skuRaw || 'unknown'}` },
           { status: 400, headers: corsHeaders }
         );
       }
+
+      const localizedItemPrice = getLocalizedPrice(catalogPriceInr, orderCountryConfig, exchangeRates);
+      orderCurrency = localizedItemPrice.currency;
 
       verifiedItems.push({
         ...rawItem,
@@ -156,12 +200,22 @@ export async function POST(request) {
         variant_code: matchedVariant?.code || rawItem.variant_code || '',
         color: rawItem.color || rawItem.selectedColorName || matchedVariant?.color || 'Standard',
         quantity: qty,
-        price: catalogPrice,
+        price: localizedItemPrice.finalPrice,
+        base_inr_price: localizedItemPrice.markedUpBasePrice,
+        currency: orderCurrency,
       });
     }
 
-    const verifiedSubtotal = verifiedItems.reduce((sum, it) => sum + (it.price * it.quantity), 0);
-    const verifiedShipping = Math.max(0, Number(shipping_amount) || 0);
+    const verifiedSubtotal = roundCurrency(
+      verifiedItems.reduce((sum, it) => sum + (it.price * it.quantity), 0),
+      orderCurrency
+    );
+    const verifiedShipping = roundCurrency(Math.max(0, Number(shipping_amount) || 0), orderCurrency);
+    const fxRate = orderCurrency === 'INR'
+      ? 1
+      : (Number(exchangeRates?.[orderCurrency]) || Number(DEFAULT_BASELINE_RATES[orderCurrency]) || 1);
+    const convertInrToOrder = (val) =>
+      orderCurrency === 'INR' ? Number(val) : roundCurrency(Number(val) * fxRate, orderCurrency);
 
     let verifiedDiscount = 0;
     const normalizedCouponCode = coupon_code ? String(coupon_code).trim().toUpperCase() : null;
@@ -175,8 +229,9 @@ export async function POST(request) {
 
       const nowMs = Date.now();
       const notExpired = !couponRow?.expires_at || new Date(couponRow.expires_at).getTime() > nowMs;
-      const underLimit = !couponRow?.max_uses || (couponRow.used_count || 0) < couponRow.max_uses;
-      const meetsMin = !couponRow?.min_order_amount || verifiedSubtotal >= Number(couponRow.min_order_amount);
+      const underLimit = !couponRow?.usage_limit || (couponRow.times_used || 0) < couponRow.usage_limit;
+      const minOrderLocalized = couponRow?.min_order_amount ? convertInrToOrder(Number(couponRow.min_order_amount)) : 0;
+      const meetsMin = !minOrderLocalized || verifiedSubtotal >= minOrderLocalized;
 
       if (!couponRow || !notExpired || !underLimit || !meetsMin) {
         return Response.json(
@@ -186,21 +241,24 @@ export async function POST(request) {
       }
 
       if (couponRow.discount_type === 'percentage') {
-        verifiedDiscount = Math.round((verifiedSubtotal * Number(couponRow.discount_value || 0)) / 100);
+        verifiedDiscount = roundCurrency((verifiedSubtotal * Number(couponRow.discount_value || 0)) / 100, orderCurrency);
         if (couponRow.max_discount_amount) {
-          verifiedDiscount = Math.min(verifiedDiscount, Number(couponRow.max_discount_amount));
+          verifiedDiscount = Math.min(verifiedDiscount, convertInrToOrder(Number(couponRow.max_discount_amount)));
         }
       } else {
-        verifiedDiscount = Number(couponRow.discount_value || 0);
+        verifiedDiscount = convertInrToOrder(Number(couponRow.discount_value || 0));
       }
-      verifiedDiscount = Math.max(0, Math.min(verifiedSubtotal, verifiedDiscount));
+      verifiedDiscount = roundCurrency(Math.max(0, Math.min(verifiedSubtotal, verifiedDiscount)), orderCurrency);
     }
 
-    const verifiedTotalAmount = Math.max(0, Number((verifiedSubtotal + verifiedShipping - verifiedDiscount).toFixed(2)));
+    const verifiedTotalAmount = roundCurrency(
+      Math.max(0, verifiedSubtotal + verifiedShipping - verifiedDiscount),
+      orderCurrency
+    );
 
     // Format order narrative message using server-verified items & totals
     const orderItemsSummary = verifiedItems.map((it, idx) => 
-      `${idx + 1}. ${it.product_title || 'Item'} (Code: ${it.variant_code || 'N/A'}, Color: ${it.color || 'Standard'}) x ${it.quantity} @ ₹${it.price || 0}`
+      `${idx + 1}. ${it.product_title || 'Item'} (Code: ${it.variant_code || 'N/A'}, Color: ${it.color || 'Standard'}) x ${it.quantity} @ ${formatCurrency(it.price || 0, orderCurrency)}`
     ).join('\n');
 
     const paymentLabel = payment_method === 'cod'
@@ -217,8 +275,8 @@ export async function POST(request) {
     const senderCountry = dropship_details.sender_country || 'India';
 
     const orderMessage = isDropship
-      ? `DIRECT DROPSHIP ORDER (BLIND PACKAGING)\nPayment: ${paymentLabel}\nTotal: ₹${verifiedTotalAmount.toLocaleString('en-IN')}${dropshipPricingNote}\n\nSender (Parcel Label):\nName: ${dropship_details.sender_name || 'Reseller'}\nPhone: ${dropship_details.sender_phone || 'N/A'}\nAddress: ${dropship_details.sender_address || ''}, ${dropship_details.sender_city || ''}, ${dropship_details.sender_state || ''} - ${dropship_details.sender_pincode || ''}\nCountry: ${senderCountry}\n\nDeliver To (Recipient):\nName: ${fullName}\nPhone: ${phone}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: ${recipientCountry}\nPackaging: ${dropship_details.packing_preference || 'Blind Shipping'}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`
-      : `B2B ORDER (${paymentLabel})\nTotal: ₹${verifiedTotalAmount.toLocaleString('en-IN')}\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${verifiedShipping > 0 ? ` (+₹${verifiedShipping})` : ''}` : (verifiedShipping > 0 ? `Standard Delivery (+₹${verifiedShipping})` : 'Standard Free (4-5 Days)')}\n\nDelivery Address:\nName: ${fullName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: ${recipientCountry}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`;
+      ? `DIRECT DROPSHIP ORDER (BLIND PACKAGING)\nPayment: ${paymentLabel}\nTotal: ${formatCurrency(verifiedTotalAmount, orderCurrency)} (${orderCurrency})\nCurrency: ${orderCurrency}${dropshipPricingNote}\n\nSender (Parcel Label):\nName: ${dropship_details.sender_name || 'Reseller'}\nPhone: ${dropship_details.sender_phone || 'N/A'}\nAddress: ${dropship_details.sender_address || ''}, ${dropship_details.sender_city || ''}, ${dropship_details.sender_state || ''} - ${dropship_details.sender_pincode || ''}\nCountry: ${senderCountry}\n\nDeliver To (Recipient):\nName: ${fullName}\nPhone: ${phone}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: ${recipientCountry}\nPackaging: ${dropship_details.packing_preference || 'Blind Shipping'}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`
+      : `B2B ORDER (${paymentLabel})\nTotal: ${formatCurrency(verifiedTotalAmount, orderCurrency)} (${orderCurrency})\nCurrency: ${orderCurrency}\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${verifiedShipping > 0 ? ` (+${formatCurrency(verifiedShipping, orderCurrency)})` : ''}` : (verifiedShipping > 0 ? `Standard Delivery (+${formatCurrency(verifiedShipping, orderCurrency)})` : 'Standard Free (4-5 Days)')}\n\nDelivery Address:\nName: ${fullName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: ${recipientCountry}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`;
 
     const orderNumber = `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 

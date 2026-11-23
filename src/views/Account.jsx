@@ -52,7 +52,8 @@ import {
   ChevronDown,
   ChevronUp
 } from '../components/icons.jsx';
-import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
+import { customerPrice, fallbackProductImage, formatMoney, calculateLocalizedHybridCartTotals, getLocalizedPrice, calculateComboDiscount } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess, isAccountLocked, detectAccountCategory, isVendorProfile } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
@@ -136,6 +137,7 @@ export function Account({
   onSignOut,
   initialTab,
 }) {
+  const { currentCountry, exchangeRates } = useCountryCurrency();
   const userEmail = String(user?.email || '').toLowerCase().trim();
   const isAdmin = Boolean(userEmail && adminEmails.includes(userEmail)) || user?.role === 'admin' || user?.user_metadata?.role === 'admin' || buyerProfile?.role === 'admin';
 
@@ -607,8 +609,8 @@ export function Account({
   };
 
   const hybridTotals = useMemo(() => {
-    return calculateHybridCartTotals(cartItems || [], priceAccess);
-  }, [cartItems, priceAccess]);
+    return calculateLocalizedHybridCartTotals(cartItems || [], priceAccess, currentCountry, exchangeRates);
+  }, [cartItems, priceAccess, currentCountry, exchangeRates]);
 
   const subtotal = hybridTotals.subtotal;
   const discount = hybridTotals.discount;
@@ -1037,7 +1039,7 @@ export function Account({
                                 const unitPrice =
                                   hybridInfo && group.totalQuantity >= hybridInfo.setSize
                                     ? hybridInfo.wholesalePrice
-                                    : hybridInfo?.resellerPrice || customerPrice(item.variant?.prices, priceAccess) || 0;
+                                    : hybridInfo?.resellerPrice || getLocalizedPrice(customerPrice(item.variant?.prices, priceAccess) || 0, currentCountry, exchangeRates).finalPrice;
 
                                 return (
                                   <div className="draft-cart-variant-row" key={item.variantCode || `${item.productId}-${item.selectedColorName}`}>
@@ -1056,7 +1058,7 @@ export function Account({
                                         </span>
                                         {priceAccess.canViewPrices && (
                                           <span className="draft-cart-unit-rate">
-                                            {formatMoney(unitPrice)} / pc
+                                            {formatMoney(unitPrice, { currency: currentCountry?.currency })} / pc
                                           </span>
                                         )}
                                       </div>
@@ -1071,7 +1073,7 @@ export function Account({
 
                                       <div className="draft-cart-variant-price">
                                         {priceAccess.canViewPrices ? (
-                                          formatMoney(unitPrice * item.quantity)
+                                          formatMoney(unitPrice * item.quantity, { currency: currentCountry?.currency })
                                         ) : (
                                           <span style={{ fontSize: '12px', color: '#6b7280' }}>Verified Only</span>
                                         )}
@@ -1090,7 +1092,7 @@ export function Account({
                       <div className="draft-cart-total-summary">
                         <span style={{ fontSize: '14px', color: '#6b7280' }}>Draft Subtotal:</span>
                         <strong style={{ fontSize: '20px', color: 'var(--ink)' }}>
-                          {total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)}
+                          {total != null ? formatMoney(total, { currency: currentCountry?.currency }) : priceNoticeForAccess(priceAccess)}
                         </strong>
                       </div>
                       <div className="draft-cart-actions">

@@ -40,11 +40,15 @@ export function middleware(request) {
   }
 
   const requestHeaders = new Headers(request.headers);
-  const detectedCountry = request.headers.get('cf-ipcountry') || 
-                          request.headers.get('x-vercel-ip-country') || 
-                          request.headers.get('x-country-code');
-  if (detectedCountry && detectedCountry !== 'XX' && detectedCountry !== 'T1') {
-    requestHeaders.set('x-detected-country', detectedCountry.toUpperCase());
+  const rawDetectedCountry = request.headers.get('cf-ipcountry') ||
+                             request.cf?.country ||
+                             request.headers.get('x-vercel-ip-country') ||
+                             request.headers.get('x-country-code') ||
+                             request.headers.get('geoip-country-code');
+  const detectedCountry = rawDetectedCountry ? String(rawDetectedCountry).trim().toUpperCase() : '';
+  const hasValidCountry = Boolean(detectedCountry && detectedCountry !== 'XX' && detectedCountry !== 'T1');
+  if (hasValidCountry) {
+    requestHeaders.set('x-detected-country', detectedCountry);
   }
 
   const response = NextResponse.next({
@@ -52,6 +56,13 @@ export function middleware(request) {
       headers: requestHeaders,
     },
   });
+  if (hasValidCountry) {
+    response.cookies.set('weave365_detected_country', detectedCountry, {
+      path: '/',
+      maxAge: 3600,
+      sameSite: 'lax',
+    });
+  }
   return applySecurityHeaders(response);
 }
 

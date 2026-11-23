@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import {
-  Globe,
+  CurrencyDollarIcon,
   RefreshCw,
   Plus,
   Trash2,
@@ -520,7 +520,7 @@ export default function CountryPricingManager({ adminData, loading = false }) {
       <header className="cpa-header">
         <div className="cpa-header-info">
           <h1 className="cpa-title">
-            <Globe size={20} className="cpa-title-icon" /> Country Pricing &amp; Currency
+            <CurrencyDollarIcon size={20} className="cpa-title-icon" /> Country Pricing &amp; Currency
           </h1>
           <p className="cpa-subtitle">
             Configure international currencies, dynamic exchange rates, and country-specific markups.

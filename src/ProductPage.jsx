@@ -1026,8 +1026,16 @@ export function ProductDetail({
   }, [resellerPrice, currentCountry, exchangeRates]);
 
   const localizedSetPrice = useMemo(() => {
-    return getLocalizedPrice(wholesalePrice * totalColors, currentCountry, exchangeRates);
-  }, [wholesalePrice, totalColors, currentCountry, exchangeRates]);
+    const currency = localizedWholesale.currency || currentCountry?.currency || 'INR';
+    const finalPrice = roundCurrency(localizedWholesale.finalPrice * totalColors, currency);
+    return {
+      ...localizedWholesale,
+      basePrice: wholesalePrice * totalColors,
+      markedUpBasePrice: roundCurrency(localizedWholesale.markedUpBasePrice * totalColors, 'INR'),
+      finalPrice,
+      formatted: formatMoney(finalPrice, { currency, currencySymbol: localizedWholesale.currencySymbol }),
+    };
+  }, [localizedWholesale, wholesalePrice, totalColors, currentCountry]);
 
   const displayPrice = localizedReseller.finalPrice;
   const canViewPrice = (wholesalePrice > 0 || resellerPrice > 0) && priceAccess?.canViewPrices !== false;

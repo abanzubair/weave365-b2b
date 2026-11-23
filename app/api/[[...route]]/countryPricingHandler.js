@@ -55,13 +55,13 @@ async function getSupabase(token = null) {
  */
 function detectCountryFromHeaders(request) {
   const headers = request.headers;
-  const cfCountry = headers.get('cf-ipcountry');
+  const cfCountry = headers.get('cf-ipcountry') || request.cf?.country;
   const vercelCountry = headers.get('x-vercel-ip-country');
   const geoCountry = headers.get('x-country-code') || headers.get('geoip-country-code');
 
   const detected = cfCountry || vercelCountry || geoCountry;
   if (detected && detected !== 'XX' && detected !== 'T1') {
-    return detected.trim().toUpperCase();
+    return String(detected).trim().toUpperCase();
   }
   return 'IN';
 }
@@ -160,7 +160,8 @@ export async function GET(request) {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=60, s-maxage=300',
+          'Cache-Control': 'private, no-store, max-age=0',
+          'Vary': 'CF-IPCountry, X-Vercel-IP-Country',
           ...corsHeaders,
         },
       }

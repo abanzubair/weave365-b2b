@@ -274,8 +274,10 @@ export async function handleCreateOrder(request) {
       shipping_mode = 'standard',
       shipping_speed = 'standard',
       shipping_amount = 0,
+      shipping_amount_inr = null,
       coupon_code = null,
       coupon_discount = 0,
+      coupon_discount_inr = null,
       notes = '',
     } = body;
 
@@ -305,6 +307,12 @@ export async function handleCreateOrder(request) {
     const requestedCurrency = String(currency || 'INR').toUpperCase();
     const isInr = requestedCurrency === 'INR';
     const chargeInr = Number(Number(isInr ? total_amount : (base_inr_total || 0)).toFixed(2));
+    const resolvedShippingInr = isInr
+      ? (Number(shipping_amount) || 0)
+      : (shipping_amount_inr != null ? Number(shipping_amount_inr) : 0);
+    const resolvedCouponInr = isInr
+      ? (Number(coupon_discount) || 0)
+      : (coupon_discount_inr != null ? Number(coupon_discount_inr) : 0);
     const amountPaise = Math.round(chargeInr * 100);
 
     if (!Number.isFinite(amountPaise) || amountPaise < 100) {
@@ -343,8 +351,8 @@ export async function handleCreateOrder(request) {
       payment_method: 'phonepe',
       total_amount: chargeInr,
       coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
-      coupon_discount: Number(coupon_discount) || 0,
-      message: `PHONEPE CHECKOUT ORDER\nTotal: ₹${chargeInr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (INR)\nCurrency: INR\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${Number(shipping_amount) > 0 ? ` (+₹${Number(shipping_amount)})` : ''}` : 'Standard Free (4-5 Days)'}${coupon_code ? `\nCoupon: ${String(coupon_code).trim().toUpperCase()} (-₹${Number(coupon_discount) || 0})` : ''}${isDropship && dropship_details.custom_billed_price ? `\nBilled Price on Parcel Slip: ₹${Number(dropship_details.custom_billed_price).toLocaleString('en-IN')}` : ''}${isDropship && dropship_details.custom_discount ? `\nDiscount on Slip: ₹${Number(dropship_details.custom_discount).toLocaleString('en-IN')}` : ''}\nStatus: Pending PhonePe Payment\nNotes: ${notes || 'None'}`,
+      coupon_discount: resolvedCouponInr,
+      message: `PHONEPE CHECKOUT ORDER\nTotal: ₹${chargeInr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (INR)\nCurrency: INR\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${resolvedShippingInr > 0 ? ` (+₹${resolvedShippingInr})` : ''}` : (resolvedShippingInr > 0 ? `Standard (+₹${resolvedShippingInr})` : 'Standard Free (4-5 Days)')}${coupon_code ? `\nCoupon: ${String(coupon_code).trim().toUpperCase()} (-₹${resolvedCouponInr})` : ''}${isDropship && dropship_details.custom_billed_price ? `\nBilled Price on Parcel Slip: ₹${Number(dropship_details.custom_billed_price).toLocaleString('en-IN')}` : ''}${isDropship && dropship_details.custom_discount ? `\nDiscount on Slip: ₹${Number(dropship_details.custom_discount).toLocaleString('en-IN')}` : ''}\nStatus: Pending PhonePe Payment\nNotes: ${notes || 'None'}`,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
       dropship_sender_phone: isDropship ? (dropship_details.sender_phone || null) : null,
