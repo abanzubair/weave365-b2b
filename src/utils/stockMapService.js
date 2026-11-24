@@ -344,11 +344,11 @@ export async function updateStockMapWriteThrough(supabase, updates) {
         updated_at: update.updatedAt || nowIso,
       };
 
-      // Cascade out-of-stock/archived to any variant keys of this product
-      if (isOutOfStock) {
-        const prefix = `${pid}-`;
-        for (const [k, v] of Object.entries(stockMap)) {
-          if (k.startsWith(prefix) && v && typeof v === 'object') {
+      // Cascade out-of-stock/archived or restock to any variant keys of this product
+      const prefix = `${pid}-`;
+      for (const [k, v] of Object.entries(stockMap)) {
+        if (k.startsWith(prefix) && v && typeof v === 'object') {
+          if (isOutOfStock) {
             stockMap[k] = {
               ...v,
               in_stock: false,
@@ -356,6 +356,17 @@ export async function updateStockMapWriteThrough(supabase, updates) {
               stock_status: status,
               status: status,
               is_available: false,
+              stock_label: label,
+              updated_at: update.updatedAt || nowIso,
+            };
+          } else {
+            stockMap[k] = {
+              ...v,
+              in_stock: true,
+              quantity: v.quantity > 0 ? v.quantity : qty,
+              stock_status: status,
+              status: status,
+              is_available: true,
               stock_label: label,
               updated_at: update.updatedAt || nowIso,
             };

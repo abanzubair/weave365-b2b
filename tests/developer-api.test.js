@@ -30,6 +30,7 @@ import {
   generateStockMap,
   buildGlobalStockMap,
   buildStockMap,
+  updateStockMapWriteThrough,
 } from '../src/utils/stockMapService.js';
 
 describe('Weave365 B2B Developer API Verification', () => {
@@ -836,6 +837,199 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.ok(stockMap['105001-MAROON-2']);
       assert.equal(stockMap['105001-1'].quantity, 12);
       assert.equal(stockMap['105001-1'].in_stock, true);
+    });
+
+    it('updateStockMapWriteThrough: cascades restock (!isOutOfStock) back to all variant keys with positive quantity and available status', async () => {
+      let storedStockMap = {
+        '102001': {
+          in_stock: true,
+          quantity: 25,
+          stock_status: 'ready-stock',
+          status: 'ready-stock',
+          is_available: true,
+          stock_label: 'Ready Stock',
+        },
+        '102001-1': {
+          in_stock: true,
+          quantity: 15,
+          stock_status: 'ready-stock',
+          status: 'ready-stock',
+          is_available: true,
+          stock_label: 'Ready Stock',
+        },
+        '102001-2': {
+          in_stock: true,
+          quantity: 10,
+          stock_status: 'ready-stock',
+          status: 'ready-stock',
+          is_available: true,
+          stock_label: 'Ready Stock',
+        },
+        '102001-ROYALRED-1': {
+          in_stock: true,
+          quantity: 15,
+          stock_status: 'ready-stock',
+          status: 'ready-stock',
+          is_available: true,
+          stock_label: 'Ready Stock',
+        },
+      };
+
+      const mockDb = {
+        from: (table) => {
+          assert.equal(table, 'sheet_data');
+          return {
+            select: () => ({
+              eq: () => ({
+                maybeSingle: async () => ({
+                  data: { csv_data: JSON.stringify(storedStockMap) },
+                  error: null,
+                }),
+              }),
+            }),
+            upsert: async (payload) => {
+              storedStockMap = JSON.parse(payload.csv_data);
+              return { error: null };
+            },
+          };
+        },
+      };
+
+      // 1. Parent is marked out-of-stock
+      const oosOk = await updateStockMapWriteThrough(mockDb, {
+        productId: '102001',
+        stockStatus: 'out-of-stock',
+        stockStatusLabel: 'Out of Stock',
+      });
+      assert.equal(oosOk, true);
+
+      // Verify parent and all variant keys cascaded to out-of-stock
+      assert.equal(storedStockMap['102001'].in_stock, false);
+      assert.equal(storedStockMap['102001'].quantity, 0);
+      assert.equal(storedStockMap['102001-1'].in_stock, false);
+      assert.equal(storedStockMap['102001-1'].quantity, 0);
+      assert.equal(storedStockMap['102001-1'].is_available, false);
+      assert.equal(storedStockMap['102001-2'].in_stock, false);
+      assert.equal(storedStockMap['102001-2'].quantity, 0);
+      assert.equal(storedStockMap['102001-2'].is_available, false);
+      assert.equal(storedStockMap['102001-ROYALRED-1'].in_stock, false);
+      assert.equal(storedStockMap['102001-ROYALRED-1'].quantity, 0);
+
+      // 2. Parent is restocked back to ready-stock
+      const restockOk = await updateStockMapWriteThrough(mockDb, {
+        productId: '102001',
+        stockStatus: 'ready-stock',
+        stockStatusLabel: 'Ready Stock',
+      });
+      assert.equal(restockOk, true);
+
+      // Verify parent is restored
+      assert.equal(storedStockMap['102001'].in_stock, true);
+      assert.equal(storedStockMap['102001'].is_available, true);
+      assert.equal(storedStockMap['102001'].stock_status, 'ready-stock');
+      assert.equal(storedStockMap['102001'].status, 'ready-stock');
+      assert.equal(storedStockMap['102001'].stock_label, 'Ready Stock');
+      assert.ok(storedStockMap['102001'].quantity > 0);
+
+      // Verify ALL child variant keys cascaded back to available with positive quantity
+      const expectedVariantKeys = ['102001-1', '102001-2', '102001-ROYALRED-1'];
+      for (const vKey of expectedVariantKeys) {
+        assert.equal(storedStockMap[vKey].in_stock, true, `${vKey} must be in_stock: true`);
+        assert.equal(storedStockMap[vKey].is_available, true, `${vKey} must be is_available: true`);
+        assert.equal(storedStockMap[vKey].stock_status, 'ready-stock', `${vKey} status must be ready-stock`);
+        assert.equal(storedStockMap[vKey].status, 'ready-stock');
+        assert.equal(storedStockMap[vKey].stock_label, 'Ready Stock');
+        assert.ok(storedStockMap[vKey].quantity > 0, `${vKey} must have positive quantity`);
+      }
+    });
+
+    it('updateStockMapWriteThrough: preserves existing positive quantity when variant already has v.quantity > 0', async () => {
+      let storedStockMap = {
+        '102001': {
+          in_stock: false,
+          quantity: 0,
+          stock_status: 'out-of-stock',
+          is_available: false,
+        },
+        '102001-1': {
+          in_stock: false,
+          quantity: 12, // Variant had remaining quantity tracked
+          stock_status: 'out-of-stock',
+          is_available: false,
+        },
+      };
+
+      const mockDb = {
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({
+                data: { csv_data: JSON.stringify(storedStockMap) },
+                error: null,
+              }),
+            }),
+          }),
+          upsert: async (payload) => {
+            storedStockMap = JSON.parse(payload.csv_data);
+            return { error: null };
+          },
+        }),
+      };
+
+      const ok = await updateStockMapWriteThrough(mockDb, {
+        productId: '102001',
+        stockStatus: 'ready-stock',
+      });
+      assert.equal(ok, true);
+      assert.equal(storedStockMap['102001-1'].in_stock, true);
+      assert.equal(storedStockMap['102001-1'].is_available, true);
+      assert.equal(storedStockMap['102001-1'].quantity, 12, 'Must preserve existing positive variant quantity');
+    });
+
+    it('updateStockMapWriteThrough: cascades pre-order and back-soon restocks to variants', async () => {
+      let storedStockMap = {
+        '102001': {
+          in_stock: false,
+          quantity: 0,
+          stock_status: 'out-of-stock',
+          is_available: false,
+        },
+        '102001-1': {
+          in_stock: false,
+          quantity: 0,
+          stock_status: 'out-of-stock',
+          is_available: false,
+        },
+      };
+
+      const mockDb = {
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({
+                data: { csv_data: JSON.stringify(storedStockMap) },
+                error: null,
+              }),
+            }),
+          }),
+          upsert: async (payload) => {
+            storedStockMap = JSON.parse(payload.csv_data);
+            return { error: null };
+          },
+        }),
+      };
+
+      const ok = await updateStockMapWriteThrough(mockDb, {
+        productId: '102001',
+        stockStatus: 'pre-order',
+      });
+      assert.equal(ok, true);
+      assert.equal(storedStockMap['102001-1'].in_stock, true);
+      assert.equal(storedStockMap['102001-1'].is_available, true);
+      assert.equal(storedStockMap['102001-1'].stock_status, 'pre-order');
+      assert.equal(storedStockMap['102001-1'].status, 'pre-order');
+      assert.equal(storedStockMap['102001-1'].stock_label, 'Pre-Order');
+      assert.ok(storedStockMap['102001-1'].quantity > 0);
     });
   });
 });
