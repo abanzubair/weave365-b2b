@@ -27,6 +27,7 @@ import {
   CheckCircle2,
   Sliders,
   ExternalLink,
+  Download,
   Shield,
   Layers,
   ShoppingBag,
@@ -3175,99 +3176,274 @@ export function DeveloperDashboard({
           >
             {activePlatformTab === 'woocommerce' && (
               <div>
-                <div className="dev-plat-intro">
-                  <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet</h4>
+                {/* 1. Official Plugin Download Card */}
+                <div className="dev-plat-intro" style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <div>
+                      <span className="dev-guide-pill dev-pill-recommended" style={{ marginBottom: '0.35rem', display: 'inline-block' }}>
+                        Official Plugin · Plug &amp; Play
+                      </span>
+                      <h4 className="dev-plat-title" style={{ margin: 0 }}>
+                        Weave365 Live Stock Sync for WooCommerce
+                      </h4>
+                    </div>
+                    <a
+                      href="/downloads/weave365-woocommerce-sync.zip"
+                      download="weave365-woocommerce-sync.zip"
+                      className="dev-code-copy-btn"
+                      style={{
+                        background: '#0f172a',
+                        color: '#ffffff',
+                        border: '1px solid #0f172a',
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontWeight: 600,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      <Download size={14} />
+                      <span>Download Plugin (.zip)</span>
+                    </a>
+                  </div>
                   <p>
-                    Paste this snippet into your child theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It automatically queries Weave365 hourly and updates inventory status for all products matching your catalog SKUs.
+                    Download and upload this lightweight WordPress plugin to automatically synchronize authentic Banarasi handloom inventory directly from Varanasi weaver looms. Supports parent &amp; variant SKUs, prevents false restocks, includes concurrency locks, and runs hourly via WordPress WP-Cron.
                   </p>
                 </div>
-                <div className="dev-code-block-wrap">
-                  <div className="dev-code-header">
-                    <span className="dev-code-lang">PHP · functions.php</span>
+
+                {/* 2. Step-by-Step Setup */}
+                <section className="dev-guide-section" style={{ borderTop: 'none', paddingTop: 0 }}>
+                  <h5 className="dev-guide-section-title" style={{ fontSize: '0.9375rem', marginBottom: '0.5rem' }}>
+                    Quick Plugin Setup (3 Steps)
+                  </h5>
+                  <div className="dev-step-list">
+                    <div className="dev-step-row">
+                      <span className="dev-step-num">1</span>
+                      <div className="dev-step-body">
+                        <strong>Install Plugin:</strong> In WordPress Admin, go to <em>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</em>, upload <code>weave365-woocommerce-sync.zip</code>, and click <em>Activate Plugin</em>.
+                      </div>
+                    </div>
+                    <div className="dev-step-row">
+                      <span className="dev-step-num">2</span>
+                      <div className="dev-step-body">
+                        <strong>Enter API Key:</strong> In your WordPress sidebar, go to <em>WooCommerce &rarr; Weave365 Sync</em>, paste your Live API Key (<code>{revealedKey || apiKey?.key_prefix || 'w365_live_...'}</code>), and click <em>Save API Key</em>.
+                      </div>
+                    </div>
+                    <div className="dev-step-row">
+                      <span className="dev-step-num">3</span>
+                      <div className="dev-step-body">
+                        <strong>Verify &amp; Sync:</strong> Click <em>Sync Stock Now</em> to verify immediate connectivity. The plugin will continue running in the background hourly via WP-Cron.
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* 3. Catalog CSV Import */}
+                <section className="dev-guide-section">
+                  <div className="dev-guide-section-header">
+                    <div className="dev-guide-section-title-wrap">
+                      <h5 className="dev-guide-section-title">
+                        Initial Product Import (CSV Feed)
+                      </h5>
+                    </div>
+                    <p className="dev-guide-section-desc">
+                      Products are matched by SKU (e.g. <code>102001</code> or <code>102001-1</code>). Use this URL to import products into WooCommerce:
+                    </p>
+                  </div>
+
+                  <div className="dev-feed-box">
+                    <span className="dev-feed-method">CSV</span>
+                    <input
+                      type="text"
+                      readOnly
+                      value={`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_API_KEY'}`}
+                      className="dev-feed-input"
+                    />
                     <button
                       type="button"
-                      className={`dev-code-copy-btn ${copiedField === 'woo-code' ? 'copied' : ''}`}
-                      onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
+                      className={`dev-feed-copy-btn ${copiedField === 'woo-csv' ? 'copied' : ''}`}
+                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_API_KEY'}`, 'woo-csv')}
+                    >
+                      {copiedField === 'woo-csv' ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedField === 'woo-csv' ? 'Copied' : 'Copy CSV URL'}</span>
+                    </button>
+                  </div>
+                  <div className="dev-guide-note">
+                    <strong>Importing into WooCommerce:</strong> In WordPress Admin, open <em>Products &rarr; Import</em>, upload the downloaded CSV, ensure <code>SKU</code>, <code>Name</code>, <code>Regular price</code>, and <code>Images</code> columns are mapped, and click <em>Run the Importer</em>.
+                  </div>
+                </section>
+
+                {/* 4. Functions.php Code Snippet */}
+                <section className="dev-guide-section">
+                  <div className="dev-guide-section-header">
+                    <h5 className="dev-guide-section-title">
+                      Developer Alternative: Child Theme functions.php Snippet
+                    </h5>
+                    <p className="dev-guide-section-desc">
+                      If you prefer not installing an extra plugin, paste this snippet into your child theme&apos;s <code>functions.php</code> or the <em>Code Snippets</em> plugin:
+                    </p>
+                  </div>
+
+                  <div className="dev-code-block-wrap">
+                    <div className="dev-code-header">
+                      <span className="dev-code-lang">PHP · functions.php</span>
+                      <button
+                        type="button"
+                        className={`dev-code-copy-btn ${copiedField === 'woo-code' ? 'copied' : ''}`}
+                        onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Inventory Sync ===
 add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
 
 function sync_weave365_inventory() {
     $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
-    $url = 'https://www.weave365.com/api/v1/stock-status';
-    
-    $response = wp_remote_get($url, [
-        'headers' => ['X-API-Key' => $api_key],
-        'timeout' => 25,
-        'sslverify' => true,
-    ]);
-    
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+    if (empty($api_key) || strpos($api_key, 'YOUR_') !== false) {
         return;
     }
-    
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    if (!empty($body['stock_map']) && is_array($body['stock_map'])) {
+
+    if (get_transient('weave365_sync_lock')) {
+        return;
+    }
+    set_transient('weave365_sync_lock', 1, 300);
+
+    try {
+        $url = 'https://www.weave365.com/api/v1/stock-status';
+        $response = wp_remote_get($url, [
+            'headers' => [
+                'X-API-Key' => $api_key,
+                'Accept' => 'application/json',
+                'User-Agent' => 'Weave365-WooCommerce-Snippet/1.0.0 (' . home_url() . ')'
+            ],
+            'timeout' => 30,
+            'sslverify' => true,
+        ]);
+
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return;
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (json_last_error() !== JSON_ERROR_NONE || empty($body['stock_map']) || !is_array($body['stock_map'])) {
+            return;
+        }
+
         foreach ($body['stock_map'] as $sku => $data) {
             $product_id = wc_get_product_id_by_sku((string)$sku);
-            if ($product_id) {
-                $product = wc_get_product($product_id);
-                if ($product) {
-                    $is_available = !empty($data['is_available']);
-                    $product->set_stock_status($is_available ? 'instock' : 'outofstock');
-                    if ($product->get_manage_stock()) {
-                        $product->set_stock_quantity($is_available ? 5 : 0);
-                    }
-                    $product->save();
-                    wc_delete_product_transients($product_id);
-                }
+            if (!$product_id) {
+                continue;
+            }
+
+            $product = wc_get_product($product_id);
+            if (!$product || $product->get_status() === 'trash') {
+                continue;
+            }
+
+            $is_available = is_array($data) ? (!empty($data['is_available']) || !empty($data['in_stock'])) : !empty($data);
+            $raw_qty = is_array($data) && isset($data['quantity']) ? $data['quantity'] : ($is_available ? 5 : 0);
+            $target_qty = $is_available ? max(0, intval($raw_qty)) : 0;
+            $target_status = $is_available ? 'instock' : 'outofstock';
+
+            $needs_save = false;
+            if ($product->get_stock_status() !== $target_status) {
+                $product->set_stock_status($target_status);
+                $needs_save = true;
+            }
+
+            if ($product->get_manage_stock() && $product->get_stock_quantity() !== $target_qty) {
+                $product->set_stock_quantity($target_qty);
+                $needs_save = true;
+            }
+
+            if ($needs_save) {
+                $product->save();
+                wc_delete_product_transients($product_id);
             }
         }
+    } finally {
+        delete_transient('weave365_sync_lock');
     }
 }
 
 if (!wp_next_scheduled('weave365_cron_stock_sync')) {
     wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
 }`, 'woo-code')}
-                      aria-label="Copy WooCommerce PHP snippet"
-                    >
-                      {copiedField === 'woo-code' ? <Check size={13} /> : <Copy size={13} />}
-                      <span>{copiedField === 'woo-code' ? 'Copied' : 'Copy PHP Snippet'}</span>
-                    </button>
-                  </div>
-                  <pre>
-                    {`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
+                        aria-label="Copy WooCommerce PHP snippet"
+                      >
+                        {copiedField === 'woo-code' ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{copiedField === 'woo-code' ? 'Copied' : 'Copy PHP Snippet'}</span>
+                      </button>
+                    </div>
+                    <pre>
+                      {`// === Weave365 WooCommerce Live Stock & Inventory Sync ===
 add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
 
 function sync_weave365_inventory() {
     $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';
-    $url = 'https://www.weave365.com/api/v1/stock-status';
-    
-    $response = wp_remote_get($url, [
-        'headers' => ['X-API-Key' => $api_key],
-        'timeout' => 25,
-        'sslverify' => true,
-    ]);
-    
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+    if (empty($api_key) || strpos($api_key, 'YOUR_') !== false) {
         return;
     }
-    
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    if (!empty($body['stock_map']) && is_array($body['stock_map'])) {
+
+    if (get_transient('weave365_sync_lock')) {
+        return;
+    }
+    set_transient('weave365_sync_lock', 1, 300);
+
+    try {
+        $url = 'https://www.weave365.com/api/v1/stock-status';
+        $response = wp_remote_get($url, [
+            'headers' => [
+                'X-API-Key' => $api_key,
+                'Accept' => 'application/json',
+                'User-Agent' => 'Weave365-WooCommerce-Snippet/1.0.0 (' . home_url() . ')'
+            ],
+            'timeout' => 30,
+            'sslverify' => true,
+        ]);
+
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return;
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (json_last_error() !== JSON_ERROR_NONE || empty($body['stock_map']) || !is_array($body['stock_map'])) {
+            return;
+        }
+
         foreach ($body['stock_map'] as $sku => $data) {
             $product_id = wc_get_product_id_by_sku((string)$sku);
-            if ($product_id) {
-                $product = wc_get_product($product_id);
-                if ($product) {
-                    $is_available = !empty($data['is_available']);
-                    $product->set_stock_status($is_available ? 'instock' : 'outofstock');
-                    if ($product->get_manage_stock()) {
-                        $product->set_stock_quantity($is_available ? 5 : 0);
-                    }
-                    $product->save();
-                    wc_delete_product_transients($product_id);
-                }
+            if (!$product_id) {
+                continue;
+            }
+
+            $product = wc_get_product($product_id);
+            if (!$product || $product->get_status() === 'trash') {
+                continue;
+            }
+
+            $is_available = is_array($data) ? (!empty($data['is_available']) || !empty($data['in_stock'])) : !empty($data);
+            $raw_qty = is_array($data) && isset($data['quantity']) ? $data['quantity'] : ($is_available ? 5 : 0);
+            $target_qty = $is_available ? max(0, intval($raw_qty)) : 0;
+            $target_status = $is_available ? 'instock' : 'outofstock';
+
+            $needs_save = false;
+            if ($product->get_stock_status() !== $target_status) {
+                $product->set_stock_status($target_status);
+                $needs_save = true;
+            }
+
+            if ($product->get_manage_stock() && $product->get_stock_quantity() !== $target_qty) {
+                $product->set_stock_quantity($target_qty);
+                $needs_save = true;
+            }
+
+            if ($needs_save) {
+                $product->save();
+                wc_delete_product_transients($product_id);
             }
         }
+    } finally {
+        delete_transient('weave365_sync_lock');
     }
 }
 
@@ -3275,8 +3451,9 @@ function sync_weave365_inventory() {
 if (!wp_next_scheduled('weave365_cron_stock_sync')) {
     wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
 }`}
-                  </pre>
-                </div>
+                    </pre>
+                  </div>
+                </section>
               </div>
             )}
 

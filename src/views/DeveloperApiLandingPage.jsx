@@ -26,8 +26,8 @@ const PLATFORMS = [
   },
   {
     name: 'WooCommerce',
-    tag: 'WordPress Cron',
-    desc: 'Synchronize live loom inventory, wholesale rates, and product specifications directly into your WordPress store.'
+    tag: 'Official Plugin (.zip) & REST',
+    desc: 'Plug-and-play WordPress plugin for automated hourly inventory sync, or direct REST API connectivity.'
   },
   {
     name: 'PrestaShop',
@@ -235,7 +235,7 @@ export default function DeveloperApiLandingPage({ onSwitchToDocs }) {
                 <li>10,000 API requests / month (3 req/sec)</li>
                 <li>Full B2R catalog feed access (<code>/catalog</code>)</li>
                 <li>Real-time stock status sync (<code>/stock-status</code>)</li>
-                <li>WooCommerce &amp; Shopify feed compatibility</li>
+                <li>WooCommerce Plugin (.zip) &amp; Shopify feed compatibility</li>
                 <li>Standard B2R wholesale pricing</li>
               </ul>
               <a href="/account?tab=developer" className="api-btn-outline">
