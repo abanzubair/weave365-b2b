@@ -69,6 +69,9 @@ function getProductQuantity(p, isOutOfStock) {
   if (typeof p?.quantity === 'number' && !isNaN(p.quantity)) {
     return Math.max(0, p.quantity);
   }
+  if (Array.isArray(p?.variants) && p.variants.some((v) => typeof v?.quantity === 'number')) {
+    return p.variants.reduce((acc, v) => acc + (typeof v?.quantity === 'number' && !isNaN(v.quantity) ? Math.max(0, v.quantity) : 0), 0);
+  }
   if (p?.raw && p.raw.Quantity !== undefined && p.raw.Quantity !== null && p.raw.Quantity !== '') {
     const parsed = Number(String(p.raw.Quantity).replace(/[^\d.]/g, ''));
     if (!isNaN(parsed)) return Math.max(0, parsed);
@@ -1434,6 +1437,18 @@ export async function handleStockStatusRequest(request, supabase, auth, searchPa
       ? new Set((auth.keyRecord.selected_skus || []).map((s) => String(s).trim().toLowerCase()).filter(Boolean))
       : null;
 
+    const isSkuAuthorized = (sku) => {
+      if (!authorizedSet) return true;
+      const lower = String(sku || '').trim().toLowerCase();
+      if (authorizedSet.has(lower)) return true;
+      for (const authSku of authorizedSet) {
+        if (lower.startsWith(authSku + '-') || lower.startsWith(authSku + '_')) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     const stockSkusParam = searchParams?.get('skus') || searchParams?.get('ids') || searchParams?.get('sku');
     const requestedSkus = stockSkusParam
       ? new Set(stockSkusParam.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean))
@@ -1444,15 +1459,18 @@ export async function handleStockStatusRequest(request, supabase, auth, searchPa
     if (requestedSkus) {
       for (const [key, item] of Object.entries(rawStockMap)) {
         const lowerKey = key.toLowerCase();
-        if (requestedSkus.has(lowerKey)) {
-          if (!authorizedSet || authorizedSet.has(lowerKey)) {
+        // Match if directly requested or if it's a variant of a requested parent SKU
+        const isRequested = requestedSkus.has(lowerKey) ||
+          Array.from(requestedSkus).some((r) => lowerKey.startsWith(r + '-'));
+        if (isRequested) {
+          if (isSkuAuthorized(lowerKey)) {
             stockMap[key] = item;
           }
         }
       }
     } else if (authorizedSet) {
       for (const [key, item] of Object.entries(rawStockMap)) {
-        if (authorizedSet.has(key.toLowerCase())) {
+        if (isSkuAuthorized(key)) {
           stockMap[key] = item;
         }
       }
@@ -1477,26 +1495,39 @@ export async function handleStockStatusRequest(request, supabase, auth, searchPa
   let resultProducts = authorizedProducts;
 
   const stockSkusParam = searchParams?.get('skus') || searchParams?.get('ids') || searchParams?.get('sku');
+  let requestedSkus = null;
   if (stockSkusParam) {
-    const requestedSkus = new Set(stockSkusParam.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
+    requestedSkus = new Set(stockSkusParam.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
     resultProducts = resultProducts.filter((p) => {
       const pId = String(p.id || '').trim().toLowerCase();
       const pGroup = String(p.groupKey || '').trim().toLowerCase();
       if (requestedSkus.has(pId) || requestedSkus.has(pGroup)) return true;
-      if (Array.isArray(p.variants) && p.variants.some((v) => requestedSkus.has(String(v.code || '').trim().toLowerCase()))) return true;
+      if (Array.isArray(p.variants) && p.variants.some((v) => {
+        const vCode = String(v?.code || '').trim().toLowerCase();
+        const vSku = String(v?.sku || '').trim().toLowerCase();
+        const vId = String(v?.id || '').trim().toLowerCase();
+        return (vCode && requestedSkus.has(vCode)) ||
+               (vSku && requestedSkus.has(vSku)) ||
+               (vId && requestedSkus.has(vId));
+      })) return true;
       return false;
     });
   }
 
   const stockMap = {};
   resultProducts.forEach((p) => {
-    const key = p.id || p.groupKey;
+    if (!p || typeof p !== 'object') return;
+    const parentKey = String(p.id || p.groupKey || '').trim();
+    if (!parentKey) return;
+
     const isOutOfStock = Boolean(p.isOutOfStock || p.isArchived || (typeof p.quantity === 'number' && p.quantity <= 0));
     const productQty = getProductQuantity(p, isOutOfStock);
     const stockStatus = p.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : 'ready-stock');
     const inStock = !isOutOfStock && productQty > 0;
-    const stockLabel = p.stockStatusLabel || (isOutOfStock ? 'Out of Stock' : 'Ready Stock');
-    stockMap[key] = {
+    const stockLabel = p.stockStatusLabel || (isOutOfStock ? (p.isArchived ? 'Archived (Hidden)' : 'Out of Stock') : (stockStatus === 'pre-order' ? 'Pre-Order' : (stockStatus === 'back-soon' ? 'Back Soon' : 'Ready Stock')));
+    const updatedAt = p.stockLastUpdatedIST || p.stockLastUpdated || new Date().toISOString();
+
+    const parentItem = {
       title: p.title || p.name || '',
       in_stock: inStock,
       quantity: productQty,
@@ -1504,8 +1535,115 @@ export async function handleStockStatusRequest(request, supabase, auth, searchPa
       status: stockStatus,
       is_available: inStock,
       stock_label: stockLabel,
-      updated_at: p.stockLastUpdatedIST || new Date().toISOString(),
+      updated_at: updatedAt,
     };
+
+    const isParentDirectlyRequested = Boolean(
+      requestedSkus && (
+        requestedSkus.has(parentKey.toLowerCase()) ||
+        (p.id && requestedSkus.has(String(p.id).toLowerCase())) ||
+        (p.groupKey && requestedSkus.has(String(p.groupKey).toLowerCase()))
+      )
+    );
+
+    // If no specific SKUs requested, or if parent was directly requested:
+    if (!requestedSkus || isParentDirectlyRequested) {
+      stockMap[parentKey] = parentItem;
+      if (p.id && String(p.id).trim() !== parentKey) stockMap[String(p.id).trim()] = parentItem;
+      if (p.groupKey && String(p.groupKey).trim() !== parentKey) stockMap[String(p.groupKey).trim()] = parentItem;
+    }
+
+    // Populate variant SKUs
+    if (Array.isArray(p.variants) && p.variants.length > 0) {
+      p.variants.forEach((v, idx) => {
+        if (!v || typeof v !== 'object') return;
+        const vCode = String(v.code || '').trim();
+        const vSkuProp = String(v.sku || '').trim();
+        const vIdProp = String(v.id || '').trim();
+        const vIndexSku = `${parentKey}-${idx + 1}`;
+        const colorSlug = (v.color || `VAR${idx + 1}`).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`;
+        const vMatrixifySku = `${parentKey}-${colorSlug}-${idx + 1}`;
+
+        const vStockKey = v.stockStatusOverride || (isOutOfStock ? 'out-of-stock' : stockStatus);
+        const vIsArchived = vStockKey === 'archived' || Boolean(v.isArchived) || p.isArchived;
+        const vIsOutOfStock = isOutOfStock || vIsArchived || vStockKey === 'out-of-stock' || Boolean(v.isOutOfStock) || (typeof v.quantity === 'number' && v.quantity <= 0);
+        const vStock = getVariantQuantity(v, p, isOutOfStock);
+        const vStatus = vStockKey || (vIsOutOfStock ? 'out-of-stock' : 'ready-stock');
+        const vInStock = !vIsOutOfStock && vStock > 0;
+
+        let vStockLabel = v.stockStatusLabel;
+        if (!vStockLabel) {
+          if (vIsOutOfStock) {
+            vStockLabel = vIsArchived ? 'Archived (Hidden)' : 'Out of Stock';
+          } else if (vStatus === 'pre-order') {
+            vStockLabel = 'Pre-Order';
+          } else if (vStatus === 'back-soon') {
+            vStockLabel = 'Back Soon';
+          } else {
+            vStockLabel = 'Ready Stock';
+          }
+        }
+
+        const vTitle = v.title || (p.title || p.name ? `${p.title || p.name}${v.color ? ` - ${v.color}` : ''}` : '');
+
+        const variantItem = {
+          title: vTitle,
+          in_stock: vInStock,
+          quantity: vStock,
+          stock_status: vStatus,
+          status: vStatus,
+          is_available: vInStock,
+          stock_label: vStockLabel,
+          updated_at: v.stockLastUpdatedIST || updatedAt,
+        };
+
+        const keysForVariant = new Set();
+        if (vCode) keysForVariant.add(vCode);
+        if (vSkuProp) keysForVariant.add(vSkuProp);
+        if (vIdProp) keysForVariant.add(vIdProp);
+        keysForVariant.add(vIndexSku);
+        keysForVariant.add(vMatrixifySku);
+
+        for (const k of keysForVariant) {
+          if (!k || k === parentKey) continue;
+          const kLower = k.toLowerCase();
+          const isVariantRequested = !requestedSkus || requestedSkus.has(kLower) || isParentDirectlyRequested;
+          if (isVariantRequested) {
+            stockMap[k] = variantItem;
+          }
+        }
+      });
+    } else if (Array.isArray(p.colors) && p.colors.length > 0) {
+      p.colors.forEach((color, idx) => {
+        const c = String(color || `Option ${idx + 1}`).trim();
+        const colorSlug = c.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16) || `V${idx + 1}`;
+        const vIndexSku = `${parentKey}-${idx + 1}`;
+        const vMatrixifySku = `${parentKey}-${colorSlug}-${idx + 1}`;
+        const vTitle = p.title || p.name ? `${p.title || p.name} - ${c}` : '';
+
+        const variantItem = {
+          title: vTitle,
+          in_stock: inStock,
+          quantity: productQty,
+          stock_status: stockStatus,
+          status: stockStatus,
+          is_available: inStock,
+          stock_label: stockLabel,
+          updated_at: updatedAt,
+        };
+
+        const keysForVariant = new Set([vIndexSku, vMatrixifySku]);
+
+        for (const k of keysForVariant) {
+          if (!k || k === parentKey) continue;
+          const kLower = k.toLowerCase();
+          const isVariantRequested = !requestedSkus || requestedSkus.has(kLower) || isParentDirectlyRequested;
+          if (isVariantRequested) {
+            stockMap[k] = variantItem;
+          }
+        }
+      });
+    }
   });
 
   return Response.json({

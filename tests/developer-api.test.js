@@ -26,6 +26,11 @@ import {
   hashApiKey,
   getAuthorizedProducts,
 } from '../app/api/[[...route]]/developerApiHandler.js';
+import {
+  generateStockMap,
+  buildGlobalStockMap,
+  buildStockMap,
+} from '../src/utils/stockMapService.js';
 
 describe('Weave365 B2B Developer API Verification', () => {
   const TEST_KEY_PRO = 'w365_live_pro_key_1111222233334444';
@@ -93,6 +98,7 @@ describe('Weave365 B2B Developer API Verification', () => {
 
   let mockKeys;
   let usageTotals;
+  let sheetStockMapData;
 
   beforeEach(async () => {
     _clearCatalogDataCacheForTesting();
@@ -100,6 +106,7 @@ describe('Weave365 B2B Developer API Verification', () => {
     _clearStockMapCacheForTesting();
     _clearSyncFeedCacheForTesting();
 
+    sheetStockMapData = JSON.stringify(mockStockMap);
     _setCatalogProductsForTesting(mockCatalog);
     _setStockMapForTesting(mockStockMap);
 
@@ -202,7 +209,7 @@ describe('Weave365 B2B Developer API Verification', () => {
             select: () => ({
               eq: (col, id) => ({
                 maybeSingle: async () => {
-                  if (id === 'stock_map') return { data: { csv_data: JSON.stringify(mockStockMap) }, error: null };
+                  if (id === 'stock_map') return { data: sheetStockMapData ? { csv_data: sheetStockMapData } : null, error: null };
                   if (id === 'products_json') return { data: { csv_data: JSON.stringify(mockCatalog) }, error: null };
                   return { data: null, error: null };
                 },
@@ -383,6 +390,66 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.equal(json.stock_map['102001'], 25);
       assert.equal(json.stock_map['102002'], 8);
       assert.equal(json.stock_map['999999'], undefined);
+    });
+
+    it('filters stock map by individual variant SKU query (?skus=102001-1)', async () => {
+      const req = new Request('https://www.weave365.com/api/v1/stock.json?skus=102001-1', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const res = await handleDeveloperApiGet(req, ['v1', 'stock.json']);
+      assert.equal(res.status, 200);
+      const json = await res.json();
+      assert.equal(json.stock_map['102001-1'], 15);
+      assert.equal(json.stock_map['102001'], undefined);
+      assert.equal(json.stock_map['102002'], undefined);
+    });
+
+    it('fallback path: resolves parent and variant SKUs when stock_map cache is missing', async () => {
+      _clearStockMapCacheForTesting();
+      sheetStockMapData = null;
+
+      const req = new Request('https://www.weave365.com/api/v1/stock.json', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const res = await handleDeveloperApiGet(req, ['v1', 'stock.json']);
+      assert.equal(res.status, 200);
+      const json = await res.json();
+      assert.equal(json.status, 'success');
+
+      // Parent SKU resolution
+      assert.ok(json.stock_map['102001'], 'Parent SKU 102001 must exist');
+      assert.equal(json.stock_map['102001'].quantity, 25);
+      assert.equal(json.stock_map['102001'].in_stock, true);
+
+      // Variant SKU resolution (code and index)
+      assert.ok(json.stock_map['102001-1'], 'Variant SKU 102001-1 must exist');
+      assert.equal(json.stock_map['102001-1'].quantity, 15);
+      assert.equal(json.stock_map['102001-1'].in_stock, true);
+
+      assert.ok(json.stock_map['102001-2'], 'Variant SKU 102001-2 must exist');
+      assert.equal(json.stock_map['102001-2'].quantity, 10);
+      assert.equal(json.stock_map['102001-2'].in_stock, true);
+
+      // Matrixify formatted variant SKU
+      assert.ok(json.stock_map['102001-ROYALRED-1'], 'Matrixify variant SKU 102001-ROYALRED-1 must exist');
+      assert.equal(json.stock_map['102001-ROYALRED-1'].quantity, 15);
+    });
+
+    it('fallback path: filters by specific variant SKU (?skus=102001-2)', async () => {
+      _clearStockMapCacheForTesting();
+      sheetStockMapData = null;
+
+      const req = new Request('https://www.weave365.com/api/v1/stock.json?skus=102001-2', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const res = await handleDeveloperApiGet(req, ['v1', 'stock.json']);
+      assert.equal(res.status, 200);
+      const json = await res.json();
+
+      assert.ok(json.stock_map['102001-2'], 'Target variant SKU 102001-2 must exist');
+      assert.equal(json.stock_map['102001-2'].quantity, 10);
+      assert.equal(json.stock_map['102001-1'], undefined, 'Other variant SKU must not be included');
+      assert.equal(json.stock_map['102001'], undefined, 'Parent SKU must not be included when only variant was queried');
     });
   });
 
@@ -622,6 +689,148 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.match(csv, /102001/);
       assert.match(csv, /102002/);
       assert.doesNotMatch(csv, /999999/);
+    });
+  });
+
+  describe('10. Stock Map Service (Parent vs. Variant SKUs)', () => {
+    it('generateStockMap / buildGlobalStockMap / buildStockMap creates keys for parent and all variant SKUs', () => {
+      const stockMap = buildGlobalStockMap(mockCatalog);
+
+      // Parent checks
+      assert.ok(stockMap['102001']);
+      assert.equal(stockMap['102001'].quantity, 25);
+      assert.equal(stockMap['102001'].in_stock, true);
+      assert.equal(stockMap['102001'].stock_status, 'ready-stock');
+
+      // Variant checks (code and index)
+      assert.ok(stockMap['102001-1']);
+      assert.equal(stockMap['102001-1'].quantity, 15);
+      assert.equal(stockMap['102001-1'].in_stock, true);
+      assert.equal(stockMap['102001-1'].stock_status, 'ready-stock');
+
+      assert.ok(stockMap['102001-2']);
+      assert.equal(stockMap['102001-2'].quantity, 10);
+      assert.equal(stockMap['102001-2'].in_stock, true);
+
+      // Matrixify formatted SKU
+      assert.ok(stockMap['102001-ROYALRED-1']);
+      assert.equal(stockMap['102001-ROYALRED-1'].quantity, 15);
+
+      assert.ok(stockMap['102001-EMERALDGREEN-2']);
+      assert.equal(stockMap['102001-EMERALDGREEN-2'].quantity, 10);
+
+      // Product 2
+      assert.ok(stockMap['102002']);
+      assert.equal(stockMap['102002'].quantity, 8);
+      assert.ok(stockMap['102002-1']);
+      assert.equal(stockMap['102002-1'].quantity, 8);
+
+      // Verify buildStockMap alias behaves identically
+      const aliasMap = buildStockMap(mockCatalog);
+      assert.deepEqual(stockMap, aliasMap);
+    });
+
+    it('accurately reflects zero quantity and out-of-stock for individual variants', () => {
+      const catalogWithOosVariant = [
+        {
+          id: '103001',
+          title: 'Organza Floral Saree',
+          quantity: 10,
+          isArchived: false,
+          variants: [
+            { code: '103001-1', color: 'Pastel Pink', quantity: 10 },
+            { code: '103001-2', color: 'Mint Green', quantity: 0 },
+            { code: '103001-3', color: 'Lavender', isOutOfStock: true, quantity: 5 },
+          ],
+        },
+      ];
+
+      const stockMap = generateStockMap(catalogWithOosVariant);
+
+      // In-stock variant
+      assert.equal(stockMap['103001-1'].in_stock, true);
+      assert.equal(stockMap['103001-1'].quantity, 10);
+      assert.equal(stockMap['103001-1'].stock_status, 'ready-stock');
+
+      // Quantity 0 variant
+      assert.equal(stockMap['103001-2'].in_stock, false);
+      assert.equal(stockMap['103001-2'].quantity, 0);
+      assert.equal(stockMap['103001-2'].stock_status, 'out-of-stock');
+      assert.equal(stockMap['103001-2'].stock_label, 'Out of Stock');
+
+      // Explicit isOutOfStock variant
+      assert.equal(stockMap['103001-3'].in_stock, false);
+      assert.equal(stockMap['103001-3'].quantity, 0);
+      assert.equal(stockMap['103001-3'].stock_status, 'out-of-stock');
+    });
+
+    it('cascades parent out-of-stock or archived status to all child variants', () => {
+      const catalogWithOosParent = [
+        {
+          id: '104001',
+          title: 'Chanderi Saree',
+          isOutOfStock: true,
+          variants: [
+            { code: '104001-1', color: 'Yellow', quantity: 10 },
+          ],
+        },
+      ];
+
+      const stockMap = generateStockMap(catalogWithOosParent);
+
+      assert.equal(stockMap['104001'].in_stock, false);
+      assert.equal(stockMap['104001'].quantity, 0);
+
+      assert.equal(stockMap['104001-1'].in_stock, false);
+      assert.equal(stockMap['104001-1'].quantity, 0);
+      assert.equal(stockMap['104001-1'].stock_status, 'out-of-stock');
+    });
+
+    it('respects vendor stock overrides for specific variant SKUs', () => {
+      const overrides = [
+        {
+          product_id: '102001-1',
+          stock_status: 'out-of-stock',
+          stock_status_label: 'Temporarily Unavailable',
+        },
+      ];
+
+      const stockMap = generateStockMap(mockCatalog, overrides);
+
+      // Parent remains ready-stock
+      assert.equal(stockMap['102001'].in_stock, true);
+
+      // Overridden variant becomes out of stock
+      assert.equal(stockMap['102001-1'].in_stock, false);
+      assert.equal(stockMap['102001-1'].quantity, 0);
+      assert.equal(stockMap['102001-1'].stock_status, 'out-of-stock');
+      assert.equal(stockMap['102001-1'].stock_label, 'Temporarily Unavailable');
+
+      // Non-overridden variant remains ready-stock
+      assert.equal(stockMap['102001-2'].in_stock, true);
+      assert.equal(stockMap['102001-2'].quantity, 10);
+      assert.equal(stockMap['102001-2'].stock_status, 'ready-stock');
+    });
+
+    it('generates variant keys from colors array when explicit variants are absent', () => {
+      const catalogColorsOnly = [
+        {
+          id: '105001',
+          title: 'Tussar Silk Saree',
+          quantity: 12,
+          colors: ['Beige', 'Maroon'],
+        },
+      ];
+
+      const stockMap = generateStockMap(catalogColorsOnly);
+
+      assert.ok(stockMap['105001']);
+      assert.ok(stockMap['105001-1']);
+      assert.ok(stockMap['105001-2']);
+      assert.ok(stockMap['105001-BEIGE-1']);
+      assert.ok(stockMap['105001-MAROON-2']);
+      assert.equal(stockMap['105001-1'].quantity, 12);
+      assert.equal(stockMap['105001-1'].in_stock, true);
     });
   });
 });
