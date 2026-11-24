@@ -2307,11 +2307,6 @@ export function CheckoutPage({
                         role="radiogroup"
                         aria-label="Payment method"
                         className={`payment-method-group ${!selectable ? 'single' : ''}`}
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: selectable ? 'repeat(2, minmax(0, 1fr))' : '1fr',
-                          gap: '12px',
-                        }}
                       >
                         {paymentOptions.map((opt) => {
                           const selected = !opt.disabled && paymentGateway === opt.id;
@@ -2339,10 +2334,10 @@ export function CheckoutPage({
                                   {opt.badge}
                                 </div>
                                 <div className="payment-method-info">
-                                  <div className="payment-method-title" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                    <span style={{ wordBreak: 'break-word', minWidth: 0 }}>{opt.title}</span>
+                                  <div className="payment-method-title-row">
+                                    <span className="payment-method-title">{opt.title}</span>
                                     {opt.disabled && (
-                                      <span style={{ fontSize: '0.62rem', fontWeight: '700', color: '#92400e', background: '#fef3c7', padding: '1px 5px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.03em', lineHeight: 1.2, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                      <span className="payment-method-coming-soon">
                                         Coming Soon
                                       </span>
                                     )}

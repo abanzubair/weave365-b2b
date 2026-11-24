@@ -43,26 +43,11 @@ function setCookie(name, value, days = 365) {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${date.toUTCString()}; SameSite=Lax`;
 }
 
-function resolveInitialCountry() {
-  if (typeof window === 'undefined') return ALL_EXISTING_COUNTRIES[0];
-  try {
-    const isManual = localStorage.getItem(STORAGE_KEY_MANUAL) === 'true';
-    const manualCode = isManual ? (localStorage.getItem(STORAGE_KEY_COUNTRY) || getCookie(COOKIE_KEY_COUNTRY)) : null;
-    const middlewareDetected = getCookie(COOKIE_KEY_DETECTED);
-    const candidateCode = (manualCode || middlewareDetected || '').trim().toUpperCase();
-    if (candidateCode) {
-      const match = ALL_EXISTING_COUNTRIES.find((c) => c.code.toUpperCase() === candidateCode && c.enabled !== false);
-      if (match) return match;
-    }
-  } catch (e) {
-    // Ignore storage/cookie errors
-  }
-  return ALL_EXISTING_COUNTRIES[0];
-}
-
 export const useCountryCurrency = create((set, get) => ({
-  // State
-  currentCountry: resolveInitialCountry(), // Immediately respects manual selection or middleware geo cookie
+  // State: always initialize identically on server SSR and initial client hydration
+  // to prevent hydration mismatch. Client storage (localStorage/cookie) is hydrated
+  // immediately upon mount in initCountryCurrency().
+  currentCountry: ALL_EXISTING_COUNTRIES[0],
   countries: ALL_EXISTING_COUNTRIES,
   exchangeRates: DEFAULT_BASELINE_RATES,
   exchangeRateMeta: {
@@ -128,8 +113,17 @@ export const useCountryCurrency = create((set, get) => ({
 
     if (typeof window !== 'undefined') {
       try {
-        savedCode = localStorage.getItem(STORAGE_KEY_COUNTRY) || getCookie(COOKIE_KEY_COUNTRY);
         isManual = localStorage.getItem(STORAGE_KEY_MANUAL) === 'true';
+        const manualCode = isManual ? (localStorage.getItem(STORAGE_KEY_COUNTRY) || getCookie(COOKIE_KEY_COUNTRY)) : null;
+        const middlewareDetected = getCookie(COOKIE_KEY_DETECTED);
+        const candidateCode = (manualCode || middlewareDetected || '').trim().toUpperCase();
+        if (candidateCode) {
+          const match = get().countries.find((c) => c.code.toUpperCase() === candidateCode && c.enabled !== false);
+          if (match && match.code !== get().currentCountry?.code) {
+            set({ currentCountry: match, isManualSelection: isManual });
+          }
+        }
+        savedCode = localStorage.getItem(STORAGE_KEY_COUNTRY) || getCookie(COOKIE_KEY_COUNTRY);
       } catch (e) {
         // Ignore
       }

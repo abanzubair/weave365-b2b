@@ -105,13 +105,14 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
           aria-label="Change country or currency"
+          suppressHydrationWarning
         >
           <span className="mobile-menu-icon">
             <Globe size={20} />
           </span>
           <span className="mobile-menu-label">
             <span>Country &amp; Currency</span>
-            <span className="mobile-menu-curr-pill">
+            <span className="mobile-menu-curr-pill" suppressHydrationWarning>
               <span className="curr-pill-flag">{currentCountry?.flag || '🌐'}</span>
               <span className="curr-pill-code">{currentCountry?.code || 'IN'}</span>
               <span className="curr-pill-sym">({currentCountry?.currency || 'INR'})</span>
@@ -195,8 +196,9 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         title={`Country: ${currentCountry?.name || 'India'} (${currentCountry?.code || 'IN'}) · Currency: ${currentCountry?.currency || 'INR'}`}
+        suppressHydrationWarning
       >
-        <span className="country-trigger-code">
+        <span className="country-trigger-code" suppressHydrationWarning>
           {currentCountry?.code || 'IN'}
         </span>
         <ChevronDown
