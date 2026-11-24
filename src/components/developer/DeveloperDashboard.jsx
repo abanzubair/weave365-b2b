@@ -3176,17 +3176,32 @@ export function DeveloperDashboard({
           >
             {activePlatformTab === 'woocommerce' && (
               <div>
-                {/* 1. Official Plugin Download Card */}
-                <div className="dev-plat-intro" style={{ marginBottom: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                {/* 1. Official Plugin Header & Download */}
+                <div className="dev-plat-intro" style={{ marginBottom: '1.5rem' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
+                    marginBottom: '0.625rem'
+                  }}>
                     <div>
-                      <span className="dev-guide-pill dev-pill-recommended" style={{ marginBottom: '0.35rem', display: 'inline-block' }}>
-                        Official Plugin · Plug &amp; Play
-                      </span>
-                      <h4 className="dev-plat-title" style={{ margin: 0 }}>
-                        Weave365 Live Stock Sync for WooCommerce
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: 'var(--admin-text-muted, #64748b)',
+                        marginBottom: '0.25rem'
+                      }}>
+                        WordPress &bull; WooCommerce Plugin
+                      </div>
+                      <h4 className="dev-plat-title" style={{ margin: 0, fontSize: '1.125rem' }}>
+                        Weave365 Live Stock Sync
                       </h4>
                     </div>
+
                     <a
                       href="/downloads/weave365-woocommerce-sync.zip"
                       download="weave365-woocommerce-sync.zip"
@@ -3195,7 +3210,7 @@ export function DeveloperDashboard({
                         background: '#0f172a',
                         color: '#ffffff',
                         border: '1px solid #0f172a',
-                        padding: '6px 14px',
+                        padding: '7px 16px',
                         borderRadius: '6px',
                         textDecoration: 'none',
                         display: 'inline-flex',
@@ -3209,9 +3224,27 @@ export function DeveloperDashboard({
                       <span>Download Plugin (.zip)</span>
                     </a>
                   </div>
-                  <p>
-                    Download and upload this lightweight WordPress plugin to automatically synchronize authentic Banarasi handloom inventory directly from Varanasi weaver looms. Supports parent &amp; variant SKUs, prevents false restocks, includes concurrency locks, and runs hourly via WordPress WP-Cron.
+
+                  <p style={{ margin: '0 0 0.625rem 0', maxWidth: '720px' }}>
+                    Automated hourly stock and inventory synchronization directly from Varanasi artisan looms. Supports parent &amp; variant SKUs, prevents false restocks, includes transient concurrency locking, and runs hourly via WordPress WP-Cron.
                   </p>
+
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    fontSize: '0.8125rem',
+                    color: 'var(--admin-text-muted, #64748b)',
+                    flexWrap: 'wrap'
+                  }}>
+                    <span>v1.0.0</span>
+                    <span>&bull;</span>
+                    <span>Requires WooCommerce 5.0+</span>
+                    <span>&bull;</span>
+                    <span>PHP 7.4+</span>
+                    <span>&bull;</span>
+                    <span>WordPress 5.6+</span>
+                  </div>
                 </div>
 
                 {/* 2. Step-by-Step Setup */}

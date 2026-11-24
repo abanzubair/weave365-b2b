@@ -1438,58 +1438,90 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
 
             {activePlatformTab === 'woocommerce' && (
               <div>
-                {/* 1. Official Plugin Download Card */}
-                <div style={{
-                  background: '#f8fafc',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  padding: '1.25rem 1.5rem',
-                  marginBottom: '1.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.875rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                {/* 1. Official Plugin Header & Download Action */}
+                <div style={{ marginBottom: '1.75rem' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
+                    marginBottom: '0.75rem'
+                  }}>
                     <div>
-                      <span style={{
-                        display: 'inline-block',
-                        background: '#e0f2fe',
-                        color: '#0369a1',
+                      <div style={{
                         fontSize: '0.75rem',
-                        fontWeight: 700,
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        marginBottom: '4px'
+                        color: '#64748b',
+                        marginBottom: '0.35rem'
                       }}>
-                        Official Plugin • Plug &amp; Play
-                      </span>
-                      <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#0f172a' }}>
-                        Weave365 Live Stock Sync for WooCommerce
+                        WordPress &bull; WooCommerce Plugin
+                      </div>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '1.25rem',
+                        fontWeight: 700,
+                        color: '#0f172a',
+                        letterSpacing: '-0.01em'
+                      }}>
+                        Weave365 Live Stock Sync
                       </h3>
                     </div>
+
                     <a
                       href="/downloads/weave365-woocommerce-sync.zip"
                       download="weave365-woocommerce-sync.zip"
                       className="api-btn primary"
-                      style={{ textDecoration: 'none' }}
+                      style={{
+                        textDecoration: 'none',
+                        gap: '8px',
+                        padding: '8px 18px',
+                        fontSize: '0.875rem',
+                        fontWeight: 600
+                      }}
                     >
                       <Download size={14} />
                       <span>Download Plugin (.zip)</span>
                     </a>
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.9375rem', color: '#475569', lineHeight: 1.6 }}>
-                    Official, lightweight WordPress plugin designed to keep your WooCommerce inventory in continuous synchronization with live Varanasi weaver looms. Supports simple and variable product variations, handles stock status safely without false restocks, includes transient concurrency locking, and runs hourly via WordPress WP-Cron.
+
+                  <p style={{
+                    margin: '0 0 0.75rem 0',
+                    fontSize: '0.9375rem',
+                    color: '#475569',
+                    lineHeight: 1.6,
+                    maxWidth: '740px'
+                  }}>
+                    Automated hourly stock and inventory synchronization for WooCommerce. Connects directly to Varanasi artisan looms with built-in concurrency locking, intelligent dirty-checking (zero redundant database saves), and automatic variation SKU matching.
                   </p>
-                  <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
-                    Requires: WordPress 5.6+, WooCommerce 5.0+, PHP 7.4+ &bull; Package: <code>weave365-woocommerce-sync.zip</code> (v1.0.0)
+
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    fontSize: '0.8125rem',
+                    color: '#64748b',
+                    flexWrap: 'wrap'
+                  }}>
+                    <span>v1.0.0</span>
+                    <span>&bull;</span>
+                    <span>Requires WooCommerce 5.0+</span>
+                    <span>&bull;</span>
+                    <span>PHP 7.4+</span>
+                    <span>&bull;</span>
+                    <span>WordPress 5.6+</span>
+                    <span>&bull;</span>
+                    <code>weave365-woocommerce-sync.zip</code>
                   </div>
                 </div>
 
+                <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '1.75rem 0' }} />
+
                 {/* 2. Step-by-Step Plugin Setup Guide */}
-                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '1.5rem 0 0.75rem 0' }}>
-                  Quick Plugin Setup Guide (Takes 2 Minutes)
+                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 1rem 0' }}>
+                  Setup Guide
                 </h3>
 
                 <div className="api-clean-steps">
@@ -1524,8 +1556,10 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   </div>
                 </div>
 
+                <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '2rem 0 1.5rem 0' }} />
+
                 {/* 3. Catalog Products & SKU Matching Guide */}
-                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '2rem 0 0.75rem 0' }}>
+                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>
                   Initial Product Import &amp; SKU Matching
                 </h3>
                 <p className="api-text">
