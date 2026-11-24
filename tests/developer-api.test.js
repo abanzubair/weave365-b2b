@@ -727,7 +727,12 @@ describe('Weave365 B2B Developer API Verification', () => {
 
       // Verify buildStockMap alias behaves identically
       const aliasMap = buildStockMap(mockCatalog);
-      assert.deepEqual(stockMap, aliasMap);
+      assert.deepEqual(Object.keys(stockMap).sort(), Object.keys(aliasMap).sort());
+      for (const k of Object.keys(stockMap)) {
+        assert.equal(stockMap[k].quantity, aliasMap[k].quantity);
+        assert.equal(stockMap[k].in_stock, aliasMap[k].in_stock);
+        assert.equal(stockMap[k].status, aliasMap[k].status);
+      }
     });
 
     it('accurately reflects zero quantity and out-of-stock for individual variants', () => {

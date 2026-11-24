@@ -3211,7 +3211,7 @@ export function DeveloperDashboard({
                   </div>
 
                   <p style={{ margin: '0 0 0.5rem 0', maxWidth: '720px' }}>
-                    Automated hourly stock and inventory synchronization directly from Varanasi artisan looms. Supports parent &amp; variant SKUs, prevents false restocks, includes transient concurrency locking, and runs hourly via WordPress WP-Cron.
+                    Automated hourly stock and inventory synchronization directly from Varanasi artisan looms. Supports parent &amp; variant SKUs, prevents false restocks, includes transient concurrency locking, hourly WP-Cron sync, and mandatory real-time checkout verification.
                   </p>
 
                   <div style={{
@@ -3222,7 +3222,7 @@ export function DeveloperDashboard({
                     color: 'var(--admin-text-muted, #64748b)',
                     flexWrap: 'wrap'
                   }}>
-                    <span>v1.0.0</span>
+                    <span>v1.1.0</span>
                     <span>&bull;</span>
                     <span>Requires WooCommerce 5.0+</span>
                     <span>&bull;</span>
@@ -3236,7 +3236,7 @@ export function DeveloperDashboard({
                 <section className="dev-guide-section" style={{ borderTop: 'none', paddingTop: 0 }}>
                   <div className="dev-guide-section-header">
                     <h5 className="dev-guide-section-title">
-                      Quick Plugin Setup (3 Steps)
+                      Quick Plugin Setup &amp; Protection
                     </h5>
                   </div>
                   <div className="dev-guide-steps">
@@ -3256,6 +3256,12 @@ export function DeveloperDashboard({
                       <span className="dev-guide-step-badge">3.</span>
                       <div className="dev-guide-step-body">
                         <strong>Verify &amp; Sync:</strong> Click <em>Sync Stock Now</em> to verify immediate connectivity. The plugin will continue running in the background hourly via WP-Cron.
+                      </div>
+                    </div>
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">4.</span>
+                      <div className="dev-guide-step-body">
+                        <strong>Real-Time Checkout Guard (Active):</strong> Whenever a buyer proceeds to checkout or clicks <em>Place Order</em>, the plugin verifies live loom availability before payment. If an item sold out at the loom during the 1-hour cron window, checkout is safely prevented and the local stock is marked Out of Stock.
                       </div>
                     </div>
                   </div>

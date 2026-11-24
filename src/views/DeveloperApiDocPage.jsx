@@ -1494,7 +1494,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     lineHeight: 1.6,
                     maxWidth: '740px'
                   }}>
-                    Automated hourly stock and inventory synchronization for WooCommerce. Connects directly to Varanasi artisan looms with built-in concurrency locking, intelligent dirty-checking (zero redundant database saves), and automatic variation SKU matching.
+                    Automated hourly stock and inventory synchronization for WooCommerce. Connects directly to Varanasi artisan looms with built-in concurrency locking, intelligent dirty-checking (zero redundant database saves), automatic variation SKU matching, and mandatory real-time pre-checkout verification to eliminate overselling.
                   </p>
 
                   <div style={{
@@ -1505,7 +1505,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     color: '#64748b',
                     flexWrap: 'wrap'
                   }}>
-                    <span>v1.0.0</span>
+                    <span>v1.1.0</span>
                     <span>&bull;</span>
                     <span>Requires WooCommerce 5.0+</span>
                     <span>&bull;</span>
@@ -1551,6 +1551,18 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       <h4 className="api-step-heading">Run Initial Sync &amp; Enable Automated Hourly Updates</h4>
                       <p className="api-step-body">
                         Click the <strong>Sync Stock Now</strong> button on the settings page to perform an immediate live stock check. Moving forward, the plugin automatically runs in the background <strong>every hour</strong> via WordPress WP-Cron to maintain authentic inventory levels.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="api-step-row">
+                    <span className="api-step-circle">4</span>
+                    <div className="api-step-content">
+                      <h4 className="api-step-heading">
+                        Real-Time Checkout Stock Guard <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534', background: '#dcfce7', padding: '2px 8px', borderRadius: '9999px', marginLeft: '6px', textTransform: 'uppercase' }}>Built-in &bull; Mandatory</span>
+                      </h4>
+                      <p className="api-step-body">
+                        Whenever an end-customer proceeds to checkout or clicks <em>Place Order</em>, the plugin queries live loom inventory in under 200ms before payment is accepted. If an item sold out at the loom during the 1-hour cron window, checkout is safely prevented, the buyer is notified, and your store inventory is updated immediately.
                       </p>
                     </div>
                   </div>
