@@ -3177,26 +3177,12 @@ export function DeveloperDashboard({
             {activePlatformTab === 'woocommerce' && (
               <div>
                 {/* 1. Official Plugin Header & Download */}
-                <div className="dev-plat-intro" style={{ marginBottom: '1.5rem' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '1rem',
-                    marginBottom: '0.625rem'
-                  }}>
+                <div className="dev-plat-intro" style={{ marginBottom: '1.25rem' }}>
+                  <div className="dev-guide-section-title-wrap" style={{ marginBottom: '0.5rem' }}>
                     <div>
-                      <div style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        color: 'var(--admin-text-muted, #64748b)',
-                        marginBottom: '0.25rem'
-                      }}>
-                        WordPress &bull; WooCommerce Plugin
-                      </div>
+                      <span className="dev-endpoint-tag" style={{ display: 'block', marginBottom: '0.25rem' }}>
+                        WordPress · WooCommerce Plugin
+                      </span>
                       <h4 className="dev-plat-title" style={{ margin: 0, fontSize: '1.125rem' }}>
                         Weave365 Live Stock Sync
                       </h4>
@@ -3205,27 +3191,26 @@ export function DeveloperDashboard({
                     <a
                       href="/downloads/weave365-woocommerce-sync.zip"
                       download="weave365-woocommerce-sync.zip"
-                      className="dev-code-copy-btn"
+                      className="dev-endpoint-copy-btn"
                       style={{
+                        height: '2rem',
+                        padding: '0 0.875rem',
                         background: '#0f172a',
                         color: '#ffffff',
-                        border: '1px solid #0f172a',
-                        padding: '7px 16px',
-                        borderRadius: '6px',
+                        borderColor: '#0f172a',
+                        fontWeight: 600,
                         textDecoration: 'none',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        fontWeight: 600,
-                        fontSize: '0.875rem'
+                        gap: '6px'
                       }}
                     >
-                      <Download size={14} />
+                      <Download size={13} />
                       <span>Download Plugin (.zip)</span>
                     </a>
                   </div>
 
-                  <p style={{ margin: '0 0 0.625rem 0', maxWidth: '720px' }}>
+                  <p style={{ margin: '0 0 0.5rem 0', maxWidth: '720px' }}>
                     Automated hourly stock and inventory synchronization directly from Varanasi artisan looms. Supports parent &amp; variant SKUs, prevents false restocks, includes transient concurrency locking, and runs hourly via WordPress WP-Cron.
                   </p>
 
@@ -3233,7 +3218,7 @@ export function DeveloperDashboard({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    fontSize: '0.8125rem',
+                    fontSize: '0.75rem',
                     color: 'var(--admin-text-muted, #64748b)',
                     flexWrap: 'wrap'
                   }}>
@@ -3249,25 +3234,27 @@ export function DeveloperDashboard({
 
                 {/* 2. Step-by-Step Setup */}
                 <section className="dev-guide-section" style={{ borderTop: 'none', paddingTop: 0 }}>
-                  <h5 className="dev-guide-section-title" style={{ fontSize: '0.9375rem', marginBottom: '0.5rem' }}>
-                    Quick Plugin Setup (3 Steps)
-                  </h5>
-                  <div className="dev-step-list">
-                    <div className="dev-step-row">
-                      <span className="dev-step-num">1</span>
-                      <div className="dev-step-body">
-                        <strong>Install Plugin:</strong> In WordPress Admin, go to <em>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</em>, upload <code>weave365-woocommerce-sync.zip</code>, and click <em>Activate Plugin</em>.
+                  <div className="dev-guide-section-header">
+                    <h5 className="dev-guide-section-title">
+                      Quick Plugin Setup (3 Steps)
+                    </h5>
+                  </div>
+                  <div className="dev-guide-steps">
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">1.</span>
+                      <div className="dev-guide-step-body">
+                        <strong>Install Plugin:</strong> In WordPress Admin, navigate to <em>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</em>. Upload <code>weave365-woocommerce-sync.zip</code> and click <em>Activate Plugin</em>.
                       </div>
                     </div>
-                    <div className="dev-step-row">
-                      <span className="dev-step-num">2</span>
-                      <div className="dev-step-body">
-                        <strong>Enter API Key:</strong> In your WordPress sidebar, go to <em>WooCommerce &rarr; Weave365 Sync</em>, paste your Live API Key (<code>{revealedKey || apiKey?.key_prefix || 'w365_live_...'}</code>), and click <em>Save API Key</em>.
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">2.</span>
+                      <div className="dev-guide-step-body">
+                        <strong>Enter API Key:</strong> In your WordPress sidebar, open <em>WooCommerce &rarr; Weave365 Sync</em>, paste your Live API Key (<code>{revealedKey || apiKey?.key_prefix || 'w365_live_...'}</code>), and click <em>Save API Key</em>.
                       </div>
                     </div>
-                    <div className="dev-step-row">
-                      <span className="dev-step-num">3</span>
-                      <div className="dev-step-body">
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">3.</span>
+                      <div className="dev-guide-step-body">
                         <strong>Verify &amp; Sync:</strong> Click <em>Sync Stock Now</em> to verify immediate connectivity. The plugin will continue running in the background hourly via WP-Cron.
                       </div>
                     </div>
@@ -3281,31 +3268,48 @@ export function DeveloperDashboard({
                       <h5 className="dev-guide-section-title">
                         Initial Product Import (CSV Feed)
                       </h5>
+                      <span className="dev-endpoint-tag">
+                        Catalog SKU Sync
+                      </span>
                     </div>
                     <p className="dev-guide-section-desc">
                       Products are matched by SKU (e.g. <code>102001</code> or <code>102001-1</code>). Use this URL to import products into WooCommerce:
                     </p>
                   </div>
 
-                  <div className="dev-feed-box">
-                    <span className="dev-feed-method">CSV</span>
+                  <div className="dev-endpoint-bar">
+                    <span className="dev-endpoint-tag">CSV Feed</span>
                     <input
                       type="text"
                       readOnly
                       value={`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_API_KEY'}`}
-                      className="dev-feed-input"
+                      className="dev-endpoint-url"
+                      aria-label="WooCommerce CSV Catalog Feed URL"
                     />
                     <button
                       type="button"
-                      className={`dev-feed-copy-btn ${copiedField === 'woo-csv' ? 'copied' : ''}`}
+                      className={`dev-endpoint-copy-btn ${copiedField === 'woo-csv' ? 'copied' : ''}`}
                       onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_API_KEY'}`, 'woo-csv')}
+                      aria-label="Copy WooCommerce CSV Feed URL"
                     >
                       {copiedField === 'woo-csv' ? <Check size={13} /> : <Copy size={13} />}
                       <span>{copiedField === 'woo-csv' ? 'Copied' : 'Copy CSV URL'}</span>
                     </button>
                   </div>
-                  <div className="dev-guide-note">
-                    <strong>Importing into WooCommerce:</strong> In WordPress Admin, open <em>Products &rarr; Import</em>, upload the downloaded CSV, ensure <code>SKU</code>, <code>Name</code>, <code>Regular price</code>, and <code>Images</code> columns are mapped, and click <em>Run the Importer</em>.
+
+                  <div className="dev-guide-steps" style={{ marginTop: '0.625rem' }}>
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">&bull;</span>
+                      <div className="dev-guide-step-body">
+                        Open the URL above in your browser to download <code>weave365-catalog.csv</code>.
+                      </div>
+                    </div>
+                    <div className="dev-guide-step">
+                      <span className="dev-guide-step-badge">&bull;</span>
+                      <div className="dev-guide-step-body">
+                        In WordPress Admin, open <strong>Products &rarr; Import</strong>, upload the downloaded CSV, ensure <code>SKU</code>, <code>Name</code>, <code>Regular price</code>, and <code>Images</code> columns are mapped, and click <strong>Run the Importer</strong>.
+                      </div>
+                    </div>
                   </div>
                 </section>
               </div>
