@@ -241,7 +241,7 @@ export function renderBuyerConfirmationEmailHtml({
                       PAYMENT STATUS
                     </div>
                     <div style="font-size: 13px; font-weight: 500; color: #18181b;">
-                      Verified &middot; ${order.payment_method === 'phonepe' ? 'PhonePe' : 'Cashfree PG'} (${orderCurrency})
+                      Verified &middot; ${order.payment_method === 'paypal' ? 'PayPal' : order.payment_method === 'bank_transfer' ? 'SBI International Wire' : order.payment_method === 'phonepe' ? 'PhonePe' : 'Cashfree PG'} (${orderCurrency})
                     </div>
                   </td>
                 </tr>
@@ -509,7 +509,13 @@ export async function sendBuyerOrderConfirmationEmail({
         const recipientName = deliveryAddr?.recipient_name || orderRecord.buyer_name || orderRecord.dropship_recipient_name || 'Valued Buyer';
         const orderCurrency = detectOrderCurrency(orderRecord);
         const totalAmountFormatted = formatCurrency(orderRecord.total_amount, orderCurrency);
-        const paymentGatewayLabel = orderRecord.payment_method === 'phonepe' ? 'PhonePe' : 'Cashfree PG';
+        const paymentGatewayLabel = orderRecord.payment_method === 'paypal'
+          ? 'PayPal'
+          : orderRecord.payment_method === 'bank_transfer'
+            ? 'SBI International Wire'
+            : orderRecord.payment_method === 'phonepe'
+              ? 'PhonePe'
+              : 'Cashfree PG';
         const adminSubject = `🎉 New Order #${orderNumber}: ${recipientName} (${totalAmountFormatted}) - ${paymentGatewayLabel}`;
 
         const adminRes = await fetch('https://api.resend.com/emails', {

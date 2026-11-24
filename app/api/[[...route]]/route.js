@@ -39,6 +39,16 @@ import {
   handleWebhook as phonepeWebhook,
 } from './phonepeHandler.js';
 import {
+  handleCreateOrder as paypalCreateOrder,
+  handleCaptureOrder as paypalCaptureOrder,
+  handleCancelOrder as paypalCancelOrder,
+  handleWebhook as paypalWebhook,
+} from './paypalHandler.js';
+import {
+  handleCreateOrder as bankTransferCreateOrder,
+  handleSubmitProof as bankTransferSubmitProof,
+} from './bankTransferHandler.js';
+import {
   handleAdminCouponsGet,
   handleAdminCouponsPost,
   handleAdminCouponsDelete,
@@ -67,6 +77,7 @@ export async function GET(request, { params }) {
   if (routeKey === 'vendor-registration') return vendorRegistrationGet(request);
   if (routeKey === 'cashfree/webhook') return Response.json({ status: 'active', service: 'cashfree-webhook' }, { status: 200 });
   if (routeKey === 'phonepe/webhook') return Response.json({ status: 'active', service: 'phonepe-webhook' }, { status: 200 });
+  if (routeKey === 'paypal/webhook') return Response.json({ status: 'active', service: 'paypal-webhook' }, { status: 200 });
 
   return Response.json({ error: `GET /api/${routeKey} Not Found` }, { status: 404 });
 }
@@ -92,6 +103,12 @@ export async function POST(request, { params }) {
   if (routeKey === 'phonepe/create-order') return phonepeCreateOrder(request);
   if (routeKey === 'phonepe/verify-order') return phonepeVerifyOrder(request);
   if (routeKey === 'phonepe/webhook') return phonepeWebhook(request);
+  if (routeKey === 'paypal/create-order') return paypalCreateOrder(request);
+  if (routeKey === 'paypal/capture-order') return paypalCaptureOrder(request);
+  if (routeKey === 'paypal/cancel-order') return paypalCancelOrder(request);
+  if (routeKey === 'paypal/webhook') return paypalWebhook(request);
+  if (routeKey === 'bank-transfer/create-order') return bankTransferCreateOrder(request);
+  if (routeKey === 'bank-transfer/submit-proof') return bankTransferSubmitProof(request);
   if (routeKey === 'country-pricing' || routeKey === 'admin/country-pricing') return countryPricingPost(request);
   if (routeKey === 'contact') return contactPost(request);
   if (routeKey === 'analytics') return analyticsPost(request);

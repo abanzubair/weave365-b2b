@@ -167,7 +167,14 @@ export async function handleCreateOrder(request) {
       );
     }
 
+    const orderCountryCode = String(delivery_details?.country_code || country_code || 'IN').trim().toUpperCase();
     const orderCurrency = String(currency || 'INR').toUpperCase();
+    if (orderCountryCode !== 'IN' || orderCurrency !== 'INR') {
+      return Response.json(
+        { success: false, error: 'Cashfree is enabled for Indian (INR) payments only. International orders use PayPal or International Bank Transfer.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
     const currencySymbol = currency_symbol || (orderCurrency === 'INR' ? '₹' : orderCurrency === 'USD' ? '$' : orderCurrency === 'EUR' ? '€' : orderCurrency === 'GBP' ? '£' : `${orderCurrency} `);
     const requestedAmount = Number(Number(total_amount).toFixed(2));
     const fallbackInrAmount = Number(Number(base_inr_total || total_amount).toFixed(2));

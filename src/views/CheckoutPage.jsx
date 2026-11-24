@@ -45,8 +45,18 @@ function getCashfreeSdk() {
   return cashfreeSdkPromise;
 }
 
-// PhonePe is shown at checkout only once keys are configured and this flag is set at build time.
+// Gateway feature flags (set at build time once accounts/details are active)
 const PHONEPE_ENABLED = process.env.NEXT_PUBLIC_PHONEPE_ENABLED === 'true';
+const PAYPAL_ENABLED = process.env.NEXT_PUBLIC_PAYPAL_ENABLED === 'true';
+const BANK_TRANSFER_ENABLED = process.env.NEXT_PUBLIC_BANK_TRANSFER_ENABLED === 'true';
+
+// PayPal Orders v2 cross-border supported currencies for Indian merchants;
+// unsupported currencies (e.g. AED, QAR, SAR, KWD, BRL, MYR) automatically settle in USD.
+const PAYPAL_SUPPORTED_CURRENCIES = new Set([
+  'USD', 'AUD', 'CAD', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF',
+  'ILS', 'JPY', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN',
+  'GBP', 'SGD', 'SEK', 'CHF', 'THB',
+]);
 
 export function CheckoutPage({
   items = [],
@@ -121,10 +131,46 @@ export function CheckoutPage({
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
   const [orderError, setOrderError] = useState('');
-  // Payment gateway chosen by the customer: 'phonepe' | 'cashfree'
+  const isIndiaOrder =
+    (currentCountry?.code || 'IN').toUpperCase() === 'IN' &&
+    (currentCountry?.currency || 'INR').toUpperCase() === 'INR';
+
+  const hasInternationalGateway = PAYPAL_ENABLED || BANK_TRANSFER_ENABLED;
+  const defaultIntlGateway = PAYPAL_ENABLED
+    ? 'paypal'
+    : BANK_TRANSFER_ENABLED
+      ? 'bank_transfer'
+      : '';
+
+  // Payment gateway chosen by the customer:
+  // - India (INR): 'phonepe' | 'cashfree'
+  // - International: 'paypal' | 'bank_transfer' (or '' while coming soon)
   const [paymentGateway, setPaymentGateway] = useState(
-    PHONEPE_ENABLED ? 'phonepe' : 'cashfree'
+    isIndiaOrder ? (PHONEPE_ENABLED ? 'phonepe' : 'cashfree') : defaultIntlGateway
   );
+
+  // Bank transfer wire proof state on confirmation screen
+  const [wireReferenceInput, setWireReferenceInput] = useState('');
+  const [wireSenderBankInput, setWireSenderBankInput] = useState('');
+  const [wireProofStatus, setWireProofStatus] = useState({ state: 'idle', message: '' });
+  const [copiedBankField, setCopiedBankField] = useState('');
+
+  // Automatically keep payment gateway aligned when country switches between India and International
+  useEffect(() => {
+    if (isIndiaOrder) {
+      if (paymentGateway !== 'phonepe' && paymentGateway !== 'cashfree') {
+        setPaymentGateway(PHONEPE_ENABLED ? 'phonepe' : 'cashfree');
+      }
+    } else {
+      if (paymentGateway === 'phonepe' || paymentGateway === 'cashfree' || !paymentGateway) {
+        setPaymentGateway(defaultIntlGateway);
+      } else if (paymentGateway === 'paypal' && !PAYPAL_ENABLED) {
+        setPaymentGateway(defaultIntlGateway);
+      } else if (paymentGateway === 'bank_transfer' && !BANK_TRANSFER_ENABLED) {
+        setPaymentGateway(defaultIntlGateway);
+      }
+    }
+  }, [isIndiaOrder, paymentGateway, defaultIntlGateway]);
 
   // Warm up payment gateway SDK in background while user fills out delivery info
   useEffect(() => {
@@ -142,12 +188,65 @@ export function CheckoutPage({
   const [couponSuccessMessage, setCouponSuccessMessage] = useState('');
 
   // Auto-verify if customer returned from a gateway redirect
-  // (?order_id= for Cashfree, ?pp_order_id= for PhonePe)
+  // (?token=&paypal_order= for PayPal, ?order_id= for Cashfree, ?pp_order_id= for PhonePe)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const urlParams = new URLSearchParams(window.location.search);
+    const paypalCancelled = urlParams.get('paypal_cancelled');
+    const paypalDbOrderId = urlParams.get('paypal_order');
+    const paypalToken = urlParams.get('token');
     const phonePeReturnId = urlParams.get('pp_order_id');
     const returnOrderId = urlParams.get('order_id');
+
+    if (paypalCancelled && !orderSuccess) {
+      setOrderError('PayPal payment was cancelled. You can retry whenever you are ready.');
+      if (paypalDbOrderId) {
+        fetch('/api/paypal/cancel-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ db_order_id: paypalDbOrderId }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+      return;
+    }
+
+    if (paypalToken && paypalDbOrderId && !orderSuccess) {
+      setIsSubmitting(true);
+      fetch('/api/paypal/capture-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paypal_order_id: paypalToken,
+          db_order_id: paypalDbOrderId,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success && data.is_paid) {
+            setCreatedOrder({
+              id: data.db_order_id || paypalDbOrderId,
+              orderNumber: data.order_number || (data.db_order_id || paypalDbOrderId).slice(0, 8).toUpperCase(),
+              total: data.order_amount || total,
+              currency: data.order_currency || currentCountry?.currency || 'USD',
+              currencySymbol: data.order_currency === 'USD' ? '$' : (currentCountry?.currencySymbol || '$'),
+              paymentMethod: 'paypal',
+              deliveryDetails: {},
+              cfOrderId: `PAYPAL_${paypalToken}`,
+            });
+            if (clearCart) clearCart();
+            setOrderSuccess(true);
+          } else {
+            setOrderError(data.error || 'PayPal payment was not completed. You can retry whenever you are ready.');
+          }
+        })
+        .catch((err) => {
+          console.error('[PayPal] Return capture error:', err);
+          setOrderError('We could not confirm your PayPal payment yet. Please check your order status or retry.');
+        })
+        .finally(() => setIsSubmitting(false));
+      return;
+    }
 
     if (phonePeReturnId && !orderSuccess) {
       setIsSubmitting(true);
@@ -742,6 +841,112 @@ export function CheckoutPage({
     }
   };
 
+  // PayPal: create international order on server, then redirect buyer to PayPal checkout
+  const handlePayPalCheckout = async (deliveryDetails) => {
+    setIsSubmitting(true);
+    setOrderError('');
+
+    await saveAddressIfRequested(deliveryDetails);
+
+    try {
+      const res = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildCreateOrderBody(deliveryDetails)),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.approve_url) {
+        throw new Error(data.error || 'Failed to initialize PayPal checkout.');
+      }
+
+      window.location.assign(data.approve_url);
+    } catch (err) {
+      console.error('[handlePayPalCheckout] Error:', err);
+      setOrderError(err.message || 'PayPal payment initiation failed. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // SBI Direct Bank Transfer (International SWIFT / Wire)
+  const handleBankTransferCheckout = async (deliveryDetails) => {
+    setIsSubmitting(true);
+    setOrderError('');
+
+    await saveAddressIfRequested(deliveryDetails);
+
+    try {
+      const res = await fetch('/api/bank-transfer/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildCreateOrderBody(deliveryDetails)),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create bank transfer order.');
+      }
+
+      setCreatedOrder({
+        id: data.db_order_id,
+        orderNumber: data.order_number,
+        total: data.order_amount || total,
+        currency: data.order_currency || currentCountry?.currency || 'USD',
+        currencySymbol: currentCountry?.currencySymbol || '$',
+        paymentMethod: 'bank_transfer',
+        deliveryDetails,
+        bankDetails: data.bank_details,
+        purposeNote: data.purpose_note,
+        couponCode: appliedCoupon?.code,
+        couponDiscount: couponDiscount,
+      });
+
+      if (clearCart) clearCart();
+      setOrderSuccess(true);
+    } catch (err) {
+      console.error('[handleBankTransferCheckout] Error:', err);
+      setOrderError(err.message || 'Failed to place bank transfer order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitWireProof = async (e) => {
+    e?.preventDefault();
+    if (!wireReferenceInput.trim()) {
+      setWireProofStatus({ state: 'error', message: 'Please enter your SWIFT / bank wire reference number.' });
+      return;
+    }
+    setWireProofStatus({ state: 'submitting', message: '' });
+    try {
+      const res = await fetch('/api/bank-transfer/submit-proof', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          db_order_id: createdOrder?.id,
+          order_number: createdOrder?.orderNumber,
+          wire_reference: wireReferenceInput.trim(),
+          sender_bank: wireSenderBankInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Could not save transfer reference.');
+      }
+      setWireProofStatus({ state: 'submitted', message: data.message || 'Transfer reference saved! Our team will verify with SBI.' });
+    } catch (err) {
+      setWireProofStatus({ state: 'error', message: err.message || 'Failed to submit transfer reference.' });
+    }
+  };
+
+  const copyBankField = (label, value) => {
+    if (!value || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    navigator.clipboard.writeText(String(value)).then(() => {
+      setCopiedBankField(label);
+      setTimeout(() => setCopiedBankField(''), 2000);
+    }).catch(() => {});
+  };
+
   // PhonePe: create order on the server, then redirect the customer to PhonePe's hosted checkout.
   // Verification happens when they return to /checkout?pp_order_id=... (see the effect above).
   const handlePhonePeCheckout = async (deliveryDetails) => {
@@ -911,6 +1116,17 @@ export function CheckoutPage({
     const deliveryDetails = getValidatedDeliveryDetails();
     if (!deliveryDetails) return;
 
+    if (!isIndiaOrder) {
+      if (paymentGateway === 'paypal' && PAYPAL_ENABLED) {
+        handlePayPalCheckout(deliveryDetails);
+      } else if (paymentGateway === 'bank_transfer' && BANK_TRANSFER_ENABLED) {
+        handleBankTransferCheckout(deliveryDetails);
+      } else {
+        setOrderError('International online payments (PayPal & Bank Wire) are coming soon. Please contact our export desk on WhatsApp to complete this order.');
+      }
+      return;
+    }
+
     if (paymentGateway === 'phonepe' && PHONEPE_ENABLED) {
       handlePhonePeCheckout(deliveryDetails);
     } else {
@@ -1004,7 +1220,9 @@ export function CheckoutPage({
           </div>
 
           <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0f172a', margin: '0 0 6px 0', letterSpacing: '-0.025em' }}>
-            Payment Confirmed & Order Placed!
+            {createdOrder?.paymentMethod === 'bank_transfer'
+              ? 'Order Placed — Awaiting Bank Transfer'
+              : 'Payment Confirmed & Order Placed!'}
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
@@ -1042,7 +1260,7 @@ export function CheckoutPage({
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
-              <span style={{ color: '#64748b' }}>Amount Paid</span>
+              <span style={{ color: '#64748b' }}>{createdOrder?.paymentMethod === 'bank_transfer' ? 'Amount Due' : 'Amount Paid'}</span>
               <span style={{ fontWeight: '700', color: '#166534', fontSize: '0.96rem' }}>
                 {formatMoney(orderTotal, { currency: createdOrder?.currency || currentCountry?.currency, fractionDigits: 2 })}
               </span>
@@ -1073,6 +1291,90 @@ export function CheckoutPage({
               </div>
             )}
           </div>
+
+          {/* SBI International Wire / Proforma Invoice Box */}
+          {createdOrder?.paymentMethod === 'bank_transfer' && createdOrder?.bankDetails && (
+            <div style={{ textAlign: 'left', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '14px', marginBottom: '16px', fontSize: '0.82rem' }}>
+              <div style={{ fontWeight: '700', color: '#0f172a', marginBottom: '8px', fontSize: '0.88rem' }}>
+                SBI International Wire Details (SWIFT)
+              </div>
+              {[
+                ['Bank', createdOrder.bankDetails.bankName],
+                ['Beneficiary', createdOrder.bankDetails.beneficiaryName],
+                ['Account No.', createdOrder.bankDetails.accountNumber],
+                ['SWIFT / BIC', createdOrder.bankDetails.swiftCode],
+                ['IFSC Code', createdOrder.bankDetails.ifscCode],
+                ['Branch', createdOrder.bankDetails.branchName],
+                ['Bank Address', createdOrder.bankDetails.bankAddress],
+                ['Exporter IEC', createdOrder.bankDetails.iecCode],
+              ].filter(([, val]) => Boolean(val)).map(([label, val]) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', padding: '4px 0', borderBottom: '1px dashed #e2e8f0' }}>
+                  <span style={{ color: '#64748b' }}>{label}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <strong style={{ color: '#0f172a', fontFamily: label === 'Account No.' || label === 'SWIFT / BIC' || label === 'IFSC Code' ? 'monospace' : 'inherit' }}>{val}</strong>
+                    <button
+                      type="button"
+                      onClick={() => copyBankField(label, val)}
+                      style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: 'pointer', color: '#334155' }}
+                    >
+                      {copiedBankField === label ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {createdOrder.purposeNote && (
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px', marginTop: '10px' }}>
+                  <div style={{ fontWeight: '700', color: '#92400e', fontSize: '0.76rem', marginBottom: '4px' }}>
+                    Mandatory Purpose / Reference Note (paste in your bank wire):
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: '0.76rem', color: '#78350f', wordBreak: 'break-word' }}>{createdOrder.purposeNote}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyBankField('Purpose', createdOrder.purposeNote)}
+                      style={{ fontSize: '0.7rem', padding: '2px 7px', borderRadius: '4px', border: '1px solid #f59e0b', background: '#ffffff', cursor: 'pointer', color: '#92400e', flexShrink: 0 }}
+                    >
+                      {copiedBankField === 'Purpose' ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Wire / SWIFT Reference Proof */}
+              <form onSubmit={handleSubmitWireProof} style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontWeight: '600', color: '#0f172a', fontSize: '0.8rem' }}>Already sent the wire? Submit your transfer reference:</div>
+                <input
+                  type="text"
+                  placeholder="SWIFT / Wire Reference Number (e.g. UTR / MT103 Ref)"
+                  value={wireReferenceInput}
+                  onChange={(e) => setWireReferenceInput(e.target.value)}
+                  disabled={wireProofStatus.state === 'submitted'}
+                  style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Sender Bank Name (optional)"
+                  value={wireSenderBankInput}
+                  onChange={(e) => setWireSenderBankInput(e.target.value)}
+                  disabled={wireProofStatus.state === 'submitted'}
+                  style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
+                />
+                <button
+                  type="submit"
+                  disabled={wireProofStatus.state === 'submitting' || wireProofStatus.state === 'submitted'}
+                  style={{ padding: '8px 12px', borderRadius: '6px', border: 'none', background: wireProofStatus.state === 'submitted' ? '#16a34a' : '#0f172a', color: '#ffffff', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer' }}
+                >
+                  {wireProofStatus.state === 'submitting' ? 'Submitting...' : wireProofStatus.state === 'submitted' ? 'Reference Submitted' : 'Submit Transfer Reference'}
+                </button>
+                {wireProofStatus.message && (
+                  <div style={{ fontSize: '0.76rem', color: wireProofStatus.state === 'error' ? '#b91c1c' : '#166534' }}>
+                    {wireProofStatus.message}
+                  </div>
+                )}
+              </form>
+            </div>
+          )}
 
           {/* Contextual Notice */}
           <div
@@ -1923,38 +2225,80 @@ export function CheckoutPage({
                 </div>
 
                 {(() => {
-                  const paymentOptions = [
-                    ...(PHONEPE_ENABLED
-                      ? [{
-                          id: 'phonepe',
-                          title: 'PhonePe',
+                  const activeCurrency = (currentCountry?.currency || 'INR').toUpperCase();
+                  const isPayPalUsdFallback = !isIndiaOrder && !PAYPAL_SUPPORTED_CURRENCIES.has(activeCurrency);
+                  const usdRate = Number(exchangeRates?.USD || DEFAULT_BASELINE_RATES.USD || 0.0118);
+                  const paypalUsdAmount = isPayPalUsdFallback
+                    ? roundCurrency(markedUpInrTotal * usdRate, 'USD')
+                    : total;
+
+                  const paymentOptions = !isIndiaOrder
+                    ? [
+                        {
+                          id: 'paypal',
+                          title: isPayPalUsdFallback
+                            ? `PayPal (Settled in USD · ${formatMoney(paypalUsdAmount, { currency: 'USD', fractionDigits: 2 })})`
+                            : 'PayPal (Cards & International)',
                           badge: (
                             <img
-                              src="/assets/payment-methods/phonepe.svg"
-                              alt="PhonePe"
+                              src="/assets/payment-methods/paypal.svg"
+                              alt="PayPal"
                               width={32}
                               height={32}
                               style={{ width: '32px', height: '32px', objectFit: 'contain' }}
                               loading="lazy"
                             />
                           ),
-                        }]
-                      : []),
-                    {
-                      id: 'cashfree',
-                      title: 'Cashfree',
-                      badge: (
-                        <img
-                          src="/assets/payment-methods/cashfree.svg"
-                          alt="Cashfree"
-                          width={32}
-                          height={32}
-                          style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-                          loading="lazy"
-                        />
-                      ),
-                    },
-                  ];
+                          disabled: !PAYPAL_ENABLED,
+                        },
+                        {
+                          id: 'bank_transfer',
+                          title: 'Bank Wire (SBI SWIFT)',
+                          badge: (
+                            <img
+                              src="/assets/payment-methods/bank-transfer.svg"
+                              alt="SBI Bank Transfer"
+                              width={32}
+                              height={32}
+                              style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                              loading="lazy"
+                            />
+                          ),
+                          disabled: !BANK_TRANSFER_ENABLED,
+                        },
+                      ]
+                    : [
+                        ...(PHONEPE_ENABLED
+                          ? [{
+                              id: 'phonepe',
+                              title: 'PhonePe',
+                              badge: (
+                                <img
+                                  src="/assets/payment-methods/phonepe.svg"
+                                  alt="PhonePe"
+                                  width={32}
+                                  height={32}
+                                  style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                                  loading="lazy"
+                                />
+                              ),
+                            }]
+                          : []),
+                        {
+                          id: 'cashfree',
+                          title: 'Cashfree',
+                          badge: (
+                            <img
+                              src="/assets/payment-methods/cashfree.svg"
+                              alt="Cashfree"
+                              width={32}
+                              height={32}
+                              style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                              loading="lazy"
+                            />
+                          ),
+                        },
+                      ];
                   const selectable = paymentOptions.length > 1;
 
                   return (
@@ -1970,12 +2314,12 @@ export function CheckoutPage({
                         }}
                       >
                         {paymentOptions.map((opt) => {
-                          const selected = paymentGateway === opt.id;
+                          const selected = !opt.disabled && paymentGateway === opt.id;
                           return (
                             <label
                               key={opt.id}
                               id={`payment-option-${opt.id}`}
-                              className={`payment-method-card ${selectable && selected ? 'selected' : ''}`}
+                              className={`payment-method-card ${selectable && selected ? 'selected' : ''} ${opt.disabled ? 'disabled' : ''}`}
                             >
                               <div className="payment-method-left">
                                 {selectable && (
@@ -1984,7 +2328,8 @@ export function CheckoutPage({
                                     name="payment_gateway"
                                     value={opt.id}
                                     checked={selected}
-                                    onChange={() => setPaymentGateway(opt.id)}
+                                    disabled={opt.disabled}
+                                    onChange={() => !opt.disabled && setPaymentGateway(opt.id)}
                                   />
                                 )}
                                 <div
@@ -1994,8 +2339,13 @@ export function CheckoutPage({
                                   {opt.badge}
                                 </div>
                                 <div className="payment-method-info">
-                                  <div className="payment-method-title">
-                                    {opt.title}
+                                  <div className="payment-method-title" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                    <span style={{ wordBreak: 'break-word', minWidth: 0 }}>{opt.title}</span>
+                                    {opt.disabled && (
+                                      <span style={{ fontSize: '0.62rem', fontWeight: '700', color: '#92400e', background: '#fef3c7', padding: '1px 5px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.03em', lineHeight: 1.2, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                        Coming Soon
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -2004,9 +2354,25 @@ export function CheckoutPage({
                         })}
                       </div>
 
-                      {paymentGateway === 'phonepe' && PHONEPE_ENABLED && (currentCountry?.currency || 'INR').toUpperCase() !== 'INR' && (
-                        <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '6px', lineHeight: '1.4' }}>
-                          * PhonePe settles in INR (charged as ₹{markedUpInrTotal.toLocaleString('en-IN')}).
+                      {!isIndiaOrder && !hasInternationalGateway && (
+                        <div style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '10px', lineHeight: '1.45', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                          <span>* International online checkout is launching shortly.</span>
+                          <a
+                            href={`https://wa.me/${(String(storeConfig?.whatsapp || '9919101369').replace(/\D/g, '').length === 10 ? '91' : '') + String(storeConfig?.whatsapp || '9919101369').replace(/\D/g, '')}?text=${encodeURIComponent(
+                              `Hello ${storeConfig.name}, I would like to place an international order from ${currentCountry?.name || 'Overseas'} (${formatMoney(total, { currency: activeCurrency, fractionDigits: 2 })}). Please share payment details.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#16a34a', fontWeight: '600', textDecoration: 'none' }}
+                          >
+                            Contact Export Desk on WhatsApp &rarr;
+                          </a>
+                        </div>
+                      )}
+
+                      {!isIndiaOrder && paymentGateway === 'bank_transfer' && (
+                        <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '8px', lineHeight: '1.45' }}>
+                          * Place your order to receive our State Bank of India (SBI) SWIFT details and Proforma Invoice. Orders dispatch once the wire clears (1–3 business days).
                         </div>
                       )}
                     </>
@@ -2037,15 +2403,24 @@ export function CheckoutPage({
                 <button
                   type="submit"
                   className="checkout-submit-btn"
-                  disabled={isSubmitting}
-                  style={{ marginTop: '18px' }}
+                  disabled={isSubmitting || (!isIndiaOrder && !hasInternationalGateway)}
+                  style={{
+                    marginTop: '18px',
+                    ...(!isIndiaOrder && !hasInternationalGateway ? { opacity: 0.65, cursor: 'not-allowed' } : {}),
+                  }}
                 >
                   {isSubmitting ? (
                     'Processing...'
+                  ) : !isIndiaOrder && !hasInternationalGateway ? (
+                    'International Payments Coming Soon'
+                  ) : !isIndiaOrder && paymentGateway === 'bank_transfer' ? (
+                    <>Place Order (Bank Transfer · {formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })}) <ArrowRight size={17} /></>
+                  ) : !isIndiaOrder ? (
+                    <>Pay {!PAYPAL_SUPPORTED_CURRENCIES.has((currentCountry?.currency || 'USD').toUpperCase())
+                      ? `${formatMoney(roundCurrency(markedUpInrTotal * Number(exchangeRates?.USD || DEFAULT_BASELINE_RATES.USD || 0.0118), 'USD'), { currency: 'USD', fractionDigits: 2 })} via PayPal`
+                      : `${formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })} via PayPal`} <ArrowRight size={17} /></>
                   ) : (
-                    <>Pay {paymentGateway === 'phonepe' && PHONEPE_ENABLED && (currentCountry?.currency || 'INR').toUpperCase() !== 'INR'
-                      ? formatMoney(markedUpInrTotal, { currency: 'INR', fractionDigits: 2 })
-                      : formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })} <ArrowRight size={17} /></>
+                    <>Pay {formatMoney(total, { currency: 'INR', fractionDigits: 2 })} <ArrowRight size={17} /></>
                   )}
                 </button>
               </form>

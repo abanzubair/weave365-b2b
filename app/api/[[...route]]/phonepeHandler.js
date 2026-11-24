@@ -303,9 +303,16 @@ export async function handleCreateOrder(request) {
       );
     }
 
-    // PhonePe is INR-only: foreign-currency carts are charged at the marked-up INR total
+    // PhonePe is restricted to domestic Indian (INR) orders
+    const orderCountryCode = String(delivery_details?.country_code || body.country_code || 'IN').trim().toUpperCase();
     const requestedCurrency = String(currency || 'INR').toUpperCase();
-    const isInr = requestedCurrency === 'INR';
+    if (orderCountryCode !== 'IN' || requestedCurrency !== 'INR') {
+      return Response.json(
+        { success: false, error: 'PhonePe is enabled for Indian (INR) payments only. International orders use PayPal or International Bank Transfer.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    const isInr = true;
     const chargeInr = Number(Number(isInr ? total_amount : (base_inr_total || 0)).toFixed(2));
     const resolvedShippingInr = isInr
       ? (Number(shipping_amount) || 0)
