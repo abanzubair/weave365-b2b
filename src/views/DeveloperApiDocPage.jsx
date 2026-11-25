@@ -33,10 +33,7 @@ import {
   ShieldCheck,
   Download,
   ExternalLink,
-  Info,
-  AlertTriangle,
-  Lock,
-  RefreshCw
+  AlertTriangle
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
@@ -109,6 +106,48 @@ const PLATFORM_TABS = [
   { id: 'nodejs', label: 'Node.js / JS', Icon: Terminal },
   { id: 'curl', label: 'cURL / Shell', Icon: Code2 },
 ];
+
+const WOO_MARKUP_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: 'percent', label: 'Percentage (%)' },
+  { value: 'flat', label: 'Fixed (₹)' },
+];
+
+const WOO_ROUND_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: '10', label: 'Nearest ₹10' },
+  { value: '50', label: 'Nearest ₹50' },
+  { value: '99', label: 'End in ₹99' },
+];
+
+function SegmentedRadioGroup({ legend, name, idPrefix, options, value, onChange }) {
+  return (
+    <fieldset className="api-fieldset">
+      <legend className="api-legend">{legend}</legend>
+      <div className="api-segmented-track">
+        {options.map((opt) => {
+          const inputId = `${idPrefix}-${opt.value}`;
+          return (
+            <div key={opt.value} className="api-segmented-item">
+              <input
+                type="radio"
+                id={inputId}
+                name={name}
+                value={opt.value}
+                checked={value === opt.value}
+                onChange={() => onChange(opt.value)}
+                className="api-segmented-input"
+              />
+              <label htmlFor={inputId} className="api-segmented-label">
+                {opt.label}
+              </label>
+            </div>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
 
 export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const wooCsvIdPrefix = useId();
@@ -413,21 +452,16 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   }, [wooMarkupType, sanitizedWooMarkup, wooRoundTo]);
 
   const wooPricingSummary = useMemo(() => {
-    const markupLabel =
-      wooMarkupType === 'percent' && sanitizedWooMarkup > 0
-        ? `+${sanitizedWooMarkup}% percentage markup`
-        : wooMarkupType === 'flat' && sanitizedWooMarkup > 0
-          ? `+₹${sanitizedWooMarkup.toLocaleString('en-IN')} fixed markup`
-          : 'base B2R wholesale cost (no markup)';
-    const roundLabel =
-      wooRoundTo === '10'
-        ? ', rounded to nearest ₹10'
-        : wooRoundTo === '50'
-          ? ', rounded to nearest ₹50'
-          : wooRoundTo === '99'
-            ? ', rounded to end in ₹99'
-            : '';
-    return `Export pricing: ${markupLabel}${roundLabel} (never below B2R cost).`;
+    const parts = [];
+    if (wooMarkupType === 'percent' && sanitizedWooMarkup > 0) {
+      parts.push(`+${sanitizedWooMarkup}%`);
+    } else if (wooMarkupType === 'flat' && sanitizedWooMarkup > 0) {
+      parts.push(`+₹${sanitizedWooMarkup.toLocaleString('en-IN')}`);
+    }
+    if (wooRoundTo === '10') parts.push('Nearest ₹10');
+    else if (wooRoundTo === '50') parts.push('Nearest ₹50');
+    else if (wooRoundTo === '99') parts.push('End in ₹99');
+    return parts.length > 0 ? `${parts.join(' · ')} · ≥ B2R cost` : 'Base B2R wholesale cost';
   }, [wooMarkupType, sanitizedWooMarkup, wooRoundTo]);
 
   const scrollToSection = (id) => {
@@ -1588,104 +1622,58 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
 
             <div role="tabpanel" aria-labelledby={`platform-tab-${activePlatformTab}`}>
               {activePlatformTab === 'woocommerce' && (
-                <div>
+                <div className="api-woo-panel">
                   {/* 1. Official Plugin Header & Download Action */}
-                  <div style={{ marginBottom: '1.75rem' }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '1rem',
-                      marginBottom: '0.75rem'
-                    }}>
+                  <div className="api-woo-header">
+                    <div className="api-woo-header-top">
                       <div>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          letterSpacing: '0.06em',
-                          textTransform: 'uppercase',
-                          color: '#64748b',
-                          marginBottom: '0.35rem'
-                        }}>
-                          WordPress &bull; WooCommerce Plugin
-                        </div>
-                        <h3 style={{
-                          margin: 0,
-                          fontSize: '1.25rem',
-                          fontWeight: 700,
-                          color: '#0f172a',
-                          letterSpacing: '-0.01em'
-                        }}>
-                          Weave365 Live Stock Sync
-                        </h3>
+                        <div className="api-woo-kicker">WordPress &bull; WooCommerce Plugin</div>
+                        <h3 className="api-woo-title">Weave365 Live Stock Sync</h3>
                       </div>
 
                       <a
                         href="/downloads/weave365-woocommerce-sync.zip"
                         download="weave365-woocommerce-sync.zip"
-                        className="api-btn primary"
-                        style={{
-                          textDecoration: 'none',
-                          gap: '8px',
-                          padding: '8px 18px',
-                          fontSize: '0.875rem',
-                          fontWeight: 600
-                        }}
+                        className="api-btn primary api-woo-download-btn"
                       >
-                        <Download size={14} />
+                        <Download size={14} aria-hidden="true" />
                         <span>Download Plugin (.zip)</span>
                       </a>
                     </div>
 
-                    <p style={{
-                      margin: '0 0 0.875rem 0',
-                      fontSize: '0.9375rem',
-                      color: '#475569',
-                      lineHeight: 1.6,
-                      maxWidth: '760px'
-                    }}>
-                      End-to-end WooCommerce integration connected directly to Varanasi artisan looms. Includes hourly WP-Cron stock synchronization with concurrency locking and dirty-checking, mandatory real-time Classic &amp; WooCommerce Blocks checkout stock verification, one-click Catalog CSV Export with self-serve markup &amp; rounding inside WordPress, and entitlement-gated Automated Order Fulfillment with full HPOS compatibility.
+                    <p className="api-woo-desc">
+                      Connects WooCommerce to live Weave365 inventory with one-click Catalog CSV Export (markup &amp; rounding), hourly WP-Cron stock sync, Classic &amp; Blocks checkout stock verification, and entitlement-gated Order Fulfillment (HPOS compatible).
                     </p>
 
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      fontSize: '0.8125rem',
-                      color: '#475569',
-                      flexWrap: 'wrap'
-                    }}>
+                    <div className="api-woo-meta">
                       <span className="api-meta-badge version">v1.2.0</span>
-                      <span className="api-meta-badge hpos">
-                        <ShieldCheck size={12} />
+                      <span className="api-meta-badge">
+                        <ShieldCheck size={12} aria-hidden="true" />
                         <span>HPOS Ready</span>
                       </span>
-                      <span>&bull;</span>
-                      <span>Requires WooCommerce 5.0+</span>
-                      <span>&bull;</span>
+                      <span aria-hidden="true">&bull;</span>
+                      <span>WooCommerce 5.0+</span>
+                      <span aria-hidden="true">&bull;</span>
                       <span>PHP 7.4+</span>
-                      <span>&bull;</span>
+                      <span aria-hidden="true">&bull;</span>
                       <span>WordPress 5.6+</span>
-                      <span>&bull;</span>
+                      <span aria-hidden="true">&bull;</span>
                       <code>weave365-woocommerce-sync.zip</code>
                     </div>
                   </div>
 
-                  <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '1.75rem 0' }} />
+                  <hr className="api-woo-divider" />
 
                   {/* 2. Step-by-Step Plugin Setup Guide */}
-                  <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 1rem 0' }}>
-                    Setup Guide (v1.2.0)
-                  </h3>
+                  <h3 className="api-woo-subheading">Setup Guide (v1.2.0)</h3>
 
                   <div className="api-clean-steps">
                     <div className="api-step-row">
                       <span className="api-step-circle">1</span>
                       <div className="api-step-content">
-                        <h4 className="api-step-heading">Install &amp; Activate the Plugin</h4>
+                        <h4 className="api-step-heading">Install &amp; Activate Plugin</h4>
                         <p className="api-step-body">
-                          In your WordPress Admin dashboard, navigate to <strong>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</strong>. Click <strong>Choose File</strong>, select <code>weave365-woocommerce-sync.zip</code>, click <strong>Install Now</strong>, and then click <strong>Activate Plugin</strong>.
+                          In WordPress Admin, open <strong>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</strong>, upload <code>weave365-woocommerce-sync.zip</code>, and click <strong>Install Now</strong> &rarr; <strong>Activate Plugin</strong>.
                         </p>
                       </div>
                     </div>
@@ -1693,13 +1681,13 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     <div className="api-step-row">
                       <span className="api-step-circle">2</span>
                       <div className="api-step-content">
-                        <h4 className="api-step-heading">Connect Live API Key &amp; Verify Capabilities</h4>
+                        <h4 className="api-step-heading">Connect Live API Key</h4>
                         <p className="api-step-body">
-                          Go to <strong>WooCommerce &rarr; Weave365 Sync</strong> in your WordPress sidebar, paste your full unmasked Live API Key (<code>w365_live_...</code>) from your <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: '#0369a1' }}>Weave365 Developer Dashboard</a>, and click <strong>Save API Key</strong>.
+                          Go to <strong>WooCommerce &rarr; Weave365 Sync</strong>, paste your unmasked Live API Key (<code>w365_live_...</code>) from <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer" className="api-inline-link">Weave365 Developer Dashboard</a>, and click <strong>Save API Key</strong>.
                         </p>
                         <ul className="api-substeps-list">
-                          <li><strong>Automatic Entitlement Verification:</strong> Saving immediately calls <code>GET /api/v1/me</code> to verify your client name, tier, remaining monthly quota, and Order API permission (<code>orders_enabled</code>).</li>
-                          <li><strong>6-Hour Capability Cache &amp; Refresh Permissions:</strong> Capabilities are cached in WordPress for <strong>6 hours</strong>. If you upgrade to Pro Scale or enable Order API access in your dashboard, click <strong>Refresh Permissions</strong> on the settings page to sync immediately.</li>
+                          <li><strong>Entitlement check:</strong> Saving calls <code>GET /api/v1/me</code> to verify tier, monthly quota, and <code>orders_enabled</code>.</li>
+                          <li><strong>6h capability cache:</strong> Click <strong>Refresh Permissions</strong> after plan upgrades or Order API key changes.</li>
                         </ul>
                       </div>
                     </div>
@@ -1707,14 +1695,14 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                     <div className="api-step-row">
                       <span className="api-step-circle">3</span>
                       <div className="api-step-content">
-                        <h4 className="api-step-heading">Import Catalog Products via One-Click CSV (With Your Markup)</h4>
+                        <h4 className="api-step-heading">Export &amp; Import Catalog CSV</h4>
                         <p className="api-step-body">
-                          Inside <strong>WooCommerce &rarr; Weave365 Sync</strong>, scroll to the <strong>Catalog CSV Export (With Your Markup)</strong> card (available on all Stock Sync plans) to generate your store-ready catalog without manual spreadsheet editing:
+                          Use <strong>Catalog CSV Export</strong> inside <strong>WooCommerce &rarr; Weave365 Sync</strong> (all plans) to download <code>weave365-woocommerce-catalog.csv</code>.
                         </p>
                         <ul className="api-substeps-list">
-                          <li><strong>Self-Serve Markup &amp; Rounding:</strong> Select <em>None (B2R Cost)</em>, <em>Percentage (%)</em> (<code>0&ndash;500%</code>), or <em>Fixed Amount (&#8377;)</em> (<code>0&ndash;100000</code>), plus optional <em>Retail Price Rounding</em> (<em>No Rounding</em>, <em>Nearest &#8377;10</em>, <em>Nearest &#8377;50</em>, or <em>End in &#8377;99</em>; exported prices are never rounded below B2R wholesale cost).</li>
-                          <li><strong>One-Click Download (Zero 401 Errors):</strong> Click <strong>Download WooCommerce Catalog CSV</strong> to save <code>weave365-woocommerce-catalog.csv</code>. Downloading inside WordPress authenticates server-side with your saved key, avoiding <code>401 Unauthorized</code> errors caused by masked <code>w365_live_...</code> prefixes in browser URLs.</li>
-                          <li><strong>22 Auto-Mapped Columns:</strong> Open <strong>WooCommerce &rarr; Products &rarr; Import</strong>, upload the CSV, keep the auto-mapped columns (emitting <code>simple</code> products and <code>variable</code> + <code>variation</code> color SKUs), and click <strong>Run the importer</strong>.</li>
+                          <li><strong>Markup &amp; rounding:</strong> Select <em>None</em>, <em>Percentage (%)</em> (<code>0&ndash;500%</code>), or <em>Fixed (&#8377;)</em> (<code>0&ndash;100000</code>), plus rounding (<em>None</em>, <em>Nearest &#8377;10</em>, <em>Nearest &#8377;50</em>, <em>End in &#8377;99</em>; never below B2R cost).</li>
+                          <li><strong>Server-side auth:</strong> Uses your saved WordPress key directly, avoiding <code>401</code> errors from masked <code>w365_live_...</code> prefixes.</li>
+                          <li><strong>Import:</strong> Upload in <strong>WooCommerce &rarr; Products &rarr; Import</strong> (22 auto-mapped columns for <code>simple</code> and <code>variable</code> + <code>variation</code> SKUs) and click <strong>Run the importer</strong>.</li>
                         </ul>
                       </div>
                     </div>
@@ -1723,16 +1711,14 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       <span className="api-step-circle">4</span>
                       <div className="api-step-content">
                         <h4 className="api-step-heading">
-                          Run Stock Sync &amp; Real-Time Checkout Stock Guard{' '}
-                          <span className="api-meta-badge mandatory" style={{ marginLeft: '6px' }}>
-                            Built-in &bull; Mandatory
-                          </span>
+                          Sync Stock &amp; Checkout Guard{' '}
+                          <span className="api-meta-badge api-badge-inline">Built-in &bull; Mandatory</span>
                         </h4>
                         <p className="api-step-body">
-                          Click <strong>Sync Stock Now</strong> for an immediate inventory check across matching SKUs. Moving forward, WordPress WP-Cron updates stock automatically <strong>every hour</strong> in the background.
+                          Click <strong>Sync Stock Now</strong> for an immediate update; WP-Cron refreshes matching SKU stock automatically every hour.
                         </p>
                         <ul className="api-substeps-list">
-                          <li><strong>Classic &amp; WooCommerce Blocks Checkout Guard:</strong> Validates live <code>/api/v1/stock-status</code> availability on both Classic Checkout and WooCommerce Blocks (Store API) checkouts. Casual cart browsing uses a 45-second cache, while checkout submission runs a live loom check before payment is accepted&mdash;blocking sold-out items, notifying the shopper, and updating local stock immediately.</li>
+                          <li><strong>Checkout guard:</strong> Validates live <code>/api/v1/stock-status</code> on Classic and WooCommerce Blocks (Store API) checkouts (45s browse cache, live check on submit).</li>
                         </ul>
                       </div>
                     </div>
@@ -1741,162 +1727,103 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       <span className="api-step-circle">5</span>
                       <div className="api-step-content">
                         <h4 className="api-step-heading">
-                          Optional: Automated Order Fulfillment{' '}
-                          <span className="api-meta-badge gated" style={{ marginLeft: '6px' }}>
-                            Order API Entitlement-Gated
-                          </span>
+                          Automated Order Fulfillment{' '}
+                          <span className="api-meta-badge api-badge-inline">Order API Gated</span>
                         </h4>
                         <p className="api-step-body">
-                          Order forwarding to <code>POST /api/v1/orders</code> is unlocked only when your connected API key has <code>orders_enabled === true</code> (Pro Scale or admin-authorized keys):
+                          Forwarding to <code>POST /api/v1/orders</code> unlocks when <code>orders_enabled === true</code> (Pro Scale or authorized keys).
                         </p>
                         <ul className="api-substeps-list">
-                          <li><strong>Locked vs. Unlocked State:</strong> Keys without Order API access display a disabled card and register zero WooCommerce order hooks (never forwarding orders). Once unlocked, opt in to <em>Auto-forward paid WooCommerce orders</em> (triggers on payment completion / <code>processing</code>) and optionally enable <em>Cash on Delivery (COD)</em> forwarding on <code>on-hold</code> / <code>processing</code>.</li>
-                          <li><strong>White-Label Sender &amp; Packing Settings:</strong> Configure <em>Reseller / Sender Name</em>, <em>Sender Contact Phone</em>, and <em>Packing Preference</em> for blind courier slips.</li>
-                          <li><strong>Smart Mixed-Cart Filtering:</strong> Non-Weave365 products in the same cart are filtered out automatically on Weave365 invoices; orders with zero Weave365 SKUs return <code>200 OK</code> (<code>NO_WEAVE365_ITEMS</code>) and are marked <em>Ignored</em>.</li>
-                          <li><strong>HPOS Compatibility, Idempotency &amp; Order Controls:</strong> Full WooCommerce HPOS (<code>custom_order_tables</code>) support with 60-second per-order concurrency locks, private Order Notes containing the Weave365 Order ID and clickable <em>Wholesale Payment Link</em>, a read-only <em>Weave365 Fulfillment Status</em> side meta box, and manual <em>Order actions &rarr; Send Order to Weave365</em> (or <em>Retry Send Order to Weave365</em>).</li>
+                          <li><strong>Opt-in triggers:</strong> Locked keys register zero order hooks; unlocked keys can enable <em>Auto-forward paid orders</em> (<code>processing</code>) and optional <em>COD</em> (<code>on-hold</code> / <code>processing</code>).</li>
+                          <li><strong>Sender &amp; packing:</strong> Set <em>Reseller / Sender Name</em>, <em>Sender Contact Phone</em>, and <em>Packing Preference</em>.</li>
+                          <li><strong>Mixed-cart filtering:</strong> Non-Weave365 items are excluded; zero-match carts return <code>200 OK</code> (<code>NO_WEAVE365_ITEMS</code>) and are marked <em>Ignored</em>.</li>
+                          <li><strong>HPOS &amp; order controls:</strong> Full HPOS (<code>custom_order_tables</code>) support, 60s idempotency locks, Order Notes with <em>Wholesale Payment Link</em>, <em>Weave365 Fulfillment Status</em> meta box, and <em>Order actions &rarr; Send Order to Weave365</em>.</li>
                         </ul>
                       </div>
                     </div>
                   </div>
 
-                  <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '2rem 0 1.5rem 0' }} />
+                  <hr className="api-woo-divider" />
 
                   {/* 3. Catalog Products & SKU Matching Guide */}
-                  <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>
-                    Initial Product Import &amp; SKU Matching
-                  </h3>
-                  <p className="api-text">
-                    Stock synchronization and order forwarding match WooCommerce items by <strong>SKU</strong> (e.g., <code>102001</code> for simple products or <code>102001-1</code> / color-slug variant SKUs for variable color variations). Configure markup and rounding below to build a direct <code>?format=woocommerce</code> CSV URL, or download directly inside your WordPress plugin:
+                  <h3 className="api-woo-subheading">Initial Product Import &amp; SKU Matching</h3>
+                  <p className="api-text" style={{ marginBottom: '1rem' }}>
+                    Items sync by <strong>SKU</strong> (e.g. <code>102001</code> or color variant SKUs). Configure markup below for a direct <code>?format=woocommerce</code> URL, or download inside WordPress.
                   </p>
 
                   <div className="api-woo-builder">
-                    <div className="api-woo-builder-grid">
-                      <fieldset className="api-fieldset">
-                        <legend className="api-legend">Markup Type</legend>
-                        <div className="api-radio-group">
-                          {[
-                            { value: 'none', label: 'None' },
-                            { value: 'percent', label: 'Percentage (%)' },
-                            { value: 'flat', label: 'Fixed (₹)' },
-                          ].map((opt) => (
-                            <div key={opt.value} className="api-radio-option">
-                              <input
-                                type="radio"
-                                id={`${wooCsvIdPrefix}-markup-${opt.value}`}
-                                name={`${wooCsvIdPrefix}-markup-type`}
-                                value={opt.value}
-                                checked={wooMarkupType === opt.value}
-                                onChange={() => handleWooMarkupTypeChange(opt.value)}
-                                className="api-radio-input"
-                              />
-                              <label
-                                htmlFor={`${wooCsvIdPrefix}-markup-${opt.value}`}
-                                className="api-radio-label"
-                              >
-                                {opt.label}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </fieldset>
+                    <div className="api-woo-controls-row">
+                      <SegmentedRadioGroup
+                        legend="Markup Type"
+                        name={`${wooCsvIdPrefix}-markup-type`}
+                        idPrefix={`${wooCsvIdPrefix}-markup`}
+                        options={WOO_MARKUP_OPTIONS}
+                        value={wooMarkupType}
+                        onChange={handleWooMarkupTypeChange}
+                      />
 
-                      <div className="api-field-stack">
-                        <label
-                          htmlFor={`${wooCsvIdPrefix}-markup-value`}
-                          className="api-field-label"
-                        >
-                          Markup Value {wooMarkupType === 'percent' ? '(%)' : wooMarkupType === 'flat' ? '(₹)' : ''}
-                        </label>
-                        <span id={`${wooCsvIdPrefix}-markup-hint`} className="api-field-hint">
-                          {wooMarkupType === 'none'
-                            ? 'Select Percentage (%) or Fixed (₹) to add a retail margin.'
-                            : wooMarkupType === 'percent'
-                              ? 'Allowed range: 0% to 500% (e.g. 30 adds 30%).'
-                              : 'Allowed range: ₹0 to ₹1,00,000 (e.g. 250 adds ₹250).'}
-                        </span>
-                        <div
-                          className={`api-input-wrap ${wooMarkupType === 'none' ? 'is-disabled' : ''} ${wooMarkupError ? 'has-error' : ''}`}
-                        >
-                          {wooMarkupType === 'flat' && (
-                            <span className="api-input-affix" aria-hidden="true">&#8377;</span>
-                          )}
-                          <input
-                            id={`${wooCsvIdPrefix}-markup-value`}
-                            name="docWooMarkupValue"
-                            type="text"
-                            inputMode="decimal"
-                            pattern="(\d+(\.\d{1,2})?|\.\d{1,2})"
-                            enterKeyHint="done"
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="none"
-                            spellCheck={false}
-                            disabled={wooMarkupType === 'none'}
-                            value={wooMarkupType === 'none' ? '' : wooMarkupValue}
-                            placeholder={
-                              wooMarkupType === 'none'
-                                ? 'Disabled'
-                                : wooMarkupType === 'percent'
-                                  ? 'e.g. 30'
-                                  : 'e.g. 250'
-                            }
-                            onChange={handleWooMarkupValueChange}
-                            onBlur={handleWooMarkupValueBlur}
-                            aria-invalid={wooMarkupError ? 'true' : undefined}
-                            aria-describedby={
-                              wooMarkupError
-                                ? `${wooCsvIdPrefix}-markup-hint ${wooCsvIdPrefix}-markup-error`
-                                : `${wooCsvIdPrefix}-markup-hint`
-                            }
-                            className="api-text-input"
-                          />
-                          {wooMarkupType === 'percent' && (
-                            <span className="api-input-affix" aria-hidden="true">%</span>
-                          )}
-                        </div>
-                        {wooMarkupError && (
-                          <span id={`${wooCsvIdPrefix}-markup-error`} role="status" className="api-field-error">
-                            <AlertTriangle size={14} aria-hidden="true" />
-                            <span>{wooMarkupError}</span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <fieldset className="api-fieldset">
-                      <legend className="api-legend">Price Rounding</legend>
-                      <div className="api-radio-group">
-                        {[
-                          { value: 'none', label: 'None' },
-                          { value: '10', label: 'Nearest ₹10' },
-                          { value: '50', label: 'Nearest ₹50' },
-                          { value: '99', label: 'End in ₹99' },
-                        ].map((opt) => (
-                          <div key={opt.value} className="api-radio-option">
-                            <input
-                              type="radio"
-                              id={`${wooCsvIdPrefix}-round-${opt.value}`}
-                              name={`${wooCsvIdPrefix}-round-to`}
-                              value={opt.value}
-                              checked={wooRoundTo === opt.value}
-                              onChange={() => setWooRoundTo(opt.value)}
-                              className="api-radio-input"
-                            />
+                      {wooMarkupType !== 'none' && (
+                        <div className="api-field-stack api-woo-value-field">
+                          <div className="api-field-label-row">
                             <label
-                              htmlFor={`${wooCsvIdPrefix}-round-${opt.value}`}
-                              className="api-radio-label"
+                              htmlFor={`${wooCsvIdPrefix}-markup-value`}
+                              className="api-field-label"
                             >
-                              {opt.label}
+                              Markup Value
                             </label>
+                            <span id={`${wooCsvIdPrefix}-markup-hint`} className="api-field-hint">
+                              {wooMarkupType === 'percent' ? '0–500%' : '₹0–₹1,00,000'}
+                            </span>
                           </div>
-                        ))}
-                      </div>
-                    </fieldset>
-
-                    <div className="api-formula-preview">
-                      <Info size={15} />
-                      <span>{wooPricingSummary}</span>
+                          <div className={`api-input-wrap ${wooMarkupError ? 'has-error' : ''}`}>
+                            {wooMarkupType === 'flat' && (
+                              <span className="api-input-affix" aria-hidden="true">&#8377;</span>
+                            )}
+                            <input
+                              id={`${wooCsvIdPrefix}-markup-value`}
+                              name="docWooMarkupValue"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="(\d+(\.\d{1,2})?|\.\d{1,2})"
+                              enterKeyHint="done"
+                              autoComplete="off"
+                              autoCorrect="off"
+                              autoCapitalize="none"
+                              spellCheck={false}
+                              value={wooMarkupValue}
+                              placeholder={wooMarkupType === 'percent' ? 'e.g. 30' : 'e.g. 250'}
+                              onChange={handleWooMarkupValueChange}
+                              onBlur={handleWooMarkupValueBlur}
+                              aria-invalid={wooMarkupError ? 'true' : 'false'}
+                              aria-describedby={
+                                wooMarkupError
+                                  ? `${wooCsvIdPrefix}-markup-hint ${wooCsvIdPrefix}-markup-error`
+                                  : `${wooCsvIdPrefix}-markup-hint`
+                              }
+                              className="api-text-input"
+                            />
+                            {wooMarkupType === 'percent' && (
+                              <span className="api-input-affix" aria-hidden="true">%</span>
+                            )}
+                          </div>
+                          {wooMarkupError && (
+                            <span id={`${wooCsvIdPrefix}-markup-error`} className="api-field-error">
+                              <AlertTriangle size={14} aria-hidden="true" />
+                              <span>{wooMarkupError}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
+
+                    <SegmentedRadioGroup
+                      legend="Price Rounding"
+                      name={`${wooCsvIdPrefix}-round-to`}
+                      idPrefix={`${wooCsvIdPrefix}-round`}
+                      options={WOO_ROUND_OPTIONS}
+                      value={wooRoundTo}
+                      onChange={setWooRoundTo}
+                    />
 
                     <div className="api-field-stack">
                       <label htmlFor={`${wooCsvIdPrefix}-csv-url`} className="api-field-label">
@@ -1919,29 +1846,36 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                           className={`api-feed-copy-btn ${copiedKey === 'woo-csv-feed' ? 'copied' : ''}`}
                           onClick={() => copyToClipboard(wooCsvUrl, 'woo-csv-feed')}
                         >
-                          {copiedKey === 'woo-csv-feed' ? <Check size={13} /> : <Copy size={13} />}
+                          {copiedKey === 'woo-csv-feed' ? (
+                            <Check size={13} aria-hidden="true" />
+                          ) : (
+                            <Copy size={13} aria-hidden="true" />
+                          )}
                           <span>{copiedKey === 'woo-csv-feed' ? 'Copied' : 'Copy CSV URL'}</span>
                         </button>
                       </div>
+                      <p className="api-woo-summary">{wooPricingSummary}</p>
+                      <p className="api-woo-muted-note">
+                        Masked keys (<code>w365_live_...</code>) return 401 &mdash; reveal your key in{' '}
+                        <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer">
+                          Developer Dashboard
+                        </a>{' '}
+                        or download directly inside <strong>WooCommerce &rarr; Weave365 Sync</strong>.
+                      </p>
                       <span role="status" className="api-visually-hidden">
-                        {copiedKey === 'woo-csv-feed' ? 'WooCommerce CSV URL copied to clipboard.' : ''}
+                        {copiedKey === 'woo-csv-feed'
+                          ? 'WooCommerce CSV URL copied to clipboard.'
+                          : wooMarkupError || ''}
                       </span>
                     </div>
                   </div>
 
-                  <div className="api-warning-callout" role="note">
-                    <AlertTriangle size={16} />
-                    <div>
-                      <strong>Masked keys (<code>w365_live_...</code>) return <code>401 Unauthorized</code>:</strong> Direct CSV URLs require your full unmasked secret API key. Instead of editing URLs manually, use the one-click <strong>Download WooCommerce Catalog CSV</strong> button inside <strong>WooCommerce &rarr; Weave365 Sync</strong> in WordPress, or click <strong>Reveal Key</strong> in your <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer">Weave365 Developer Dashboard</a> (e.g. append <code>&amp;markup_pct=30&amp;round_to=99</code>).
-                    </div>
-                  </div>
-
-                  <div className="api-note-text" style={{ margin: '0 0 1.5rem 0' }}>
-                    <strong>How to Import into WooCommerce (3 Steps):</strong>
-                    <ol className="api-substeps-list" style={{ marginTop: '0.5rem' }}>
-                      <li>Download <code>weave365-woocommerce-catalog.csv</code> via the <strong>Catalog CSV Export (With Your Markup)</strong> card inside <strong>WooCommerce &rarr; Weave365 Sync</strong> (or via your unmasked CSV URL above).</li>
-                      <li>In WordPress Admin, navigate to <strong>WooCommerce &rarr; Products &rarr; Import</strong>, upload <code>weave365-woocommerce-catalog.csv</code>, and click <strong>Continue</strong>.</li>
-                      <li>Verify the <strong>22 auto-mapped columns</strong>&mdash;including <code>Type</code> (<code>simple</code> / <code>variable</code> / <code>variation</code>), <code>Parent</code>, <code>SKU</code>, <code>Attribute 1 name</code> (<code>Color</code>), <code>Attribute 1 value(s)</code>, <code>Regular price</code>, <code>In stock?</code>, <code>Stock</code>, <code>Description</code>, and <code>Images</code>&mdash;then click <strong>Run the importer</strong>.</li>
+                  <div className="api-woo-import-block">
+                    <div className="api-woo-import-title">Import into WooCommerce</div>
+                    <ol className="api-woo-import-list">
+                      <li>Download <code>weave365-woocommerce-catalog.csv</code> inside <strong>WooCommerce &rarr; Weave365 Sync</strong> or via the URL above.</li>
+                      <li>In WordPress, open <strong>WooCommerce &rarr; Products &rarr; Import</strong> and upload the CSV.</li>
+                      <li>Keep all 22 auto-mapped columns (<code>simple</code>, <code>variable</code> + <code>variation</code> SKUs) and click <strong>Run the importer</strong>.</li>
                     </ol>
                   </div>
                 </div>
