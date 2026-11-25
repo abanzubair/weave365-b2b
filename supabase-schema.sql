@@ -1749,19 +1749,24 @@ drop policy if exists "Admin manage all api_keys" on public.api_keys;
 drop policy if exists "Public read api_keys" on public.api_keys;
 drop policy if exists "api_keys select own or admin" on public.api_keys;
 drop policy if exists "api_keys insert own or admin" on public.api_keys;
+drop policy if exists "api_keys insert admin" on public.api_keys;
 drop policy if exists "api_keys update own or admin" on public.api_keys;
 drop policy if exists "api_keys delete own or admin" on public.api_keys;
+drop policy if exists "api_keys delete admin" on public.api_keys;
 
--- Hardened RLS policies for api_keys: only authenticated key owner or admin
+-- Hardened RLS policies for api_keys:
+-- - SELECT: authenticated owner or admin
+-- - INSERT / DELETE: admin or service_role only (user onboarding goes through /api/developer/request-access)
+-- - UPDATE: owner (non-privileged fields only, enforced by trigger below) or admin
 create policy "api_keys select own or admin"
   on public.api_keys for select
   to authenticated
   using (user_id = auth.uid() or public.is_admin());
 
-create policy "api_keys insert own or admin"
+create policy "api_keys insert admin"
   on public.api_keys for insert
   to authenticated
-  with check (user_id = auth.uid() or public.is_admin());
+  with check (public.is_admin());
 
 create policy "api_keys update own or admin"
   on public.api_keys for update
@@ -1769,10 +1774,66 @@ create policy "api_keys update own or admin"
   using (user_id = auth.uid() or public.is_admin())
   with check (user_id = auth.uid() or public.is_admin());
 
-create policy "api_keys delete own or admin"
+create policy "api_keys delete admin"
   on public.api_keys for delete
   to authenticated
-  using (user_id = auth.uid() or public.is_admin());
+  using (public.is_admin());
+
+-- Anti-bypass guard: prevent authenticated browser clients from mutating subscription, quota, approval, or secret columns
+create or replace function public.protect_api_keys_privileged_columns()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_new jsonb;
+  v_old jsonb;
+  v_col text;
+  v_protected text[] := array[
+    'user_id',
+    'key_hash',
+    'key_prefix',
+    'encrypted_key',
+    'tier',
+    'monthly_quota',
+    'rate_limit_rps',
+    'is_active',
+    'orders_enabled',
+    'allowed_endpoints',
+    'approval_status',
+    'subscription_status',
+    'subscription_plan',
+    'subscription_amount',
+    'subscription_started_at',
+    'subscription_expires_at',
+    'payment_gateway',
+    'last_payment_id'
+  ];
+begin
+  if current_setting('role', true) = 'service_role' or public.is_admin() then
+    return new;
+  end if;
+
+  v_new := to_jsonb(new);
+  v_old := to_jsonb(old);
+
+  foreach v_col in array v_protected loop
+    if (v_new -> v_col) is distinct from (v_old -> v_col) then
+      raise exception 'Forbidden: column % on api_keys cannot be modified by client.', v_col
+        using errcode = '42501';
+    end if;
+  end loop;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_protect_api_keys_privileged_columns on public.api_keys;
+create trigger trg_protect_api_keys_privileged_columns
+  before update on public.api_keys
+  for each row
+  execute function public.protect_api_keys_privileged_columns();
 
 -- Drop legacy permissive policies for api_usage_daily
 drop policy if exists "Admin manage all api_usage_daily" on public.api_usage_daily;

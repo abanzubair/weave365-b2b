@@ -1881,4 +1881,277 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.equal(directCsv.includes('201002'), false);
     });
   });
+
+  describe('10. Instant Plan Unlock & Anti-Bypass Enforcement', () => {
+    it('blocks inactive/unpaid subscription_status even if is_active is spoofed true', async () => {
+      mockKeys[hashPro].subscription_status = 'inactive';
+      mockKeys[hashPro].is_active = true;
+      const res = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.json', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.json']
+      );
+      assert.equal(res.status, 403);
+      const json = await res.json();
+      assert.equal(json.code, 'SUBSCRIPTION_PENDING_PAYMENT');
+    });
+
+    it('blocks rejected API keys with 403 KEY_REJECTED', async () => {
+      mockKeys[hashPro].approval_status = 'rejected';
+      const res = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.json', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.json']
+      );
+      assert.equal(res.status, 403);
+      const json = await res.json();
+      assert.equal(json.code, 'KEY_REJECTED');
+    });
+
+    it('enforces server-side onboarding, blocks pre-payment key reveal, unlocks plan payment immediately, and blocks order_id replay', async () => {
+      const dbKeys = [];
+      const dbProfiles = {
+        'user-1': {
+          id: 'user-1',
+          email: 'merchant@example.com',
+          full_name: 'Aarav Store',
+          business_name: 'Aarav Silks',
+          role: 'buyer',
+          qualification: {},
+        },
+      };
+
+      const sessionSupabase = {
+        auth: {
+          getUser: async (token) => (
+            token === 'valid-user-token'
+              ? { data: { user: { id: 'user-1', email: 'merchant@example.com', user_metadata: {} } }, error: null }
+              : { data: { user: null }, error: new Error('Invalid token') }
+          ),
+        },
+        from: (table) => {
+          if (table === 'profiles') {
+            return {
+              select: () => ({
+                eq: (col, id) => ({
+                  maybeSingle: async () => ({ data: dbProfiles[id] || null, error: null }),
+                }),
+              }),
+              update: (patch) => ({
+                eq: async (col, id) => {
+                  dbProfiles[id] = { ...(dbProfiles[id] || {}), ...patch };
+                  return { data: dbProfiles[id], error: null };
+                },
+              }),
+            };
+          }
+          if (table === 'admin_notes') {
+            return {
+              insert: async () => ({ data: null, error: null }),
+              select: () => ({ eq: () => ({ order: async () => ({ data: [], error: null }) }) }),
+            };
+          }
+          if (table === 'api_keys') {
+            const makeFilter = (filters = {}) => {
+              const chain = {
+                eq: (col, val) => makeFilter({ ...filters, [col]: val }),
+                order: () => chain,
+                maybeSingle: async () => {
+                  const found = dbKeys.find((k) =>
+                    Object.entries(filters).every(([c, v]) => k[c] === v)
+                  ) || null;
+                  return { data: found, error: null };
+                },
+                select: () => chain,
+                single: async () => {
+                  const found = dbKeys.find((k) =>
+                    Object.entries(filters).every(([c, v]) => k[c] === v)
+                  ) || null;
+                  return { data: found, error: null };
+                },
+              };
+              return chain;
+            };
+            return {
+              select: () => makeFilter(),
+              insert: (rows) => ({
+                select: () => ({
+                  single: async () => {
+                    const row = {
+                      id: '11111111-2222-3333-4444-555555555555',
+                      created_at: new Date().toISOString(),
+                      ...rows[0],
+                    };
+                    dbKeys.push(row);
+                    return { data: row, error: null };
+                  },
+                }),
+              }),
+              update: (patch) => ({
+                eq: (col, val) => {
+                  const idx = dbKeys.findIndex((k) => k[col] === val);
+                  if (idx >= 0) dbKeys[idx] = { ...dbKeys[idx], ...patch };
+                  const chain = {
+                    then: (resolve) => resolve({ data: dbKeys[idx] || null, error: null }),
+                    select: () => ({
+                      single: async () => ({ data: dbKeys[idx] || null, error: null }),
+                    }),
+                  };
+                  return chain;
+                },
+              }),
+            };
+          }
+          if (table === 'api_subscription_payments') {
+            return {
+              select: () => {
+                const chain = {
+                  eq: () => chain,
+                  maybeSingle: async () => ({ data: null, error: null }),
+                };
+                return chain;
+              },
+            };
+          }
+          return {
+            select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+          };
+        },
+      };
+
+      _setSupabaseClientForTesting(sessionSupabase);
+
+      // A. Reject incomplete onboarding request
+      const badFormRes = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/developer/request-access', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer valid-user-token',
+          },
+          body: JSON.stringify({
+            gstin: 'BAD',
+            websiteUrl: 'https://store.example.com',
+            platform: 'Shopify',
+            apiUseCases: ['Catalog Sync'],
+          }),
+        }),
+        ['developer', 'request-access']
+      );
+      assert.equal(badFormRes.status, 400);
+      assert.equal((await badFormRes.json()).code, 'INVALID_GSTIN');
+
+      // B. Valid onboarding request immediately unlocks payment stage without returning raw secret
+      const okFormRes = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/developer/request-access', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer valid-user-token',
+          },
+          body: JSON.stringify({
+            gstin: '29ABCDE1234F1Z5',
+            websiteUrl: 'https://aaravsilks.com',
+            platform: 'Shopify',
+            apiUseCases: ['Catalog Sync', 'Real-time Inventory'],
+          }),
+        }),
+        ['developer', 'request-access']
+      );
+      assert.equal(okFormRes.status, 200);
+      const okFormJson = await okFormRes.json();
+      assert.equal(okFormJson.success, true);
+      assert.equal(okFormJson.rawKey, undefined);
+      assert.equal(okFormJson.rawSecretKey, undefined);
+      assert.equal(okFormJson.keyRecord.key_hash, undefined);
+      assert.equal(okFormJson.keyRecord.approval_status, 'approved');
+      assert.equal(okFormJson.keyRecord.subscription_status, 'pending_payment');
+      assert.equal(okFormJson.keyRecord.is_active, false);
+
+      const createdKeyId = okFormJson.keyRecord.id;
+
+      // C. Cannot reveal raw key before payment completes
+      const prePayReveal = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/developer/reveal-key', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer valid-user-token',
+          },
+          body: JSON.stringify({ keyId: createdKeyId }),
+        }),
+        ['developer', 'reveal-key']
+      );
+      assert.equal(prePayReveal.status, 403);
+      assert.equal((await prePayReveal.json()).code, 'PAYMENT_REQUIRED');
+
+      // D. Cannot activate using another key's order_id
+      const replayVerify = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/developer/verify-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer valid-user-token',
+          },
+          body: JSON.stringify({
+            keyId: createdKeyId,
+            gateway: 'cashfree',
+            order_id: 'CF_SUB_999999999999_1M_123456',
+          }),
+        }),
+        ['developer', 'verify-subscription']
+      );
+      assert.equal(replayVerify.status, 403);
+      assert.equal((await replayVerify.json()).code, 'ORDER_KEY_MISMATCH');
+
+      // E. Cannot start payment if form fields (GSTIN / URL) were never filled
+      dbKeys.push({
+        id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+        user_id: 'user-1',
+        approval_status: 'pending',
+        subscription_status: 'inactive',
+        is_active: false,
+        gst_number: '',
+        client_website: '',
+      });
+      const incompleteSub = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/developer/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer valid-user-token',
+          },
+          body: JSON.stringify({
+            keyId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+            plan: 'growth',
+          }),
+        }),
+        ['developer', 'subscribe']
+      );
+      assert.equal(incompleteSub.status, 400);
+      assert.equal((await incompleteSub.json()).code, 'FORM_INCOMPLETE');
+
+      // F. Once key is paid/active, key owner can reveal full secret
+      dbKeys[0].is_active = true;
+      dbKeys[0].subscription_status = 'active';
+      dbKeys[0].subscription_expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const postPayReveal = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/developer/reveal-key', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer valid-user-token',
+          },
+          body: JSON.stringify({ keyId: createdKeyId }),
+        }),
+        ['developer', 'reveal-key']
+      );
+      assert.equal(postPayReveal.status, 200);
+      const revealedJson = await postPayReveal.json();
+      assert.equal(revealedJson.success, true);
+      assert.match(revealedJson.rawKey, /^w365_live_[a-f0-9]{48}$/);
+    });
+  });
 });

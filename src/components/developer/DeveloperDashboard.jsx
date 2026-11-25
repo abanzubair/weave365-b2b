@@ -66,61 +66,18 @@ import { DispatchLabelCard } from './DispatchLabelCard.jsx';
 import { SegmentedControl, BillingCycleToggle } from './SegmentedControl.jsx';
 import '../../styles/developerDashboard.css';
 
-export const BUSINESS_TYPES = [
-  'Ethnic Wear Online Store — Banarasi Sarees and Suits',
-  'Online Fashion Brand — Ethnic Wear Boutique',
-  'eCommerce Website — Multiple Categories',
-  'Dropshipping Platform',
-  'Marketplace',
-  'Other',
-];
-
-export const OPERATIONAL_STATUSES = [
-  'Currently selling',
-  'Recently launched',
-  'Launching within 30 days',
-  'Planning to launch',
-  'Just exploring',
-];
-
 export const API_USE_CASES = [
-  'Product Catalogue',
-  'Product Images and Details',
-  'Live Inventory',
-  'Wholesale Pricing',
-  'Order Creation',
-  'Order Tracking',
-  'Dropshipping',
+  'Catalog & Images',
+  'Live Stock Sync',
+  'Automated Orders',
 ];
 
 export const INTEGRATION_PLATFORMS = [
-  'Shopify',
   'WooCommerce',
+  'Shopify',
   'PrestaShop',
   'Custom Website',
   'Other',
-];
-
-export const MONTHLY_ORDER_VOLUMES = [
-  'Not sure yet',
-  'Under 50 orders',
-  '50 - 200 orders',
-  '200 - 500 orders',
-  '500 - 2,000 orders',
-  '2,000 + orders',
-];
-
-export const TIMELINE_OPTIONS = [
-  'Immediately',
-  'Within 7 days',
-  'Within 30 days',
-  '1 - 3 months',
-  'Just researching',
-];
-
-export const OTHER_SUPPLIERS_OPTIONS = [
-  'Yes',
-  'No',
 ];
 
 /**
@@ -690,11 +647,11 @@ export function PlanSelectionCard({
           ) : (
             <>
               <CheckCircle2 size={12} />
-              <span>Application Approved</span>
+              <span>Step 2 of 2 • Choose Plan</span>
             </>
           )}
         </div>
-        <h2 className="dev-plan-title">
+        <h2 className="dev-plan-title" tabIndex={-1}>
           {isExpired
             ? 'Renew API Subscription'
             : isRenewal
@@ -706,7 +663,7 @@ export function PlanSelectionCard({
             ? (isQuarterly ? 'Choose a plan to restore your credentials with 90-day coverage & 5% savings.' : 'Choose a plan to restore your API credentials and live feeds.')
             : isRenewal
               ? (isQuarterly ? 'Extend your plan by 90 days with 5% discount.' : 'Add 30 days or upgrade to full order automation.')
-              : (isQuarterly ? 'Pay for 3 months with 5% discount to activate your credentials.' : 'Choose a monthly plan to activate your credentials.')}
+              : (isQuarterly ? 'Pay for 3 months with 5% discount to unlock your API credentials immediately.' : 'Complete your plan payment to unlock your API credentials immediately.')}
         </p>
       </div>
 
@@ -944,7 +901,7 @@ export function DeveloperDashboard({
     const cycleParam = urlParams.get('cycle');
     if (planParam === 'growth' || planParam === 'pro') {
       setInitialPlanFromUrl(planParam);
-      if (apiKey && apiKey.subscription_status === 'active') {
+      if (apiKey && apiKey.is_active && apiKey.subscription_status === 'active') {
         setPlanModalOpen(true);
       }
     }
@@ -1033,15 +990,9 @@ export function DeveloperDashboard({
   const [reqWebsite, setReqWebsite] = useState(
     initialKeyRecord?.client_website || ''
   );
-  const [reqBusinessType, setReqBusinessType] = useState('');
-  const [reqOperationalStatus, setReqOperationalStatus] = useState('');
-  const [reqUseCases, setReqUseCases] = useState([]);
   const [reqPlatform, setReqPlatform] = useState('');
-  const [reqOrderVolume, setReqOrderVolume] = useState('');
-  const [reqTimeline, setReqTimeline] = useState('');
-  const [reqOtherSuppliers, setReqOtherSuppliers] = useState('');
+  const [reqUseCases, setReqUseCases] = useState([]);
   const [reqGoals, setReqGoals] = useState('');
-  const [reqTechnicalEmail, setReqTechnicalEmail] = useState('');
   const [submittingRequest, setSubmittingRequest] = useState(false);
 
   // Legacy key creation fallback
@@ -1408,78 +1359,38 @@ export function DeveloperDashboard({
     e.preventDefault();
     if (!user?.id) return;
 
-    if (!reqGstin.trim()) {
-      alert('Please enter your GSTIN.');
+    const cleanGstin = reqGstin.trim().toUpperCase();
+    if (!/^[A-Z0-9]{15}$/.test(cleanGstin)) {
+      alert('Please enter a valid 15-character alphanumeric GSTIN.');
       return;
     }
     if (!reqWebsite.trim()) {
-      alert('Please enter your eCommerce Website / Online Store URL.');
-      return;
-    }
-    if (!reqBusinessType) {
-      alert('Please select what best describes your business.');
-      return;
-    }
-    if (!reqOperationalStatus) {
-      alert('Please select whether your business is currently operational.');
-      return;
-    }
-    if (reqUseCases.length === 0) {
-      alert('Please select at least one use case for the Weave 365 API.');
+      alert('Please enter your Store / Website URL.');
       return;
     }
     if (!reqPlatform) {
-      alert('Please select which platform you are integrating with.');
+      alert('Please select your platform.');
       return;
     }
-    if (!reqOrderVolume) {
-      alert('Please select your expected monthly order volume.');
-      return;
-    }
-    if (!reqTimeline) {
-      alert('Please select when you plan to start using the API.');
-      return;
-    }
-    if (!reqOtherSuppliers) {
-      alert('Please select whether you currently sell products from other suppliers.');
-      return;
-    }
-    if (!reqGoals.trim()) {
-      alert('Please describe what you are looking to achieve through the integration.');
+    if (reqUseCases.length === 0) {
+      alert('Please select at least one API feature.');
       return;
     }
 
     setSubmittingRequest(true);
     try {
       const requestDetails = {
-        gstin: reqGstin.trim().toUpperCase(),
+        gstin: cleanGstin,
         websiteUrl: reqWebsite.trim(),
-        businessType: reqBusinessType,
-        operationalStatus: reqOperationalStatus,
-        apiUseCases: reqUseCases,
         platform: reqPlatform,
-        monthlyOrderVolume: reqOrderVolume,
-        timeline: reqTimeline,
-        sellsOtherSuppliers: reqOtherSuppliers,
-        goals: reqGoals.trim(),
-        technicalEmail: reqTechnicalEmail.trim(),
-        submittedAt: new Date().toISOString(),
+        apiUseCases: reqUseCases,
+        ...(reqGoals.trim() ? { goals: reqGoals.trim() } : {}),
       };
 
-      const clientName = buyerProfile?.business_name || buyerProfile?.full_name || user?.user_metadata?.full_name || 'B2B Client Portal';
-      const domainOwnerName = buyerProfile?.full_name || user?.user_metadata?.full_name || '';
+      const { keyRecord } = await developerService.requestDeveloperAccess(requestDetails);
 
-      const { keyRecord } = await developerService.createApiKey(user.id, {
-        clientName,
-        clientWebsite: reqWebsite.trim(),
-        domainOwnerName,
-        gstNumber: reqGstin.trim().toUpperCase(),
-        tier: 'free',
-        ordersEnabled: false,
-        isActive: false, // Critical: Not immediately accessible, requires admin manual approval
-        requestDetails,
-      });
-
+      setRevealedKey(null);
+      setShowKeySecret(false);
       setApiKey(keyRecord);
       if (onAdminUpdate) onAdminUpdate(keyRecord);
     } catch (err) {
@@ -1955,52 +1866,34 @@ export function DeveloperDashboard({
     );
   }
 
-  // 2. Request submitted and pending manual Admin approval
-  const isPendingAdminReview = !isAdminMode && hasKey && !isKeyActive && approvalStatus === 'pending';
+  const waSupportUrl = `https://wa.me/91${(storeConfig.whatsapp || '9919101369').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+    'Hi Weave 365 Team, I need help regarding my Developer API access.'
+  )}`;
 
-  if (isPendingAdminReview) {
-    const waSupportUrl = `https://wa.me/91${(storeConfig.whatsapp || '9919101369').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-      'Hi Weave 365 Team, I have submitted an API Access Request and would like to contact support.'
-    )}`;
+  // 2. Rejected or Admin-Suspended Keys (cannot bypass via UI)
+  const isRejectedRequest = !isAdminMode && hasKey && approvalStatus === 'rejected';
+  const isAdminSuspended = !isAdminMode && hasKey && !isKeyActive && subscriptionStatus === 'active' && !isSubscriptionExpired;
 
+  if (isRejectedRequest || isAdminSuspended) {
     return (
       <div className="dev-after-submission-container">
         <div className="dev-after-submission-card">
-          <div className="dev-after-icon-wrap">
-            <CheckCircle2 size={32} />
+          <div className="dev-after-icon-wrap" style={{ background: '#fee2e2', color: '#dc2626' }}>
+            <AlertTriangle size={32} />
           </div>
-          <div className="dev-after-status-tag">
-            <Clock size={14} />
-            <span>Status: Under Review</span>
+          <div className="dev-after-status-tag" style={{ background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca' }}>
+            <AlertTriangle size={14} />
+            <span>{isRejectedRequest ? 'Status: Access Declined' : 'Status: Key Suspended'}</span>
           </div>
-          <h2 className="dev-after-heading">Thanks. We’ve received your API access request.</h2>
+          <h2 className="dev-after-heading">
+            {isRejectedRequest ? 'API access has been declined.' : 'Your API key is currently suspended.'}
+          </h2>
           <p className="dev-after-body">
-            Our team will review your business and integration requirements and contact you regarding API access and API documentation. Once approved, you will be able to select your monthly developer plan.
+            {isRejectedRequest
+              ? 'Your API access request was declined by Weave 365 administration. Please reach out to our team if you believe this was an error.'
+              : 'Your Developer API key has been temporarily disabled by Weave 365 administration. Contact support to restore access.'}
           </p>
           <div className="dev-after-actions">
-            <button
-              type="button"
-              className="dev-btn-visit"
-              onClick={() => {
-                if (navigate) {
-                  navigate('catalogue');
-                } else {
-                  window.location.href = '/';
-                }
-              }}
-            >
-              <span>Visit Weave 365</span>
-            </button>
-            <a
-              href="/developer-api"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="dev-btn-docs"
-              title="Open Weave 365 Developer API Documentation"
-            >
-              <BookOpen size={16} />
-              <span>API Documentation ↗</span>
-            </a>
             <a
               href={waSupportUrl}
               target="_blank"
@@ -2016,8 +1909,9 @@ export function DeveloperDashboard({
     );
   }
 
-  // 3. Admin approved the request! Now show the Plan Selection UI
-  const isPendingPlanPayment = !isAdminMode && hasKey && approvalStatus === 'approved' && (subscriptionStatus === 'pending_payment' || subscriptionStatus === 'inactive');
+  // 3. Form completed -> Immediately show Plan Selection & Payment (no admin approval step)
+  // Catch-all for any unpaid/inactive non-expired, non-rejected, non-suspended key so dashboard cannot be bypassed
+  const isPendingPlanPayment = !isAdminMode && hasKey && !isKeyActive && !isSubscriptionExpired;
 
   if (isPendingPlanPayment) {
     return (
@@ -2028,7 +1922,12 @@ export function DeveloperDashboard({
           initialPlan={initialPlanFromUrl}
           initialCycle={initialCycleFromUrl}
           onActivated={(updatedRecord) => {
+            setRevealedKey(null);
+            setShowKeySecret(false);
             setApiKey(updatedRecord);
+            if (updatedRecord?.id) {
+              developerService.getUsageStats(updatedRecord.id, 14, updatedRecord.user_id || user?.id).then(setUsageStats);
+            }
             if (onAdminUpdate) onAdminUpdate(updatedRecord);
           }}
         />
@@ -2069,26 +1968,40 @@ export function DeveloperDashboard({
               </label>
               <input
                 id="dev-req-gstin"
+                name="gstin"
                 type="text"
                 required
+                autoCorrect="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                enterKeyHint="next"
                 value={reqGstin}
                 onChange={(e) => setReqGstin(e.target.value.toUpperCase())}
                 placeholder="e.g. 29ABCDE1234F1Z5"
+                minLength={15}
                 maxLength={15}
+                pattern="[A-Za-z0-9]{15}"
+                title="Enter your 15-character alphanumeric GSTIN"
                 className="dev-form-input"
               />
             </div>
 
-            {/* Your eCommerce Website / Online Store URL * */}
+            {/* Store / Website URL * */}
             <div className="dev-form-group">
               <label className="dev-group-label" htmlFor="dev-req-website">
-                <span>Your eCommerce Website / Online Store URL</span>
+                <span>Store / Website URL</span>
                 <span className="dev-required">*</span>
               </label>
               <input
                 id="dev-req-website"
+                name="website"
                 type="url"
                 required
+                autoComplete="url"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                enterKeyHint="next"
                 value={reqWebsite}
                 onChange={(e) => setReqWebsite(e.target.value)}
                 placeholder="https://www.yourstore.com"
@@ -2096,76 +2009,49 @@ export function DeveloperDashboard({
               />
             </div>
 
-            {/* What best describes your business? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>What best describes your business?</span>
+            {/* Platform * */}
+            <fieldset className="dev-form-fieldset">
+              <legend className="dev-group-label">
+                <span>Platform</span>
                 <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
-              <div className="dev-options-list">
-                {BUSINESS_TYPES.map((type) => (
-                  <label
-                    key={type}
-                    className={`dev-option-label ${reqBusinessType === type ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="business_type"
-                      value={type}
-                      checked={reqBusinessType === type}
-                      onChange={() => setReqBusinessType(type)}
-                      className="dev-option-input"
-                      required
-                    />
-                    <span>{type}</span>
-                  </label>
-                ))}
+              </legend>
+              <div className="dev-chip-group">
+                {INTEGRATION_PLATFORMS.map((platform) => {
+                  const isSelected = reqPlatform === platform;
+                  return (
+                    <label
+                      key={platform}
+                      className={`dev-chip-option ${isSelected ? 'selected' : ''}`}
+                    >
+                      <input
+                        type="radio"
+                        name="integration_platform"
+                        value={platform}
+                        checked={isSelected}
+                        onChange={() => setReqPlatform(platform)}
+                        className="dev-chip-input"
+                        required
+                      />
+                      <span>{platform}</span>
+                    </label>
+                  );
+                })}
               </div>
-            </div>
+            </fieldset>
 
-            {/* Is your business currently operational? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>Is your business currently operational?</span>
+            {/* API Features Needed * */}
+            <fieldset className="dev-form-fieldset">
+              <legend className="dev-group-label">
+                <span>API Features Needed</span>
                 <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
-              <div className="dev-options-list">
-                {OPERATIONAL_STATUSES.map((status) => (
-                  <label
-                    key={status}
-                    className={`dev-option-label ${reqOperationalStatus === status ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="operational_status"
-                      value={status}
-                      checked={reqOperationalStatus === status}
-                      onChange={() => setReqOperationalStatus(status)}
-                      className="dev-option-input"
-                      required
-                    />
-                    <span>{status}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* What do you want to use the Weave 365 API for? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>What do you want to use the Weave 365 API for?</span>
-                <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Checkboxes. Allow multiple selections.</span>
-              <div className="dev-options-list">
+              </legend>
+              <div className="dev-chip-group">
                 {API_USE_CASES.map((useCase) => {
                   const isChecked = reqUseCases.includes(useCase);
                   return (
                     <label
                       key={useCase}
-                      className={`dev-option-label ${isChecked ? 'selected' : ''}`}
+                      className={`dev-chip-option ${isChecked ? 'selected' : ''}`}
                     >
                       <input
                         type="checkbox"
@@ -2173,160 +2059,29 @@ export function DeveloperDashboard({
                         value={useCase}
                         checked={isChecked}
                         onChange={() => handleToggleUseCase(useCase)}
-                        className="dev-option-input"
+                        className="dev-chip-input"
                       />
                       <span>{useCase}</span>
                     </label>
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
 
-            {/* Which platform are you integrating with? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>Which platform are you integrating with?</span>
-                <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
-              <div className="dev-options-list">
-                {INTEGRATION_PLATFORMS.map((platform) => (
-                  <label
-                    key={platform}
-                    className={`dev-option-label ${reqPlatform === platform ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="integration_platform"
-                      value={platform}
-                      checked={reqPlatform === platform}
-                      onChange={() => setReqPlatform(platform)}
-                      className="dev-option-input"
-                      required
-                    />
-                    <span>{platform}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* What is your expected monthly order volume? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>What is your expected monthly order volume?</span>
-                <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
-              <div className="dev-options-list">
-                {MONTHLY_ORDER_VOLUMES.map((vol) => (
-                  <label
-                    key={vol}
-                    className={`dev-option-label ${reqOrderVolume === vol ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="monthly_volume"
-                      value={vol}
-                      checked={reqOrderVolume === vol}
-                      onChange={() => setReqOrderVolume(vol)}
-                      className="dev-option-input"
-                      required
-                    />
-                    <span>{vol}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* When do you plan to start using the API? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>When do you plan to start using the API?</span>
-                <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
-              <div className="dev-options-list">
-                {TIMELINE_OPTIONS.map((time) => (
-                  <label
-                    key={time}
-                    className={`dev-option-label ${reqTimeline === time ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="start_timeline"
-                      value={time}
-                      checked={reqTimeline === time}
-                      onChange={() => setReqTimeline(time)}
-                      className="dev-option-input"
-                      required
-                    />
-                    <span>{time}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Do you currently sell products from other suppliers? * */}
-            <div className="dev-form-group">
-              <label className="dev-group-label">
-                <span>Do you currently sell products from other suppliers?</span>
-                <span className="dev-required">*</span>
-              </label>
-              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
-              <div className="dev-options-list">
-                {OTHER_SUPPLIERS_OPTIONS.map((opt) => (
-                  <label
-                    key={opt}
-                    className={`dev-option-label ${reqOtherSuppliers === opt ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="other_suppliers"
-                      value={opt}
-                      checked={reqOtherSuppliers === opt}
-                      onChange={() => setReqOtherSuppliers(opt)}
-                      className="dev-option-input"
-                      required
-                    />
-                    <span>{opt}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* What are you looking to achieve through the integration? * */}
+            {/* Optional Notes */}
             <div className="dev-form-group">
               <label className="dev-group-label" htmlFor="dev-req-goals">
-                <span>What are you looking to achieve through the integration?</span>
-                <span className="dev-required">*</span>
+                <span>Notes</span>
+                <span className="dev-group-optional">(Optional)</span>
               </label>
-              <span className="dev-group-caption">Use a Long Text field.</span>
               <textarea
                 id="dev-req-goals"
-                required
-                rows={4}
+                name="notes"
+                rows={2}
                 value={reqGoals}
                 onChange={(e) => setReqGoals(e.target.value)}
-                placeholder="Please tell us briefly about your business, your current setup, and what you want to automate using the API."
+                placeholder="Share any custom ERP or workflow details if needed"
                 className="dev-form-textarea"
-              />
-            </div>
-
-            {/* Technical Contact / Developer Email */}
-            <div className="dev-form-group">
-              <label className="dev-group-label" htmlFor="dev-req-tech-email">
-                <span>Technical Contact / Developer Email</span>
-              </label>
-              <span className="dev-group-caption">
-                Optional. If the developer or technical contact is different from the registered Weave 365 account holder, enter their email address here.
-              </span>
-              <input
-                id="dev-req-tech-email"
-                type="email"
-                value={reqTechnicalEmail}
-                onChange={(e) => setReqTechnicalEmail(e.target.value)}
-                placeholder="developer@example.com"
-                className="dev-form-input"
               />
             </div>
 
@@ -2338,10 +2093,10 @@ export function DeveloperDashboard({
                 className="dev-api-submit-btn"
               >
                 {submittingRequest ? <RefreshCw size={16} className="spin-icon" /> : <Zap size={16} />}
-                <span>{submittingRequest ? 'Submitting Request...' : 'Request API Access'}</span>
+                <span>{submittingRequest ? 'Saving Details...' : 'Continue to Plan Selection'}</span>
               </button>
               <p className="dev-api-footnote">
-                Our technology team will review your business and integration requirements before providing API access.
+                Your API credentials unlock immediately once your subscription payment is complete.
               </p>
             </div>
           </form>

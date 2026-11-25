@@ -204,12 +204,8 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
       if (tierFilter !== 'all' && k.tier !== tierFilter) return false;
       if (statusFilter === 'active' && !k.is_active) return false;
       if (statusFilter === 'disabled' && k.is_active) return false;
-      if (statusFilter === 'pending') {
-        const isPending = !k.is_active && (k.approval_status === 'pending' || Boolean(k.profiles?.qualification?.api_access_request));
-        if (!isPending) return false;
-      }
       if (statusFilter === 'pending_payment') {
-        const isPendingPay = k.approval_status === 'approved' && k.subscription_status === 'pending_payment';
+        const isPendingPay = !k.is_active && (k.subscription_status === 'pending_payment' || k.subscription_status === 'inactive' || k.approval_status === 'pending');
         if (!isPendingPay) return false;
       }
       if (statusFilter === 'expired') {
@@ -516,8 +512,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Statuses</option>
-            <option value="pending">Pending Admin Review</option>
-            <option value="pending_payment">Approved • Awaiting Payment</option>
+            <option value="pending_payment">Awaiting Payment</option>
             <option value="active">Active Only</option>
             <option value="expired">Subscription Expired</option>
             <option value="disabled">Disabled Only</option>
@@ -556,8 +551,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
               const tierInfo = TIER_CONFIGS[item.tier] || TIER_CONFIGS.free;
               const phone = item.profiles?.whatsapp || '';
               const whatsappUrl = phone ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(item.client_name)},%20regarding%20your%20Weave365%20API%20integration...` : null;
-              const hasAccessRequest = item.approval_status === 'pending' || Boolean(item.profiles?.qualification?.api_access_request);
-              const isPendingApproval = !item.is_active && item.approval_status !== 'approved' && hasAccessRequest;
+              const isAwaitingPayment = !item.is_active && (
+                item.subscription_status === 'pending_payment' ||
+                item.subscription_status === 'inactive' ||
+                item.approval_status === 'pending'
+              );
 
               return (
                 <tr key={item.id}>
@@ -585,28 +583,16 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       )}
                     </div>
 
-                    {item.approval_status === 'approved' && item.subscription_status === 'pending_payment' ? (
+                    {isAwaitingPayment ? (
                       <div className="api-client-subtag">
                         <button
                           type="button"
                           onClick={() => setReviewRequestItem(item)}
                           className="api-badge-btn pending-payment"
-                          title="Application approved (Awaiting payment). Click to inspect details or override"
-                        >
-                          <CheckCircle2 size={10} />
-                          <span>Approved</span>
-                        </button>
-                      </div>
-                    ) : isPendingApproval ? (
-                      <div className="api-client-subtag">
-                        <button
-                          type="button"
-                          onClick={() => setReviewRequestItem(item)}
-                          className="api-badge-btn pending-review"
-                          title="Click to review submitted API Access Request"
+                          title="Onboarding completed (Awaiting plan payment). Click to inspect details or override"
                         >
                           <Clock size={10} />
-                          <span>Pending Approval</span>
+                          <span>Awaiting Payment</span>
                         </button>
                       </div>
                     ) : item.subscription_status === 'expired' || (item.subscription_expires_at && new Date(item.subscription_expires_at).getTime() < Date.now()) ? (
@@ -1189,21 +1175,14 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                 const profQual = prof.qualification || {};
                 const req = reviewRequestItem.request_details || profQual.api_access_request || {};
                 const isItemActive = Boolean(reviewRequestItem.is_active);
-                const isApprovedPendingPay = reviewRequestItem.approval_status === 'approved' && reviewRequestItem.subscription_status === 'pending_payment';
+                const isAwaitingPayment = !isItemActive && (reviewRequestItem.subscription_status === 'pending_payment' || reviewRequestItem.subscription_status === 'inactive' || reviewRequestItem.approval_status === 'pending');
 
-                // Intelligent resolution across direct request details, profile qualification, and storefront data
-                const businessDescription = req.businessType || profQual.business_type_label || (profQual.business_type ? profQual.business_type.replace(/_/g, ' ') : '') || prof.buyer_subtype || 'Online Store / B2B Partner';
-                const operationalStatus = req.operationalStatus || (profQual.business_experience ? `Operational (${profQual.business_experience.replace(/_/g, ' ')})` : (profQual.form_completed ? 'Operational Storefront' : 'Active Storefront'));
                 const storefrontUrl = req.websiteUrl || reviewRequestItem.client_website || prof.website || profQual.website || '';
-                const platform = req.platform || (storefrontUrl.toLowerCase().includes('shopify') ? 'Shopify' : (storefrontUrl.toLowerCase().includes('woo') ? 'WooCommerce' : 'Custom eCommerce Storefront'));
+                const platform = req.platform || (storefrontUrl.toLowerCase().includes('shopify') ? 'Shopify' : (storefrontUrl.toLowerCase().includes('woo') ? 'WooCommerce' : 'Custom Website'));
                 const useCases = (Array.isArray(req.apiUseCases) && req.apiUseCases.length > 0)
                   ? req.apiUseCases
-                  : ['Product Catalog', 'Live Inventory', 'Pricing Feed'];
-                const monthlyVolume = req.monthlyOrderVolume || (profQual.monthly_budget ? `Budget: ${profQual.monthly_budget.replace(/_/g, ' ')}` : '50 - 200 orders');
-                const timeline = req.timeline || (profQual.purchase_intent ? `Within ${profQual.purchase_intent.replace(/_/g, ' ')}` : 'Immediate / Within 7 days');
-                const otherSuppliers = req.sellsOtherSuppliers || (profQual.sales_channels ? `Sales Channels: ${profQual.sales_channels.join(', ')}` : 'Direct Weave 365 sourcing');
-                const techEmail = req.technicalEmail || prof.email || 'None provided';
-                const goals = req.goals || (profQual.instagram ? `Instagram: ${profQual.instagram} · Automated catalog and live inventory synchronization for ${reviewRequestItem.client_name || 'storefront'}.` : `Automated catalog & stock integration for ${reviewRequestItem.client_name || 'connected storefront'}.`);
+                  : ['Catalog & Images', 'Live Stock Sync'];
+                const notes = req.goals || '';
 
                 return (
                   <>
@@ -1229,11 +1208,11 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                         fontWeight: 600,
                         padding: '3px 9px',
                         borderRadius: '5px',
-                        background: isItemActive ? 'var(--admin-success-bg, #ecfdf5)' : isApprovedPendingPay ? 'var(--admin-info-bg, #eff6ff)' : 'var(--admin-warning-bg, #fef3c7)',
-                        color: isItemActive ? 'var(--admin-success-text, #065f46)' : isApprovedPendingPay ? 'var(--admin-info-text, #1e40af)' : 'var(--admin-warning-text, #92400e)',
-                        border: `1px solid ${isItemActive ? '#a7f3d0' : isApprovedPendingPay ? '#bfdbfe' : '#fde68a'}`
+                        background: isItemActive ? 'var(--admin-success-bg, #ecfdf5)' : isAwaitingPayment ? 'var(--admin-info-bg, #eff6ff)' : 'var(--admin-warning-bg, #fef3c7)',
+                        color: isItemActive ? 'var(--admin-success-text, #065f46)' : isAwaitingPayment ? 'var(--admin-info-text, #1e40af)' : 'var(--admin-warning-text, #92400e)',
+                        border: `1px solid ${isItemActive ? '#a7f3d0' : isAwaitingPayment ? '#bfdbfe' : '#fde68a'}`
                       }}>
-                        {isItemActive ? 'Active & Approved' : isApprovedPendingPay ? 'Approved • Awaiting Payment' : 'Pending Admin Review'}
+                        {isItemActive ? 'Active & Paid' : 'Awaiting Payment'}
                       </span>
                     </div>
 
@@ -1282,29 +1261,12 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                     </div>
 
                     <div className="api-req-item">
-                      <span className="api-req-label">Business Description</span>
-                      <span className="api-req-val">
-                        {businessDescription}
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="api-req-item">
-                        <span className="api-req-label">Operational Status</span>
-                        <span className="api-req-val">
-                          {operationalStatus}
-                        </span>
-                      </div>
-                      <div className="api-req-item">
-                        <span className="api-req-label">Integration Platform</span>
-                        <span className="api-req-val">
-                          {platform}
-                        </span>
-                      </div>
+                      <span className="api-req-label">Platform</span>
+                      <span className="api-req-val">{platform}</span>
                     </div>
 
                     <div className="api-req-item">
-                      <span className="api-req-label">API Use Cases Requested</span>
+                      <span className="api-req-label">API Features Requested</span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '3px' }}>
                         {useCases.map((uc) => (
                           <span
@@ -1328,53 +1290,25 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    {notes && (
                       <div className="api-req-item">
-                        <span className="api-req-label">Expected Monthly Volume</span>
-                        <span className="api-req-val">
-                          {monthlyVolume}
-                        </span>
+                        <span className="api-req-label">Notes</span>
+                        <div
+                          style={{
+                            background: 'var(--admin-surface-subtle, #f8fafc)',
+                            padding: 'var(--admin-space-2, 10px) var(--admin-space-3, 14px)',
+                            borderRadius: 'var(--admin-radius-sm, 6px)',
+                            border: '1px solid var(--admin-border, #e2e8f0)',
+                            fontSize: 'var(--admin-font-size-12, 0.8125rem)',
+                            lineHeight: '1.55',
+                            color: 'var(--admin-text-secondary, #334155)',
+                            whiteSpace: 'pre-wrap',
+                          }}
+                        >
+                          {notes}
+                        </div>
                       </div>
-                      <div className="api-req-item">
-                        <span className="api-req-label">Start Timeline</span>
-                        <span className="api-req-val">
-                          {timeline}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="api-req-item">
-                        <span className="api-req-label">Sells from Other Suppliers?</span>
-                        <span className="api-req-val">
-                          {otherSuppliers}
-                        </span>
-                      </div>
-                      <div className="api-req-item">
-                        <span className="api-req-label">Technical Contact Email</span>
-                        <span className="api-req-val">
-                          {techEmail}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="api-req-item">
-                      <span className="api-req-label">Integration Goals &amp; Objectives</span>
-                      <div
-                        style={{
-                          background: 'var(--admin-surface-subtle, #f8fafc)',
-                          padding: 'var(--admin-space-2, 10px) var(--admin-space-3, 14px)',
-                          borderRadius: 'var(--admin-radius-sm, 6px)',
-                          border: '1px solid var(--admin-border, #e2e8f0)',
-                          fontSize: 'var(--admin-font-size-12, 0.8125rem)',
-                          lineHeight: '1.55',
-                          color: 'var(--admin-text-secondary, #334155)',
-                          whiteSpace: 'pre-wrap',
-                        }}
-                      >
-                        {goals}
-                      </div>
-                    </div>
+                    )}
 
                     {req.submittedAt && (
                       <div style={{ fontSize: 'var(--admin-font-size-12, 0.75rem)', color: 'var(--admin-text-dim, #94a3b8)', textAlign: 'right' }}>
@@ -1431,55 +1365,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                 <Trash2 size={13} />
                 <span>Reject &amp; Delete</span>
               </button>
-              {reviewRequestItem.approval_status !== 'approved' && !reviewRequestItem.is_active && (
-                <button
-                  type="button"
-                  disabled={approvingRequestId === reviewRequestItem.id}
-                  style={{
-                    height: '36px',
-                    padding: '0 18px',
-                    fontSize: 'var(--admin-font-size-12, 0.75rem)',
-                    fontWeight: 600,
-                    background: 'var(--admin-metric-green, #059669)',
-                    border: '1px solid var(--admin-metric-green, #059669)',
-                    color: 'var(--admin-text-inverse, #ffffff)',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    whiteSpace: 'nowrap',
-                  }}
-                  onClick={async () => {
-                    const keyId = reviewRequestItem.id;
-                    setApprovingRequestId(keyId);
-                    try {
-                      const { error } = await developerService.updateApiKey(keyId, {
-                        approval_status: 'approved',
-                        subscription_status: 'pending_payment',
-                        is_active: false,
-                      });
-                      if (error) throw error;
-                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, approval_status: 'approved', subscription_status: 'pending_payment', is_active: false } : k)));
-                      setReviewRequestItem((prev) => (prev ? { ...prev, approval_status: 'approved', subscription_status: 'pending_payment', is_active: false } : null));
-                      if (loadAdminData) loadAdminData();
-                      alert('API Access approved! The partner can now select either Growth Partner (₹299/mo) or Pro Scale (₹499/mo) plan to activate their API key.');
-                    } catch (err) {
-                      alert('Failed to approve API access: ' + err.message);
-                    } finally {
-                      setApprovingRequestId(null);
-                    }
-                  }}
-                >
-                  {approvingRequestId === reviewRequestItem.id ? (
-                    <RefreshCw size={14} className="spin-icon" />
-                  ) : (
-                    <CheckCircle2 size={14} />
-                  )}
-                  <span>Approve Access (Allow Plan Selection)</span>
-                </button>
-              )}
-              {reviewRequestItem.approval_status === 'approved' && !reviewRequestItem.is_active && (
+              {!reviewRequestItem.is_active && (
                 <button
                   type="button"
                   disabled={approvingRequestId === reviewRequestItem.id}

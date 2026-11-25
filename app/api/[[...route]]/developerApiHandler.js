@@ -486,7 +486,12 @@ export async function authenticateApiKey(request, supabase) {
 
   const keyHash = await hashApiKey(rawKey);
   const cached = keyMemoryCache.get(keyHash);
-  if (cached && (now - cached.timestamp < KEY_CACHE_TTL_MS)) {
+  if (
+    cached &&
+    (now - cached.timestamp < KEY_CACHE_TTL_MS) &&
+    cached.data?.is_active &&
+    cached.data?.subscription_status === 'active'
+  ) {
     keyRecord = cached.data;
   } else {
     const { data, error } = await supabase
@@ -497,7 +502,11 @@ export async function authenticateApiKey(request, supabase) {
 
     if (!error && data) {
       keyRecord = data;
-      keyMemoryCache.set(keyHash, { data: keyRecord, timestamp: now });
+      if (keyRecord.is_active && keyRecord.subscription_status === 'active') {
+        keyMemoryCache.set(keyHash, { data: keyRecord, timestamp: now });
+      } else {
+        keyMemoryCache.delete(keyHash);
+      }
     }
   }
 
@@ -509,7 +518,18 @@ export async function authenticateApiKey(request, supabase) {
     };
   }
 
-  // 1. Monthly Subscription Expiry Enforcement
+  // 0. Rejection check
+  if (keyRecord.approval_status === 'rejected') {
+    return {
+      authenticated: false,
+      status: 403,
+      code: 'KEY_REJECTED',
+      error: 'This API key access has been rejected by Weave365 administration.',
+      keyRecord,
+    };
+  }
+
+  // 1. Monthly Subscription Expiry & Active Plan Enforcement
   if (keyRecord.subscription_expires_at) {
     const expiresAt = new Date(keyRecord.subscription_expires_at).getTime();
     if (!Number.isNaN(expiresAt) && expiresAt < now) {
@@ -529,7 +549,9 @@ export async function authenticateApiKey(request, supabase) {
       error: 'Your API subscription has expired. Please renew your plan in the developer dashboard to restore API access.',
       keyRecord,
     };
-  } else if (keyRecord.subscription_status === 'pending_payment') {
+  }
+
+  if (keyRecord.subscription_status && keyRecord.subscription_status !== 'active') {
     return {
       authenticated: false,
       status: 403,
@@ -2738,32 +2760,145 @@ async function decryptSecret(payload, secretKey) {
   return decoder.decode(decryptedBuf);
 }
 
-/**
- * Handle on-demand secure reveal of full API key.
- * Strictly verifies authenticated user session and key ownership.
- */
-async function handleRevealApiKey(request, supabase) {
-  const cors = getCorsHeaders(request);
+const ALLOWED_INTEGRATION_PLATFORMS = ['WooCommerce', 'Shopify', 'PrestaShop', 'Custom Website', 'Other'];
+const ALLOWED_API_USE_CASES = [
+  'Catalog Sync',
+  'Real-time Inventory',
+  'Order Automation',
+  'Bulk Reseller Pricing',
+];
+
+function sanitizeServerKeyRecord(record) {
+  if (!record || typeof record !== 'object') return record;
+  const { key_hash, encrypted_key, ...safe } = record;
+  if (safe.key_prefix && safe.key_prefix.length > 20) {
+    safe.key_prefix = `${safe.key_prefix.slice(0, 14)}...${safe.key_prefix.slice(-4)}`;
+  }
+  if (safe.profiles?.qualification?.encrypted_api_keys) {
+    const safeQual = { ...safe.profiles.qualification };
+    delete safeQual.encrypted_api_keys;
+    safe.profiles = { ...safe.profiles, qualification: safeQual };
+  }
+  return safe;
+}
+
+function generateRawApiKeyServer() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return `w365_live_${bufToHex(bytes)}`;
+}
+
+function normalizeAndValidateWebsiteUrl(rawUrl) {
+  const trimmed = String(rawUrl || '').trim();
+  if (!trimmed) return null;
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withScheme);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    if (!parsed.hostname || (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost')) return null;
+    return parsed.toString().replace(/\/$/, '');
+  } catch {
+    return null;
+  }
+}
+
+async function authenticateSessionUser(request, supabase, cors) {
   const authHeader = request.headers.get('authorization') || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
 
   if (!token) {
-    return Response.json({
-      success: false,
-      code: 'UNAUTHORIZED',
-      error: 'Authentication token required to reveal credentials.',
-    }, { status: 401, headers: cors });
+    return {
+      errorResponse: Response.json({
+        success: false,
+        code: 'UNAUTHORIZED',
+        error: 'Authentication token required.',
+      }, { status: 401, headers: cors }),
+    };
   }
 
-  // 1. Verify caller session with Supabase Auth
   const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
   if (userError || !authUser) {
-    return Response.json({
-      success: false,
-      code: 'UNAUTHORIZED',
-      error: 'Invalid or expired session. Please sign in again.',
-    }, { status: 401, headers: cors });
+    return {
+      errorResponse: Response.json({
+        success: false,
+        code: 'UNAUTHORIZED',
+        error: 'Invalid or expired session. Please sign in again.',
+      }, { status: 401, headers: cors }),
+    };
   }
+
+  return { authUser };
+}
+
+async function isAdminUser(authUser, supabase) {
+  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const userEmail = (authUser?.email || '').trim().toLowerCase();
+  if (adminEmails.includes(userEmail)) return true;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', authUser.id)
+    .maybeSingle();
+  return profile?.role === 'admin';
+}
+
+async function vaultEncryptedApiKey(supabase, userId, keyId, rawKey) {
+  const vaultSecret = getVaultSecret();
+  const ciphertext = await encryptSecret(rawKey, vaultSecret);
+
+  const { data: prof } = await supabase.from('profiles').select('qualification').eq('id', userId).maybeSingle();
+  const currentQual = (prof?.qualification && typeof prof.qualification === 'object') ? prof.qualification : {};
+  const existingVault = (currentQual.encrypted_api_keys && typeof currentQual.encrypted_api_keys === 'object')
+    ? currentQual.encrypted_api_keys
+    : {};
+
+  await supabase.from('profiles').update({
+    qualification: {
+      ...currentQual,
+      encrypted_api_keys: { ...existingVault, [keyId]: ciphertext },
+    },
+  }).eq('id', userId);
+
+  try {
+    await supabase.from('api_keys').update({ encrypted_key: ciphertext }).eq('id', keyId);
+  } catch (_) { }
+
+  try {
+    await supabase.from('admin_notes').insert([{
+      buyer_id: userId,
+      note: JSON.stringify({ type: 'encrypted_api_key', keyId, ciphertext, createdAt: new Date().toISOString() }),
+    }]);
+  } catch (_) { }
+
+  return ciphertext;
+}
+
+/**
+ * Check whether an API key has an active, paid, unexpired subscription.
+ */
+function hasActivePaidSubscription(keyRecord) {
+  if (!keyRecord || !keyRecord.is_active) return false;
+  if (keyRecord.approval_status === 'rejected') return false;
+  if (keyRecord.subscription_status !== 'active') return false;
+  if (keyRecord.subscription_expires_at) {
+    const expiresAt = new Date(keyRecord.subscription_expires_at).getTime();
+    if (!Number.isNaN(expiresAt) && expiresAt < Date.now()) return false;
+  }
+  return true;
+}
+
+/**
+ * Handle on-demand secure reveal of full API key.
+ * Strictly verifies authenticated user session, ownership, and paid active status for non-admins.
+ */
+async function handleRevealApiKey(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const { authUser, errorResponse } = await authenticateSessionUser(request, supabase, cors);
+  if (errorResponse) return errorResponse;
 
   let body = {};
   try {
@@ -2795,27 +2930,23 @@ async function handleRevealApiKey(request, supabase) {
   }
 
   // 3. Authorize: Caller must be the key owner or an authorized administrator
-  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
-  const userEmail = (authUser.email || '').trim().toLowerCase();
-  let isAuthorized = (authUser.id === keyRecord.user_id) || adminEmails.includes(userEmail);
+  const callerIsAdmin = await isAdminUser(authUser, supabase);
+  const isOwner = authUser.id === keyRecord.user_id;
 
-  if (!isAuthorized) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', authUser.id)
-      .maybeSingle();
-    if (profile?.role === 'admin') isAuthorized = true;
-  }
-
-  if (!isAuthorized) {
+  if (!isOwner && !callerIsAdmin) {
     return Response.json({
       success: false,
       code: 'FORBIDDEN',
       error: 'You do not have permission to inspect this API key.',
+    }, { status: 403, headers: cors });
+  }
+
+  // 3b. Anti-bypass guard: Non-admin owners CANNOT reveal their raw secret key until payment is active
+  if (!callerIsAdmin && !hasActivePaidSubscription(keyRecord)) {
+    return Response.json({
+      success: false,
+      code: 'PAYMENT_REQUIRED',
+      error: 'Complete your plan payment to unlock and reveal your API key.',
     }, { status: 403, headers: cors });
   }
 
@@ -2891,20 +3022,12 @@ async function handleRevealApiKey(request, supabase) {
 
 /**
  * Handle secure vaulting of raw API key immediately upon generation / regeneration.
+ * Verifies rawKey matches the stored key_hash to prevent tampering.
  */
 async function handleVaultApiKey(request, supabase) {
   const cors = getCorsHeaders(request);
-  const authHeader = request.headers.get('authorization') || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-  if (!token) {
-    return Response.json({ success: false, code: 'UNAUTHORIZED', error: 'Authentication required' }, { status: 401, headers: cors });
-  }
-
-  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !authUser) {
-    return Response.json({ success: false, code: 'UNAUTHORIZED', error: 'Invalid session' }, { status: 401, headers: cors });
-  }
+  const { authUser, errorResponse } = await authenticateSessionUser(request, supabase, cors);
+  if (errorResponse) return errorResponse;
 
   let body = {};
   try {
@@ -2916,49 +3039,28 @@ async function handleVaultApiKey(request, supabase) {
     return Response.json({ success: false, code: 'BAD_REQUEST', error: 'Missing keyId, rawKey, or userId' }, { status: 400, headers: cors });
   }
 
-  // Authorization check
-  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
-  const userEmail = (authUser.email || '').trim().toLowerCase();
-  let isAuthorized = (authUser.id === userId) || adminEmails.includes(userEmail);
-
-  if (!isAuthorized) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', authUser.id).maybeSingle();
-    if (profile?.role === 'admin') isAuthorized = true;
-  }
-
-  if (!isAuthorized) {
+  const callerIsAdmin = await isAdminUser(authUser, supabase);
+  if (authUser.id !== userId && !callerIsAdmin) {
     return Response.json({ success: false, code: 'FORBIDDEN', error: 'Unauthorized to vault this key' }, { status: 403, headers: cors });
   }
 
+  const { data: keyRecord } = await supabase
+    .from('api_keys')
+    .select('id, user_id, key_hash')
+    .eq('id', keyId)
+    .maybeSingle();
+
+  if (!keyRecord || (keyRecord.user_id !== userId && !callerIsAdmin)) {
+    return Response.json({ success: false, code: 'NOT_FOUND', error: 'API key record not found' }, { status: 404, headers: cors });
+  }
+
+  const suppliedHash = await hashApiKey(rawKey);
+  if (keyRecord.key_hash && suppliedHash !== keyRecord.key_hash) {
+    return Response.json({ success: false, code: 'FORBIDDEN', error: 'Supplied secret does not match stored key hash.' }, { status: 403, headers: cors });
+  }
+
   try {
-    const vaultSecret = getVaultSecret();
-    const ciphertext = await encryptSecret(rawKey, vaultSecret);
-
-    // 1. Vault in profiles.qualification.encrypted_api_keys
-    const { data: prof } = await supabase.from('profiles').select('qualification').eq('id', userId).maybeSingle();
-    const currentQual = prof?.qualification || {};
-    const existingVault = currentQual.encrypted_api_keys || {};
-    const updatedVault = { ...existingVault, [keyId]: ciphertext };
-    await supabase.from('profiles').update({
-      qualification: { ...currentQual, encrypted_api_keys: updatedVault }
-    }).eq('id', userId);
-
-    // 2. Direct update to api_keys.encrypted_key if column exists
-    try {
-      await supabase.from('api_keys').update({ encrypted_key: ciphertext }).eq('id', keyId);
-    } catch (_) { }
-
-    // 3. Backup vault in admin_notes
-    try {
-      await supabase.from('admin_notes').insert([{
-        buyer_id: userId,
-        note: JSON.stringify({ type: 'encrypted_api_key', keyId, ciphertext, createdAt: new Date().toISOString() })
-      }]);
-    } catch (_) { }
-
+    await vaultEncryptedApiKey(supabase, userId, keyId, rawKey);
     return Response.json({ success: true }, { status: 200, headers: cors });
   } catch (err) {
     console.error('[handleVaultApiKey] Vaulting failed:', err);
@@ -2967,31 +3069,271 @@ async function handleVaultApiKey(request, supabase) {
 }
 
 /**
+ * Server-side onboarding endpoint: submits the API Access form, validates required fields,
+ * generates + hashes + vaults an inactive key (pending_payment), and immediately unlocks plan selection.
+ * Never returns the raw secret key prior to payment verification.
+ */
+export async function handleRequestDeveloperAccess(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const { authUser, errorResponse } = await authenticateSessionUser(request, supabase, cors);
+  if (errorResponse) return errorResponse;
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch { }
+
+  const gstin = String(body?.gstin || '').trim().toUpperCase();
+  const normalizedUrl = normalizeAndValidateWebsiteUrl(body?.websiteUrl || body?.clientWebsite);
+  const platform = String(body?.platform || '').trim();
+  const rawUseCases = Array.isArray(body?.apiUseCases) ? body.apiUseCases : [];
+  const apiUseCases = [...new Set(rawUseCases.map(v => String(v || '').trim()).filter(v => ALLOWED_API_USE_CASES.includes(v)))];
+  const goals = String(body?.goals || '').trim().slice(0, 1000);
+
+  if (!/^[A-Z0-9]{15}$/.test(gstin)) {
+    return Response.json({
+      success: false,
+      code: 'INVALID_GSTIN',
+      error: 'Please enter a valid 15-character alphanumeric GSTIN.',
+    }, { status: 400, headers: cors });
+  }
+
+  if (!normalizedUrl) {
+    return Response.json({
+      success: false,
+      code: 'INVALID_WEBSITE_URL',
+      error: 'Please enter a valid Store / Website URL (e.g. https://www.yourstore.com).',
+    }, { status: 400, headers: cors });
+  }
+
+  if (!ALLOWED_INTEGRATION_PLATFORMS.includes(platform)) {
+    return Response.json({
+      success: false,
+      code: 'INVALID_PLATFORM',
+      error: 'Please select a valid integration platform.',
+    }, { status: 400, headers: cors });
+  }
+
+  if (apiUseCases.length === 0) {
+    return Response.json({
+      success: false,
+      code: 'INVALID_USE_CASES',
+      error: 'Please select at least one API feature.',
+    }, { status: 400, headers: cors });
+  }
+
+  // Fetch user profile for storefront metadata and qualification preservation
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, full_name, business_name, qualification')
+    .eq('id', authUser.id)
+    .maybeSingle();
+
+  const clientName = String(profile?.business_name || profile?.full_name || authUser.user_metadata?.full_name || 'B2B Client Portal').trim();
+  const domainOwnerName = String(profile?.full_name || authUser.user_metadata?.full_name || '').trim();
+  const nowIso = new Date().toISOString();
+
+  const requestDetails = {
+    gstin,
+    websiteUrl: normalizedUrl,
+    platform,
+    apiUseCases,
+    ...(goals ? { goals } : {}),
+    submittedAt: nowIso,
+  };
+
+  // Prevent duplicate active keys or silent bypass of suspended/rejected keys
+  const { data: existingKey } = await supabase
+    .from('api_keys')
+    .select('*')
+    .eq('user_id', authUser.id)
+    .order('created_at', { ascending: false })
+    .maybeSingle();
+
+  if (existingKey?.approval_status === 'rejected') {
+    return Response.json({
+      success: false,
+      code: 'KEY_REJECTED',
+      error: 'Your API access request was declined by Weave365 administration. Please contact support.',
+    }, { status: 403, headers: cors });
+  }
+
+  if (existingKey && (existingKey.is_active || existingKey.subscription_status === 'active')) {
+    return Response.json({
+      success: true,
+      alreadyExists: true,
+      keyRecord: sanitizeServerKeyRecord(existingKey),
+    }, { status: 200, headers: cors });
+  }
+
+  const currentQual = (profile?.qualification && typeof profile.qualification === 'object') ? profile.qualification : {};
+  await supabase.from('profiles').update({
+    ...(clientName ? { business_name: clientName } : {}),
+    ...(domainOwnerName ? { full_name: domainOwnerName } : {}),
+    qualification: {
+      ...currentQual,
+      api_access_request: requestDetails,
+    },
+  }).eq('id', authUser.id);
+
+  // If user already created an unpaid pending_payment key, update its details rather than creating orphans
+  if (existingKey?.id) {
+    const { data: updatedExisting, error: updateErr } = await supabase
+      .from('api_keys')
+      .update({
+        client_name: clientName,
+        client_website: normalizedUrl,
+        domain_owner_name: domainOwnerName,
+        gst_number: gstin,
+        approval_status: 'approved',
+        subscription_status: existingKey.subscription_status === 'expired' ? 'expired' : 'pending_payment',
+        is_active: false,
+        orders_enabled: false,
+        updated_at: nowIso,
+      })
+      .eq('id', existingKey.id)
+      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
+      .single();
+
+    if (updateErr) {
+      return Response.json({
+        success: false,
+        code: 'DATABASE_ERROR',
+        error: updateErr.message || 'Failed to update API access record.',
+      }, { status: 500, headers: cors });
+    }
+
+    return Response.json({
+      success: true,
+      keyRecord: sanitizeServerKeyRecord(updatedExisting),
+    }, { status: 200, headers: cors });
+  }
+
+  // Generate secret & hash exclusively server-side; raw key is vaulted & locked until payment succeeds
+  const rawKey = generateRawApiKeyServer();
+  const keyHash = await hashApiKey(rawKey);
+  const maskedPrefix = `${rawKey.slice(0, 14)}...${rawKey.slice(-4)}`;
+
+  const { data: insertedKey, error: insertErr } = await supabase
+    .from('api_keys')
+    .insert([{
+      user_id: authUser.id,
+      key_prefix: maskedPrefix,
+      key_hash: keyHash,
+      client_name: clientName,
+      client_website: normalizedUrl,
+      domain_owner_name: domainOwnerName,
+      gst_number: gstin,
+      tier: 'growth',
+      monthly_quota: 10000,
+      rate_limit_rps: 3,
+      is_active: false,
+      orders_enabled: false,
+      allowed_endpoints: ['catalog', 'stock', 'product'],
+      approval_status: 'approved',
+      subscription_status: 'pending_payment',
+    }])
+    .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
+    .single();
+
+  if (insertErr || !insertedKey) {
+    return Response.json({
+      success: false,
+      code: 'DATABASE_ERROR',
+      error: insertErr?.message || 'Failed to register API access request.',
+    }, { status: 500, headers: cors });
+  }
+
+  await vaultEncryptedApiKey(supabase, authUser.id, insertedKey.id, rawKey);
+
+  return Response.json({
+    success: true,
+    keyRecord: sanitizeServerKeyRecord(insertedKey),
+  }, { status: 200, headers: cors });
+}
+
+/**
+ * Server-side API key secret rotation endpoint.
+ * Non-admin callers must have an active, paid, unexpired subscription.
+ */
+export async function handleRegenerateApiKey(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const { authUser, errorResponse } = await authenticateSessionUser(request, supabase, cors);
+  if (errorResponse) return errorResponse;
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch { }
+  const { keyId } = body || {};
+
+  if (!keyId) {
+    return Response.json({ success: false, code: 'BAD_REQUEST', error: 'Missing required keyId.' }, { status: 400, headers: cors });
+  }
+
+  const { data: keyRecord, error: keyError } = await supabase
+    .from('api_keys')
+    .select('*')
+    .eq('id', keyId)
+    .maybeSingle();
+
+  if (keyError || !keyRecord) {
+    return Response.json({ success: false, code: 'NOT_FOUND', error: 'API key record not found.' }, { status: 404, headers: cors });
+  }
+
+  const callerIsAdmin = await isAdminUser(authUser, supabase);
+  if (authUser.id !== keyRecord.user_id && !callerIsAdmin) {
+    return Response.json({ success: false, code: 'FORBIDDEN', error: 'Unauthorized to regenerate this API key.' }, { status: 403, headers: cors });
+  }
+
+  if (!callerIsAdmin && !hasActivePaidSubscription(keyRecord)) {
+    return Response.json({
+      success: false,
+      code: 'PAYMENT_REQUIRED',
+      error: 'An active subscription is required to regenerate your API key.',
+    }, { status: 403, headers: cors });
+  }
+
+  const rawKey = generateRawApiKeyServer();
+  const keyHash = await hashApiKey(rawKey);
+  const maskedPrefix = `${rawKey.slice(0, 14)}...${rawKey.slice(-4)}`;
+
+  const { data: updated, error: updateErr } = await supabase
+    .from('api_keys')
+    .update({
+      key_hash: keyHash,
+      key_prefix: maskedPrefix,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', keyId)
+    .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
+    .single();
+
+  if (updateErr || !updated) {
+    return Response.json({
+      success: false,
+      code: 'DATABASE_ERROR',
+      error: updateErr?.message || 'Failed to regenerate API key.',
+    }, { status: 500, headers: cors });
+  }
+
+  await vaultEncryptedApiKey(supabase, keyRecord.user_id, keyId, rawKey);
+  keyMemoryCache.clear();
+
+  return Response.json({
+    success: true,
+    keyRecord: sanitizeServerKeyRecord(updated),
+  }, { status: 200, headers: cors });
+}
+
+/**
  * Handle creation of Cashfree or PhonePe order for developer API monthly subscription.
- * Strictly verifies authenticated user session and key ownership.
+ * Strictly verifies authenticated user session, key ownership, and completed onboarding form.
  */
 export async function handleCreateSubscriptionOrder(request, supabase) {
   const cors = getCorsHeaders(request);
-  const authHeader = request.headers.get('authorization') || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-  if (!token) {
-    return Response.json({
-      success: false,
-      code: 'UNAUTHORIZED',
-      error: 'Authentication token required.',
-    }, { status: 401, headers: cors });
-  }
-
-  // 1. Verify caller session with Supabase Auth
-  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !authUser) {
-    return Response.json({
-      success: false,
-      code: 'UNAUTHORIZED',
-      error: 'Invalid or expired session. Please sign in again.',
-    }, { status: 401, headers: cors });
-  }
+  const { authUser, errorResponse } = await authenticateSessionUser(request, supabase, cors);
+  if (errorResponse) return errorResponse;
 
   let body = {};
   try {
@@ -3033,14 +3375,10 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
   }
 
   // 3. Authorize: key owner or admin
-  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
-  const userEmail = (authUser.email || '').trim().toLowerCase();
-  const isAuthorized = (authUser.id === keyRecord.user_id) || adminEmails.includes(userEmail);
+  const callerIsAdmin = await isAdminUser(authUser, supabase);
+  const isOwner = authUser.id === keyRecord.user_id;
 
-  if (!isAuthorized) {
+  if (!isOwner && !callerIsAdmin) {
     return Response.json({
       success: false,
       code: 'FORBIDDEN',
@@ -3048,22 +3386,29 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
     }, { status: 403, headers: cors });
   }
 
-  // 4. Verify that the request has been approved by Admin (or key is already active / user is admin)
-  const isApproved = keyRecord.approval_status === 'approved'
-    || Boolean(keyRecord.is_active)
-    || keyRecord.subscription_status === 'active'
-    || adminEmails.includes(userEmail);
-
-  if (!isApproved) {
+  // 4. Reject declined requests and verify onboarding form details exist before payment
+  if (!callerIsAdmin && keyRecord.approval_status === 'rejected') {
     return Response.json({
       success: false,
-      code: 'APPROVAL_PENDING',
-      error: 'Your API access request is currently under review. Plan payment will unlock once approved by Weave365 admin.',
+      code: 'KEY_REJECTED',
+      error: 'This API access request was declined by Weave365 administration. Please contact support.',
+    }, { status: 403, headers: cors });
+  }
+
+  const hasCompletedForm = Boolean(
+    String(keyRecord.gst_number || '').trim() &&
+    String(keyRecord.client_website || '').trim()
+  );
+  if (!callerIsAdmin && !hasCompletedForm && keyRecord.subscription_status !== 'active' && !keyRecord.is_active) {
+    return Response.json({
+      success: false,
+      code: 'FORM_INCOMPLETE',
+      error: 'Please complete the API Access form before selecting a plan.',
     }, { status: 400, headers: cors });
   }
 
-  // Self-heal: ensure approved flag is persisted if key was active without explicit approval_status
-  if (keyRecord.approval_status !== 'approved' && isApproved) {
+  // Auto-mark legacy 'pending' records as approved since manual admin gating has been removed
+  if (keyRecord.approval_status !== 'approved' && keyRecord.approval_status !== 'rejected') {
     try {
       await supabase.from('api_keys').update({ approval_status: 'approved' }).eq('id', keyId);
       keyRecord.approval_status = 'approved';
@@ -3239,25 +3584,8 @@ export async function handleCreateSubscriptionOrder(request, supabase) {
  */
 export async function handleVerifySubscription(request, supabase) {
   const cors = getCorsHeaders(request);
-  const authHeader = request.headers.get('authorization') || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-  if (!token) {
-    return Response.json({
-      success: false,
-      code: 'UNAUTHORIZED',
-      error: 'Authentication token required.',
-    }, { status: 401, headers: cors });
-  }
-
-  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !authUser) {
-    return Response.json({
-      success: false,
-      code: 'UNAUTHORIZED',
-      error: 'Invalid or expired session. Please sign in again.',
-    }, { status: 401, headers: cors });
-  }
+  const { authUser, errorResponse } = await authenticateSessionUser(request, supabase, cors);
+  if (errorResponse) return errorResponse;
 
   let body = {};
   try {
@@ -3288,14 +3616,10 @@ export async function handleVerifySubscription(request, supabase) {
     }, { status: 404, headers: cors });
   }
 
-  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
-  const userEmail = (authUser.email || '').trim().toLowerCase();
-  const isAuthorized = (authUser.id === keyRecord.user_id) || adminEmails.includes(userEmail);
+  const callerIsAdmin = await isAdminUser(authUser, supabase);
+  const isOwner = authUser.id === keyRecord.user_id;
 
-  if (!isAuthorized) {
+  if (!isOwner && !callerIsAdmin) {
     return Response.json({
       success: false,
       code: 'FORBIDDEN',
@@ -3303,13 +3627,46 @@ export async function handleVerifySubscription(request, supabase) {
     }, { status: 403, headers: cors });
   }
 
-  const cleanOrderId = String(order_id || '').trim();
+  if (!callerIsAdmin && keyRecord.approval_status === 'rejected') {
+    return Response.json({
+      success: false,
+      code: 'KEY_REJECTED',
+      error: 'This API access request was declined by Weave365 administration.',
+    }, { status: 403, headers: cors });
+  }
 
-  // Idempotency check 1: Has this order already been recorded as completed in the payment ledger?
+  const hasCompletedForm = Boolean(
+    String(keyRecord.gst_number || '').trim() &&
+    String(keyRecord.client_website || '').trim()
+  );
+  if (!callerIsAdmin && !hasCompletedForm && keyRecord.subscription_status !== 'active' && !keyRecord.is_active) {
+    return Response.json({
+      success: false,
+      code: 'FORM_INCOMPLETE',
+      error: 'Please complete the API Access form before activating a plan.',
+    }, { status: 400, headers: cors });
+  }
+
+  const cleanOrderId = String(order_id || '').trim();
+  const cleanKeyId = String(keyId).replace(/-/g, '').slice(0, 12);
+  const matchesKeyOrder = cleanOrderId.includes(cleanKeyId)
+    || keyRecord.last_payment_id === cleanOrderId
+    || keyRecord.last_payment_id === `pending:${cleanOrderId}`;
+
+  if (!matchesKeyOrder) {
+    return Response.json({
+      success: false,
+      code: 'ORDER_KEY_MISMATCH',
+      error: 'This payment order ID does not match your API subscription record.',
+    }, { status: 403, headers: cors });
+  }
+
+  // Idempotency check 1: Has this order already been recorded as completed for this API key?
   const { data: existingPayment } = await supabase
     .from('api_subscription_payments')
     .select('id, gateway_order_id, period_end')
     .eq('gateway_order_id', cleanOrderId)
+    .eq('api_key_id', keyId)
     .eq('status', 'completed')
     .maybeSingle();
 
@@ -3324,7 +3681,7 @@ export async function handleVerifySubscription(request, supabase) {
       success: true,
       is_paid: true,
       message: 'Subscription is already active!',
-      keyRecord: freshKey || keyRecord,
+      keyRecord: sanitizeServerKeyRecord(freshKey || keyRecord),
     }, { status: 200, headers: cors });
   }
 
@@ -3334,9 +3691,14 @@ export async function handleVerifySubscription(request, supabase) {
       success: true,
       is_paid: true,
       message: 'Subscription is already active!',
-      keyRecord,
+      keyRecord: sanitizeServerKeyRecord(keyRecord),
     }, { status: 200, headers: cors });
   }
+
+  const isQuarterlyHint = (Number(keyRecord.subscription_amount) > 500) || cleanOrderId.includes('_3M_');
+  const planHint = keyRecord.subscription_plan === 'pro' ? 'pro' : 'growth';
+  const expectedAmount = Number(keyRecord.subscription_amount)
+    || (isQuarterlyHint ? (planHint === 'pro' ? 1422 : 852) : (planHint === 'pro' ? 499 : 299));
 
   let isPaid = false;
   const isPhonePe = (gateway === 'phonepe') || String(order_id).startsWith('PP_');
@@ -3344,7 +3706,9 @@ export async function handleVerifySubscription(request, supabase) {
   if (isPhonePe) {
     const pp = getPhonePeConfig();
     const status = await fetchOrderStatus(pp, order_id);
-    if (status.ok && (status.data.state === 'COMPLETED' || status.data.code === 'PAYMENT_SUCCESS')) {
+    const paidPaise = status.data?.amount;
+    const amountOk = paidPaise === undefined || Number(paidPaise) >= expectedAmount * 100;
+    if (status.ok && (status.data.state === 'COMPLETED' || status.data.code === 'PAYMENT_SUCCESS') && amountOk) {
       isPaid = true;
     }
   } else {
@@ -3359,7 +3723,9 @@ export async function handleVerifySubscription(request, supabase) {
       },
     });
     const cfOrder = await cfRes.json();
-    if (cfRes.ok && cfOrder.order_status === 'PAID') {
+    const amountOk = cfOrder?.order_amount === undefined || Number(cfOrder.order_amount) >= expectedAmount;
+    const tagKeyMatches = !cfOrder?.order_tags?.key_id || cfOrder.order_tags.key_id === keyId;
+    if (cfRes.ok && cfOrder.order_status === 'PAID' && amountOk && tagKeyMatches) {
       isPaid = true;
     }
   }
@@ -3466,7 +3832,7 @@ export async function handleVerifySubscription(request, supabase) {
     success: true,
     is_paid: true,
     message: `Subscription successfully activated for ${durationDays} days!`,
-    keyRecord: updatedKey,
+    keyRecord: sanitizeServerKeyRecord(updatedKey),
   }, { status: 200, headers: cors });
 }
 
@@ -3913,7 +4279,13 @@ export async function handleDeveloperApiPost(request, pathSegments) {
     return handleVerifyOrderPayment(request, supabase, defaultCorsHeaders);
   }
 
-  // 0b. On-Demand Secure Key Reveal, Vaulting & Subscription for Authenticated Users (Session Auth)
+  // 0b. Onboarding, Key Reveal/Regeneration, Vaulting & Subscription for Authenticated Users (Session Auth)
+  if (endpoint === 'request-access') {
+    return handleRequestDeveloperAccess(request, supabase);
+  }
+  if (endpoint === 'regenerate-key') {
+    return handleRegenerateApiKey(request, supabase);
+  }
   if (endpoint === 'reveal-key') {
     return handleRevealApiKey(request, supabase);
   }

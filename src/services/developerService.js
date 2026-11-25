@@ -105,7 +105,45 @@ export function sanitizeKeyRecord(record) {
   return safe;
 }
 
+async function postDeveloperEndpoint(endpoint, body, fallbackError, authError) {
+  const session = (await supabase?.auth?.getSession())?.data?.session;
+  const token = session?.access_token;
+  if (!token) throw new Error(authError || 'Please sign in to continue.');
+
+  const res = await fetch(`/api/developer/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(body || {}),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    const err = new Error(data.error || fallbackError || 'Developer API request failed.');
+    err.code = data.code;
+    throw err;
+  }
+  return data;
+}
+
 export const developerService = {
+  /**
+   * Submit onboarding API access form server-side and immediately unlock plan selection
+   */
+  async requestDeveloperAccess(formData) {
+    const result = await postDeveloperEndpoint(
+      'request-access',
+      formData,
+      'Failed to submit API access details.',
+      'Please sign in to submit your API access details.'
+    );
+    return {
+      keyRecord: sanitizeKeyRecord(result.keyRecord),
+      alreadyExists: Boolean(result.alreadyExists),
+    };
+  },
   /**
    * Fetch API key for a specific user ID
    */
@@ -388,39 +426,24 @@ export const developerService = {
   },
 
   /**
-   * Regenerate API key secret
+   * Regenerate API key secret via authenticated server endpoint (active paid keys or admins only)
    */
   async regenerateApiKey(keyId) {
-    if (!isSupabaseConfigured || !keyId) throw new Error('Missing keyId');
-
-    const rawKey = generateRawApiKey();
-    const keyHash = await hashApiKey(rawKey);
-    const maskedPrefix = `${rawKey.slice(0, 14)}...${rawKey.slice(-4)}`;
-
-    const { data, error } = await supabase
-      .from('api_keys')
-      .update({
-        key_hash: keyHash,
-        key_prefix: maskedPrefix,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', keyId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Securely vault encrypted secret key to server
-    await this.vaultApiKey(keyId, rawKey, data.user_id);
-
+    if (!keyId) throw new Error('Missing keyId');
+    const result = await postDeveloperEndpoint(
+      'regenerate-key',
+      { keyId },
+      'Failed to regenerate API key.',
+      'Please sign in to regenerate your API key.'
+    );
     return {
-      keyRecord: sanitizeKeyRecord(data),
-      rawSecretKey: rawKey,
+      keyRecord: sanitizeKeyRecord(result.keyRecord),
+      rawSecretKey: null,
     };
   },
 
   /**
-   * Vault encrypted API key on server backend
+   * Vault encrypted API key on server backend (admin/legacy fallback)
    */
   async vaultApiKey(keyId, rawKey, userId) {
     try {
@@ -448,25 +471,12 @@ export const developerService = {
    */
   async revealApiKey(keyId) {
     if (!keyId) throw new Error('Missing keyId');
-    const session = (await supabase?.auth?.getSession())?.data?.session;
-    const token = session?.access_token;
-    if (!token) throw new Error('Please sign in to view your API credentials.');
-
-    const response = await fetch('/api/developer/reveal-key', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ keyId }),
-    });
-
-    const result = await response.json();
-    if (!response.ok || !result.success) {
-      const err = new Error(result.error || 'Failed to securely fetch API key.');
-      err.code = result.code;
-      throw err;
-    }
+    const result = await postDeveloperEndpoint(
+      'reveal-key',
+      { keyId },
+      'Failed to securely fetch API key.',
+      'Please sign in to view your API credentials.'
+    );
     return result.rawKey;
   },
 
@@ -684,24 +694,12 @@ export const developerService = {
    */
   async createSubscriptionOrder({ keyId, plan = 'growth', billingCycle = 'monthly', gateway = 'cashfree', returnUrl }) {
     if (!keyId) throw new Error('Missing keyId');
-    const session = (await supabase?.auth?.getSession())?.data?.session;
-    const token = session?.access_token;
-    if (!token) throw new Error('Please sign in to select a subscription plan.');
-
-    const res = await fetch('/api/developer/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ keyId, plan, billingCycle, gateway, returnUrl }),
-    });
-
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || 'Failed to initialize subscription payment.');
-    }
-    return data;
+    return postDeveloperEndpoint(
+      'subscribe',
+      { keyId, plan, billingCycle, gateway, returnUrl },
+      'Failed to initialize subscription payment.',
+      'Please sign in to select a subscription plan.'
+    );
   },
 
   /**
@@ -709,24 +707,12 @@ export const developerService = {
    */
   async verifySubscriptionOrder({ keyId, gateway = 'cashfree', orderId }) {
     if (!keyId || !orderId) throw new Error('Missing keyId or orderId');
-    const session = (await supabase?.auth?.getSession())?.data?.session;
-    const token = session?.access_token;
-    if (!token) throw new Error('Please sign in to verify subscription.');
-
-    const res = await fetch('/api/developer/verify-subscription', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ keyId, gateway, order_id: orderId }),
-    });
-
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || 'Subscription verification unconfirmed.');
-    }
-    return data;
+    return postDeveloperEndpoint(
+      'verify-subscription',
+      { keyId, gateway, order_id: orderId },
+      'Subscription verification unconfirmed.',
+      'Please sign in to verify subscription.'
+    );
   },
 };
 
