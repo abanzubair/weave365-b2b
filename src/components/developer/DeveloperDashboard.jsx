@@ -64,21 +64,10 @@ import { fetchProducts } from '../../productData.js';
 import { storeConfig } from '../../config.js';
 import { DispatchLabelCard } from './DispatchLabelCard.jsx';
 import { SegmentedControl, BillingCycleToggle } from './SegmentedControl.jsx';
+import { API_USE_CASES, INTEGRATION_PLATFORMS } from '../../constants/developerOptions.js';
 import '../../styles/developerDashboard.css';
 
-export const API_USE_CASES = [
-  'Catalog & Images',
-  'Live Stock Sync',
-  'Automated Orders',
-];
-
-export const INTEGRATION_PLATFORMS = [
-  'WooCommerce',
-  'Shopify',
-  'PrestaShop',
-  'Custom Website',
-  'Other',
-];
+export { API_USE_CASES, INTEGRATION_PLATFORMS };
 
 /**
  * Modern confirmation modal for sensitive and dangerous admin actions.

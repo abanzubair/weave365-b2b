@@ -2035,7 +2035,7 @@ describe('Weave365 B2B Developer API Verification', () => {
             gstin: 'BAD',
             websiteUrl: 'https://store.example.com',
             platform: 'Shopify',
-            apiUseCases: ['Catalog Sync'],
+            apiUseCases: ['Catalog & Images'],
           }),
         }),
         ['developer', 'request-access']
@@ -2054,8 +2054,8 @@ describe('Weave365 B2B Developer API Verification', () => {
           body: JSON.stringify({
             gstin: '29ABCDE1234F1Z5',
             websiteUrl: 'https://aaravsilks.com',
-            platform: 'Shopify',
-            apiUseCases: ['Catalog Sync', 'Real-time Inventory'],
+            platform: 'PrestaShop',
+            apiUseCases: ['Catalog & Images', 'Live Stock Sync'],
           }),
         }),
         ['developer', 'request-access']

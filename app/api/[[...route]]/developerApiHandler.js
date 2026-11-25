@@ -11,6 +11,7 @@ import { getCashfreeConfig } from './cashfreeHandler.js';
 import { getPhonePeConfig, phonepeFetch, fetchOrderStatus } from './phonepeHandler.js';
 import { sendResellerInvoiceEmail } from './resellerInvoiceEmailService.js';
 import { checkAndSendRenewalReminders, sendApiRenewalEmail } from './apiRenewalReminderService.js';
+import { API_USE_CASES, INTEGRATION_PLATFORMS } from '../../../src/constants/developerOptions.js';
 
 let supabaseInstance = null;
 export function _setSupabaseClientForTesting(client) {
@@ -2760,13 +2761,8 @@ async function decryptSecret(payload, secretKey) {
   return decoder.decode(decryptedBuf);
 }
 
-const ALLOWED_INTEGRATION_PLATFORMS = ['WooCommerce', 'Shopify', 'PrestaShop', 'Custom Website', 'Other'];
-const ALLOWED_API_USE_CASES = [
-  'Catalog Sync',
-  'Real-time Inventory',
-  'Order Automation',
-  'Bulk Reseller Pricing',
-];
+const ALLOWED_INTEGRATION_PLATFORMS = INTEGRATION_PLATFORMS;
+const ALLOWED_API_USE_CASES = API_USE_CASES;
 
 function sanitizeServerKeyRecord(record) {
   if (!record || typeof record !== 'object') return record;
