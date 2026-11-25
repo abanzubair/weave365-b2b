@@ -551,6 +551,12 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
               const tierInfo = TIER_CONFIGS[item.tier] || TIER_CONFIGS.free;
               const phone = item.profiles?.whatsapp || '';
               const whatsappUrl = phone ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(item.client_name)},%20regarding%20your%20Weave365%20API%20integration...` : null;
+              const hasAccessRequest = Boolean(
+                item.profiles?.qualification?.api_access_request ||
+                item.gst_number ||
+                item.client_website ||
+                item.approval_status === 'pending'
+              );
               const isAwaitingPayment = !item.is_active && (
                 item.subscription_status === 'pending_payment' ||
                 item.subscription_status === 'inactive' ||
@@ -678,17 +684,17 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
 
                   <td className="api-col-actions" style={{ textAlign: 'right' }}>
                     <div className="api-action-menu-wrap">
-                      {isPendingApproval && (
+                      {isAwaitingPayment && (
                         <button
                           type="button"
                           onClick={() => setReviewRequestItem(item)}
-                          title="Review Submitted API Access Request Application"
+                          title="Inspect Onboarding Details or Activate Key"
                           className="api-action-btn api-review-btn"
-                          aria-label="Review Request"
+                          aria-label="Inspect Application"
                           style={{ marginRight: 'var(--admin-space-1, 6px)' }}
                         >
                           <FileText size={12} />
-                          <span>Review</span>
+                          <span>Inspect</span>
                         </button>
                       )}
 
@@ -744,7 +750,7 @@ export default function ApiManager({ adminData, loadAdminData, user, loading: pr
                               className="api-dropdown-item"
                             >
                               <FileText size={13} />
-                              <span>{isPendingApproval ? 'Review Application' : 'View Application'}</span>
+                              <span>View Application</span>
                             </button>
                           )}
 
