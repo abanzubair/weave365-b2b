@@ -63,6 +63,7 @@ import { developerService, TIER_CONFIGS } from '../../services/developerService.
 import { fetchProducts } from '../../productData.js';
 import { storeConfig } from '../../config.js';
 import { DispatchLabelCard } from './DispatchLabelCard.jsx';
+import { SegmentedControl, BillingCycleToggle } from './SegmentedControl.jsx';
 import '../../styles/developerDashboard.css';
 
 export const BUSINESS_TYPES = [
@@ -724,33 +725,7 @@ export function PlanSelectionCard({
       )}
 
       {/* Billing Frequency Toggle */}
-      <div className="dev-plan-cycle-toggle-wrap">
-        <div
-          role="radiogroup"
-          aria-label="Billing frequency"
-          className="dev-plan-cycle-toggle"
-        >
-          <button
-            type="button"
-            role="radio"
-            aria-checked={billingCycle === 'monthly'}
-            className={`dev-plan-cycle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
-            onClick={() => setBillingCycle('monthly')}
-          >
-            <span>Monthly</span>
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={billingCycle === 'quarterly'}
-            className={`dev-plan-cycle-btn ${billingCycle === 'quarterly' ? 'active' : ''}`}
-            onClick={() => setBillingCycle('quarterly')}
-          >
-            <span>3 Months</span>
-            <span className="dev-plan-discount-text">5% Off</span>
-          </button>
-        </div>
-      </div>
+      <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} align="center" size="sm" />
 
       {/* 2 Plans Grid */}
       <div className="dev-plans-grid">
@@ -3399,16 +3374,6 @@ export function DeveloperDashboard({
                       gap: 0.75rem 1rem;
                       min-inline-size: 0;
                     }
-                    .dev-woo-csv-fieldset {
-                      border: none;
-                      margin: 0;
-                      padding: 0;
-                      min-inline-size: 0;
-                      display: flex;
-                      flex-direction: column;
-                      gap: 0.375rem;
-                    }
-                    .dev-woo-csv-legend,
                     .dev-woo-csv-label {
                       font-size: 0.75rem;
                       font-weight: 600;
@@ -3419,89 +3384,16 @@ export function DeveloperDashboard({
                     }
                     .dev-woo-csv-label-row {
                       display: flex;
-                      align-items: baseline;
+                      align-items: center;
                       justify-content: space-between;
-                      gap: 0.5rem;
+                      gap: 0.625rem;
+                      min-block-size: calc(0.75rem * 1.35);
                     }
                     .dev-woo-csv-range-hint {
                       font-size: 0.75rem;
                       color: var(--admin-text-muted, #64748b);
                       line-height: 1.35;
                       white-space: nowrap;
-                    }
-                    .dev-woo-seg-track {
-                      display: inline-flex;
-                      flex-wrap: wrap;
-                      align-self: flex-start;
-                      align-items: center;
-                      gap: 2px;
-                      padding: 3px;
-                      background: var(--admin-surface-subtle, #f8fafc);
-                      border: 1px solid var(--admin-border, #e2e8f0);
-                      border-radius: var(--admin-radius-md, 0.5rem);
-                      max-inline-size: 100%;
-                      box-sizing: border-box;
-                    }
-                    .dev-woo-seg-item {
-                      position: relative;
-                      display: inline-flex;
-                      align-items: center;
-                    }
-                    .dev-woo-seg-input {
-                      position: absolute;
-                      clip-path: inset(50%);
-                      overflow: hidden;
-                      width: 1px;
-                      height: 1px;
-                      margin: -1px;
-                      padding: 0;
-                      border: 0;
-                      white-space: nowrap;
-                    }
-                    .dev-woo-seg-label {
-                      position: relative;
-                      display: inline-flex;
-                      align-items: center;
-                      justify-content: center;
-                      min-block-size: 32px;
-                      padding-inline: 0.75rem;
-                      padding-block: 0.25rem;
-                      border: 1px solid transparent;
-                      border-radius: calc(var(--admin-radius-md, 0.5rem) - 2px);
-                      font-size: 0.8125rem;
-                      font-weight: 500;
-                      line-height: 1.25;
-                      color: var(--admin-text-secondary, #475569);
-                      cursor: pointer;
-                      user-select: none;
-                      white-space: nowrap;
-                      box-sizing: border-box;
-                      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-                    }
-                    .dev-woo-seg-label::after {
-                      content: "";
-                      position: absolute;
-                      inset-block: -6px;
-                      inset-inline: 0;
-                    }
-                    .dev-woo-seg-label:hover {
-                      color: var(--admin-text-heading, #0f172a);
-                    }
-                    @media (prefers-reduced-motion: no-preference) {
-                      .dev-woo-seg-label:active {
-                        transform: scale(0.98);
-                      }
-                    }
-                    .dev-woo-seg-input:checked + .dev-woo-seg-label {
-                      background: var(--admin-surface, #ffffff);
-                      color: var(--admin-text-heading, #0f172a);
-                      font-weight: 600;
-                      border-color: var(--admin-border-strong, #cbd5e1);
-                      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-                    }
-                    .dev-woo-seg-input:focus-visible + .dev-woo-seg-label {
-                      outline: 2px solid var(--admin-primary, #0f172a);
-                      outline-offset: 2px;
                     }
                     .dev-woo-csv-field {
                       display: flex;
@@ -3513,8 +3405,9 @@ export function DeveloperDashboard({
                       display: flex;
                       align-items: center;
                       gap: 0.25rem;
-                      inline-size: 9.5rem;
+                      inline-size: 8.75rem;
                       max-inline-size: 100%;
+                      block-size: 40px;
                       min-block-size: 40px;
                       padding-inline: 0.625rem;
                       border: 1px solid var(--admin-border-strong, #cbd5e1);
@@ -3539,13 +3432,15 @@ export function DeveloperDashboard({
                     .dev-woo-csv-input {
                       flex: 1;
                       min-inline-size: 0;
+                      block-size: 100%;
                       border: none;
                       background: transparent;
                       font: inherit;
                       font-size: max(1rem, 1em);
                       line-height: 1.25;
                       color: var(--admin-text-heading, #0f172a);
-                      padding-block: 0.375rem;
+                      padding-block: 0;
+                      box-sizing: border-box;
                     }
                     @supports selector(:has(*)) {
                       .dev-woo-csv-input:focus-visible {
@@ -3642,18 +3537,13 @@ export function DeveloperDashboard({
                     @media (max-width: 640px) {
                       .dev-woo-csv-section,
                       .dev-woo-csv-controls,
-                      .dev-woo-csv-markup-group,
-                      .dev-woo-csv-fieldset,
-                      .dev-woo-seg-track {
+                      .dev-woo-csv-markup-group {
                         max-inline-size: 100%;
                         min-inline-size: 0;
                         box-sizing: border-box;
                       }
-                      .dev-woo-csv-fieldset {
+                      .dev-woo-csv-markup-group {
                         width: 100%;
-                      }
-                      .dev-woo-seg-track {
-                        align-self: flex-start;
                       }
                       .dev-woo-csv-field {
                         width: 100%;
@@ -3666,49 +3556,29 @@ export function DeveloperDashboard({
                         width: 100%;
                       }
                       .dev-woo-csv-actions .dev-btn {
-                        flex: 1 1 auto;
+                        flex: 1 1 0;
                         justify-content: center;
                       }
                     }
                     @media (pointer: coarse) {
-                      .dev-woo-seg-track {
-                        gap: 4px;
-                      }
-                      .dev-woo-seg-label {
-                        min-block-size: 48px;
-                      }
-                      .dev-woo-seg-label::after {
-                        content: none;
-                      }
                       .dev-woo-csv-input-wrap,
                       .dev-woo-csv-actions .dev-btn,
                       .dev-woo-csv-section .dev-endpoint-copy-btn {
-                        min-block-size: 48px;
+                        min-block-size: 44px;
                       }
                     }
                     @media (prefers-contrast: more) {
-                      .dev-woo-seg-track,
                       .dev-woo-csv-input-wrap,
                       .dev-woo-csv-btn-disabled {
                         border-color: var(--admin-text-muted, #64748b);
                       }
-                      .dev-woo-seg-input:checked + .dev-woo-seg-label {
-                        border-color: var(--admin-primary, #0f172a);
-                      }
                     }
                     @media (forced-colors: active) {
-                      .dev-woo-seg-track,
                       .dev-woo-csv-input-wrap,
                       .dev-woo-csv-actions .dev-btn {
                         border: 1px solid CanvasText;
                       }
-                      .dev-woo-seg-input:checked + .dev-woo-seg-label {
-                        border: 2px solid Highlight;
-                        background: Highlight;
-                        color: HighlightText;
-                      }
-                      .dev-woo-csv-section :focus-visible,
-                      .dev-woo-seg-input:focus-visible + .dev-woo-seg-label {
+                      .dev-woo-csv-section :focus-visible {
                         outline: 2px solid Highlight !important;
                         outline-offset: 2px;
                       }
@@ -3729,34 +3599,19 @@ export function DeveloperDashboard({
 
                   <div className="dev-woo-csv-controls">
                     <div className="dev-woo-csv-markup-group">
-                      <fieldset className="dev-woo-csv-fieldset">
-                        <legend className="dev-woo-csv-legend">Markup</legend>
-                        <div className="dev-woo-seg-track">
-                          {[
-                            { value: 'none', label: 'None' },
-                            { value: 'percent', label: 'Percentage (%)' },
-                            { value: 'flat', label: 'Fixed (₹)' },
-                          ].map((opt) => (
-                            <div key={opt.value} className="dev-woo-seg-item">
-                              <input
-                                type="radio"
-                                id={`${wooCsvIdPrefix}-markup-${opt.value}`}
-                                name={`${wooCsvIdPrefix}-markup-type`}
-                                value={opt.value}
-                                checked={wooMarkupType === opt.value}
-                                onChange={() => handleWooMarkupTypeChange(opt.value)}
-                                className="dev-woo-seg-input"
-                              />
-                              <label
-                                htmlFor={`${wooCsvIdPrefix}-markup-${opt.value}`}
-                                className="dev-woo-seg-label"
-                              >
-                                {opt.label}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </fieldset>
+                      <SegmentedControl
+                        legend="Markup"
+                        name={`${wooCsvIdPrefix}-markup-type`}
+                        idPrefix={`${wooCsvIdPrefix}-markup`}
+                        size="sm"
+                        options={[
+                          { value: 'none', label: 'None' },
+                          { value: 'percent', label: 'Percentage (%)' },
+                          { value: 'flat', label: 'Fixed (₹)' },
+                        ]}
+                        value={wooMarkupType}
+                        onChange={handleWooMarkupTypeChange}
+                      />
 
                       {wooMarkupType !== 'none' && (
                         <div className="dev-woo-csv-field">
@@ -3813,35 +3668,21 @@ export function DeveloperDashboard({
                       )}
                     </div>
 
-                    <fieldset className="dev-woo-csv-fieldset">
-                      <legend className="dev-woo-csv-legend">Rounding</legend>
-                      <div className="dev-woo-seg-track">
-                        {[
-                          { value: 'none', label: 'None' },
-                          { value: '10', label: 'Nearest ₹10' },
-                          { value: '50', label: 'Nearest ₹50' },
-                          { value: '99', label: 'End in ₹99' },
-                        ].map((opt) => (
-                          <div key={opt.value} className="dev-woo-seg-item">
-                            <input
-                              type="radio"
-                              id={`${wooCsvIdPrefix}-round-${opt.value}`}
-                              name={`${wooCsvIdPrefix}-round-to`}
-                              value={opt.value}
-                              checked={wooRoundTo === opt.value}
-                              onChange={() => setWooRoundTo(opt.value)}
-                              className="dev-woo-seg-input"
-                            />
-                            <label
-                              htmlFor={`${wooCsvIdPrefix}-round-${opt.value}`}
-                              className="dev-woo-seg-label"
-                            >
-                              {opt.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </fieldset>
+                    <SegmentedControl
+                      legend="Rounding"
+                      name={`${wooCsvIdPrefix}-round-to`}
+                      idPrefix={`${wooCsvIdPrefix}-round`}
+                      size="sm"
+                      quad
+                      options={[
+                        { value: 'none', label: 'None' },
+                        { value: '10', label: 'Nearest ₹10' },
+                        { value: '50', label: 'Nearest ₹50' },
+                        { value: '99', label: 'End in ₹99' },
+                      ]}
+                      value={wooRoundTo}
+                      onChange={setWooRoundTo}
+                    />
                   </div>
 
                   <p className="dev-woo-csv-summary">{wooPricingSummary}</p>

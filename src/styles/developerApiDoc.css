@@ -882,62 +882,6 @@
 /* ==========================================================================
    Pricing & Tiers Grid (Flat, Minimalist)
    ========================================================================== */
-.api-billing-toggle-container {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin: 1.25rem 0 1.5rem 0;
-}
-
-.api-billing-toggle-wrap {
-  display: inline-flex;
-  align-items: center;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 9999px;
-  padding: 3px;
-  gap: 4px;
-}
-
-.api-billing-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 1.125rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #64748b;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  user-select: none;
-}
-
-.api-billing-toggle-btn:hover {
-  color: #0f172a;
-}
-
-.api-billing-toggle-btn:focus-visible {
-  outline: 2px solid #0f172a;
-  outline-offset: 2px;
-}
-
-.api-billing-toggle-btn.active {
-  background: #ffffff;
-  color: #0f172a;
-  border-color: #cbd5e1;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-}
-
-.api-billing-discount-text {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #047857;
-  margin-left: 2px;
-}
-
 .api-tier-price-group {
   margin: 0.5rem 0 0.25rem 0;
 }
@@ -1656,17 +1600,6 @@
   gap: 1rem 1.5rem;
 }
 
-.api-fieldset {
-  border: 0;
-  margin: 0;
-  padding: 0;
-  min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4375rem;
-}
-
-.api-legend,
 .api-field-label {
   font-size: 0.875rem;
   font-weight: 600;
@@ -1674,70 +1607,6 @@
   margin: 0;
   padding: 0;
   line-height: 1.4;
-}
-
-.api-segmented-track {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-self: flex-start;
-  align-items: stretch;
-  gap: 2px;
-  padding: 3px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
-.api-segmented-item {
-  position: relative;
-  display: flex;
-}
-
-.api-segmented-input {
-  position: absolute;
-  clip-path: inset(50%);
-  overflow: hidden;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  white-space: nowrap;
-}
-
-.api-segmented-label {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: 30px;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #475569;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  line-height: 1.3;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.api-segmented-label:hover {
-  color: #0f172a;
-}
-
-.api-segmented-input:checked + .api-segmented-label {
-  background: #ffffff;
-  color: #0f172a;
-  font-weight: 600;
-  border-color: #cbd5e1;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-}
-
-.api-segmented-input:focus-visible + .api-segmented-label {
-  outline: 2px solid #0f172a;
-  outline-offset: 2px;
 }
 
 .api-field-stack {
@@ -1769,11 +1638,13 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  min-block-size: 44px;
+  block-size: 38px;
+  min-block-size: 38px;
   padding-inline: 0.75rem;
   border: 1px solid #75849a;
   border-radius: 8px;
   background: #ffffff;
+  box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
 
@@ -1791,12 +1662,14 @@
 .api-text-input {
   flex: 1;
   min-inline-size: 0;
+  block-size: 100%;
   border: none;
   background: transparent;
   font: inherit;
   font-size: max(1rem, 1em);
   color: #0f172a;
-  padding-block: 0.375rem;
+  padding-block: 0;
+  box-sizing: border-box;
 }
 
 @supports selector(:has(*)) {
@@ -1906,7 +1779,6 @@
 }
 
 @media (pointer: coarse) {
-  .api-segmented-label,
   .api-input-wrap,
   .api-woo-builder .api-feed-copy-btn,
   .api-tab-btn {
@@ -1915,12 +1787,10 @@
 }
 
 @media (prefers-contrast: more) {
-  .api-segmented-track,
   .api-woo-builder .api-feed-box {
     border-color: #475569;
   }
 
-  .api-segmented-input:checked + .api-segmented-label,
   .api-input-wrap {
     border-color: #0f172a;
   }
@@ -1931,17 +1801,10 @@
     border-block-end-color: Highlight;
   }
 
-  .api-segmented-track,
   .api-input-wrap,
   .api-woo-builder .api-feed-box,
   .api-meta-badge {
     border: 1px solid CanvasText;
-  }
-
-  .api-segmented-input:checked + .api-segmented-label {
-    border: 2px solid Highlight;
-    background: Highlight;
-    color: HighlightText;
   }
 
   .api-woo-builder :focus-visible,

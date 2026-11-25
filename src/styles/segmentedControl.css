@@ -1,0 +1,336 @@
+/* ==========================================================================
+   Shared Animated Segmented Controls & Billing Cycle Toggle
+   Single source of truth for Dashboard & Developer API Documentation
+   ========================================================================== */
+
+.w365-seg-fieldset {
+  --seg-legend-size: 0.875rem;
+  --seg-legend-color: #0f172a;
+  --seg-legend-gap: 0.4375rem;
+  --seg-item-min-h: 30px;
+  --seg-item-px: 0.5rem;
+  --seg-item-py: 0.2rem;
+  --seg-item-color: #475569;
+  --seg-track-bg: #f8fafc;
+  --seg-track-border: #e2e8f0;
+  --seg-pill-border: #cbd5e1;
+  --seg-radius: 8px;
+  --seg-pill-radius: 6px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.w365-seg--sm {
+  --seg-legend-size: 0.75rem;
+  --seg-legend-color: var(--admin-text-secondary, #475569);
+  --seg-legend-gap: 0.375rem;
+  --seg-item-min-h: 32px;
+  --seg-item-px: 0.75rem;
+  --seg-item-py: 0.25rem;
+  --seg-item-color: var(--admin-text-secondary, #475569);
+  --seg-track-bg: var(--admin-surface-subtle, #f8fafc);
+  --seg-track-border: var(--admin-border, #e2e8f0);
+  --seg-pill-border: var(--admin-border-strong, #cbd5e1);
+  --seg-radius: var(--admin-radius-md, 0.5rem);
+  --seg-pill-radius: calc(var(--admin-radius-md, 0.5rem) - 2px);
+}
+
+.w365-seg-legend {
+  display: block;
+  font-size: var(--seg-legend-size);
+  font-weight: 600;
+  color: var(--seg-legend-color);
+  margin: 0 0 var(--seg-legend-gap) 0;
+  padding: 0;
+  line-height: 1.35;
+}
+
+.w365-seg-track {
+  --seg-spring: linear(
+    0, 0.071 4.2%, 0.225 8.3%, 0.403 12.5%, 0.569 16.7%, 0.709 20.8%,
+    0.817 25%, 0.896 29.2%, 0.949 33.3%, 0.982 37.5%, 1.002 41.7%,
+    1.011 45.8%, 1.015 50%, 1.015 54.2%, 1.013 58.3%, 1.01 62.5%,
+    1.008 66.7%, 1.005 70.8%, 1.003 75%, 1.002 79.2%, 1.001 83.3%,
+    1 87.5%, 1 91.7%, 1 95.8%, 1
+  );
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--seg-track-bg, #f8fafc);
+  border: 1px solid var(--seg-track-border, #e2e8f0);
+  border-radius: var(--seg-radius, 8px);
+  max-inline-size: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.w365-seg-track::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--seg-w, 0px);
+  height: var(--seg-h, 0px);
+  transform: translate3d(var(--seg-x, 0px), var(--seg-y, 0px), 0);
+  background: var(--admin-surface, #ffffff);
+  border: 1px solid var(--seg-pill-border, #cbd5e1);
+  border-radius: var(--seg-pill-radius, 6px);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 0;
+}
+
+.w365-seg-track[data-slider="ready"]::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .w365-seg-track[data-slider="ready"][data-slider-animating="1"]::before {
+    will-change: transform, width, height;
+    transition-property: transform, width, height;
+    transition-duration: 0.42s;
+    transition-timing-function: cubic-bezier(0.34, 1.12, 0.64, 1);
+    transition-timing-function: var(--seg-spring);
+  }
+}
+
+.w365-seg-item {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.w365-seg-input {
+  position: absolute;
+  clip-path: inset(50%);
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+}
+
+.w365-seg-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--seg-item-min-h, 30px);
+  padding-inline: var(--seg-item-px, 0.5rem);
+  padding-block: var(--seg-item-py, 0.2rem);
+  border: 1px solid transparent;
+  border-radius: var(--seg-pill-radius, 6px);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--seg-item-color, #475569);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: color 0.15s ease;
+}
+
+.w365-seg-label::after {
+  content: "";
+  position: absolute;
+  inset-block: -6px;
+  inset-inline: 0;
+}
+
+.w365-seg-label:hover {
+  color: var(--admin-text-heading, #0f172a);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .w365-seg-label:active,
+  .w365-seg-btn:active {
+    transform: scale(0.985);
+  }
+}
+
+.w365-seg-input:checked + .w365-seg-label {
+  background: var(--admin-surface, #ffffff);
+  color: var(--admin-text-heading, #0f172a);
+  font-weight: 600;
+  border-color: var(--seg-pill-border, #cbd5e1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.w365-seg-input:focus-visible + .w365-seg-label,
+.w365-seg-btn:focus-visible {
+  outline: 2px solid var(--admin-primary, #0f172a);
+  outline-offset: -2px;
+}
+
+/* Billing Cycle Pill Variant */
+.w365-billing-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem 0 1.25rem 0;
+}
+
+.w365-billing-wrap--start {
+  justify-content: flex-start;
+  margin: 1.25rem 0 1.5rem 0;
+}
+
+.w365-seg-track--pill {
+  --seg-radius: 9999px;
+  --seg-pill-radius: 9999px;
+  background: var(--admin-surface-muted, #f1f5f9);
+  gap: 4px;
+}
+
+.w365-seg-track--pill::before {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.w365-seg-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #64748b);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.w365-seg--sm .w365-seg-btn {
+  font-size: var(--admin-font-size-13, 0.8125rem);
+}
+
+.w365-seg-btn:hover {
+  color: var(--admin-text-heading, #0f172a);
+}
+
+.w365-seg-btn.active {
+  background: var(--admin-surface, #ffffff);
+  color: var(--admin-text-heading, #0f172a);
+  border-color: var(--seg-pill-border, #cbd5e1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.w365-seg-discount {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #047857;
+  margin-left: 2px;
+}
+
+.w365-seg--sm .w365-seg-discount {
+  font-size: 0.75rem;
+}
+
+/* Hide static checked styling once sliding ::before pill is active */
+.w365-seg-track[data-slider="ready"] .w365-seg-input:checked + .w365-seg-label,
+.w365-seg-track[data-slider="ready"] .w365-seg-btn.active {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .w365-seg-fieldset {
+    width: 100%;
+    max-inline-size: 100%;
+  }
+
+  .w365-seg-track:not(.w365-seg-track--pill) {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .w365-seg-track:not(.w365-seg-track--pill) .w365-seg-item {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  .w365-seg-track:not(.w365-seg-track--pill) .w365-seg-label {
+    width: 100%;
+    padding-inline: 0.5rem;
+  }
+
+  .w365-seg-track--quad {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+}
+
+@media (pointer: coarse) {
+  .w365-seg-track {
+    gap: 4px;
+  }
+
+  .w365-seg-label,
+  .w365-seg-btn {
+    min-block-size: 44px;
+  }
+
+  .w365-seg-label::after {
+    content: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .w365-seg-track {
+    border-color: #475569;
+  }
+
+  .w365-seg-input:checked + .w365-seg-label,
+  .w365-seg-btn.active,
+  .w365-seg-track::before {
+    border-color: #0f172a;
+  }
+}
+
+@media (forced-colors: active) {
+  .w365-seg-track::before {
+    display: none;
+  }
+
+  .w365-seg-track {
+    border: 1px solid CanvasText;
+  }
+
+  .w365-seg-input:checked + .w365-seg-label,
+  .w365-seg-track[data-slider="ready"] .w365-seg-input:checked + .w365-seg-label,
+  .w365-seg-btn.active,
+  .w365-seg-track[data-slider="ready"] .w365-seg-btn.active {
+    border: 2px solid Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .w365-seg-input:focus-visible + .w365-seg-label,
+  .w365-seg-btn:focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: -2px;
+  }
+}

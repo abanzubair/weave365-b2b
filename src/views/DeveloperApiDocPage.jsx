@@ -35,6 +35,7 @@ import {
   ExternalLink,
   AlertTriangle
 } from '../components/icons.jsx';
+import { SegmentedControl, BillingCycleToggle } from '../components/developer/SegmentedControl.jsx';
 import '../styles/developerApiDoc.css';
 
 // Shopify SyncX Catalog API Integration Video Walkthrough
@@ -119,35 +120,6 @@ const WOO_ROUND_OPTIONS = [
   { value: '50', label: 'Nearest ₹50' },
   { value: '99', label: 'End in ₹99' },
 ];
-
-function SegmentedRadioGroup({ legend, name, idPrefix, options, value, onChange }) {
-  return (
-    <fieldset className="api-fieldset">
-      <legend className="api-legend">{legend}</legend>
-      <div className="api-segmented-track">
-        {options.map((opt) => {
-          const inputId = `${idPrefix}-${opt.value}`;
-          return (
-            <div key={opt.value} className="api-segmented-item">
-              <input
-                type="radio"
-                id={inputId}
-                name={name}
-                value={opt.value}
-                checked={value === opt.value}
-                onChange={() => onChange(opt.value)}
-                className="api-segmented-input"
-              />
-              <label htmlFor={inputId} className="api-segmented-label">
-                {opt.label}
-              </label>
-            </div>
-          );
-        })}
-      </div>
-    </fieldset>
-  );
-}
 
 export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   const wooCsvIdPrefix = useId();
@@ -1753,7 +1725,7 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
 
                   <div className="api-woo-builder">
                     <div className="api-woo-controls-row">
-                      <SegmentedRadioGroup
+                      <SegmentedControl
                         legend="Markup Type"
                         name={`${wooCsvIdPrefix}-markup-type`}
                         idPrefix={`${wooCsvIdPrefix}-markup`}
@@ -1816,10 +1788,11 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                       )}
                     </div>
 
-                    <SegmentedRadioGroup
+                    <SegmentedControl
                       legend="Price Rounding"
                       name={`${wooCsvIdPrefix}-round-to`}
                       idPrefix={`${wooCsvIdPrefix}-round`}
+                      quad
                       options={WOO_ROUND_OPTIONS}
                       value={wooRoundTo}
                       onChange={setWooRoundTo}
@@ -2559,33 +2532,7 @@ console.log('Total live products:', data.total_products);`}</code></pre>
             </p>
 
             {/* Billing Frequency Segmented Toggle */}
-            <div className="api-billing-toggle-container">
-              <div
-                role="radiogroup"
-                aria-label="Billing frequency"
-                className="api-billing-toggle-wrap"
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={billingCycle === 'monthly'}
-                  className={`api-billing-toggle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
-                  onClick={() => setBillingCycle('monthly')}
-                >
-                  Monthly
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={billingCycle === 'quarterly'}
-                  className={`api-billing-toggle-btn ${billingCycle === 'quarterly' ? 'active' : ''}`}
-                  onClick={() => setBillingCycle('quarterly')}
-                >
-                  <span>3 Months</span>
-                  <span className="api-billing-discount-text">5% Off</span>
-                </button>
-              </div>
-            </div>
+            <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} align="start" />
 
             <div className="api-tiers-grid">
               <div className="api-tier-item">
