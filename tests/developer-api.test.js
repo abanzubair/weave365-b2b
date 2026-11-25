@@ -12,10 +12,11 @@
  * - Curated Catalog Boundaries (catalog filtering, stock isolation, product lookup boundary)
  */
 
-import test, { describe, it, beforeEach } from 'node:test';
+import test, { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   handleDeveloperApiGet,
+  handleDeveloperApiPost,
   _setSupabaseClientForTesting,
   _setCatalogProductsForTesting,
   _setStockMapForTesting,
@@ -100,6 +101,7 @@ describe('Weave365 B2B Developer API Verification', () => {
   let mockKeys;
   let usageTotals;
   let sheetStockMapData;
+  let insertedApiOrders;
 
   beforeEach(async () => {
     _clearCatalogDataCacheForTesting();
@@ -108,6 +110,7 @@ describe('Weave365 B2B Developer API Verification', () => {
     _clearSyncFeedCacheForTesting();
 
     sheetStockMapData = JSON.stringify(mockStockMap);
+    insertedApiOrders = [];
     _setCatalogProductsForTesting(mockCatalog);
     _setStockMapForTesting(mockStockMap);
 
@@ -193,14 +196,18 @@ describe('Weave365 B2B Developer API Verification', () => {
           };
         }
         if (table === 'api_usage_daily') {
+          const makeUsageResult = () => ({
+            or: async () => ({ data: [{ total_requests: 10 }], error: null }),
+            eq: (col, keyId) => ({
+              data: [{ total_requests: usageTotals[keyId] || 0 }],
+              error: null,
+            }),
+          });
           return {
             select: () => ({
               gte: () => ({
-                or: async () => ({ data: [{ total_requests: 10 }], error: null }),
-                eq: (col, keyId) => ({
-                  data: [{ total_requests: usageTotals[keyId] || 0 }],
-                  error: null,
-                }),
+                ...makeUsageResult(),
+                order: () => makeUsageResult(),
               }),
             }),
           };
@@ -221,6 +228,50 @@ describe('Weave365 B2B Developer API Verification', () => {
         if (table === 'vendor_product_stock') {
           return {
             select: async () => ({ data: [], error: null }),
+          };
+        }
+        if (table === 'api_orders') {
+          return {
+            select: () => {
+              const filters = {};
+              const query = {
+                in: (col, vals) => {
+                  filters.in = { col, vals };
+                  return query;
+                },
+                eq: (col, val) => {
+                  filters[col] = val;
+                  return query;
+                },
+                maybeSingle: async () => {
+                  const match = insertedApiOrders.find((row) => {
+                    if (filters.in && !filters.in.vals.includes(row[filters.in.col])) return false;
+                    if (filters.api_key_id && row.api_key_id !== filters.api_key_id) return false;
+                    if (filters.user_id && row.user_id !== filters.user_id) return false;
+                    return true;
+                  }) || null;
+                  return { data: match, error: null };
+                },
+              };
+              return query;
+            },
+            insert: (rows) => ({
+              select: () => ({
+                single: async () => {
+                  const created = {
+                    id: `api-order-${insertedApiOrders.length + 1}`,
+                    order_number: null,
+                    created_at: new Date().toISOString(),
+                    ...rows[0],
+                  };
+                  insertedApiOrders.push(created);
+                  return { data: created, error: null };
+                },
+              }),
+            }),
+            update: () => ({
+              eq: async () => ({ data: null, error: null }),
+            }),
           };
         }
         return {
@@ -1030,6 +1081,380 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.equal(storedStockMap['102001-1'].status, 'pre-order');
       assert.equal(storedStockMap['102001-1'].stock_label, 'Pre-Order');
       assert.ok(storedStockMap['102001-1'].quantity > 0);
+    });
+  });
+
+  describe('11. Endpoints: GET /api/v1/me & POST /api/v1/orders (WooCommerce & Storefront Integration)', () => {
+    let originalResendApiKey;
+
+    beforeEach(() => {
+      originalResendApiKey = process.env.RESEND_API_KEY;
+      delete process.env.RESEND_API_KEY;
+    });
+
+    afterEach(() => {
+      if (originalResendApiKey === undefined) {
+        delete process.env.RESEND_API_KEY;
+      } else {
+        process.env.RESEND_API_KEY = originalResendApiKey;
+      }
+    });
+
+    it('GET /api/v1/me returns orders_enabled capability flag accurately', async () => {
+      mockKeys[hashPro].orders_enabled = false;
+      const reqDisabled = new Request('https://www.weave365.com/api/v1/me', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const resDisabled = await handleDeveloperApiGet(reqDisabled, ['v1', 'me']);
+      assert.equal(resDisabled.status, 200);
+      const jsonDisabled = await resDisabled.json();
+      assert.equal(jsonDisabled.status, 'success');
+      assert.equal(jsonDisabled.orders_enabled, false);
+
+      _clearKeyMemoryCacheForTesting();
+      mockKeys[hashPro].orders_enabled = true;
+      const reqEnabled = new Request('https://www.weave365.com/api/v1/me', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const resEnabled = await handleDeveloperApiGet(reqEnabled, ['v1', 'me']);
+      assert.equal(resEnabled.status, 200);
+      const jsonEnabled = await resEnabled.json();
+      assert.equal(jsonEnabled.status, 'success');
+      assert.equal(jsonEnabled.orders_enabled, true);
+    });
+
+    it('POST /api/v1/orders with platform=woocommerce and orders_enabled=false returns 403 FORBIDDEN', async () => {
+      mockKeys[hashPro].orders_enabled = false;
+      const req = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_PRO,
+        },
+        body: JSON.stringify({
+          platform: 'woocommerce',
+          reseller_order_id: 'WC-1001',
+          shipping_address: {
+            name: 'Ananya Sharma',
+            phone: '9876543210',
+            postcode: '560001',
+            address_line1: '42 MG Road',
+            city: 'Bengaluru',
+            state: 'KA',
+          },
+          items: [
+            { sku: '102001-1', quantity: 1, selling_price: 7500 },
+          ],
+        }),
+      });
+
+      const res = await handleDeveloperApiPost(req, ['v1', 'orders']);
+      assert.equal(res.status, 403);
+      const json = await res.json();
+      assert.equal(json.status, 'error');
+      assert.equal(json.code, 'FORBIDDEN');
+      assert.equal(insertedApiOrders.length, 0);
+    });
+
+    it('POST /api/v1/orders with platform=woocommerce and mixed cart filters non-Weave365 items, computes Weave365 totals only, and adds WooCommerce Multi-Vendor note', async () => {
+      mockKeys[hashPro].orders_enabled = true;
+      const req = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_PRO,
+        },
+        body: JSON.stringify({
+          platform: 'woocommerce',
+          reseller_order_id: 'WC-1042',
+          customer: {
+            name: 'Ananya Sharma',
+            phone: '9876543210',
+            email: 'ananya@example.com',
+          },
+          shipping_address: {
+            name: 'Ananya Sharma',
+            phone: '9876543210',
+            postcode: '560001',
+            address_line1: '42 MG Road',
+            city: 'Bengaluru',
+            state: 'KA',
+          },
+          sender: {
+            name: 'Silk Heritage Store',
+            phone: '9988776655',
+          },
+          shipping_notes: 'Call before delivery',
+          customer_price: 20000,
+          items: [
+            {
+              sku: '102001-1',
+              quantity: 2,
+              product_title: 'Pure Katan Silk Banarasi Saree',
+              color: 'Royal Red',
+              selling_price: 7500,
+            },
+            {
+              sku: 'NON-WEAVE-999',
+              quantity: 1,
+              product_title: 'Third-Party Cotton Kurta',
+              selling_price: 5000,
+            },
+          ],
+        }),
+      });
+
+      const res = await handleDeveloperApiPost(req, ['v1', 'orders']);
+      assert.equal(res.status, 201);
+      const json = await res.json();
+      assert.equal(json.status, 'success');
+      assert.equal(json.reseller_order_id, 'WC-1042');
+      assert.deepEqual(json.items_filtered, {
+        total_order_items: 2,
+        weave365_items_processed: 1,
+      });
+
+      assert.equal(json.order.items.length, 1);
+      assert.equal(json.order.items[0].sku, '102001-1');
+      assert.equal(json.order.items[0].quantity, 2);
+
+      // Totals must reflect Weave 365 items only (2 * 5200 wholesale, 2 * 7500 retail)
+      assert.equal(json.pricing.wholesale_amount, 10400);
+      assert.equal(json.pricing.customer_billed_price, 15000);
+      assert.equal(json.pricing.reseller_margin, 4600);
+      assert.equal(json.courier_slip.parcel_declared_value, 15000);
+
+      assert.equal(insertedApiOrders.length, 1);
+      assert.equal(insertedApiOrders[0].platform, 'woocommerce');
+      assert.equal(insertedApiOrders[0].items.length, 1);
+      assert.match(
+        insertedApiOrders[0].shipping_notes,
+        /\[WooCommerce Multi-Vendor: 1 of 2 items fulfilled by Weave 365\]/
+      );
+      assert.match(insertedApiOrders[0].shipping_notes, /Call before delivery/);
+    });
+
+    it('POST /api/v1/orders with platform=woocommerce and zero Weave365 items returns 200 ignored NO_WEAVE365_ITEMS', async () => {
+      mockKeys[hashPro].orders_enabled = true;
+      const req = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_PRO,
+        },
+        body: JSON.stringify({
+          platform: 'woocommerce',
+          reseller_order_id: 'WC-1043',
+          shipping_address: {
+            name: 'Priya Verma',
+            phone: '9123456780',
+            postcode: '110001',
+            address_line1: '15 Connaught Place',
+            city: 'New Delhi',
+            state: 'DL',
+          },
+          items: [
+            { sku: 'NON-WEAVE-100', quantity: 1, selling_price: 1999 },
+            { sku: 'NON-WEAVE-200', quantity: 2, selling_price: 1200 },
+          ],
+        }),
+      });
+
+      const res = await handleDeveloperApiPost(req, ['v1', 'orders']);
+      assert.equal(res.status, 200);
+      const json = await res.json();
+      assert.equal(json.status, 'ignored');
+      assert.equal(json.code, 'NO_WEAVE365_ITEMS');
+      assert.equal(json.reseller_order_id, 'WC-1043');
+      assert.equal(insertedApiOrders.length, 0);
+    });
+
+    it('POST /api/v1/orders with platform=woocommerce on curated key filters unauthorized SKUs in mixed carts and ignores all-unauthorized carts', async () => {
+      mockKeys[hashCurated].orders_enabled = true;
+
+      // Mixed cart: 1 authorized SKU (102001-1) + 1 unauthorized SKU (999999-1)
+      const mixedReq = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_CURATED,
+        },
+        body: JSON.stringify({
+          platform: 'woocommerce',
+          reseller_order_id: 'WC-CUR-1',
+          shipping_address: {
+            name: 'Meera Iyer',
+            phone: '9876501234',
+            postcode: '600001',
+            address_line1: '8 Mount Road',
+            city: 'Chennai',
+            state: 'TN',
+          },
+          items: [
+            { sku: '102001-1', quantity: 1, selling_price: 6800 },
+            { sku: '999999-1', quantity: 1, selling_price: 30000 },
+          ],
+        }),
+      });
+
+      const mixedRes = await handleDeveloperApiPost(mixedReq, ['v1', 'orders']);
+      assert.equal(mixedRes.status, 201);
+      const mixedJson = await mixedRes.json();
+      assert.equal(mixedJson.order.items.length, 1);
+      assert.equal(mixedJson.order.items[0].sku, '102001-1');
+      assert.equal(mixedJson.pricing.wholesale_amount, 5200);
+      assert.equal(mixedJson.pricing.customer_billed_price, 6800);
+      assert.match(
+        insertedApiOrders[0].shipping_notes,
+        /\[WooCommerce Multi-Vendor: 1 of 2 items fulfilled by Weave 365\]/
+      );
+
+      // All-unauthorized cart on WooCommerce curated key returns 200 ignored
+      const unauthReq = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_CURATED,
+        },
+        body: JSON.stringify({
+          platform: 'woocommerce',
+          reseller_order_id: 'WC-CUR-2',
+          shipping_address: {
+            name: 'Meera Iyer',
+            phone: '9876501234',
+            postcode: '600001',
+          },
+          items: [
+            { sku: '999999-1', quantity: 1, selling_price: 30000 },
+          ],
+        }),
+      });
+
+      const unauthRes = await handleDeveloperApiPost(unauthReq, ['v1', 'orders']);
+      assert.equal(unauthRes.status, 200);
+      const unauthJson = await unauthRes.json();
+      assert.equal(unauthJson.status, 'ignored');
+      assert.equal(unauthJson.code, 'NO_WEAVE365_ITEMS');
+    });
+
+    it('POST /api/v1/orders keeps Shopify Multi-Vendor label and direct-API strict rejection intact', async () => {
+      mockKeys[hashPro].orders_enabled = true;
+
+      // Shopify mixed cart preserves [Shopify Multi-Vendor: ...]
+      const shopifyReq = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_PRO,
+        },
+        body: JSON.stringify({
+          platform: 'shopify',
+          reseller_order_id: 'SH-5001',
+          shipping_address: {
+            name: 'Riya Patel',
+            phone: '9898989898',
+            zip: '380001',
+            address1: '10 CG Road',
+            city: 'Ahmedabad',
+            province: 'GJ',
+          },
+          line_items: [
+            { sku: '102001-1', quantity: 1, price: 7000 },
+            { sku: 'OTHER-SHOP-SKU', quantity: 1, price: 2500 },
+          ],
+        }),
+      });
+
+      const shopifyRes = await handleDeveloperApiPost(shopifyReq, ['v1', 'orders']);
+      assert.equal(shopifyRes.status, 201);
+      assert.equal(insertedApiOrders.length, 1);
+      assert.equal(insertedApiOrders[0].platform, 'shopify');
+      assert.match(
+        insertedApiOrders[0].shipping_notes,
+        /\[Shopify Multi-Vendor: 1 of 2 items fulfilled by Weave 365\]/
+      );
+
+      // Direct API call with unknown SKU alongside valid one still returns 400 INVALID_PRODUCT_SKU
+      const directReq = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': TEST_KEY_PRO,
+        },
+        body: JSON.stringify({
+          platform: 'api',
+          reseller_order_id: 'API-9001',
+          shipping_address: {
+            name: 'Riya Patel',
+            phone: '9898989898',
+            pincode: '380001',
+          },
+          items: [
+            { sku: '102001-1', quantity: 1, selling_price: 7000 },
+            { sku: 'UNKNOWN-SKU', quantity: 1, selling_price: 2500 },
+          ],
+        }),
+      });
+
+      const directRes = await handleDeveloperApiPost(directReq, ['v1', 'orders']);
+      assert.equal(directRes.status, 400);
+      const directJson = await directRes.json();
+      assert.equal(directJson.code, 'INVALID_PRODUCT_SKU');
+    });
+
+    it('POST /api/v1/orders with platform=woocommerce deduplicates retries and scopes COD amount on mixed carts to Weave365 items', async () => {
+      mockKeys[hashPro].orders_enabled = true;
+      const payload = {
+        platform: 'woocommerce',
+        reseller_order_id: 'WC-COD-77',
+        payment_type: 'cod',
+        gateway: 'cod',
+        cod_amount: 12000,
+        shipping_address: {
+          name: 'Kavita Nair',
+          phone: '9845012345',
+          postcode: '682001',
+          address_line1: '19 Marine Drive',
+          city: 'Kochi',
+          state: 'KL',
+        },
+        items: [
+          { sku: '102002-1', quantity: 1, selling_price: 6200 },
+          { sku: 'OTHER-VENDOR-88', quantity: 1, selling_price: 5800 },
+        ],
+      };
+
+      const firstRes = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/v1/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+          body: JSON.stringify(payload),
+        }),
+        ['v1', 'orders']
+      );
+      assert.equal(firstRes.status, 201);
+      const firstJson = await firstRes.json();
+      assert.equal(firstJson.pricing.payment_mode, 'COD');
+      assert.equal(firstJson.pricing.wholesale_amount, 4300);
+      assert.equal(firstJson.pricing.customer_billed_price, 6200);
+      assert.equal(firstJson.pricing.cod_amount_to_collect, 6200);
+      assert.equal(firstJson.courier_slip.cod_amount_to_collect, 6200);
+      assert.equal(insertedApiOrders.length, 1);
+
+      // Retry with same reseller_order_id must deduplicate safely
+      const retryRes = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/v1/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+          body: JSON.stringify(payload),
+        }),
+        ['v1', 'orders']
+      );
+      assert.equal(retryRes.status, 200);
+      const retryJson = await retryRes.json();
+      assert.equal(retryJson.is_duplicate, true);
+      assert.equal(retryJson.order_id, firstJson.order_id);
+      assert.equal(insertedApiOrders.length, 1);
     });
   });
 });

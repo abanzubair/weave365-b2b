@@ -3670,6 +3670,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         request.headers.get('x-shopify-topic') ||
         request.headers.get('x-shopify-shop-domain')
       );
+      const isStorefrontPlugin = isShopify || platform === 'woocommerce';
 
       // Enforce product authorization boundary: ensure all requested SKUs are authorized for this API key
       const isCurated = auth.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0);
@@ -3686,7 +3687,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         });
 
         // For direct manual API calls, strictly reject unauthorized products
-        if (!isShopify) {
+        if (!isStorefrontPlugin) {
           for (const item of rawItems) {
             const itemSku = String(item.sku || item.product_id || item.code || item.variant_code || item.id || '').trim().toLowerCase();
             const baseSku = itemSku.includes('-') ? itemSku.split('-')[0].trim() : itemSku;
@@ -3835,7 +3836,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
       // Handle Case A: Zero Weave 365 items found in this order
       if (validWeaveItems.length === 0) {
-        if (isShopify) {
+        if (isStorefrontPlugin) {
           const resolvedResellerOrderId = String(reseller_order_id || body?.order_number || body?.name || body?.id || '').trim() || null;
           return Response.json({
             status: 'ignored',
@@ -3853,8 +3854,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }, { status: 400, headers: cors });
       }
 
-      // Handle Case B: Direct non-Shopify API calls that supplied unknown SKUs alongside valid ones
-      if (!isShopify && validWeaveItems.length < rawItems.length) {
+      // Handle Case B: Direct non-storefront API calls that supplied unknown SKUs alongside valid ones
+      if (!isStorefrontPlugin && validWeaveItems.length < rawItems.length) {
         return Response.json({
           status: 'error',
           code: 'INVALID_PRODUCT_SKU',
@@ -3964,7 +3965,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       }
 
       const resolvedPlatform = platform || (isShopify ? 'shopify' : 'api');
-      const filterNote = isMixedOrder ? `[Shopify Multi-Vendor: ${normalizedItems.length} of ${rawItems.length} items fulfilled by Weave 365]` : '';
+      const platformLabel = platform === 'woocommerce' ? 'WooCommerce' : 'Shopify';
+      const filterNote = isMixedOrder ? `[${platformLabel} Multi-Vendor: ${normalizedItems.length} of ${rawItems.length} items fulfilled by Weave 365]` : '';
       const resolvedNotes = [shipping_notes || body?.note || body?.notes || '', filterNote].filter(Boolean).join(' | ');
       const fullAddressStr = `${recipientAddress}${recipientCity ? `, ${recipientCity}` : ''}${recipientState ? `, ${recipientState}` : ''} - PIN: ${customerPincode}`;
 
