@@ -1419,6 +1419,393 @@ function formatForMatrixifyCsv(products, effectiveKey = null) {
   return csvResult;
 }
 
+const WOO_CSV_HEADERS = [
+  'Type',
+  'SKU',
+  'Name',
+  'Published',
+  'Is featured?',
+  'Visibility in catalog',
+  'Short description',
+  'Description',
+  'In stock?',
+  'Stock',
+  'Backorders allowed?',
+  'Weight (kg)',
+  'Regular price',
+  'Sale price',
+  'Categories',
+  'Tags',
+  'Images',
+  'Parent',
+  'Attribute 1 name',
+  'Attribute 1 value(s)',
+  'Attribute 1 visible',
+  'Attribute 1 global',
+];
+
+function firstPositiveNumber(...candidates) {
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null || candidate === '') continue;
+    const num = Number(candidate);
+    if (Number.isFinite(num) && num > 0) {
+      return num;
+    }
+  }
+  return 0;
+}
+
+function normalizeHttpsImageUrl(rawUrl) {
+  const trimmed = String(rawUrl || '').trim();
+  if (!trimmed) return '';
+  const candidate = trimmed.startsWith('//') ? `https:${trimmed}` : trimmed;
+  if (!candidate.startsWith('https://')) return '';
+  try {
+    const parsed = new URL(candidate);
+    return parsed.protocol === 'https:' ? candidate : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Apply reseller markup (% and/or flat) and optional price rounding,
+ * clamping to safe bounds and guaranteeing finalPrice >= basePrice.
+ */
+export function applyResellerMarkup(basePrice, markupPct = 0, markupFlat = 0, roundTo = 'none') {
+  const base = Number(basePrice);
+  if (!Number.isFinite(base) || base <= 0) {
+    return 0;
+  }
+
+  const rawPct = Number(markupPct);
+  const pct = Number.isFinite(rawPct) ? Math.min(500, Math.max(0, rawPct)) : 0;
+  const rawFlat = Number(markupFlat);
+  const flat = Number.isFinite(rawFlat) ? Math.min(100000, Math.max(0, rawFlat)) : 0;
+  const normalizedRound = String(roundTo || 'none').trim().toLowerCase();
+  const mode = ['none', '10', '50', '99'].includes(normalizedRound) ? normalizedRound : 'none';
+
+  const cleanMarkedUp = Math.round((base * (1 + pct / 100) + flat) * 100) / 100;
+  let finalPrice = cleanMarkedUp;
+
+  if (mode === '10') {
+    finalPrice = Math.round(cleanMarkedUp / 10) * 10;
+    if (finalPrice < base) {
+      finalPrice = Math.ceil(base / 10) * 10;
+    }
+  } else if (mode === '50') {
+    finalPrice = Math.round(cleanMarkedUp / 50) * 50;
+    if (finalPrice < base) {
+      finalPrice = Math.ceil(base / 50) * 50;
+    }
+  } else if (mode === '99') {
+    finalPrice = Math.floor(cleanMarkedUp / 100) * 100 + 99;
+    if (finalPrice < cleanMarkedUp) {
+      finalPrice += 100;
+    }
+    while (finalPrice < base) {
+      finalPrice += 100;
+    }
+  }
+
+  if (finalPrice < base) {
+    finalPrice = base;
+  }
+
+  return Math.round(finalPrice * 100) / 100;
+}
+
+/**
+ * Transform products into the official WooCommerce Product CSV Importer format (22 columns).
+ * Prepends UTF-8 BOM (\uFEFF), emits simple vs variable+variation rows, preserves variant _index
+ * for stock_map-compatible fallback SKUs, and applies optional reseller price markup/rounding.
+ */
+export function formatForWooCommerceCsv(products, effectiveKey = null, markupOptions = {}) {
+  if (effectiveKey) {
+    const cached = syncFeedCache.get(effectiveKey);
+    if (cached && (Date.now() - cached.timestamp < SYNC_FEED_CACHE_TTL_MS)) {
+      return cached.data;
+    }
+  }
+
+  const markupPct = markupOptions?.markupPct ?? 0;
+  const markupFlat = markupOptions?.markupFlat ?? 0;
+  const roundTo = markupOptions?.roundTo ?? 'none';
+
+  const rows = [];
+  rows.push(WOO_CSV_HEADERS.map(escapeCsvCell).join(','));
+
+  for (const p of (Array.isArray(products) ? products : [])) {
+    if (!p || typeof p !== 'object') continue;
+    if (p.isArchived || p.stockStatusOverride === 'archived') continue;
+
+    const parentSku = String(p.id || p.groupKey || '').trim();
+    if (!parentSku) continue;
+
+    const title = String(p.title || p.name || '').trim();
+    const firstPrices = p.variants?.[0]?.prices || {};
+    const baseResellerPrice = firstPositiveNumber(
+      firstPrices.b2r,
+      p.reseller_price,
+      p.resellerPrice,
+      p.price,
+      p.variants?.[0]?.price,
+      firstPrices.single
+    );
+
+    const productStockKey = p.stockStatusOverride || '';
+    const productIsOutOfStock = Boolean(
+      p.isOutOfStock ||
+      p.isArchived ||
+      productStockKey === 'out-of-stock' ||
+      productStockKey === 'archived' ||
+      (typeof p.quantity === 'number' && p.quantity <= 0)
+    );
+    const productQty = getProductQuantity(p, productIsOutOfStock);
+    const weightInfo = getAdjustedWeight(p);
+    const shortDesc = String(p.summary || p.description || '').trim();
+    const descHtml = buildProductDescriptionHtml(p, weightInfo);
+
+    const cat = String(p.category || '').trim();
+    const subCat = String(p.subCategory || '').trim();
+    const categoriesStr = cat ? (subCat ? `${cat} > ${subCat}` : cat) : '';
+
+    const tagsStr = Array.from(new Set([
+      p.fabric,
+      p.weave,
+      p.work,
+      p.pattern,
+      p.purity,
+      p.type,
+      p.style,
+      p.occasion,
+      p.category,
+      p.subCategory,
+      p.stockStatusLabel || (productIsOutOfStock ? 'Out of Stock' : 'Ready Stock'),
+    ].map(s => String(s || '').trim()).filter(Boolean))).join(', ');
+
+    const rawImages = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
+    const cleanImageList = [];
+    const addGalleryImage = (url) => {
+      const normalized = normalizeHttpsImageUrl(url);
+      if (normalized && !cleanImageList.includes(normalized)) {
+        cleanImageList.push(normalized);
+      }
+    };
+    for (const img of rawImages) {
+      addGalleryImage(img);
+    }
+    addGalleryImage(p.image);
+
+    const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
+    const seenColors = new Set();
+    const uniqueVariantsRaw = [];
+    const extraDuplicateVariantImages = [];
+
+    if (hasExplicitVariants) {
+      for (let idx = 0; idx < p.variants.length; idx++) {
+        const v = p.variants[idx];
+        if (!v || typeof v !== 'object') continue;
+        const origColor = String(v.color || '').trim();
+        const displayColor = origColor || `Option ${idx + 1}`;
+        const colorKey = displayColor.toLowerCase();
+        if (seenColors.has(colorKey)) {
+          extraDuplicateVariantImages.push(v.image);
+          if (Array.isArray(v.images)) {
+            extraDuplicateVariantImages.push(...v.images);
+          }
+          continue;
+        }
+        seenColors.add(colorKey);
+        uniqueVariantsRaw.push({
+          ...v,
+          color: displayColor,
+          _origColor: origColor,
+          _index: idx,
+        });
+      }
+    } else if (Array.isArray(p.colors) && p.colors.length > 0) {
+      for (let idx = 0; idx < p.colors.length; idx++) {
+        const origColor = String(p.colors[idx] || '').trim();
+        const displayColor = origColor || `Option ${idx + 1}`;
+        const colorKey = displayColor.toLowerCase();
+        if (seenColors.has(colorKey)) continue;
+        seenColors.add(colorKey);
+        uniqueVariantsRaw.push({
+          color: displayColor,
+          _origColor: displayColor,
+          _index: idx,
+        });
+      }
+    }
+
+    const variantList = uniqueVariantsRaw.map((v) => {
+      const vPrices = v.prices || {};
+      const vBasePrice = firstPositiveNumber(
+        vPrices.b2r,
+        v.reseller_price,
+        v.resellerPrice,
+        v.price,
+        baseResellerPrice,
+        vPrices.single
+      );
+
+      // Preserve _index so fallback SKU matches stockMapService.js / fallback stock_map
+      const slugSource = hasExplicitVariants ? (v._origColor || `VAR${v._index + 1}`) : v.color;
+      const vColorSlug = slugSource
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .slice(0, 16) || `V${v._index + 1}`;
+      const fallbackSku = `${parentSku}-${vColorSlug}-${v._index + 1}`;
+      const explicitSku = String(v.code || '').trim() || String(v.sku || '').trim();
+      const vSku = (explicitSku && explicitSku !== parentSku) ? explicitSku : fallbackSku;
+
+      const vStockKey = v.stockStatusOverride || (productIsOutOfStock ? 'out-of-stock' : productStockKey);
+      const vIsArchived = vStockKey === 'archived' || Boolean(v.isArchived) || Boolean(p.isArchived);
+      const vIsOutOfStock = productIsOutOfStock ||
+        vIsArchived ||
+        vStockKey === 'out-of-stock' ||
+        Boolean(v.isOutOfStock) ||
+        (typeof v.quantity === 'number' && v.quantity <= 0);
+      const vStock = vIsOutOfStock ? 0 : getVariantQuantity(v, p, vIsOutOfStock);
+      const vInStock = !vIsOutOfStock && vStock > 0;
+
+      const vColorOptImg = Array.isArray(p.colorOptions)
+        ? p.colorOptions.find((c) => String(c?.name || '').trim().toLowerCase() === v.color.toLowerCase())?.image
+        : '';
+      const vColorMapImg = p.colorImages && typeof p.colorImages === 'object'
+        ? p.colorImages[v.color]
+        : '';
+      const vImg = normalizeHttpsImageUrl(
+        v.image || (Array.isArray(v.images) ? v.images[0] : '') || vColorOptImg || vColorMapImg || ''
+      );
+      if (vImg) {
+        addGalleryImage(vImg);
+      }
+      if (Array.isArray(v.images)) {
+        for (const vi of v.images) addGalleryImage(vi);
+      }
+
+      return {
+        sku: vSku,
+        color: v.color,
+        basePrice: vBasePrice,
+        stock: vStock,
+        inStock: vInStock,
+        image: vImg,
+      };
+    });
+
+    for (const extraImg of extraDuplicateVariantImages) {
+      addGalleryImage(extraImg);
+    }
+
+    if (variantList.length <= 1) {
+      const soleVariant = variantList[0] || null;
+      const simpleBasePrice = soleVariant ? soleVariant.basePrice : baseResellerPrice;
+      const simpleStock = (hasExplicitVariants && soleVariant) ? soleVariant.stock : productQty;
+      const simpleInStock = (hasExplicitVariants && soleVariant)
+        ? soleVariant.inStock
+        : (!productIsOutOfStock && productQty > 0);
+      const regularPrice = applyResellerMarkup(simpleBasePrice, markupPct, markupFlat, roundTo);
+
+      rows.push([
+        'simple',
+        parentSku,
+        title,
+        1,
+        0,
+        'visible',
+        shortDesc,
+        descHtml,
+        simpleInStock ? 1 : 0,
+        simpleStock,
+        0,
+        weightInfo.kg,
+        regularPrice,
+        '',
+        categoriesStr,
+        tagsStr,
+        cleanImageList.join(', '),
+        '',
+        '',
+        '',
+        '',
+        '',
+      ].map(escapeCsvCell).join(','));
+    } else {
+      const anyVariantInStock = variantList.some((v) => v.inStock);
+      const colorValuesStr = variantList.map((v) => v.color).join(', ');
+
+      rows.push([
+        'variable',
+        parentSku,
+        title,
+        1,
+        0,
+        'visible',
+        shortDesc,
+        descHtml,
+        anyVariantInStock ? 1 : 0,
+        '',
+        0,
+        weightInfo.kg,
+        '',
+        '',
+        categoriesStr,
+        tagsStr,
+        cleanImageList.join(', '),
+        '',
+        'Color',
+        colorValuesStr,
+        1,
+        0,
+      ].map(escapeCsvCell).join(','));
+
+      for (const v of variantList) {
+        const vRegularPrice = applyResellerMarkup(v.basePrice, markupPct, markupFlat, roundTo);
+        const vName = title ? `${title} - ${v.color}` : v.color;
+
+        rows.push([
+          'variation',
+          v.sku,
+          vName,
+          1,
+          0,
+          'visible',
+          '',
+          '',
+          v.inStock ? 1 : 0,
+          v.stock,
+          0,
+          weightInfo.kg,
+          vRegularPrice,
+          '',
+          '',
+          '',
+          v.image,
+          parentSku,
+          'Color',
+          v.color,
+          '',
+          0,
+        ].map(escapeCsvCell).join(','));
+      }
+    }
+  }
+
+  const csvResult = `\uFEFF${rows.join('\r\n')}`;
+
+  if (effectiveKey) {
+    setBoundedCache(syncFeedCache, effectiveKey, {
+      data: csvResult,
+      timestamp: Date.now(),
+    });
+  }
+
+  return csvResult;
+}
+
 /**
  * Ultra-fast stock status route handler (<0.5ms CPU).
  * Directly reads decoupled stock_map from memory cache or sheet_data (id: 'stock_map'),
@@ -1714,23 +2101,37 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     };
 
-    const csvHeaders = {
-      ...securePrivateHeaders,
-      ...cors,
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="weave365-catalog.csv"',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-    };
-
     // Feed format detection: explicit query param or automated Stock Sync / Matrixify crawler detection
     const userAgent = request.headers.get('user-agent') || '';
     const isStockSyncAgent = /stock[-_]?sync|syncx/i.test(userAgent);
     const isMatrixifyAgent = /matrixify|excelify/i.test(userAgent);
-    const requestedFormat = (searchParams.get('format') || '').toLowerCase();
+    const requestedFormat = (searchParams.get('format') || '').trim().toLowerCase();
     const format = requestedFormat || (isStockSyncAgent ? 'stocksync' : (isMatrixifyAgent || isCsvExtension ? 'matrixify' : ''));
-    const isCsvRequested = isCsvExtension || format === 'matrixify' || format === 'csv' || format === 'matrixify_csv';
+    const isWooCsv = format === 'woocommerce' || format === 'woo';
+    const isCsvRequested = isCsvExtension || format === 'matrixify' || format === 'csv' || format === 'matrixify_csv' || isWooCsv;
     const isRaw = searchParams.get('raw') === 'true' || searchParams.get('array') === 'true';
     const isSyncFeed = format === 'stocksync' || format === 'syncx' || format === 'shopify' || isCsvRequested;
+
+    const rawMarkupPct = searchParams.get('markup_pct');
+    const parsedMarkupPct = (rawMarkupPct !== null && rawMarkupPct !== '') ? Number(rawMarkupPct) : 0;
+    const markupPct = Number.isFinite(parsedMarkupPct) ? Math.min(500, Math.max(0, parsedMarkupPct)) : 0;
+
+    const rawMarkupFlat = searchParams.get('markup_flat');
+    const parsedMarkupFlat = (rawMarkupFlat !== null && rawMarkupFlat !== '') ? Number(rawMarkupFlat) : 0;
+    const markupFlat = Number.isFinite(parsedMarkupFlat) ? Math.min(100000, Math.max(0, parsedMarkupFlat)) : 0;
+
+    const rawRoundTo = (searchParams.get('round_to') || 'none').trim().toLowerCase();
+    const roundTo = ['none', '10', '50', '99'].includes(rawRoundTo) ? rawRoundTo : 'none';
+
+    const csvHeaders = {
+      ...securePrivateHeaders,
+      ...cors,
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': isWooCsv
+        ? 'attachment; filename="weave365-woocommerce-catalog.csv"'
+        : 'attachment; filename="weave365-catalog.csv"',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    };
 
     const authScope = (auth.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0))
       ? `curated:${auth.keyRecord.id || auth.keyRecord.key_hash}`
@@ -1744,7 +2145,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     // 5-minute in-memory edge cache check for formatted sync feed response
     const syncResponseKey = isSyncFeed
-      ? `${format}:${envelope}:${isRaw}:${authScope}:${category || ''}:${skusParam || ''}:${pageParam || ''}:${limitParam || ''}:${offsetParam || ''}`
+      ? `${format}:${envelope}:${isRaw}:${authScope}:${category || ''}:${skusParam || ''}:${pageParam || ''}:${limitParam || ''}:${offsetParam || ''}:${markupPct}:${markupFlat}:${roundTo}`
       : null;
 
     if (syncResponseKey) {
@@ -1827,11 +2228,14 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     // Slice products BEFORE running CPU-heavy variant/color mappings
     const paginatedProducts = resultProducts.slice(offset, offset + limit);
 
-    // Format for Matrixify / Shopify Native CSV Import:
-    // Emits a standard RFC-4180 Shopify CSV feed for Matrixify & direct Shopify bulk imports
+    // Format for WooCommerce Product CSV Importer or Matrixify / Shopify Native CSV Import
     if (isCsvRequested) {
-      const feedFormatKey = `matrixify_csv:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}`;
-      const csvString = formatForMatrixifyCsv(paginatedProducts, feedFormatKey);
+      const feedFormatKey = isWooCsv
+        ? `woocommerce_csv:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}:${markupPct}:${markupFlat}:${roundTo}`
+        : `matrixify_csv:${authScope}:${category || ''}:${skusParam || ''}:${offset}:${limit}:${markupPct}:${markupFlat}:${roundTo}`;
+      const csvString = isWooCsv
+        ? formatForWooCommerceCsv(paginatedProducts, feedFormatKey, { markupPct, markupFlat, roundTo })
+        : formatForMatrixifyCsv(paginatedProducts, feedFormatKey);
       if (syncResponseKey) {
         setBoundedCache(syncFeedResponseCache, syncResponseKey, {
           data: csvString,

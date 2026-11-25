@@ -14,6 +14,7 @@
 
 import test, { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import Papa from 'papaparse';
 import {
   handleDeveloperApiGet,
   handleDeveloperApiPost,
@@ -26,6 +27,8 @@ import {
   _clearSyncFeedCacheForTesting,
   hashApiKey,
   getAuthorizedProducts,
+  applyResellerMarkup,
+  formatForWooCommerceCsv,
 } from '../app/api/[[...route]]/developerApiHandler.js';
 import {
   generateStockMap,
@@ -1455,6 +1458,427 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.equal(retryJson.is_duplicate, true);
       assert.equal(retryJson.order_id, firstJson.order_id);
       assert.equal(insertedApiOrders.length, 1);
+    });
+  });
+
+  describe('12. Endpoint: WooCommerce Product CSV Export & Self-Serve Markup', () => {
+    const EXPECTED_WOO_HEADERS = [
+      'Type',
+      'SKU',
+      'Name',
+      'Published',
+      'Is featured?',
+      'Visibility in catalog',
+      'Short description',
+      'Description',
+      'In stock?',
+      'Stock',
+      'Backorders allowed?',
+      'Weight (kg)',
+      'Regular price',
+      'Sale price',
+      'Categories',
+      'Tags',
+      'Images',
+      'Parent',
+      'Attribute 1 name',
+      'Attribute 1 value(s)',
+      'Attribute 1 visible',
+      'Attribute 1 global',
+    ];
+
+    async function readWooCsvResponse(res) {
+      const buf = Buffer.from(await res.arrayBuffer());
+      const hasUtf8Bom = buf.length >= 3 && buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf;
+      const rawWithBom = new TextDecoder('utf-8', { ignoreBOM: true }).decode(buf);
+      const textWithoutBom = rawWithBom.startsWith('\uFEFF') ? rawWithBom.slice(1) : rawWithBom;
+      const parsed = Papa.parse(textWithoutBom, { header: true, skipEmptyLines: true });
+      return { buf, hasUtf8Bom, rawWithBom, textWithoutBom, parsed };
+    }
+
+    it('applyResellerMarkup handles bounds, invalid prices, rounding modes, and never returns below B2R base', () => {
+      // Invalid / non-positive base prices
+      assert.equal(applyResellerMarkup(NaN, 30, 100, '10'), 0);
+      assert.equal(applyResellerMarkup(null, 30, 100, '99'), 0);
+      assert.equal(applyResellerMarkup(0, 30, 500, '99'), 0);
+      assert.equal(applyResellerMarkup(-250, 30, 0, '50'), 0);
+
+      // Clamping pct (0..500), flat (0..100000), invalid round_to fallback
+      assert.equal(applyResellerMarkup(1000, -25, -50, 'invalid'), 1000);
+      assert.equal(applyResellerMarkup(1000, 999, 0, 'none'), 6000); // 1000 * (1 + 500/100)
+      assert.equal(applyResellerMarkup(1000, 0, 999999, 'none'), 101000);
+
+      // Percentage + rounding modes
+      assert.equal(applyResellerMarkup(5200, 30, 0, '10'), 6760);
+      assert.equal(applyResellerMarkup(4300, 15, 0, '50'), 4950); // 4945 -> 4950
+      assert.equal(applyResellerMarkup(5200, 15, 0, '50'), 6000); // 5980 -> 6000
+      assert.equal(applyResellerMarkup(4300, 0, 1000, '99'), 5399); // 5300 -> 5399
+      assert.equal(applyResellerMarkup(5200, 15.37, 0, '99'), 6099); // 5999.24 > 5999 -> bumps to 6099
+
+      // Floating-point exactness
+      assert.equal(applyResellerMarkup(100, 14, 0, 'none'), 114);
+      assert.equal(applyResellerMarkup(100, 99, 0, '99'), 199);
+
+      // Never rounds down below B2R base price
+      assert.equal(applyResellerMarkup(5203, 0, 0, '10'), 5210);
+      assert.equal(applyResellerMarkup(5210, 0, 0, '50'), 5250);
+    });
+
+    it('GET /api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=10 returns UTF-8 BOM, headers, 22 columns, simple vs variable+variation rows, and marked-up prices', async () => {
+      const req = new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=10', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const res = await handleDeveloperApiGet(req, ['v1', 'catalog.csv']);
+      assert.equal(res.status, 200);
+      assert.equal(res.headers.get('content-type'), 'text/csv; charset=utf-8');
+      assert.equal(res.headers.get('content-disposition'), 'attachment; filename="weave365-woocommerce-catalog.csv"');
+
+      const { hasUtf8Bom, rawWithBom, parsed } = await readWooCsvResponse(res);
+      assert.equal(hasUtf8Bom, true, 'HTTP response must begin with UTF-8 BOM bytes 0xEF 0xBB 0xBF');
+      assert.equal(rawWithBom.startsWith('\uFEFF'), true);
+      assert.deepEqual(parsed.errors, []);
+      assert.deepEqual(parsed.meta.fields, EXPECTED_WOO_HEADERS);
+      assert.equal(parsed.meta.fields.length, 22);
+
+      const rows = parsed.data;
+      // 102001 (1 variable + 2 variations) + 102002 (1 simple) + 999999 (1 simple) = 5 rows
+      assert.equal(rows.length, 5);
+
+      const parent102001 = rows.find((r) => r.Type === 'variable' && r.SKU === '102001');
+      assert.ok(parent102001);
+      assert.equal(parent102001.Name, 'Pure Katan Silk Banarasi Saree');
+      assert.equal(parent102001.Published, '1');
+      assert.equal(parent102001['Is featured?'], '0');
+      assert.equal(parent102001['Visibility in catalog'], 'visible');
+      assert.equal(parent102001['In stock?'], '1');
+      assert.equal(parent102001.Stock, '');
+      assert.equal(parent102001['Backorders allowed?'], '0');
+      assert.equal(parent102001['Weight (kg)'], '0.9');
+      assert.equal(parent102001['Regular price'], '');
+      assert.equal(parent102001['Sale price'], '');
+      assert.equal(parent102001.Categories, 'Saree');
+      assert.equal(parent102001.Parent, '');
+      assert.equal(parent102001['Attribute 1 name'], 'Color');
+      assert.equal(parent102001['Attribute 1 value(s)'], 'Royal Red, Emerald Green');
+      assert.equal(parent102001['Attribute 1 visible'], '1');
+      assert.equal(parent102001['Attribute 1 global'], '0');
+      assert.match(parent102001.Description, /100% Banarasi/);
+      assert.doesNotMatch(parent102001.Description, /Weave365/i);
+
+      const childRed = rows.find((r) => r.Type === 'variation' && r.SKU === '102001-1');
+      assert.ok(childRed);
+      assert.equal(childRed.Name, 'Pure Katan Silk Banarasi Saree - Royal Red');
+      assert.equal(childRed.Parent, '102001');
+      assert.equal(childRed['In stock?'], '1');
+      assert.equal(childRed.Stock, '15');
+      assert.equal(childRed['Regular price'], '6760'); // 5200 * 1.30 = 6760
+      assert.equal(childRed['Short description'], '');
+      assert.equal(childRed.Description, '');
+      assert.equal(childRed.Categories, '');
+      assert.equal(childRed.Tags, '');
+      assert.equal(childRed['Attribute 1 name'], 'Color');
+      assert.equal(childRed['Attribute 1 value(s)'], 'Royal Red');
+      assert.equal(childRed['Attribute 1 visible'], '');
+      assert.equal(childRed['Attribute 1 global'], '0');
+
+      const childGreen = rows.find((r) => r.Type === 'variation' && r.SKU === '102001-2');
+      assert.ok(childGreen);
+      assert.equal(childGreen.Parent, '102001');
+      assert.equal(childGreen.Stock, '10');
+      assert.equal(childGreen['Regular price'], '6760');
+      assert.equal(childGreen['Attribute 1 value(s)'], 'Emerald Green');
+
+      // Single-variant product 102002 -> simple product using parent SKU
+      const simple102002 = rows.find((r) => r.Type === 'simple' && r.SKU === '102002');
+      assert.ok(simple102002);
+      assert.equal(simple102002.Name, 'Georgette Banarasi Floral Saree');
+      assert.equal(simple102002.Parent, '');
+      assert.equal(simple102002['In stock?'], '1');
+      assert.equal(simple102002.Stock, '8');
+      assert.equal(simple102002['Regular price'], '5590'); // 4300 * 1.30 = 5590
+      assert.equal(simple102002['Attribute 1 name'], '');
+      assert.equal(simple102002['Attribute 1 value(s)'], '');
+      assert.equal(simple102002['Attribute 1 visible'], '');
+      assert.equal(simple102002['Attribute 1 global'], '');
+      assert.equal(rows.some((r) => r.SKU === '102002-1'), false, 'Single-variant simple product should use parent SKU');
+
+      // Exclusive 999999 -> simple product: 25000 * 1.30 = 32500
+      const simple999999 = rows.find((r) => r.Type === 'simple' && r.SKU === '999999');
+      assert.ok(simple999999);
+      assert.equal(simple999999['Regular price'], '32500');
+    });
+
+    it('supports format=woo, /api/v1/catalog, /api/v1/catalog-feed.csv, markup_flat, round_to=99, round_to=50, and leaves Matrixify unchanged', async () => {
+      // 1. /api/v1/catalog?format=woo&markup_flat=500&round_to=99
+      const wooAliasReq = new Request('https://www.weave365.com/api/v1/catalog?format=woo&markup_flat=500&round_to=99', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const wooAliasRes = await handleDeveloperApiGet(wooAliasReq, ['v1', 'catalog']);
+      assert.equal(wooAliasRes.status, 200);
+      assert.equal(wooAliasRes.headers.get('content-disposition'), 'attachment; filename="weave365-woocommerce-catalog.csv"');
+      const { hasUtf8Bom, parsed: wooParsed } = await readWooCsvResponse(wooAliasRes);
+      assert.equal(hasUtf8Bom, true);
+      assert.equal(wooParsed.data.find((r) => r.SKU === '102001-1')['Regular price'], '5799'); // 5200 + 500 -> 5799
+      assert.equal(wooParsed.data.find((r) => r.SKU === '102002')['Regular price'], '4899'); // 4300 + 500 -> 4899
+
+      // 2. /api/v1/catalog-feed.csv?format=woocommerce&markup_pct=15&round_to=50
+      const feedWooReq = new Request('https://www.weave365.com/api/v1/catalog-feed.csv?format=woocommerce&markup_pct=15&round_to=50', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const feedWooRes = await handleDeveloperApiGet(feedWooReq, ['v1', 'catalog-feed.csv']);
+      assert.equal(feedWooRes.status, 200);
+      assert.equal(feedWooRes.headers.get('content-disposition'), 'attachment; filename="weave365-woocommerce-catalog.csv"');
+      const { parsed: feedWooParsed } = await readWooCsvResponse(feedWooRes);
+      assert.equal(feedWooParsed.data.find((r) => r.SKU === '102001-1')['Regular price'], '6000'); // 5200*1.15=5980 -> 6000
+      assert.equal(feedWooParsed.data.find((r) => r.SKU === '102002')['Regular price'], '4950'); // 4300*1.15=4945 -> 4950
+
+      // 3. Matrixify/Shopify CSV default on /api/v1/catalog-feed.csv remains unchanged
+      const matrixifyReq = new Request('https://www.weave365.com/api/v1/catalog-feed.csv', {
+        headers: { 'x-api-key': TEST_KEY_PRO },
+      });
+      const matrixifyRes = await handleDeveloperApiGet(matrixifyReq, ['v1', 'catalog-feed.csv']);
+      assert.equal(matrixifyRes.status, 200);
+      assert.equal(matrixifyRes.headers.get('content-disposition'), 'attachment; filename="weave365-catalog.csv"');
+      const matrixifyBuf = Buffer.from(await matrixifyRes.arrayBuffer());
+      assert.equal(matrixifyBuf[0] === 0xef && matrixifyBuf[1] === 0xbb && matrixifyBuf[2] === 0xbf, false);
+      const matrixifyText = matrixifyBuf.toString('utf-8');
+      assert.match(matrixifyText.split('\n')[0], /^Handle,Title,Body \(HTML\)/);
+    });
+
+    it('isolates syncFeedResponseCache and syncFeedCache across different markup params and auth scopes', async () => {
+      // Request 1: default (no markup)
+      const res0 = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      const { parsed: p0 } = await readWooCsvResponse(res0);
+      assert.equal(p0.data.find((r) => r.SKU === '102002')['Regular price'], '4300');
+
+      // Request 2 (without clearing caches!): markup_pct=30&round_to=10
+      const res30 = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=10', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      const { parsed: p30 } = await readWooCsvResponse(res30);
+      assert.equal(p30.data.find((r) => r.SKU === '102002')['Regular price'], '5590');
+
+      // Request 3 (without clearing caches!): markup_flat=250&round_to=99
+      const resFlat = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_flat=250&round_to=99', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      const { parsed: pFlat } = await readWooCsvResponse(resFlat);
+      assert.equal(pFlat.data.find((r) => r.SKU === '102002')['Regular price'], '4599');
+
+      // Request 4 (cache hit on Request 2!): must still preserve headers & exact prices
+      const res30Hit = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=10', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      assert.equal(res30Hit.headers.get('content-disposition'), 'attachment; filename="weave365-woocommerce-catalog.csv"');
+      const { parsed: p30Hit } = await readWooCsvResponse(res30Hit);
+      assert.equal(p30Hit.data.find((r) => r.SKU === '102002')['Regular price'], '5590');
+
+      // Request 5 (curated key with same params): must NOT receive Pro cached 999999
+      const resCurated = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=10', {
+          headers: { 'x-api-key': TEST_KEY_CURATED },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      const { parsed: pCurated } = await readWooCsvResponse(resCurated);
+      assert.equal(pCurated.data.some((r) => r.SKU === '999999'), false);
+      assert.equal(pCurated.data.some((r) => r.SKU === '102001'), true);
+      assert.equal(pCurated.data.some((r) => r.SKU === '102002'), true);
+    });
+
+    it('enforces curated SKU isolation, archived exclusion, zero B2B price leakage, variant dedup _index SKUs matching stock_map, HTTPS image filtering, and variant stock checks', async () => {
+      const richCatalog = [
+        {
+          id: '201001',
+          title: 'Rich Kadhwa Saree',
+          summary: 'Handwoven Kadhwa silk saree.',
+          category: 'Sarees',
+          subCategory: 'Katan Silk',
+          b2bPrice: 1800,
+          wholesaleBulkPrice: 1700,
+          costPrice: 1500,
+          isArchived: false,
+          images: [
+            'https://assets.weave365.com/main.jpg',
+            'http://insecure.example.com/skip.jpg',
+            '/relative/skip.jpg',
+            'data:image/png;base64,AAA',
+          ],
+          variants: [
+            {
+              color: 'Crimson',
+              image: 'https://assets.weave365.com/crimson-1.jpg',
+              quantity: 6,
+              prices: { b2r: 4000, b2b: 1800, bulk: 1700, cost: 1500, mrp: 1900, single: 6200 },
+            },
+            {
+              color: 'crimson', // Duplicate color -> collects image into parent gallery; next variant keeps _index=2!
+              image: 'https://assets.weave365.com/crimson-extra.jpg',
+              quantity: 4,
+              prices: { b2r: 4000 },
+            },
+            {
+              color: 'Emerald',
+              image: 'https://assets.weave365.com/emerald.jpg',
+              isOutOfStock: true,
+              quantity: 9,
+              prices: { b2r: 4200, b2b: 1850, mrp: 1950, single: 6500 },
+            },
+            {
+              color: 'Ivory',
+              image: 'https://assets.weave365.com/ivory.jpg',
+              stockStatusOverride: 'archived',
+              quantity: 3,
+              prices: { b2r: 4100 },
+            },
+          ],
+        },
+        {
+          id: '201002',
+          title: 'Archived Hidden Saree',
+          isArchived: true,
+          variants: [{ code: '201002-1', color: 'Black', quantity: 5, prices: { b2r: 3000 } }],
+        },
+        {
+          id: '201003',
+          title: 'Single Out Of Stock Variant Saree',
+          category: 'Sarees',
+          images: ['https://assets.weave365.com/201003.jpg'],
+          variants: [
+            { code: '201003-1', color: 'Maroon', stockStatusOverride: 'out-of-stock', quantity: 4, prices: { b2r: 3500 } },
+          ],
+        },
+        {
+          id: '201004',
+          title: 'Colors Only Tussar Saree',
+          category: 'Sarees',
+          price: 3200,
+          quantity: 9,
+          images: ['https://assets.weave365.com/201004.jpg'],
+          colors: ['Beige', 'Maroon'],
+        },
+        {
+          id: '999888',
+          title: 'Unauthorized Luxury Saree',
+          isArchived: false,
+          images: ['https://assets.weave365.com/unauth.jpg'],
+          variants: [{ code: '999888-1', color: 'Gold', quantity: 2, prices: { b2r: 18000 } }],
+        },
+      ];
+
+      _setCatalogProductsForTesting(richCatalog);
+      const stockMap = generateStockMap(richCatalog);
+
+      // Pro request
+      const proRes = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=25&round_to=10', {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      assert.equal(proRes.status, 200);
+      const { textWithoutBom, parsed } = await readWooCsvResponse(proRes);
+      const rows = parsed.data;
+
+      // Archived product 201002 must be excluded
+      assert.equal(rows.some((r) => r.SKU === '201002' || r.Parent === '201002'), false);
+
+      // No B2B/bulk/cost values leaked anywhere in CSV body
+      for (const forbiddenVal of ['1800', '1700', '1500', '1900', '1850', '1950']) {
+        assert.equal(textWithoutBom.includes(forbiddenVal), false, `B2B/cost value ${forbiddenVal} must never leak`);
+      }
+
+      // Variable parent 201001 checks
+      const parent = rows.find((r) => r.Type === 'variable' && r.SKU === '201001');
+      assert.ok(parent);
+      assert.equal(parent.Categories, 'Sarees > Katan Silk');
+      assert.equal(parent['Short description'], 'Handwoven Kadhwa silk saree.');
+      assert.equal(parent['In stock?'], '1');
+      assert.equal(parent['Attribute 1 value(s)'], 'Crimson, Emerald, Ivory');
+      // Only valid https:// images included, primary/unique variant images first, duplicate variant image collected
+      assert.equal(
+        parent.Images,
+        'https://assets.weave365.com/main.jpg, https://assets.weave365.com/crimson-1.jpg, https://assets.weave365.com/emerald.jpg, https://assets.weave365.com/ivory.jpg, https://assets.weave365.com/crimson-extra.jpg'
+      );
+
+      // Fallback variant SKUs must match stockMap keys (preserving _index across dedup!)
+      const vCrimson = rows.find((r) => r.Type === 'variation' && r['Attribute 1 value(s)'] === 'Crimson');
+      const vEmerald = rows.find((r) => r.Type === 'variation' && r['Attribute 1 value(s)'] === 'Emerald');
+      const vIvory = rows.find((r) => r.Type === 'variation' && r['Attribute 1 value(s)'] === 'Ivory');
+      assert.ok(vCrimson && vEmerald && vIvory);
+      assert.equal(vCrimson.SKU, '201001-CRIMSON-1');
+      assert.equal(vEmerald.SKU, '201001-EMERALD-3', 'Must preserve _index=2 (+1 => 3) after skipping duplicate Crimson at index 1');
+      assert.equal(vIvory.SKU, '201001-IVORY-4', 'Must preserve _index=3 (+1 => 4)');
+      assert.ok(stockMap[vCrimson.SKU], `Stock map must contain ${vCrimson.SKU}`);
+      assert.ok(stockMap[vEmerald.SKU], `Stock map must contain ${vEmerald.SKU}`);
+      assert.ok(stockMap[vIvory.SKU], `Stock map must contain ${vIvory.SKU}`);
+
+      // Prices marked up >= B2R base (4000*1.25=5000, 4200*1.25=5250, 4100*1.25=5125->5130)
+      assert.equal(vCrimson['Regular price'], '5000');
+      assert.equal(vCrimson['In stock?'], '1');
+      assert.equal(vCrimson.Stock, '6');
+
+      // Out-of-stock & archived variant stock flags respected
+      assert.equal(vEmerald['Regular price'], '5250');
+      assert.equal(vEmerald['In stock?'], '0');
+      assert.equal(vEmerald.Stock, '0');
+      assert.equal(vIvory['In stock?'], '0');
+      assert.equal(vIvory.Stock, '0');
+
+      // Single out-of-stock variant product 201003 -> simple product with In stock?=0, Stock=0
+      const simpleOos = rows.find((r) => r.Type === 'simple' && r.SKU === '201003');
+      assert.ok(simpleOos);
+      assert.equal(simpleOos['In stock?'], '0');
+      assert.equal(simpleOos.Stock, '0');
+      assert.equal(simpleOos['Regular price'], '4380'); // 3500*1.25=4375 -> 4380
+
+      // Colors-only product 201004 -> variable + variations matching stockMap keys
+      const colorsParent = rows.find((r) => r.Type === 'variable' && r.SKU === '201004');
+      assert.ok(colorsParent);
+      assert.equal(colorsParent['Attribute 1 value(s)'], 'Beige, Maroon');
+      const vBeige = rows.find((r) => r.Type === 'variation' && r.Parent === '201004' && r['Attribute 1 value(s)'] === 'Beige');
+      const vMaroon = rows.find((r) => r.Type === 'variation' && r.Parent === '201004' && r['Attribute 1 value(s)'] === 'Maroon');
+      assert.ok(vBeige && vMaroon);
+      assert.equal(vBeige.SKU, '201004-BEIGE-1');
+      assert.equal(vMaroon.SKU, '201004-MAROON-2');
+      assert.ok(stockMap[vBeige.SKU], `Stock map must contain ${vBeige.SKU}`);
+      assert.ok(stockMap[vMaroon.SKU], `Stock map must contain ${vMaroon.SKU}`);
+      assert.equal(vBeige.Stock, '9');
+      assert.equal(vBeige['Regular price'], '4000'); // 3200 * 1.25 = 4000
+
+      // Curated key boundary test against richCatalog
+      mockKeys[hashCurated].selected_skus = ['201001'];
+      const curatedRes = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/catalog.csv?format=woocommerce', {
+          headers: { 'x-api-key': TEST_KEY_CURATED },
+        }),
+        ['v1', 'catalog.csv']
+      );
+      assert.equal(curatedRes.status, 200);
+      const { parsed: curatedParsed } = await readWooCsvResponse(curatedRes);
+      const curatedSkus = curatedParsed.data.map((r) => r.SKU);
+      assert.equal(curatedSkus.includes('201001'), true);
+      assert.equal(curatedSkus.includes('999888'), false, 'Unauthorized SKU 999888 must not appear');
+      assert.equal(curatedSkus.includes('201003'), false, 'Non-selected SKU 201003 must not appear');
+
+      // Direct formatter call check: BOM + archived filtering
+      const directCsv = formatForWooCommerceCsv(richCatalog);
+      assert.equal(directCsv.startsWith('\uFEFF'), true);
+      assert.equal(directCsv.includes('201002'), false);
     });
   });
 });
