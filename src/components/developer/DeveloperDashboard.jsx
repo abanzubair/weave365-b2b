@@ -2678,8 +2678,12 @@ export function DeveloperDashboard({
                 <button
                   key={tab.id}
                   type="button"
+                  aria-current={isActive ? 'page' : undefined}
                   className={`dev-studio-tab-item ${isActive ? 'active' : ''}`}
-                  onClick={() => setActiveDevTab(tab.id)}
+                  onClick={(e) => {
+                    setActiveDevTab(tab.id);
+                    e.currentTarget?.scrollIntoView?.({ block: 'nearest', inline: 'nearest', container: 'nearest' });
+                  }}
                 >
                   <Icon size={16} className="dev-studio-tab-icon" />
                   <span className="dev-studio-tab-label">{tab.label}</span>
@@ -3203,7 +3207,7 @@ export function DeveloperDashboard({
                 </span>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="dev-curator-save-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => setIsCuratorGridOpen(false)}
@@ -3248,61 +3252,29 @@ export function DeveloperDashboard({
           </div>
 
           <div className="dev-platform-tabs" role="tablist" aria-label="Platform Integration Guides">
-            <button
-              type="button"
-              role="tab"
-              id="plat-tab-woocommerce"
-              aria-controls="plat-panel-woocommerce"
-              aria-selected={activePlatformTab === 'woocommerce'}
-              className={`dev-plat-tab ${activePlatformTab === 'woocommerce' ? 'active' : ''}`}
-              onClick={() => setActivePlatformTab('woocommerce')}
-            >
-              WooCommerce (WordPress)
-            </button>
-            <button
-              type="button"
-              role="tab"
-              id="plat-tab-shopify"
-              aria-controls="plat-panel-shopify"
-              aria-selected={activePlatformTab === 'shopify'}
-              className={`dev-plat-tab ${activePlatformTab === 'shopify' ? 'active' : ''}`}
-              onClick={() => setActivePlatformTab('shopify')}
-            >
-              Shopify
-            </button>
-            <button
-              type="button"
-              role="tab"
-              id="plat-tab-prestashop"
-              aria-controls="plat-panel-prestashop"
-              aria-selected={activePlatformTab === 'prestashop'}
-              className={`dev-plat-tab ${activePlatformTab === 'prestashop' ? 'active' : ''}`}
-              onClick={() => setActivePlatformTab('prestashop')}
-            >
-              PrestaShop
-            </button>
-            <button
-              type="button"
-              role="tab"
-              id="plat-tab-curl"
-              aria-controls="plat-panel-curl"
-              aria-selected={activePlatformTab === 'curl'}
-              className={`dev-plat-tab ${activePlatformTab === 'curl' ? 'active' : ''}`}
-              onClick={() => setActivePlatformTab('curl')}
-            >
-              cURL / Terminal
-            </button>
-            <button
-              type="button"
-              role="tab"
-              id="plat-tab-javascript"
-              aria-controls="plat-panel-javascript"
-              aria-selected={activePlatformTab === 'javascript'}
-              className={`dev-plat-tab ${activePlatformTab === 'javascript' ? 'active' : ''}`}
-              onClick={() => setActivePlatformTab('javascript')}
-            >
-              JavaScript / Node.js
-            </button>
+            {[
+              { id: 'woocommerce', label: 'WooCommerce (WordPress)' },
+              { id: 'shopify', label: 'Shopify' },
+              { id: 'prestashop', label: 'PrestaShop' },
+              { id: 'curl', label: 'cURL / Terminal' },
+              { id: 'javascript', label: 'JavaScript / Node.js' },
+            ].map((plat) => (
+              <button
+                key={plat.id}
+                type="button"
+                role="tab"
+                id={`plat-tab-${plat.id}`}
+                aria-controls={`plat-panel-${plat.id}`}
+                aria-selected={activePlatformTab === plat.id}
+                className={`dev-plat-tab ${activePlatformTab === plat.id ? 'active' : ''}`}
+                onClick={(e) => {
+                  setActivePlatformTab(plat.id);
+                  e.currentTarget?.scrollIntoView?.({ block: 'nearest', inline: 'nearest', container: 'nearest' });
+                }}
+              >
+                {plat.label}
+              </button>
+            ))}
           </div>
 
           <div
@@ -3460,6 +3432,7 @@ export function DeveloperDashboard({
                     .dev-woo-seg-track {
                       display: inline-flex;
                       flex-wrap: wrap;
+                      align-self: flex-start;
                       align-items: center;
                       gap: 2px;
                       padding: 3px;
@@ -3665,6 +3638,37 @@ export function DeveloperDashboard({
                       padding: 0 !important;
                       border: 0 !important;
                       white-space: nowrap !important;
+                    }
+                    @media (max-width: 640px) {
+                      .dev-woo-csv-section,
+                      .dev-woo-csv-controls,
+                      .dev-woo-csv-markup-group,
+                      .dev-woo-csv-fieldset,
+                      .dev-woo-seg-track {
+                        max-inline-size: 100%;
+                        min-inline-size: 0;
+                        box-sizing: border-box;
+                      }
+                      .dev-woo-csv-fieldset {
+                        width: 100%;
+                      }
+                      .dev-woo-seg-track {
+                        align-self: flex-start;
+                      }
+                      .dev-woo-csv-field {
+                        width: 100%;
+                        max-inline-size: 14rem;
+                      }
+                      .dev-woo-csv-input-wrap {
+                        inline-size: 100%;
+                      }
+                      .dev-woo-csv-actions {
+                        width: 100%;
+                      }
+                      .dev-woo-csv-actions .dev-btn {
+                        flex: 1 1 auto;
+                        justify-content: center;
+                      }
                     }
                     @media (pointer: coarse) {
                       .dev-woo-seg-track {
