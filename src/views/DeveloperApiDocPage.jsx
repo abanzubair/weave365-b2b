@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useId } from 'react';
 import {
   Code2,
   Terminal,
@@ -32,7 +32,11 @@ import {
   GitBranch,
   ShieldCheck,
   Download,
-  ExternalLink
+  ExternalLink,
+  Info,
+  AlertTriangle,
+  Lock,
+  RefreshCw
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
@@ -99,13 +103,26 @@ const SECTION_IDS = [
   'dashboard-guide',
 ];
 
+const PLATFORM_TABS = [
+  { id: 'woocommerce', label: 'WooCommerce (WordPress)', Icon: FileCode2 },
+  { id: 'prestashop', label: 'PrestaShop', Icon: Layers },
+  { id: 'nodejs', label: 'Node.js / JS', Icon: Terminal },
+  { id: 'curl', label: 'cURL / Shell', Icon: Code2 },
+];
+
 export default function DeveloperApiDocPage({ onSwitchToLanding }) {
+  const wooCsvIdPrefix = useId();
   const [copiedKey, setCopiedKey] = useState(null);
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'quarterly'
   const [activeShopifyTab, setActiveShopifyTab] = useState('syncx'); // 'syncx' | 'matrixify'
   const [activeShopifyOrderTab, setActiveShopifyOrderTab] = useState('notifications'); // 'notifications' | 'flow'
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce'); // 'woocommerce' | 'prestashop' | 'nodejs' | 'curl'
+  const [wooMarkupType, setWooMarkupType] = useState('none'); // 'none' | 'percent' | 'flat'
+  const [wooMarkupValue, setWooMarkupValue] = useState('');
+  const [wooMarkupError, setWooMarkupError] = useState('');
+  const [wooRoundTo, setWooRoundTo] = useState('none'); // 'none' | '10' | '50' | '99'
   const [activeSection, setActiveSection] = useState('overview');
+  const platformTabRefs = useRef({});
   const shopifyVideoRef = useRef(null);
   const [isShopifyOrderPlaying, setIsShopifyOrderPlaying] = useState(false);
   const userPausedShopifyOrderRef = useRef(false);
@@ -279,10 +296,139 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
   }, []);
 
   const copyToClipboard = (text, key) => {
-    navigator.clipboard.writeText(text);
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
+
+  const selectPlatformTab = (tabId) => {
+    setActivePlatformTab(tabId);
+    const btn = platformTabRefs.current[tabId];
+    if (btn && typeof btn.scrollIntoView === 'function') {
+      btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  };
+
+  const handlePlatformTabKeyDown = (e, currentIndex) => {
+    let nextIndex = null;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % PLATFORM_TABS.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + PLATFORM_TABS.length) % PLATFORM_TABS.length;
+    } else if (e.key === 'Home') {
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      nextIndex = PLATFORM_TABS.length - 1;
+    }
+
+    if (nextIndex !== null) {
+      e.preventDefault();
+      const nextTab = PLATFORM_TABS[nextIndex].id;
+      selectPlatformTab(nextTab);
+      const nextEl = platformTabRefs.current[nextTab];
+      if (nextEl) {
+        nextEl.focus();
+      }
+    }
+  };
+
+  const handleWooMarkupTypeChange = (nextType) => {
+    setWooMarkupType(nextType);
+    setWooMarkupError('');
+    if (nextType === 'percent' && wooMarkupValue !== '') {
+      const parsed = parseFloat(wooMarkupValue);
+      if (Number.isFinite(parsed) && parsed > 500) {
+        setWooMarkupValue('500');
+      }
+    }
+  };
+
+  const handleWooMarkupValueChange = (e) => {
+    const raw = e.target.value;
+    setWooMarkupValue(raw);
+    if (wooMarkupError) {
+      if (raw.trim() === '' || /^(\d+(\.\d{1,2})?|\.\d{1,2})$/.test(raw.trim())) {
+        setWooMarkupError('');
+      }
+    }
+  };
+
+  const handleWooMarkupValueBlur = () => {
+    if (wooMarkupType === 'none') {
+      setWooMarkupError('');
+      return;
+    }
+    const trimmed = wooMarkupValue.trim();
+    if (trimmed === '') {
+      setWooMarkupValue('');
+      setWooMarkupError('');
+      return;
+    }
+    if (!/^(\d+(\.\d{1,2})?|\.\d{1,2})$/.test(trimmed)) {
+      setWooMarkupError('Enter a non-negative number with up to 2 decimal places.');
+      return;
+    }
+    const parsed = parseFloat(trimmed);
+    const maxAllowed = wooMarkupType === 'percent' ? 500 : 100000;
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setWooMarkupError('Enter a valid number of 0 or greater.');
+      return;
+    }
+    if (parsed > maxAllowed) {
+      setWooMarkupValue(String(maxAllowed));
+      setWooMarkupError(
+        wooMarkupType === 'percent'
+          ? 'Maximum percentage markup is 500% (clamped to 500).'
+          : 'Maximum fixed markup is ₹1,00,000 (clamped to 100000).'
+      );
+      return;
+    }
+    setWooMarkupValue(String(Math.round(parsed * 100) / 100));
+    setWooMarkupError('');
+  };
+
+  const maxWooMarkup = wooMarkupType === 'percent' ? 500 : 100000;
+  const parsedWooMarkup = parseFloat(wooMarkupValue);
+  const sanitizedWooMarkup =
+    wooMarkupType !== 'none' && Number.isFinite(parsedWooMarkup) && parsedWooMarkup > 0
+      ? Math.round(Math.min(maxWooMarkup, Math.max(0, parsedWooMarkup)) * 100) / 100
+      : 0;
+
+  const wooCsvUrl = useMemo(() => {
+    const params = [
+      'key=YOUR_FULL_UNMASKED_KEY',
+      'format=woocommerce',
+    ];
+    if (wooMarkupType === 'percent' && sanitizedWooMarkup > 0) {
+      params.push(`markup_pct=${sanitizedWooMarkup}`);
+    } else if (wooMarkupType === 'flat' && sanitizedWooMarkup > 0) {
+      params.push(`markup_flat=${sanitizedWooMarkup}`);
+    }
+    if (wooRoundTo !== 'none') {
+      params.push(`round_to=${wooRoundTo}`);
+    }
+    return `https://www.weave365.com/api/v1/catalog.csv?${params.join('&')}`;
+  }, [wooMarkupType, sanitizedWooMarkup, wooRoundTo]);
+
+  const wooPricingSummary = useMemo(() => {
+    const markupLabel =
+      wooMarkupType === 'percent' && sanitizedWooMarkup > 0
+        ? `+${sanitizedWooMarkup}% percentage markup`
+        : wooMarkupType === 'flat' && sanitizedWooMarkup > 0
+          ? `+₹${sanitizedWooMarkup.toLocaleString('en-IN')} fixed markup`
+          : 'base B2R wholesale cost (no markup)';
+    const roundLabel =
+      wooRoundTo === '10'
+        ? ', rounded to nearest ₹10'
+        : wooRoundTo === '50'
+          ? ', rounded to nearest ₹50'
+          : wooRoundTo === '99'
+            ? ', rounded to end in ₹99'
+            : '';
+    return `Export pricing: ${markupLabel}${roundLabel} (never below B2R cost).`;
+  }, [wooMarkupType, sanitizedWooMarkup, wooRoundTo]);
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
@@ -405,12 +551,20 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
               Catalog feeds provide reseller wholesale pricing (B2R), authentic fabric specifications, high-resolution imagery, and color variant groupings.
             </p>
 
-            <div className="api-table-scroll">
+            <div
+              className="api-table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-labelledby="overview-spec-caption"
+            >
               <table className="api-flat-table">
+                <caption id="overview-spec-caption" className="api-visually-hidden">
+                  Weave365 Developer API Overview Specifications
+                </caption>
                 <thead>
                   <tr>
-                    <th>Specification</th>
-                    <th>Detail</th>
+                    <th scope="col">Specification</th>
+                    <th scope="col">Detail</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -420,7 +574,9 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
                   </tr>
                   <tr>
                     <td><strong>Data Formats</strong></td>
-                    <td>JSON (REST endpoints &amp; SyncX), CSV (Matrixify &amp; Shopify Native Importer)</td>
+                    <td>
+                      JSON (REST endpoints &amp; SyncX), CSV (Matrixify, Shopify Native Importer, and <strong>WooCommerce Native CSV</strong> via <code>?format=woocommerce</code> &mdash; 22 columns, UTF-8 BOM, self-serve markup &amp; rounding)
+                    </td>
                   </tr>
                   <tr>
                     <td><strong>Authentication</strong></td>
@@ -1401,296 +1557,480 @@ export default function DeveloperApiDocPage({ onSwitchToLanding }) {
               Pre-built scripts for WooCommerce, PrestaShop, Node.js, and cURL:
             </p>
 
-            <div className="api-tabs-nav">
-              <button
-                type="button"
-                className={`api-tab-btn ${activePlatformTab === 'woocommerce' ? 'active' : ''}`}
-                onClick={() => setActivePlatformTab('woocommerce')}
-              >
-                <FileCode2 size={14} />
-                <span>WooCommerce (WordPress)</span>
-              </button>
-              <button
-                type="button"
-                className={`api-tab-btn ${activePlatformTab === 'prestashop' ? 'active' : ''}`}
-                onClick={() => setActivePlatformTab('prestashop')}
-              >
-                <Layers size={14} />
-                <span>PrestaShop</span>
-              </button>
-              <button
-                type="button"
-                className={`api-tab-btn ${activePlatformTab === 'nodejs' ? 'active' : ''}`}
-                onClick={() => setActivePlatformTab('nodejs')}
-              >
-                <Terminal size={14} />
-                <span>Node.js / JS</span>
-              </button>
-              <button
-                type="button"
-                className={`api-tab-btn ${activePlatformTab === 'curl' ? 'active' : ''}`}
-                onClick={() => setActivePlatformTab('curl')}
-              >
-                <Code2 size={14} />
-                <span>cURL / Shell</span>
-              </button>
+            <div
+              className="api-tabs-nav"
+              role="tablist"
+              aria-label="Platform integration guides"
+            >
+              {PLATFORM_TABS.map(({ id, label, Icon }, index) => {
+                const isActive = activePlatformTab === id;
+                return (
+                  <button
+                    key={id}
+                    id={`platform-tab-${id}`}
+                    ref={(el) => {
+                      platformTabRefs.current[id] = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    tabIndex={isActive ? 0 : -1}
+                    className={`api-tab-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => selectPlatformTab(id)}
+                    onKeyDown={(e) => handlePlatformTabKeyDown(e, index)}
+                  >
+                    <Icon size={14} />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            {activePlatformTab === 'woocommerce' && (
-              <div>
-                {/* 1. Official Plugin Header & Download Action */}
-                <div style={{ marginBottom: '1.75rem' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '1rem',
-                    marginBottom: '0.75rem'
-                  }}>
-                    <div>
-                      <div style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        color: '#64748b',
-                        marginBottom: '0.35rem'
-                      }}>
-                        WordPress &bull; WooCommerce Plugin
+            <div role="tabpanel" aria-labelledby={`platform-tab-${activePlatformTab}`}>
+              {activePlatformTab === 'woocommerce' && (
+                <div>
+                  {/* 1. Official Plugin Header & Download Action */}
+                  <div style={{ marginBottom: '1.75rem' }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '1rem',
+                      marginBottom: '0.75rem'
+                    }}>
+                      <div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          color: '#64748b',
+                          marginBottom: '0.35rem'
+                        }}>
+                          WordPress &bull; WooCommerce Plugin
+                        </div>
+                        <h3 style={{
+                          margin: 0,
+                          fontSize: '1.25rem',
+                          fontWeight: 700,
+                          color: '#0f172a',
+                          letterSpacing: '-0.01em'
+                        }}>
+                          Weave365 Live Stock Sync
+                        </h3>
                       </div>
-                      <h3 style={{
-                        margin: 0,
-                        fontSize: '1.25rem',
-                        fontWeight: 700,
-                        color: '#0f172a',
-                        letterSpacing: '-0.01em'
-                      }}>
-                        Weave365 Live Stock Sync
-                      </h3>
+
+                      <a
+                        href="/downloads/weave365-woocommerce-sync.zip"
+                        download="weave365-woocommerce-sync.zip"
+                        className="api-btn primary"
+                        style={{
+                          textDecoration: 'none',
+                          gap: '8px',
+                          padding: '8px 18px',
+                          fontSize: '0.875rem',
+                          fontWeight: 600
+                        }}
+                      >
+                        <Download size={14} />
+                        <span>Download Plugin (.zip)</span>
+                      </a>
                     </div>
 
-                    <a
-                      href="/downloads/weave365-woocommerce-sync.zip"
-                      download="weave365-woocommerce-sync.zip"
-                      className="api-btn primary"
-                      style={{
-                        textDecoration: 'none',
-                        gap: '8px',
-                        padding: '8px 18px',
-                        fontSize: '0.875rem',
-                        fontWeight: 600
-                      }}
-                    >
-                      <Download size={14} />
-                      <span>Download Plugin (.zip)</span>
-                    </a>
+                    <p style={{
+                      margin: '0 0 0.875rem 0',
+                      fontSize: '0.9375rem',
+                      color: '#475569',
+                      lineHeight: 1.6,
+                      maxWidth: '760px'
+                    }}>
+                      End-to-end WooCommerce integration connected directly to Varanasi artisan looms. Includes hourly WP-Cron stock synchronization with concurrency locking and dirty-checking, mandatory real-time Classic &amp; WooCommerce Blocks checkout stock verification, one-click Catalog CSV Export with self-serve markup &amp; rounding inside WordPress, and entitlement-gated Automated Order Fulfillment with full HPOS compatibility.
+                    </p>
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      fontSize: '0.8125rem',
+                      color: '#475569',
+                      flexWrap: 'wrap'
+                    }}>
+                      <span className="api-meta-badge version">v1.2.0</span>
+                      <span className="api-meta-badge hpos">
+                        <ShieldCheck size={12} />
+                        <span>HPOS Ready</span>
+                      </span>
+                      <span>&bull;</span>
+                      <span>Requires WooCommerce 5.0+</span>
+                      <span>&bull;</span>
+                      <span>PHP 7.4+</span>
+                      <span>&bull;</span>
+                      <span>WordPress 5.6+</span>
+                      <span>&bull;</span>
+                      <code>weave365-woocommerce-sync.zip</code>
+                    </div>
                   </div>
 
-                  <p style={{
-                    margin: '0 0 0.75rem 0',
-                    fontSize: '0.9375rem',
-                    color: '#475569',
-                    lineHeight: 1.6,
-                    maxWidth: '740px'
-                  }}>
-                    Automated hourly stock and inventory synchronization for WooCommerce. Connects directly to Varanasi artisan looms with built-in concurrency locking, intelligent dirty-checking (zero redundant database saves), automatic variation SKU matching, and mandatory real-time pre-checkout verification to eliminate overselling.
+                  <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '1.75rem 0' }} />
+
+                  {/* 2. Step-by-Step Plugin Setup Guide */}
+                  <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 1rem 0' }}>
+                    Setup Guide (v1.2.0)
+                  </h3>
+
+                  <div className="api-clean-steps">
+                    <div className="api-step-row">
+                      <span className="api-step-circle">1</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Install &amp; Activate the Plugin</h4>
+                        <p className="api-step-body">
+                          In your WordPress Admin dashboard, navigate to <strong>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</strong>. Click <strong>Choose File</strong>, select <code>weave365-woocommerce-sync.zip</code>, click <strong>Install Now</strong>, and then click <strong>Activate Plugin</strong>.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">2</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Connect Live API Key &amp; Verify Capabilities</h4>
+                        <p className="api-step-body">
+                          Go to <strong>WooCommerce &rarr; Weave365 Sync</strong> in your WordPress sidebar, paste your full unmasked Live API Key (<code>w365_live_...</code>) from your <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: '#0369a1' }}>Weave365 Developer Dashboard</a>, and click <strong>Save API Key</strong>.
+                        </p>
+                        <ul className="api-substeps-list">
+                          <li><strong>Automatic Entitlement Verification:</strong> Saving immediately calls <code>GET /api/v1/me</code> to verify your client name, tier, remaining monthly quota, and Order API permission (<code>orders_enabled</code>).</li>
+                          <li><strong>6-Hour Capability Cache &amp; Refresh Permissions:</strong> Capabilities are cached in WordPress for <strong>6 hours</strong>. If you upgrade to Pro Scale or enable Order API access in your dashboard, click <strong>Refresh Permissions</strong> on the settings page to sync immediately.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">3</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">Import Catalog Products via One-Click CSV (With Your Markup)</h4>
+                        <p className="api-step-body">
+                          Inside <strong>WooCommerce &rarr; Weave365 Sync</strong>, scroll to the <strong>Catalog CSV Export (With Your Markup)</strong> card (available on all Stock Sync plans) to generate your store-ready catalog without manual spreadsheet editing:
+                        </p>
+                        <ul className="api-substeps-list">
+                          <li><strong>Self-Serve Markup &amp; Rounding:</strong> Select <em>None (B2R Cost)</em>, <em>Percentage (%)</em> (<code>0&ndash;500%</code>), or <em>Fixed Amount (&#8377;)</em> (<code>0&ndash;100000</code>), plus optional <em>Retail Price Rounding</em> (<em>No Rounding</em>, <em>Nearest &#8377;10</em>, <em>Nearest &#8377;50</em>, or <em>End in &#8377;99</em>; exported prices are never rounded below B2R wholesale cost).</li>
+                          <li><strong>One-Click Download (Zero 401 Errors):</strong> Click <strong>Download WooCommerce Catalog CSV</strong> to save <code>weave365-woocommerce-catalog.csv</code>. Downloading inside WordPress authenticates server-side with your saved key, avoiding <code>401 Unauthorized</code> errors caused by masked <code>w365_live_...</code> prefixes in browser URLs.</li>
+                          <li><strong>22 Auto-Mapped Columns:</strong> Open <strong>WooCommerce &rarr; Products &rarr; Import</strong>, upload the CSV, keep the auto-mapped columns (emitting <code>simple</code> products and <code>variable</code> + <code>variation</code> color SKUs), and click <strong>Run the importer</strong>.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">4</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">
+                          Run Stock Sync &amp; Real-Time Checkout Stock Guard{' '}
+                          <span className="api-meta-badge mandatory" style={{ marginLeft: '6px' }}>
+                            Built-in &bull; Mandatory
+                          </span>
+                        </h4>
+                        <p className="api-step-body">
+                          Click <strong>Sync Stock Now</strong> for an immediate inventory check across matching SKUs. Moving forward, WordPress WP-Cron updates stock automatically <strong>every hour</strong> in the background.
+                        </p>
+                        <ul className="api-substeps-list">
+                          <li><strong>Classic &amp; WooCommerce Blocks Checkout Guard:</strong> Validates live <code>/api/v1/stock-status</code> availability on both Classic Checkout and WooCommerce Blocks (Store API) checkouts. Casual cart browsing uses a 45-second cache, while checkout submission runs a live loom check before payment is accepted&mdash;blocking sold-out items, notifying the shopper, and updating local stock immediately.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="api-step-row">
+                      <span className="api-step-circle">5</span>
+                      <div className="api-step-content">
+                        <h4 className="api-step-heading">
+                          Optional: Automated Order Fulfillment{' '}
+                          <span className="api-meta-badge gated" style={{ marginLeft: '6px' }}>
+                            Order API Entitlement-Gated
+                          </span>
+                        </h4>
+                        <p className="api-step-body">
+                          Order forwarding to <code>POST /api/v1/orders</code> is unlocked only when your connected API key has <code>orders_enabled === true</code> (Pro Scale or admin-authorized keys):
+                        </p>
+                        <ul className="api-substeps-list">
+                          <li><strong>Locked vs. Unlocked State:</strong> Keys without Order API access display a disabled card and register zero WooCommerce order hooks (never forwarding orders). Once unlocked, opt in to <em>Auto-forward paid WooCommerce orders</em> (triggers on payment completion / <code>processing</code>) and optionally enable <em>Cash on Delivery (COD)</em> forwarding on <code>on-hold</code> / <code>processing</code>.</li>
+                          <li><strong>White-Label Sender &amp; Packing Settings:</strong> Configure <em>Reseller / Sender Name</em>, <em>Sender Contact Phone</em>, and <em>Packing Preference</em> for blind courier slips.</li>
+                          <li><strong>Smart Mixed-Cart Filtering:</strong> Non-Weave365 products in the same cart are filtered out automatically on Weave365 invoices; orders with zero Weave365 SKUs return <code>200 OK</code> (<code>NO_WEAVE365_ITEMS</code>) and are marked <em>Ignored</em>.</li>
+                          <li><strong>HPOS Compatibility, Idempotency &amp; Order Controls:</strong> Full WooCommerce HPOS (<code>custom_order_tables</code>) support with 60-second per-order concurrency locks, private Order Notes containing the Weave365 Order ID and clickable <em>Wholesale Payment Link</em>, a read-only <em>Weave365 Fulfillment Status</em> side meta box, and manual <em>Order actions &rarr; Send Order to Weave365</em> (or <em>Retry Send Order to Weave365</em>).</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '2rem 0 1.5rem 0' }} />
+
+                  {/* 3. Catalog Products & SKU Matching Guide */}
+                  <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>
+                    Initial Product Import &amp; SKU Matching
+                  </h3>
+                  <p className="api-text">
+                    Stock synchronization and order forwarding match WooCommerce items by <strong>SKU</strong> (e.g., <code>102001</code> for simple products or <code>102001-1</code> / color-slug variant SKUs for variable color variations). Configure markup and rounding below to build a direct <code>?format=woocommerce</code> CSV URL, or download directly inside your WordPress plugin:
                   </p>
 
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    fontSize: '0.8125rem',
-                    color: '#64748b',
-                    flexWrap: 'wrap'
-                  }}>
-                    <span>v1.1.0</span>
-                    <span>&bull;</span>
-                    <span>Requires WooCommerce 5.0+</span>
-                    <span>&bull;</span>
-                    <span>PHP 7.4+</span>
-                    <span>&bull;</span>
-                    <span>WordPress 5.6+</span>
-                    <span>&bull;</span>
-                    <code>weave365-woocommerce-sync.zip</code>
-                  </div>
-                </div>
+                  <div className="api-woo-builder">
+                    <div className="api-woo-builder-grid">
+                      <fieldset className="api-fieldset">
+                        <legend className="api-legend">Markup Type</legend>
+                        <div className="api-radio-group">
+                          {[
+                            { value: 'none', label: 'None' },
+                            { value: 'percent', label: 'Percentage (%)' },
+                            { value: 'flat', label: 'Fixed (₹)' },
+                          ].map((opt) => (
+                            <div key={opt.value} className="api-radio-option">
+                              <input
+                                type="radio"
+                                id={`${wooCsvIdPrefix}-markup-${opt.value}`}
+                                name={`${wooCsvIdPrefix}-markup-type`}
+                                value={opt.value}
+                                checked={wooMarkupType === opt.value}
+                                onChange={() => handleWooMarkupTypeChange(opt.value)}
+                                className="api-radio-input"
+                              />
+                              <label
+                                htmlFor={`${wooCsvIdPrefix}-markup-${opt.value}`}
+                                className="api-radio-label"
+                              >
+                                {opt.label}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </fieldset>
 
-                <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '1.75rem 0' }} />
+                      <div className="api-field-stack">
+                        <label
+                          htmlFor={`${wooCsvIdPrefix}-markup-value`}
+                          className="api-field-label"
+                        >
+                          Markup Value {wooMarkupType === 'percent' ? '(%)' : wooMarkupType === 'flat' ? '(₹)' : ''}
+                        </label>
+                        <span id={`${wooCsvIdPrefix}-markup-hint`} className="api-field-hint">
+                          {wooMarkupType === 'none'
+                            ? 'Select Percentage (%) or Fixed (₹) to add a retail margin.'
+                            : wooMarkupType === 'percent'
+                              ? 'Allowed range: 0% to 500% (e.g. 30 adds 30%).'
+                              : 'Allowed range: ₹0 to ₹1,00,000 (e.g. 250 adds ₹250).'}
+                        </span>
+                        <div
+                          className={`api-input-wrap ${wooMarkupType === 'none' ? 'is-disabled' : ''} ${wooMarkupError ? 'has-error' : ''}`}
+                        >
+                          {wooMarkupType === 'flat' && (
+                            <span className="api-input-affix" aria-hidden="true">&#8377;</span>
+                          )}
+                          <input
+                            id={`${wooCsvIdPrefix}-markup-value`}
+                            name="docWooMarkupValue"
+                            type="text"
+                            inputMode="decimal"
+                            pattern="(\d+(\.\d{1,2})?|\.\d{1,2})"
+                            enterKeyHint="done"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            disabled={wooMarkupType === 'none'}
+                            value={wooMarkupType === 'none' ? '' : wooMarkupValue}
+                            placeholder={
+                              wooMarkupType === 'none'
+                                ? 'Disabled'
+                                : wooMarkupType === 'percent'
+                                  ? 'e.g. 30'
+                                  : 'e.g. 250'
+                            }
+                            onChange={handleWooMarkupValueChange}
+                            onBlur={handleWooMarkupValueBlur}
+                            aria-invalid={wooMarkupError ? 'true' : undefined}
+                            aria-describedby={
+                              wooMarkupError
+                                ? `${wooCsvIdPrefix}-markup-hint ${wooCsvIdPrefix}-markup-error`
+                                : `${wooCsvIdPrefix}-markup-hint`
+                            }
+                            className="api-text-input"
+                          />
+                          {wooMarkupType === 'percent' && (
+                            <span className="api-input-affix" aria-hidden="true">%</span>
+                          )}
+                        </div>
+                        {wooMarkupError && (
+                          <span id={`${wooCsvIdPrefix}-markup-error`} role="status" className="api-field-error">
+                            <AlertTriangle size={14} aria-hidden="true" />
+                            <span>{wooMarkupError}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                {/* 2. Step-by-Step Plugin Setup Guide */}
-                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 1rem 0' }}>
-                  Setup Guide
-                </h3>
+                    <fieldset className="api-fieldset">
+                      <legend className="api-legend">Price Rounding</legend>
+                      <div className="api-radio-group">
+                        {[
+                          { value: 'none', label: 'None' },
+                          { value: '10', label: 'Nearest ₹10' },
+                          { value: '50', label: 'Nearest ₹50' },
+                          { value: '99', label: 'End in ₹99' },
+                        ].map((opt) => (
+                          <div key={opt.value} className="api-radio-option">
+                            <input
+                              type="radio"
+                              id={`${wooCsvIdPrefix}-round-${opt.value}`}
+                              name={`${wooCsvIdPrefix}-round-to`}
+                              value={opt.value}
+                              checked={wooRoundTo === opt.value}
+                              onChange={() => setWooRoundTo(opt.value)}
+                              className="api-radio-input"
+                            />
+                            <label
+                              htmlFor={`${wooCsvIdPrefix}-round-${opt.value}`}
+                              className="api-radio-label"
+                            >
+                              {opt.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </fieldset>
 
-                <div className="api-clean-steps">
-                  <div className="api-step-row">
-                    <span className="api-step-circle">1</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Install &amp; Activate the Plugin</h4>
-                      <p className="api-step-body">
-                        In your WordPress Admin dashboard, navigate to <strong>Plugins &rarr; Add New Plugin &rarr; Upload Plugin</strong>. Click <strong>Choose File</strong>, select the downloaded <code>weave365-woocommerce-sync.zip</code> file, and click <strong>Install Now</strong>. Once uploaded, click <strong>Activate Plugin</strong>.
-                      </p>
+                    <div className="api-formula-preview">
+                      <Info size={15} />
+                      <span>{wooPricingSummary}</span>
+                    </div>
+
+                    <div className="api-field-stack">
+                      <label htmlFor={`${wooCsvIdPrefix}-csv-url`} className="api-field-label">
+                        WooCommerce Catalog CSV URL
+                      </label>
+                      <div className="api-feed-box">
+                        <span className="api-feed-method">CSV FEED</span>
+                        <input
+                          id={`${wooCsvIdPrefix}-csv-url`}
+                          type="text"
+                          readOnly
+                          value={wooCsvUrl}
+                          className="api-feed-input"
+                          autoCorrect="off"
+                          autoCapitalize="none"
+                          spellCheck={false}
+                        />
+                        <button
+                          type="button"
+                          className={`api-feed-copy-btn ${copiedKey === 'woo-csv-feed' ? 'copied' : ''}`}
+                          onClick={() => copyToClipboard(wooCsvUrl, 'woo-csv-feed')}
+                        >
+                          {copiedKey === 'woo-csv-feed' ? <Check size={13} /> : <Copy size={13} />}
+                          <span>{copiedKey === 'woo-csv-feed' ? 'Copied' : 'Copy CSV URL'}</span>
+                        </button>
+                      </div>
+                      <span role="status" className="api-visually-hidden">
+                        {copiedKey === 'woo-csv-feed' ? 'WooCommerce CSV URL copied to clipboard.' : ''}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">2</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Configure Your Live API Key</h4>
-                      <p className="api-step-body">
-                        In your WordPress Admin left sidebar, go to <strong>WooCommerce &rarr; Weave365 Sync</strong>. Enter your Live API Key (<code>w365_live_...</code>) copied from your <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: '#0369a1' }}>Weave365 Developer Dashboard</a> and click <strong>Save API Key</strong>.
-                      </p>
+                  <div className="api-warning-callout" role="note">
+                    <AlertTriangle size={16} />
+                    <div>
+                      <strong>Masked keys (<code>w365_live_...</code>) return <code>401 Unauthorized</code>:</strong> Direct CSV URLs require your full unmasked secret API key. Instead of editing URLs manually, use the one-click <strong>Download WooCommerce Catalog CSV</strong> button inside <strong>WooCommerce &rarr; Weave365 Sync</strong> in WordPress, or click <strong>Reveal Key</strong> in your <a href="/account?tab=developer" target="_blank" rel="noopener noreferrer">Weave365 Developer Dashboard</a> (e.g. append <code>&amp;markup_pct=30&amp;round_to=99</code>).
                     </div>
                   </div>
 
-                  <div className="api-step-row">
-                    <span className="api-step-circle">3</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">Run Initial Sync &amp; Enable Automated Hourly Updates</h4>
-                      <p className="api-step-body">
-                        Click the <strong>Sync Stock Now</strong> button on the settings page to perform an immediate live stock check. Moving forward, the plugin automatically runs in the background <strong>every hour</strong> via WordPress WP-Cron to maintain authentic inventory levels.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="api-step-row">
-                    <span className="api-step-circle">4</span>
-                    <div className="api-step-content">
-                      <h4 className="api-step-heading">
-                        Real-Time Checkout Stock Guard <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534', background: '#dcfce7', padding: '2px 8px', borderRadius: '9999px', marginLeft: '6px', textTransform: 'uppercase' }}>Built-in &bull; Mandatory</span>
-                      </h4>
-                      <p className="api-step-body">
-                        Whenever an end-customer proceeds to checkout or clicks <em>Place Order</em>, the plugin queries live loom inventory in under 200ms before payment is accepted. If an item sold out at the loom during the 1-hour cron window, checkout is safely prevented, the buyer is notified, and your store inventory is updated immediately.
-                      </p>
-                    </div>
+                  <div className="api-note-text" style={{ margin: '0 0 1.5rem 0' }}>
+                    <strong>How to Import into WooCommerce (3 Steps):</strong>
+                    <ol className="api-substeps-list" style={{ marginTop: '0.5rem' }}>
+                      <li>Download <code>weave365-woocommerce-catalog.csv</code> via the <strong>Catalog CSV Export (With Your Markup)</strong> card inside <strong>WooCommerce &rarr; Weave365 Sync</strong> (or via your unmasked CSV URL above).</li>
+                      <li>In WordPress Admin, navigate to <strong>WooCommerce &rarr; Products &rarr; Import</strong>, upload <code>weave365-woocommerce-catalog.csv</code>, and click <strong>Continue</strong>.</li>
+                      <li>Verify the <strong>22 auto-mapped columns</strong>&mdash;including <code>Type</code> (<code>simple</code> / <code>variable</code> / <code>variation</code>), <code>Parent</code>, <code>SKU</code>, <code>Attribute 1 name</code> (<code>Color</code>), <code>Attribute 1 value(s)</code>, <code>Regular price</code>, <code>In stock?</code>, <code>Stock</code>, <code>Description</code>, and <code>Images</code>&mdash;then click <strong>Run the importer</strong>.</li>
+                    </ol>
                   </div>
                 </div>
+              )}
 
-                <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '2rem 0 1.5rem 0' }} />
-
-                {/* 3. Catalog Products & SKU Matching Guide */}
-                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>
-                  Initial Product Import &amp; SKU Matching
-                </h3>
-                <p className="api-text">
-                  The stock synchronization matches products using their <strong>SKU</strong> (numeric IDs like <code>102001</code> for simple products or <code>102001-1</code> for variations). To import your catalog products into WooCommerce for the first time:
-                </p>
-
-                <div className="api-feed-box" style={{ marginBottom: '1rem' }}>
-                  <span className="api-feed-method">CSV FEED</span>
-                  <input
-                    type="text"
-                    readOnly
-                    value="https://www.weave365.com/api/v1/catalog.csv?key=w365_live_YOUR_API_KEY"
-                    className="api-feed-input"
-                  />
-                  <button
-                    type="button"
-                    className={`api-feed-copy-btn ${copiedKey === 'woo-csv-feed' ? 'copied' : ''}`}
-                    onClick={() => copyToClipboard('https://www.weave365.com/api/v1/catalog.csv?key=w365_live_YOUR_API_KEY', 'woo-csv-feed')}
-                  >
-                    {copiedKey === 'woo-csv-feed' ? <Check size={13} /> : <Copy size={13} />}
-                    <span>{copiedKey === 'woo-csv-feed' ? 'Copied' : 'Copy CSV URL'}</span>
-                  </button>
-                </div>
-
-                <div className="api-note-text" style={{ margin: '0 0 1.5rem 0' }}>
-                  <strong>How to Import CSV into WooCommerce:</strong>
-                  <br />
-                  1. Open the CSV URL above in your browser (or copy and download) to save <code>weave365-catalog.csv</code>.
-                  <br />
-                  2. In WordPress Admin, navigate to <strong>Products &rarr; Import</strong>.
-                  <br />
-                  3. Select the downloaded CSV file and click <strong>Continue</strong>. Ensure standard columns (<code>SKU</code>, <code>Name</code>, <code>Regular price</code>, <code>Images</code>, and <code>Description</code>) are mapped, then click <strong>Run the Importer</strong>.
-                </div>
-              </div>
-            )}
-
-            {activePlatformTab === 'prestashop' && (
-              <div>
-                <p className="api-text">Run via PrestaShop Cron to synchronize quantities across your catalog:</p>
-                <div className="api-code-block">
-                  <div className="api-code-topbar">
-                    <span className="api-code-label">prestashop_sync.php</span>
-                    <button
-                      type="button"
-                      className="api-code-copy-btn"
-                      onClick={() => copyToClipboard(`$url = 'https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY';
+              {activePlatformTab === 'prestashop' && (
+                <div>
+                  <p className="api-text">Run via PrestaShop Cron to synchronize quantities across your catalog:</p>
+                  <div className="api-code-block">
+                    <div className="api-code-topbar">
+                      <span className="api-code-label">prestashop_sync.php</span>
+                      <button
+                        type="button"
+                        className="api-code-copy-btn"
+                        onClick={() => copyToClipboard(`$url = 'https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY';
 $json = file_get_contents($url);
 $data = json_decode($json, true);
 foreach ($data['stock_map'] as $sku => $info) {
   $id = Product::getIdByReference($sku);
   if ($id) StockAvailable::setQuantity($id, 0, $info['quantity']);
 }`, 'presta-snippet')}
-                    >
-                      {copiedKey === 'presta-snippet' ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{copiedKey === 'presta-snippet' ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  </div>
-                  <pre className="api-code-content">{`$url = 'https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY';
+                      >
+                        {copiedKey === 'presta-snippet' ? <Check size={12} /> : <Copy size={12} />}
+                        <span>{copiedKey === 'presta-snippet' ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                    <pre className="api-code-content"><code>{`$url = 'https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY';
 $json = file_get_contents($url);
 $data = json_decode($json, true);
 foreach ($data['stock_map'] as $sku => $info) {
   $id = Product::getIdByReference($sku);
   if ($id) StockAvailable::setQuantity($id, 0, $info['quantity']);
-}`}</pre>
+}`}</code></pre>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {activePlatformTab === 'nodejs' && (
-              <div>
-                <p className="api-text">Native JavaScript / Node.js fetch with error handling:</p>
-                <div className="api-code-block">
-                  <div className="api-code-topbar">
-                    <span className="api-code-label">syncCatalog.js</span>
-                    <button
-                      type="button"
-                      className="api-code-copy-btn"
-                      onClick={() => copyToClipboard(`const response = await fetch('https://www.weave365.com/api/v1/catalog', {
+              {activePlatformTab === 'nodejs' && (
+                <div>
+                  <p className="api-text">Native JavaScript / Node.js fetch with error handling:</p>
+                  <div className="api-code-block">
+                    <div className="api-code-topbar">
+                      <span className="api-code-label">syncCatalog.js</span>
+                      <button
+                        type="button"
+                        className="api-code-copy-btn"
+                        onClick={() => copyToClipboard(`const response = await fetch('https://www.weave365.com/api/v1/catalog', {
   headers: {
     'X-API-Key': process.env.WEAVE365_API_KEY,
   },
 });
 const data = await response.json();
 console.log('Total live products:', data.total_products);`, 'node-snippet')}
-                    >
-                      {copiedKey === 'node-snippet' ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{copiedKey === 'node-snippet' ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  </div>
-                  <pre className="api-code-content">{`const response = await fetch('https://www.weave365.com/api/v1/catalog', {
+                      >
+                        {copiedKey === 'node-snippet' ? <Check size={12} /> : <Copy size={12} />}
+                        <span>{copiedKey === 'node-snippet' ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                    <pre className="api-code-content"><code>{`const response = await fetch('https://www.weave365.com/api/v1/catalog', {
   headers: {
     'X-API-Key': process.env.WEAVE365_API_KEY,
   },
 });
 const data = await response.json();
-console.log('Total live products:', data.total_products);`}</pre>
-                </div>
-              </div>
-            )}
-
-            {activePlatformTab === 'curl' && (
-              <div>
-                <p className="api-text">Quick shell inspection with HTTP headers and jq formatting:</p>
-                <div className="api-code-block">
-                  <div className="api-code-topbar">
-                    <span className="api-code-label">Terminal / Bash</span>
-                    <button
-                      type="button"
-                      className="api-code-copy-btn"
-                      onClick={() => copyToClipboard(`curl -s "https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY" | jq .`, 'curl-snippet')}
-                    >
-                      {copiedKey === 'curl-snippet' ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{copiedKey === 'curl-snippet' ? 'Copied' : 'Copy'}</span>
-                    </button>
+console.log('Total live products:', data.total_products);`}</code></pre>
                   </div>
-                  <pre className="api-code-content">{`curl -s "https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY" | jq .`}</pre>
                 </div>
-              </div>
-            )}
+              )}
+
+              {activePlatformTab === 'curl' && (
+                <div>
+                  <p className="api-text">Quick shell inspection with HTTP headers and jq formatting:</p>
+                  <div className="api-code-block">
+                    <div className="api-code-topbar">
+                      <span className="api-code-label">Terminal / Bash</span>
+                      <button
+                        type="button"
+                        className="api-code-copy-btn"
+                        onClick={() => copyToClipboard(`curl -s "https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY" | jq .`, 'curl-snippet')}
+                      >
+                        {copiedKey === 'curl-snippet' ? <Check size={12} /> : <Copy size={12} />}
+                        <span>{copiedKey === 'curl-snippet' ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                    <pre className="api-code-content"><code>{`curl -s "https://www.weave365.com/api/v1/stock-status?key=w365_live_YOUR_KEY" | jq .`}</code></pre>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* 7. API Endpoints Reference */}
@@ -1707,16 +2047,24 @@ console.log('Total live products:', data.total_products);`}</pre>
                 <span className="api-endpoint-path">/api/v1/catalog</span>
               </div>
               <p className="api-endpoint-summary">
-                Fetches paginated B2R wholesale catalog items. Supports JSON, SyncX flat format, and Matrixify CSV.
+                Fetches paginated B2R wholesale catalog items. Supports JSON, SyncX flat format, Matrixify CSV, and WooCommerce Native CSV (with optional reseller markup &amp; price rounding).
               </p>
 
-              <div className="api-table-scroll">
+              <div
+                className="api-table-scroll"
+                tabIndex={0}
+                role="region"
+                aria-labelledby="catalog-params-caption"
+              >
                 <table className="api-flat-table">
+                  <caption id="catalog-params-caption" className="api-visually-hidden">
+                    GET /api/v1/catalog Query Parameters
+                  </caption>
                   <thead>
                     <tr>
-                      <th>Query Parameter</th>
-                      <th>Type</th>
-                      <th>Description</th>
+                      <th scope="col">Query Parameter</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Description</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1724,9 +2072,31 @@ console.log('Total live products:', data.total_products);`}</pre>
                       <td><code>format</code></td>
                       <td><span className="api-param-type">string (optional)</span></td>
                       <td>
-                        <code>syncx</code> (or <code>stocksync</code>) for flat JSON variant rows. 
-                        <code>matrixify</code> (or <code>/catalog.csv</code>) for standard Shopify CSV. 
+                        <code>syncx</code> (or <code>stocksync</code>) for flat JSON variant rows.{' '}
+                        <code>matrixify</code> (or <code>/catalog.csv</code>) for standard Shopify CSV (<code>weave365-catalog.csv</code>).{' '}
+                        <code>woocommerce</code> (or <code>woo</code>) for 22-column UTF-8 BOM WooCommerce Native CSV (<code>weave365-woocommerce-catalog.csv</code>, emitting <code>simple</code> or <code>variable</code> + <code>variation</code> color rows matching <code>stock_map</code> SKUs).{' '}
                         <code>shopify</code> for nested REST JSON.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>markup_pct</code></td>
+                      <td><span className="api-param-type">number (optional)</span></td>
+                      <td>
+                        Percentage markup (<code>0</code> to <code>500</code>, e.g. <code>30</code> adds 30%) applied to <code>Regular price</code> when exporting WooCommerce CSV (<code>format=woocommerce</code> / <code>woo</code>).
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>markup_flat</code></td>
+                      <td><span className="api-param-type">number (optional)</span></td>
+                      <td>
+                        Fixed INR markup (<code>0</code> to <code>100000</code>, e.g. <code>250</code> adds &#8377;250) added after percentage markup on WooCommerce CSV exports.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>round_to</code></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>
+                        Price rounding applied after markup on WooCommerce CSV exports: <code>none</code> (default), <code>10</code> (nearest &#8377;10), <code>50</code> (nearest &#8377;50), or <code>99</code> (end in &#8377;99). Final prices are always clamped <code>&gt;= basePrice</code> (never below B2R cost).
                       </td>
                     </tr>
                     <tr>
@@ -1756,6 +2126,25 @@ console.log('Total live products:', data.total_products);`}</pre>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              <div className="api-code-block">
+                <div className="api-code-topbar">
+                  <span className="api-code-label">WooCommerce Native CSV Example (cURL)</span>
+                  <button
+                    type="button"
+                    className="api-code-copy-btn"
+                    onClick={() => copyToClipboard(`curl -H "X-API-Key: YOUR_FULL_UNMASKED_KEY" \\
+  "https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=99" \\
+  -o weave365-woocommerce-catalog.csv`, 'cat-woo-curl')}
+                  >
+                    {copiedKey === 'cat-woo-curl' ? <Check size={12} /> : <Copy size={12} />}
+                    <span>{copiedKey === 'cat-woo-curl' ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+                <pre className="api-code-content"><code>{`curl -H "X-API-Key: YOUR_FULL_UNMASKED_KEY" \\
+  "https://www.weave365.com/api/v1/catalog.csv?format=woocommerce&markup_pct=30&round_to=99" \\
+  -o weave365-woocommerce-catalog.csv`}</code></pre>
               </div>
 
               <div className="api-code-block">
@@ -1917,7 +2306,7 @@ console.log('Total live products:', data.total_products);`}</pre>
                 <span className="api-endpoint-path">/api/v1/orders</span>
               </div>
               <p className="api-endpoint-summary">
-                Automated Dropship Order Placement (Pro Tier). Dispatches white-label shipments directly to your customer with live tracking.
+                Automated Dropship Order Placement (Pro Scale / <code>orders_enabled: true</code>). Dispatches white-label shipments directly to your customer with live tracking.
               </p>
 
               <div className="api-gear-callout" style={{ margin: '1rem 0' }}>
@@ -1933,6 +2322,76 @@ console.log('Total live products:', data.total_products);`}</pre>
                 </p>
               </div>
 
+              <div className="api-gear-callout" style={{ margin: '1rem 0' }}>
+                <div className="api-gear-callout-title">
+                  <Truck size={15} />
+                  <span>WooCommerce Store Owners: Zero-Code v1.2.0 Plugin</span>
+                </div>
+                <p className="api-step-body" style={{ margin: 0 }}>
+                  Install the official <strong>Weave365 Live Stock Sync (v1.2.0)</strong> WordPress plugin for entitlement-gated automated order forwarding, full HPOS (<code>custom_order_tables</code>) support, mixed-cart filtering, 60s idempotency locks, and manual order actions.
+                  <a href="#platforms" style={{ marginLeft: '6px', fontWeight: 600, color: '#0f172a', textDecoration: 'underline' }}>
+                    View WooCommerce Setup Guide &rarr;
+                  </a>
+                </p>
+              </div>
+
+              <div
+                className="api-table-scroll"
+                tabIndex={0}
+                role="region"
+                aria-labelledby="post-orders-fields-caption"
+              >
+                <table className="api-flat-table">
+                  <caption id="post-orders-fields-caption" className="api-visually-hidden">
+                    POST /api/v1/orders Fields and Response Behavior
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Field / Status</th>
+                      <th scope="col">Type / Code</th>
+                      <th scope="col">Behavior</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>platform</code></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>
+                        Use <code>&quot;woocommerce&quot;</code> or <code>&quot;shopify&quot;</code> (defaults to <code>&quot;api&quot;</code>). Storefront plugins automatically enable mixed-cart filtering so non-Weave365 SKUs in the same order are ignored without error.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>reseller_order_id</code></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>
+                        Your store order ID/number. Duplicate submissions matching an existing order return HTTP <code>200 OK</code> with <code>&quot;is_duplicate&quot;: true</code>, the existing <code>order_id</code>, and <code>payment_link</code>.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>payment_type</code> / <code>gateway</code></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>
+                        Set <code>&quot;prepaid&quot;</code> or <code>&quot;cod&quot;</code> (or gateway title). Passing <code>cod</code> / <code>cash_on_delivery</code> configures the courier slip for Cash on Delivery collection.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>NO_WEAVE365_ITEMS</code></td>
+                      <td><span className="api-param-type">200 OK (ignored)</span></td>
+                      <td>
+                        Returned for <code>woocommerce</code> / <code>shopify</code> mixed-storefront orders that contain zero Weave365 SKUs (<code>&quot;status&quot;: &quot;ignored&quot;</code>, no invoice created).
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>FORBIDDEN</code></td>
+                      <td><span className="api-param-type">403 Forbidden</span></td>
+                      <td>
+                        Returned when the API key does not have <code>orders_enabled === true</code>. WooCommerce Sync v1.2.0 automatically detects <code>403 FORBIDDEN</code> and disables local auto-forwarding.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
               <div className="api-code-block">
                 <div className="api-code-topbar">
                   <span className="api-code-label">Request Body (JSON)</span>
@@ -1940,7 +2399,10 @@ console.log('Total live products:', data.total_products);`}</pre>
                     type="button"
                     className="api-code-copy-btn"
                     onClick={() => copyToClipboard(`{
-  "reseller_order_id": "SHOP-90412",
+  "reseller_order_id": "WC-90412",
+  "platform": "woocommerce",
+  "payment_type": "prepaid",
+  "gateway": "Razorpay",
   "customer": {
     "name": "Priya Sharma",
     "phone": "9876543210",
@@ -1951,7 +2413,7 @@ console.log('Total live products:', data.total_products);`}</pre>
     "pincode": "201303"
   },
   "items": [
-    { "sku": "102001-1", "quantity": 1 }
+    { "sku": "102001-1", "quantity": 1, "selling_price": 2499 }
   ],
   "shipping_notes": "Blind packaging requested"
 }`, 'order-req')}
@@ -1960,8 +2422,11 @@ console.log('Total live products:', data.total_products);`}</pre>
                     <span>{copiedKey === 'order-req' ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-                <pre className="api-code-content">{`{
-  "reseller_order_id": "SHOP-90412",
+                <pre className="api-code-content"><code>{`{
+  "reseller_order_id": "WC-90412",
+  "platform": "woocommerce",
+  "payment_type": "prepaid",
+  "gateway": "Razorpay",
   "customer": {
     "name": "Priya Sharma",
     "phone": "9876543210",
@@ -1972,10 +2437,10 @@ console.log('Total live products:', data.total_products);`}</pre>
     "pincode": "201303"
   },
   "items": [
-    { "sku": "102001-1", "quantity": 1 }
+    { "sku": "102001-1", "quantity": 1, "selling_price": 2499 }
   ],
   "shipping_notes": "Blind packaging requested"
-}`}</pre>
+}`}</code></pre>
               </div>
 
               <div className="api-code-block">
@@ -1987,22 +2452,30 @@ console.log('Total live products:', data.total_products);`}</pre>
                     onClick={() => copyToClipboard(`{
   "status": "success",
   "order_id": "inq_9f81a7b2c",
-  "reseller_order_id": "SHOP-90412",
-  "tracking_url": "https://www.weave365.com/order-tracking?id=inq_9f81a7b2c",
-  "estimated_dispatch": "24-48 Business Hours"
+  "order_number": "API-WC-90412",
+  "reseller_order_id": "WC-90412",
+  "order_status": "payment_pending",
+  "payment_status": "pending",
+  "payment_link": "https://www.weave365.com/order-tracking/inq_9f81a7b2c?pay=1",
+  "tracking_url": "https://www.weave365.com/order-tracking/API-WC-90412",
+  "estimated_dispatch": "24-48 Business Hours after payment confirmation"
 }`, 'order-resp')}
                   >
                     {copiedKey === 'order-resp' ? <Check size={12} /> : <Copy size={12} />}
                     <span>{copiedKey === 'order-resp' ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-                <pre className="api-code-content">{`{
+                <pre className="api-code-content"><code>{`{
   "status": "success",
   "order_id": "inq_9f81a7b2c",
-  "reseller_order_id": "SHOP-90412",
-  "tracking_url": "https://www.weave365.com/order-tracking?id=inq_9f81a7b2c",
-  "estimated_dispatch": "24-48 Business Hours"
-}`}</pre>
+  "order_number": "API-WC-90412",
+  "reseller_order_id": "WC-90412",
+  "order_status": "payment_pending",
+  "payment_status": "pending",
+  "payment_link": "https://www.weave365.com/order-tracking/inq_9f81a7b2c?pay=1",
+  "tracking_url": "https://www.weave365.com/order-tracking/API-WC-90412",
+  "estimated_dispatch": "24-48 Business Hours after payment confirmation"
+}`}</code></pre>
               </div>
             </div>
 
@@ -2063,8 +2536,12 @@ console.log('Total live products:', data.total_products);`}</pre>
                 <span className="api-endpoint-path">/api/v1/me</span>
               </div>
               <p className="api-endpoint-summary">
-                Returns authenticated account details, subscription tier, remaining quota, and current month request metrics.
+                Returns authenticated account details, subscription tier, remaining quota, Order API capability entitlement (<code>orders_enabled</code>), and current month request metrics.
               </p>
+
+              <div className="api-note-text" style={{ margin: '0.75rem 0 1rem 0' }}>
+                <strong>Storefront Plugin Entitlement Gating:</strong> Plugins like <strong>Weave365 WooCommerce Sync v1.2.0</strong> check <code>orders_enabled</code> via <code>GET /api/v1/me</code> (cached for 6 hours, or refreshed manually via <strong>Refresh Permissions</strong>) to unlock or lock Automated Order Fulfillment controls cleanly.
+              </div>
 
               <div className="api-code-block">
                 <div className="api-code-topbar">
@@ -2075,28 +2552,32 @@ console.log('Total live products:', data.total_products);`}</pre>
                     onClick={() => copyToClipboard(`{
   "status": "success",
   "client_name": "Royal Boutique",
-  "tier": "growth",
-  "monthly_quota": 10000,
+  "client_website": "https://royalboutique.in",
+  "tier": "pro",
+  "monthly_quota": 25000,
   "month_total_used": 1420,
-  "remaining_quota": 8580,
-  "rate_limit_rps": 10,
-  "is_active": true
+  "remaining_quota": 23580,
+  "rate_limit_rps": 25,
+  "is_active": true,
+  "orders_enabled": true
 }`, 'me-resp')}
                   >
                     {copiedKey === 'me-resp' ? <Check size={12} /> : <Copy size={12} />}
                     <span>{copiedKey === 'me-resp' ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-                <pre className="api-code-content">{`{
+                <pre className="api-code-content"><code>{`{
   "status": "success",
   "client_name": "Royal Boutique",
-  "tier": "growth",
-  "monthly_quota": 10000,
+  "client_website": "https://royalboutique.in",
+  "tier": "pro",
+  "monthly_quota": 25000,
   "month_total_used": 1420,
-  "remaining_quota": 8580,
-  "rate_limit_rps": 10,
-  "is_active": true
-}`}</pre>
+  "remaining_quota": 23580,
+  "rate_limit_rps": 25,
+  "is_active": true,
+  "orders_enabled": true
+}`}</code></pre>
               </div>
             </div>
           </section>

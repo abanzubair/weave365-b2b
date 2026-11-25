@@ -119,10 +119,10 @@ export default function DeveloperApiRoute() {
         mainEntity: [
           {
             '@type': 'Question',
-            name: 'Can I connect Shopify without writing custom backend code?',
+            name: 'Can I connect Shopify or WooCommerce without writing custom backend code?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. We provide dedicated pre-formatted JSON and CSV feed URLs compatible with Shopify apps like SyncX, Stock Sync, and Matrixify. You can configure hourly catalog sync, price markups (e.g. +30%), and color variants with zero programming.'
+              text: 'Yes. For Shopify, we provide pre-formatted JSON and CSV feed URLs compatible with SyncX, Stock Sync, and Matrixify, plus native webhook order forwarding. For WooCommerce, our official v1.2.0 WordPress plugin (.zip) provides one-click 22-column catalog CSV export with custom markup and rounding, hourly stock sync, live Classic & Blocks checkout protection, HPOS support, and optional automated order forwarding with zero coding.'
             }
           },
           {

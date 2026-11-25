@@ -26,8 +26,8 @@ const PLATFORMS = [
   },
   {
     name: 'WooCommerce',
-    tag: 'Official Plugin (.zip) & REST',
-    desc: 'Plug-and-play WordPress plugin for automated hourly inventory sync, or direct REST API connectivity.'
+    tag: 'Official Plugin v1.2.0 • HPOS Ready',
+    desc: 'One-click 22-column catalog CSV import with self-serve markup, hourly stock sync, live Classic & Blocks checkout guard, HPOS compatibility, and optional automated order forwarding.'
   },
   {
     name: 'PrestaShop',
@@ -297,12 +297,12 @@ export default function DeveloperApiLandingPage({ onSwitchToDocs }) {
 
             <details className="api-min-faq-item">
               <summary className="api-min-faq-summary">
-                <span>Can I connect Shopify without writing custom backend code?</span>
+                <span>Can I connect Shopify or WooCommerce without writing custom backend code?</span>
                 <span className="api-min-faq-toggle" aria-hidden="true">+</span>
               </summary>
               <div className="api-min-faq-body">
                 <p>
-                  Yes. We provide dedicated pre-formatted JSON and CSV feed URLs compatible with Shopify apps like <strong>SyncX</strong>, <strong>Stock Sync</strong>, and <strong>Matrixify</strong>. You can configure hourly catalog sync, price markups (e.g. +30%), and color variants with zero programming.
+                  Yes. For <strong>Shopify</strong>, we provide pre-formatted JSON and CSV feed URLs compatible with <strong>SyncX</strong>, <strong>Stock Sync</strong>, and <strong>Matrixify</strong>, plus native webhook order forwarding. For <strong>WooCommerce</strong>, our official <strong>v1.2.0 WordPress plugin (.zip)</strong> provides one-click 22-column catalog CSV export with custom markup and rounding, hourly stock sync, live Classic &amp; Blocks checkout protection, HPOS support, and optional automated order forwarding with zero coding.
                 </p>
               </div>
             </details>
