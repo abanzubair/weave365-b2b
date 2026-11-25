@@ -1679,7 +1679,7 @@
 .api-segmented-track {
   display: inline-flex;
   flex-wrap: wrap;
-  max-inline-size: 100%;
+  align-self: flex-start;
   align-items: stretch;
   gap: 2px;
   padding: 3px;
@@ -1709,11 +1709,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-block-size: 36px;
-  padding: 0.375rem 0.75rem;
+  min-block-size: 30px;
+  padding: 0.2rem 0.5rem;
   border-radius: 6px;
   border: 1px solid transparent;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #475569;
   cursor: pointer;
