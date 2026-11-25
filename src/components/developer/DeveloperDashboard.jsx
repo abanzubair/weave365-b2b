@@ -8,7 +8,7 @@
  * @module components/developer/DeveloperDashboard
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useId } from 'react';
 import {
   KeyRound,
   Copy,
@@ -57,6 +57,7 @@ import {
   Lock,
   ArrowRight,
   Sparkles,
+  Info,
 } from '../icons.jsx';
 import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
@@ -1023,6 +1024,14 @@ export function DeveloperDashboard({
   const [testResponse, setTestResponse] = useState(null);
   const [testStatus, setTestStatus] = useState(null);
 
+  // WooCommerce Catalog CSV Export & Self-Serve Markup State
+  const [wooMarkupType, setWooMarkupType] = useState('none'); // 'none' | 'percent' | 'flat'
+  const [wooMarkupValue, setWooMarkupValue] = useState('');
+  const [wooMarkupError, setWooMarkupError] = useState('');
+  const [wooRoundTo, setWooRoundTo] = useState('none'); // 'none' | '10' | '50' | '99'
+  const [wooRevealError, setWooRevealError] = useState('');
+  const wooCsvIdPrefix = useId();
+
   // Curated Catalog Selection State
   const [availableProducts, setAvailableProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -1563,6 +1572,7 @@ export function DeveloperDashboard({
           // Never leave the secret key exposed automatically; fetch strictly when user clicks eye
           setRevealedKey(null);
           setShowKeySecret(false);
+          setWooRevealError('');
           alert('New API Key generated successfully! You can click the eye icon to securely view and copy your secret key anytime.');
         } catch (err) {
           alert('Failed to regenerate key: ' + err.message);
@@ -1625,6 +1635,131 @@ export function DeveloperDashboard({
     }
   };
 
+  const handleRevealWooKey = async () => {
+    if (revealedKey || !apiKey?.id) return;
+    setWooRevealError('');
+    setRevealingKey(true);
+    try {
+      const fullKey = await developerService.revealApiKey(apiKey.id);
+      // Strictly stored in transient React state only. Never in localStorage or browser storage.
+      setRevealedKey(fullKey);
+    } catch (err) {
+      if (err.code === 'LEGACY_KEY_NEEDS_REGENERATION') {
+        setWooRevealError(
+          'This API key was created before secure on-demand retrieval was available. Regenerate your key in the API Keys & Quota tab to enable direct download.'
+        );
+      } else {
+        setWooRevealError(err.message || 'Failed to securely fetch API key.');
+      }
+    } finally {
+      setRevealingKey(false);
+    }
+  };
+
+  const handleWooMarkupTypeChange = (nextType) => {
+    setWooMarkupType(nextType);
+    setWooMarkupError('');
+    if (nextType === 'percent' && wooMarkupValue !== '') {
+      const num = parseFloat(wooMarkupValue);
+      if (Number.isFinite(num) && num > 500) {
+        setWooMarkupValue('500');
+      }
+    }
+  };
+
+  const handleWooMarkupValueChange = (e) => {
+    const raw = e.target.value;
+    if (raw === '') {
+      setWooMarkupValue('');
+      setWooMarkupError('');
+      return;
+    }
+    if (raw.trim().startsWith('-')) {
+      setWooMarkupValue('0');
+      setWooMarkupError('Markup cannot be negative. Minimum value is 0.');
+      return;
+    }
+    const cleaned = raw.replace(/[^0-9.]/g, '');
+    const dotIdx = cleaned.indexOf('.');
+    const normalized = dotIdx === -1
+      ? cleaned
+      : `${cleaned.slice(0, dotIdx + 1)}${cleaned.slice(dotIdx + 1).replace(/\./g, '')}`;
+    setWooMarkupValue(normalized);
+
+    const maxLimit = wooMarkupType === 'percent' ? 500 : 100000;
+    const parsed = parseFloat(normalized);
+    if (Number.isFinite(parsed) && parsed <= maxLimit) {
+      setWooMarkupError('');
+    }
+  };
+
+  const handleWooMarkupValueBlur = () => {
+    if (wooMarkupType === 'none' || wooMarkupValue === '') {
+      setWooMarkupError('');
+      return;
+    }
+    const maxLimit = wooMarkupType === 'percent' ? 500 : 100000;
+    const parsed = parseFloat(wooMarkupValue);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setWooMarkupValue('0');
+      setWooMarkupError('Enter a valid non-negative number.');
+      return;
+    }
+    if (parsed > maxLimit) {
+      setWooMarkupValue(String(maxLimit));
+      setWooMarkupError(
+        wooMarkupType === 'percent'
+          ? 'Maximum percentage markup is 500% (clamped to 500).'
+          : 'Maximum fixed markup is ₹1,00,000 (clamped to 100000).'
+      );
+      return;
+    }
+    const rounded2 = Math.round(parsed * 100) / 100;
+    setWooMarkupValue(String(rounded2));
+    setWooMarkupError('');
+  };
+
+  const maxWooMarkup = wooMarkupType === 'percent' ? 500 : 100000;
+  const parsedWooMarkup = parseFloat(wooMarkupValue);
+  const sanitizedWooMarkup =
+    wooMarkupType !== 'none' && Number.isFinite(parsedWooMarkup) && parsedWooMarkup > 0
+      ? Math.round(Math.min(maxWooMarkup, Math.max(0, parsedWooMarkup)) * 100) / 100
+      : 0;
+
+  const wooCsvUrl = useMemo(() => {
+    const params = [
+      `key=${revealedKey || 'YOUR_FULL_UNMASKED_KEY'}`,
+      'format=woocommerce',
+    ];
+    if (wooMarkupType === 'percent' && sanitizedWooMarkup > 0) {
+      params.push(`markup_pct=${sanitizedWooMarkup}`);
+    } else if (wooMarkupType === 'flat' && sanitizedWooMarkup > 0) {
+      params.push(`markup_flat=${sanitizedWooMarkup}`);
+    }
+    if (wooRoundTo !== 'none') {
+      params.push(`round_to=${wooRoundTo}`);
+    }
+    return `https://www.weave365.com/api/v1/catalog.csv?${params.join('&')}`;
+  }, [revealedKey, wooMarkupType, sanitizedWooMarkup, wooRoundTo]);
+
+  const wooPricingSummary = useMemo(() => {
+    const markupLabel =
+      wooMarkupType === 'percent' && sanitizedWooMarkup > 0
+        ? `+${sanitizedWooMarkup}% percentage markup`
+        : wooMarkupType === 'flat' && sanitizedWooMarkup > 0
+          ? `+₹${sanitizedWooMarkup.toLocaleString('en-IN')} fixed markup`
+          : 'base B2R wholesale cost (no markup)';
+    const roundLabel =
+      wooRoundTo === '10'
+        ? ', rounded to nearest ₹10'
+        : wooRoundTo === '50'
+          ? ', rounded to nearest ₹50'
+          : wooRoundTo === '99'
+            ? ', rounded to end in ₹99'
+            : '';
+    return `Export pricing: ${markupLabel}${roundLabel} (never below B2R cost).`;
+  }, [wooMarkupType, sanitizedWooMarkup, wooRoundTo]);
+
   const handleDeleteApiKey = async () => {
     if (!apiKey?.id) return;
     triggerConfirm({
@@ -1640,6 +1775,7 @@ export function DeveloperDashboard({
           if (error) throw error;
           setApiKey(null);
           setRevealedKey(null);
+          setWooRevealError('');
           setNewGeneratedSecret(null);
           setNewClientName(buyerProfile?.business_name || '');
           setNewClientWebsite('');
@@ -3211,7 +3347,7 @@ export function DeveloperDashboard({
                   </div>
 
                   <p style={{ margin: '0 0 0.5rem 0', maxWidth: '720px' }}>
-                    Automated hourly stock and inventory synchronization directly from Varanasi artisan looms. Supports parent &amp; variant SKUs, prevents false restocks, includes transient concurrency locking, hourly WP-Cron sync, and mandatory real-time checkout verification.
+                    Automated hourly stock synchronization, mandatory real-time checkout verification, built-in Catalog CSV export with self-serve markup, and optional HPOS-compatible Order API forwarding directly from Varanasi artisan looms. Supports parent &amp; variant SKUs, prevents false restocks, and includes transient concurrency locking.
                   </p>
 
                   <div style={{
@@ -3222,7 +3358,7 @@ export function DeveloperDashboard({
                     color: 'var(--admin-text-muted, #64748b)',
                     flexWrap: 'wrap'
                   }}>
-                    <span>v1.1.0</span>
+                    <span>v1.2.0</span>
                     <span>&bull;</span>
                     <span>Requires WooCommerce 5.0+</span>
                     <span>&bull;</span>
@@ -3267,56 +3403,578 @@ export function DeveloperDashboard({
                   </div>
                 </section>
 
-                {/* 3. Catalog CSV Import */}
+                {/* 3. WooCommerce Catalog CSV Export */}
                 <section className="dev-guide-section">
+                  <style>{`
+                    .dev-woo-csv-card {
+                      background: var(--admin-surface-subtle, #f8fafc);
+                      border: 1px solid var(--admin-border, #e2e8f0);
+                      border-radius: var(--admin-radius-lg, 0.75rem);
+                      padding: 1.25rem;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 1.125rem;
+                    }
+                    .dev-woo-csv-controls-top {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+                      gap: 1rem;
+                      align-items: start;
+                    }
+                    .dev-woo-csv-fieldset {
+                      border: none;
+                      margin: 0;
+                      padding: 0;
+                      min-inline-size: 0;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 0.5rem;
+                    }
+                    .dev-woo-csv-legend,
+                    .dev-woo-csv-label {
+                      font-size: 0.875rem;
+                      font-weight: 600;
+                      color: var(--admin-text-heading, #0f172a);
+                      margin: 0;
+                      padding: 0;
+                      line-height: 1.4;
+                    }
+                    .dev-woo-csv-radio-group {
+                      display: flex;
+                      flex-wrap: wrap;
+                      flex-wrap: balance;
+                      gap: 0.5rem;
+                    }
+                    .dev-woo-csv-radio-option {
+                      display: inline-flex;
+                      align-items: center;
+                      min-block-size: 44px;
+                      padding-inline-start: 0.75rem;
+                      border: 1px solid #64748b;
+                      border-radius: var(--admin-radius-md, 0.5rem);
+                      background: var(--admin-surface, #ffffff);
+                      transition: border-color 0.15s ease, background-color 0.15s ease;
+                      box-sizing: border-box;
+                    }
+                    .dev-woo-csv-radio-option:hover {
+                      border-color: var(--admin-primary, #0f172a);
+                    }
+                    .dev-woo-csv-radio-option:has(.dev-woo-csv-radio-input:checked) {
+                      border-color: var(--admin-primary, #0f172a);
+                      background: var(--admin-surface-muted, #f1f5f9);
+                    }
+                    .dev-woo-csv-radio-input {
+                      accent-color: var(--admin-primary, #0f172a);
+                      inline-size: 1.125rem;
+                      block-size: 1.125rem;
+                      margin: 0;
+                      flex-shrink: 0;
+                      cursor: pointer;
+                    }
+                    .dev-woo-csv-radio-input:focus-visible {
+                      outline: 2px solid var(--admin-primary, #0f172a);
+                      outline-offset: 2px;
+                    }
+                    .dev-woo-csv-radio-label {
+                      font-size: 0.875rem;
+                      font-weight: 500;
+                      color: var(--admin-text-heading, #0f172a);
+                      cursor: pointer;
+                      user-select: none;
+                      line-height: 1.3;
+                      padding-inline: 0.5rem 0.75rem;
+                      padding-block: 0.5rem;
+                      min-block-size: 42px;
+                      display: inline-flex;
+                      align-items: center;
+                      box-sizing: border-box;
+                    }
+                    .dev-woo-csv-radio-input:checked + .dev-woo-csv-radio-label {
+                      font-weight: 600;
+                    }
+                    @supports not (accent-color: #0f172a) {
+                      .dev-woo-csv-radio-input {
+                        position: absolute;
+                        clip-path: inset(50%);
+                        overflow: hidden;
+                        width: 1px;
+                        height: 1px;
+                        margin: -1px;
+                        padding: 0;
+                        border: 0;
+                        white-space: nowrap;
+                      }
+                      .dev-woo-csv-radio-option {
+                        padding-inline-start: 0;
+                      }
+                      .dev-woo-csv-radio-label {
+                        position: relative;
+                        padding-inline-start: 2.25rem;
+                      }
+                      .dev-woo-csv-radio-label::before {
+                        content: "";
+                        position: absolute;
+                        inset-inline-start: 0.75rem;
+                        inset-block-start: 50%;
+                        transform: translateY(-50%);
+                        inline-size: 1.0625rem;
+                        block-size: 1.0625rem;
+                        border: 2px solid #64748b;
+                        border-radius: 9999px;
+                        background: #ffffff;
+                        box-sizing: border-box;
+                      }
+                      .dev-woo-csv-radio-input:checked + .dev-woo-csv-radio-label::before {
+                        border-color: #0f172a;
+                        border-width: 5px;
+                      }
+                      .dev-woo-csv-radio-input:focus-visible + .dev-woo-csv-radio-label::before {
+                        outline: 2px solid #0f172a;
+                        outline-offset: 2px;
+                      }
+                    }
+                    .dev-woo-csv-field {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 0.375rem;
+                      min-inline-size: 0;
+                    }
+                    .dev-woo-csv-hint {
+                      font-size: 0.75rem;
+                      color: var(--admin-text-secondary, #475569);
+                      line-height: 1.4;
+                    }
+                    .dev-woo-csv-input-wrap {
+                      display: flex;
+                      align-items: center;
+                      gap: 0.375rem;
+                      min-block-size: 44px;
+                      padding-inline: 0.75rem;
+                      border: 1px solid #64748b;
+                      border-radius: var(--admin-radius-md, 0.5rem);
+                      background: var(--admin-surface, #ffffff);
+                      box-sizing: border-box;
+                      transition: border-color 0.15s ease;
+                    }
+                    .dev-woo-csv-input-wrap.is-disabled {
+                      background: var(--admin-surface-muted, #f1f5f9);
+                      border-color: #94a3b8;
+                      cursor: not-allowed;
+                    }
+                    .dev-woo-csv-input-wrap:focus-within {
+                      border-color: var(--admin-primary, #0f172a);
+                    }
+                    .dev-woo-csv-input-wrap:has(.dev-woo-csv-input:focus-visible) {
+                      border-color: var(--admin-primary, #0f172a);
+                      outline: 2px solid var(--admin-primary, #0f172a);
+                      outline-offset: 2px;
+                    }
+                    .dev-woo-csv-input-wrap:has(.dev-woo-csv-input:user-invalid),
+                    .dev-woo-csv-input-wrap.has-error {
+                      border-color: var(--admin-danger, #dc2626);
+                    }
+                    .dev-woo-csv-input {
+                      flex: 1;
+                      min-inline-size: 0;
+                      border: none;
+                      background: transparent;
+                      font: inherit;
+                      font-size: max(1rem, 1em);
+                      color: var(--admin-text-heading, #0f172a);
+                      padding-block: 0.5rem;
+                    }
+                    @supports selector(:has(*)) {
+                      .dev-woo-csv-input:focus-visible {
+                        outline: none;
+                      }
+                    }
+                    .dev-woo-csv-input:disabled {
+                      color: var(--admin-text-muted, #64748b);
+                      cursor: not-allowed;
+                    }
+                    .dev-woo-csv-affix {
+                      font-size: 0.875rem;
+                      font-weight: 600;
+                      color: var(--admin-text-secondary, #475569);
+                      user-select: none;
+                      flex-shrink: 0;
+                    }
+                    .dev-woo-csv-error {
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 0.375rem;
+                      font-size: 0.75rem;
+                      font-weight: 600;
+                      color: var(--admin-danger-text, #991b1b);
+                      line-height: 1.4;
+                    }
+                    .dev-woo-csv-formula {
+                      display: flex;
+                      align-items: center;
+                      gap: 0.5rem;
+                      font-size: 0.8125rem;
+                      color: var(--admin-text-secondary, #475569);
+                      background: var(--admin-surface, #ffffff);
+                      border: 1px solid var(--admin-border, #e2e8f0);
+                      border-radius: var(--admin-radius-md, 0.5rem);
+                      padding-inline: 0.75rem;
+                      padding-block: 0.5rem;
+                      line-height: 1.45;
+                    }
+                    .dev-woo-csv-url-block {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 0.375rem;
+                      min-inline-size: 0;
+                    }
+                    .dev-woo-csv-card .dev-endpoint-bar {
+                      background: var(--admin-surface, #ffffff);
+                      border-color: #64748b;
+                      min-block-size: 44px;
+                    }
+                    .dev-woo-csv-card .dev-endpoint-bar:has(.dev-endpoint-url:focus-visible) {
+                      outline: 2px solid var(--admin-primary, #0f172a);
+                      outline-offset: 2px;
+                    }
+                    .dev-woo-csv-card .dev-endpoint-copy-btn {
+                      min-block-size: 36px;
+                      padding-inline: 0.75rem;
+                    }
+                    .dev-woo-csv-actions {
+                      display: flex;
+                      flex-wrap: wrap;
+                      align-items: center;
+                      gap: 0.75rem;
+                    }
+                    .dev-woo-csv-actions .dev-btn {
+                      min-block-size: 44px;
+                      padding-inline: 1rem;
+                    }
+                    .dev-woo-csv-actions .dev-btn:disabled {
+                      opacity: 0.65;
+                      cursor: not-allowed;
+                    }
+                    .dev-woo-csv-card a:focus-visible,
+                    .dev-woo-csv-card button:focus-visible {
+                      outline: 2px solid var(--admin-primary, #0f172a);
+                      outline-offset: 2px;
+                    }
+                    .dev-woo-csv-guard-note {
+                      font-size: 0.8125rem;
+                      color: var(--admin-text-secondary, #475569);
+                      margin: 0;
+                      line-height: 1.45;
+                    }
+                    .dev-woo-csv-warning {
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 0.625rem;
+                      padding-inline: 0.875rem;
+                      padding-block: 0.75rem;
+                      border-radius: var(--admin-radius-md, 0.5rem);
+                      background: var(--admin-warning-bg, #fffbeb);
+                      border: 1px solid var(--admin-warning-border, #fde68a);
+                      color: var(--admin-warning-text, #92400e);
+                      font-size: 0.8125rem;
+                      line-height: 1.5;
+                    }
+                    .dev-woo-csv-steps {
+                      list-style: none;
+                      margin: 0.25rem 0 0 0;
+                      padding-inline-start: 0;
+                    }
+                    .dev-woo-csv-visually-hidden:where(:not(:focus-within, :active)) {
+                      position: absolute !important;
+                      clip-path: inset(50%) !important;
+                      overflow: hidden !important;
+                      width: 1px !important;
+                      height: 1px !important;
+                      margin: -1px !important;
+                      padding: 0 !important;
+                      border: 0 !important;
+                      white-space: nowrap !important;
+                    }
+                    @media (pointer: coarse) {
+                      .dev-woo-csv-radio-option,
+                      .dev-woo-csv-input-wrap,
+                      .dev-woo-csv-actions .dev-btn,
+                      .dev-woo-csv-card .dev-endpoint-copy-btn {
+                        min-block-size: 48px;
+                      }
+                    }
+                    @media (forced-colors: active) {
+                      .dev-woo-csv-card,
+                      .dev-woo-csv-radio-option,
+                      .dev-woo-csv-input-wrap,
+                      .dev-woo-csv-formula,
+                      .dev-woo-csv-warning,
+                      .dev-woo-csv-actions .dev-btn {
+                        border: 1px solid CanvasText;
+                      }
+                      .dev-woo-csv-radio-option:has(.dev-woo-csv-radio-input:checked) {
+                        border: 2px solid Highlight;
+                      }
+                      .dev-woo-csv-card :focus-visible {
+                        outline: 2px solid Highlight !important;
+                        outline-offset: 2px;
+                      }
+                    }
+                  `}</style>
+
                   <div className="dev-guide-section-header">
                     <div className="dev-guide-section-title-wrap">
                       <h5 className="dev-guide-section-title">
-                        Initial Product Import (CSV Feed)
+                        WooCommerce Catalog CSV Export
                       </h5>
-                      <span className="dev-endpoint-tag">
-                        Catalog SKU Sync
+                      <span className="dev-guide-pill dev-pill-recommended">
+                        Official 22-Column CSV
                       </span>
                     </div>
                     <p className="dev-guide-section-desc">
-                      Products are matched by SKU (e.g. <code>102001</code> or <code>102001-1</code>). Use this URL to import products into WooCommerce:
+                      Configure your retail markup and rounding rules below to export an import-ready WooCommerce CSV with variable color products, variations, stock counts, HTML descriptions, and SKU mapping (e.g. <code>102001</code> or <code>102001-1</code>).
                     </p>
                   </div>
 
-                  <div className="dev-endpoint-bar">
-                    <span className="dev-endpoint-tag">CSV Feed</span>
-                    <input
-                      type="text"
-                      readOnly
-                      value={`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_API_KEY'}`}
-                      className="dev-endpoint-url"
-                      aria-label="WooCommerce CSV Catalog Feed URL"
-                    />
-                    <button
-                      type="button"
-                      className={`dev-endpoint-copy-btn ${copiedField === 'woo-csv' ? 'copied' : ''}`}
-                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog.csv?key=${revealedKey || apiKey?.key_prefix || 'YOUR_API_KEY'}`, 'woo-csv')}
-                      aria-label="Copy WooCommerce CSV Feed URL"
-                    >
-                      {copiedField === 'woo-csv' ? <Check size={13} /> : <Copy size={13} />}
-                      <span>{copiedField === 'woo-csv' ? 'Copied' : 'Copy CSV URL'}</span>
-                    </button>
+                  <div className="dev-woo-csv-card">
+                    <div className="dev-woo-csv-controls-top">
+                      <fieldset className="dev-woo-csv-fieldset">
+                        <legend className="dev-woo-csv-legend">Markup Type</legend>
+                        <div className="dev-woo-csv-radio-group">
+                          {[
+                            { value: 'none', label: 'None' },
+                            { value: 'percent', label: 'Percentage (%)' },
+                            { value: 'flat', label: 'Fixed (₹)' },
+                          ].map((opt) => (
+                            <div key={opt.value} className="dev-woo-csv-radio-option">
+                              <input
+                                type="radio"
+                                id={`${wooCsvIdPrefix}-markup-${opt.value}`}
+                                name={`${wooCsvIdPrefix}-markup-type`}
+                                value={opt.value}
+                                checked={wooMarkupType === opt.value}
+                                onChange={() => handleWooMarkupTypeChange(opt.value)}
+                                className="dev-woo-csv-radio-input"
+                              />
+                              <label
+                                htmlFor={`${wooCsvIdPrefix}-markup-${opt.value}`}
+                                className="dev-woo-csv-radio-label"
+                              >
+                                {opt.label}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </fieldset>
+
+                      <div className="dev-woo-csv-field">
+                        <label
+                          htmlFor={`${wooCsvIdPrefix}-markup-value`}
+                          className="dev-woo-csv-label"
+                        >
+                          Markup Value {wooMarkupType === 'percent' ? '(%)' : wooMarkupType === 'flat' ? '(₹)' : ''}
+                        </label>
+                        <span id={`${wooCsvIdPrefix}-markup-hint`} className="dev-woo-csv-hint">
+                          {wooMarkupType === 'none'
+                            ? 'Select Percentage (%) or Fixed (₹) to add a retail margin.'
+                            : wooMarkupType === 'percent'
+                              ? 'Allowed range: 0% to 500% (e.g. 30 adds 30%).'
+                              : 'Allowed range: ₹0 to ₹1,00,000 (e.g. 250 adds ₹250).'}
+                        </span>
+                        <div
+                          className={`dev-woo-csv-input-wrap ${wooMarkupType === 'none' ? 'is-disabled' : ''} ${wooMarkupError ? 'has-error' : ''}`}
+                        >
+                          {wooMarkupType === 'flat' && (
+                            <span className="dev-woo-csv-affix" aria-hidden="true">&#8377;</span>
+                          )}
+                          <input
+                            id={`${wooCsvIdPrefix}-markup-value`}
+                            name="wooMarkupValue"
+                            type="text"
+                            inputMode="decimal"
+                            pattern="[0-9]*\.?[0-9]*"
+                            enterKeyHint="done"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            disabled={wooMarkupType === 'none'}
+                            value={wooMarkupType === 'none' ? '' : wooMarkupValue}
+                            placeholder={
+                              wooMarkupType === 'none'
+                                ? 'Disabled'
+                                : wooMarkupType === 'percent'
+                                  ? 'e.g. 30'
+                                  : 'e.g. 250'
+                            }
+                            onChange={handleWooMarkupValueChange}
+                            onBlur={handleWooMarkupValueBlur}
+                            aria-invalid={wooMarkupError ? 'true' : undefined}
+                            aria-describedby={
+                              wooMarkupError
+                                ? `${wooCsvIdPrefix}-markup-hint ${wooCsvIdPrefix}-markup-error`
+                                : `${wooCsvIdPrefix}-markup-hint`
+                            }
+                            className="dev-woo-csv-input"
+                          />
+                          {wooMarkupType === 'percent' && (
+                            <span className="dev-woo-csv-affix" aria-hidden="true">%</span>
+                          )}
+                        </div>
+                        {wooMarkupError && (
+                          <span id={`${wooCsvIdPrefix}-markup-error`} role="status" className="dev-woo-csv-error">
+                            <AlertTriangle size={13} aria-hidden="true" />
+                            <span>{wooMarkupError}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <fieldset className="dev-woo-csv-fieldset">
+                      <legend className="dev-woo-csv-legend">Price Rounding</legend>
+                      <div className="dev-woo-csv-radio-group">
+                        {[
+                          { value: 'none', label: 'None' },
+                          { value: '10', label: 'Nearest ₹10' },
+                          { value: '50', label: 'Nearest ₹50' },
+                          { value: '99', label: 'End in ₹99' },
+                        ].map((opt) => (
+                          <div key={opt.value} className="dev-woo-csv-radio-option">
+                            <input
+                              type="radio"
+                              id={`${wooCsvIdPrefix}-round-${opt.value}`}
+                              name={`${wooCsvIdPrefix}-round-to`}
+                              value={opt.value}
+                              checked={wooRoundTo === opt.value}
+                              onChange={() => setWooRoundTo(opt.value)}
+                              className="dev-woo-csv-radio-input"
+                            />
+                            <label
+                              htmlFor={`${wooCsvIdPrefix}-round-${opt.value}`}
+                              className="dev-woo-csv-radio-label"
+                            >
+                              {opt.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </fieldset>
+
+                    <div className="dev-woo-csv-formula">
+                      <Info size={15} aria-hidden="true" style={{ flexShrink: 0 }} />
+                      <span>{wooPricingSummary}</span>
+                    </div>
+
+                    <div className="dev-woo-csv-url-block">
+                      <label htmlFor={`${wooCsvIdPrefix}-url`} className="dev-woo-csv-label">
+                        Live WooCommerce CSV URL
+                      </label>
+                      <div className="dev-endpoint-bar">
+                        <span className="dev-endpoint-tag">CSV Feed</span>
+                        <input
+                          id={`${wooCsvIdPrefix}-url`}
+                          type="text"
+                          readOnly
+                          value={wooCsvUrl}
+                          className="dev-endpoint-url"
+                          autoCorrect="off"
+                          autoCapitalize="none"
+                          spellCheck={false}
+                        />
+                        <button
+                          type="button"
+                          className={`dev-endpoint-copy-btn ${copiedField === 'woo-csv' ? 'copied' : ''}`}
+                          onClick={() => copyToClipboard(wooCsvUrl, 'woo-csv')}
+                        >
+                          {copiedField === 'woo-csv' ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+                          <span>{copiedField === 'woo-csv' ? 'Copied' : 'Copy URL'}</span>
+                        </button>
+                      </div>
+                      <span role="status" className="dev-woo-csv-visually-hidden">
+                        {copiedField === 'woo-csv' ? 'WooCommerce CSV URL copied to clipboard.' : ''}
+                      </span>
+                    </div>
+
+                    <div className="dev-woo-csv-actions">
+                      {revealedKey ? (
+                        <a
+                          href={wooCsvUrl}
+                          download="weave365-woocommerce-catalog.csv"
+                          className="dev-btn dev-btn-primary dev-woo-csv-download-btn"
+                        >
+                          <Download size={14} aria-hidden="true" />
+                          <span>Download WooCommerce Catalog CSV</span>
+                        </a>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            disabled
+                            aria-describedby={`${wooCsvIdPrefix}-download-guard`}
+                            className="dev-btn dev-btn-primary dev-woo-csv-download-btn"
+                          >
+                            <Lock size={14} aria-hidden="true" />
+                            <span>Download CSV (Reveal Key Required)</span>
+                          </button>
+                          {apiKey?.id && (
+                            <button
+                              type="button"
+                              onClick={handleRevealWooKey}
+                              disabled={revealingKey}
+                              className="dev-btn dev-btn-secondary dev-woo-csv-reveal-btn"
+                            >
+                              {revealingKey ? (
+                                <RefreshCw size={14} className="spin-icon" aria-hidden="true" />
+                              ) : (
+                                <Eye size={14} aria-hidden="true" />
+                              )}
+                              <span>{revealingKey ? 'Revealing Key...' : 'Reveal Key to Download'}</span>
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {!revealedKey && (
+                      <p id={`${wooCsvIdPrefix}-download-guard`} className="dev-woo-csv-guard-note">
+                        Direct download is disabled while your key is masked to avoid <code>401 Unauthorized</code> errors. Click <strong>Reveal Key to Download</strong> (or reveal your key in <em>API Keys &amp; Quota</em>), or use the <strong>Download WooCommerce Catalog CSV</strong> button inside your WordPress plugin.
+                      </p>
+                    )}
+
+                    {!revealedKey && wooRevealError && (
+                      <div role="alert" className="dev-woo-csv-error">
+                        <AlertTriangle size={14} aria-hidden="true" />
+                        <span>{wooRevealError}</span>
+                      </div>
+                    )}
+
+                    <div className="dev-woo-csv-warning" role="note">
+                      <AlertTriangle size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <div>
+                        <strong>Masked keys (<code>w365_live_...</code>) return <code>401 Unauthorized</code>:</strong> Direct CSV URLs require your full unmasked secret key. If you already saved your API key inside WordPress, open <strong>WooCommerce &rarr; Weave365 Sync</strong> and click the one-click <strong>Download WooCommerce Catalog CSV</strong> button inside the plugin instead.
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="dev-guide-steps" style={{ marginTop: '0.625rem' }}>
-                    <div className="dev-guide-step">
-                      <span className="dev-guide-step-badge">&bull;</span>
+                  <ol className="dev-guide-steps dev-woo-csv-steps" role="list">
+                    <li className="dev-guide-step">
+                      <span className="dev-guide-step-badge" aria-hidden="true">1.</span>
                       <div className="dev-guide-step-body">
-                        Open the URL above in your browser to download <code>weave365-catalog.csv</code>.
+                        <strong>Download &amp; Upload CSV:</strong> Download <code>weave365-woocommerce-catalog.csv</code> above (or inside <em>WooCommerce &rarr; Weave365 Sync</em>). In WordPress Admin, open <strong>WooCommerce &rarr; Products &rarr; Import</strong>, upload the CSV file, and click <strong>Continue</strong>.
                       </div>
-                    </div>
-                    <div className="dev-guide-step">
-                      <span className="dev-guide-step-badge">&bull;</span>
+                    </li>
+                    <li className="dev-guide-step">
+                      <span className="dev-guide-step-badge" aria-hidden="true">2.</span>
                       <div className="dev-guide-step-body">
-                        In WordPress Admin, open <strong>Products &rarr; Import</strong>, upload the downloaded CSV, ensure <code>SKU</code>, <code>Name</code>, <code>Regular price</code>, and <code>Images</code> columns are mapped, and click <strong>Run the Importer</strong>.
+                        <strong>Confirm Auto-Mapped Headers:</strong> WooCommerce automatically maps all 22 standard columns—including product variations (<code>Type</code>, <code>Parent</code>, <code>SKU</code>), color attributes (<code>Attribute 1 name</code>, <code>Attribute 1 value(s)</code>), stock (<code>In stock?</code>, <code>Stock</code>), HTML product descriptions (<code>Description</code>), gallery images, and your marked-up <code>Regular price</code>.
                       </div>
-                    </div>
-                  </div>
+                    </li>
+                    <li className="dev-guide-step">
+                      <span className="dev-guide-step-badge" aria-hidden="true">3.</span>
+                      <div className="dev-guide-step-body">
+                        <strong>Run the Importer:</strong> Click <strong>Run the importer</strong> to create your catalog and color variations. Once imported, the <strong>Weave365 Live Stock Sync</strong> plugin keeps stock quantities and checkout availability synchronized automatically by SKU.
+                      </div>
+                    </li>
+                  </ol>
                 </section>
               </div>
             )}
