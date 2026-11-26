@@ -1869,7 +1869,17 @@ create table if not exists public.api_orders (
   recipient_address text not null,
   recipient_city text not null,
   recipient_state text not null,
-  recipient_pincode text not null,
+  recipient_pincode text default '',
+  recipient_country text default 'India',
+  recipient_country_code text default 'IN',
+  is_international boolean default false,
+  order_currency text default 'INR',
+  customer_shipping_amount numeric(12,2) default 0,
+  customer_shipping_method text,
+  wholesale_subtotal_inr numeric(12,2) default 0,
+  shipping_fee_inr numeric(12,2) default 0,
+  total_wholesale_inr numeric(12,2) default 0,
+  billed_weight_kg numeric(8,2) default 0,
   sender_name text,
   sender_phone text,
   packing_preference text default 'Blind Packaging',
@@ -1883,11 +1893,26 @@ create table if not exists public.api_orders (
   updated_at timestamptz default now()
 );
 
+-- Idempotent international dropship migrations for existing api_orders tables
+alter table public.api_orders add column if not exists recipient_country text default 'India';
+alter table public.api_orders add column if not exists recipient_country_code text default 'IN';
+alter table public.api_orders add column if not exists is_international boolean default false;
+alter table public.api_orders add column if not exists order_currency text default 'INR';
+alter table public.api_orders add column if not exists customer_shipping_amount numeric(12,2) default 0;
+alter table public.api_orders add column if not exists customer_shipping_method text;
+alter table public.api_orders add column if not exists wholesale_subtotal_inr numeric(12,2) default 0;
+alter table public.api_orders add column if not exists shipping_fee_inr numeric(12,2) default 0;
+alter table public.api_orders add column if not exists total_wholesale_inr numeric(12,2) default 0;
+alter table public.api_orders add column if not exists billed_weight_kg numeric(8,2) default 0;
+alter table public.api_orders alter column recipient_pincode set default '', alter column recipient_pincode drop not null;
+
 -- Indices for api_orders
 create index if not exists api_orders_user_id_idx on public.api_orders (user_id);
 create index if not exists api_orders_key_id_idx on public.api_orders (api_key_id);
 create index if not exists api_orders_reseller_id_idx on public.api_orders (reseller_order_id);
 create index if not exists api_orders_status_idx on public.api_orders (status);
+create index if not exists api_orders_is_international_idx on public.api_orders (is_international);
+create index if not exists api_orders_recipient_country_code_idx on public.api_orders (recipient_country_code);
 
 -- Trigger for api_orders updated_at
 drop trigger if exists touch_api_orders_updated_at on public.api_orders;

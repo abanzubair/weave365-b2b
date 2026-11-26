@@ -43,6 +43,211 @@ function isSafeFilterId(value) {
 }
 
 /**
+ * Combines street address line 1 and line 2 without duplicating when line 1 already includes line 2.
+ */
+function extractCombinedAddress(rawShip = {}, rawCust = {}) {
+  const shipLine1 = String(rawShip.address_line1 || rawShip.address1 || rawShip.address || '').trim();
+  const shipLine2 = String(rawShip.address_line2 || rawShip.address2 || '').trim();
+  const custLine1 = String(rawCust.address_line1 || rawCust.address1 || rawCust.address || '').trim();
+  const custLine2 = String(rawCust.address_line2 || rawCust.address2 || '').trim();
+
+  const line1 = shipLine1 || custLine1;
+  const line2 = shipLine1 ? shipLine2 : (shipLine2 || custLine2);
+
+  if (!line1) return line2;
+  if (!line2) return line1;
+  if (line1.toLowerCase().includes(line2.toLowerCase())) return line1;
+  return `${line1}, ${line2}`.trim();
+}
+
+/**
+ * Extracts ISO country code, full country name, and international flag from shipping/customer/body payloads.
+ */
+function extractCountryDetails(rawShip = {}, rawCust = {}, body = {}) {
+  const rawCode = String(
+    rawShip.country_code ||
+    rawCust.country_code ||
+    body?.country_code ||
+    ''
+  ).trim();
+
+  const rawNameOrCountry = String(
+    rawShip.country_name ||
+    rawCust.country_name ||
+    body?.country_name ||
+    rawShip.country ||
+    rawCust.country ||
+    body?.country ||
+    ''
+  ).trim();
+
+  let countryCode = rawCode.toUpperCase();
+  if (!countryCode && /^[A-Za-z]{2,3}$/.test(rawNameOrCountry)) {
+    countryCode = rawNameOrCountry.toUpperCase();
+  }
+  if (countryCode === 'IND') {
+    countryCode = 'IN';
+  }
+  if (countryCode.length !== 2) {
+    countryCode = /^[A-Za-z]{2}$/.test(countryCode) ? countryCode : '';
+  }
+
+  let countryName = rawNameOrCountry;
+  if (/^(in|ind|india)$/i.test(countryName)) {
+    countryName = 'India';
+  }
+
+  const normalizedNameLower = countryName.toLowerCase();
+  const isIndiaByName = !normalizedNameLower || normalizedNameLower === 'in' || normalizedNameLower === 'ind' || normalizedNameLower === 'india';
+  const hasNonIndiaCode = Boolean(countryCode) && countryCode !== 'IN';
+  const hasNonIndiaName = Boolean(countryName) && !isIndiaByName;
+  const isInternational = hasNonIndiaCode || hasNonIndiaName || body?.is_international === true;
+
+  if (!isInternational) {
+    return {
+      recipientCountryCode: 'IN',
+      recipientCountry: countryName || 'India',
+      isInternational: false,
+    };
+  }
+
+  return {
+    recipientCountryCode: countryCode,
+    recipientCountry: /^[A-Za-z]{2}$/.test(countryName) ? '' : countryName,
+    isInternational: true,
+  };
+}
+
+/**
+ * Formats end-customer retail values without mislabeling foreign currencies with INR symbol.
+ */
+function formatCustomerCurrency(amount, currencyCode = 'INR') {
+  const code = String(currencyCode || 'INR').trim().toUpperCase() || 'INR';
+  const num = Number(amount) || 0;
+  if (code === 'INR') {
+    return `₹${num.toLocaleString('en-IN')}`;
+  }
+  return `${code} ${num.toFixed(2)}`;
+}
+
+/**
+ * Computes total package weight in grams strictly across Weave365 normalized items.
+ */
+function calculateWeaveItemsWeightGrams(items = []) {
+  return (Array.isArray(items) ? items : []).reduce((acc, item) => {
+    const qty = Math.max(1, parseInt(item?.quantity || 1, 10));
+    const rawGrams = Number(item?.weight_grams);
+    if (Number.isFinite(rawGrams) && rawGrams > 0) {
+      return acc + Math.round(rawGrams) * qty;
+    }
+    const rawW = item?.weight ?? item?.variant?.weight ?? item?.product?.weight;
+    let grams = 1200;
+    if (rawW !== undefined && rawW !== null && rawW !== '' && !isNaN(Number(rawW)) && Number(rawW) > 0) {
+      const num = Number(rawW);
+      grams = Math.round(num > 15 ? num : num * 1000);
+    }
+    return acc + grams * qty;
+  }, 0);
+}
+
+/**
+ * Fetches country pricing & shipping rate configs using the same merged source as countryPricingHandler.js.
+ */
+async function fetchCountryPricingConfigs(supabase) {
+  let sheetCountries = [];
+  try {
+    const { data: sheetData } = await supabase
+      .from('sheet_data')
+      .select('csv_data')
+      .eq('id', 'country_pricing_config')
+      .maybeSingle();
+
+    if (sheetData?.csv_data) {
+      const parsed = typeof sheetData.csv_data === 'string'
+        ? JSON.parse(sheetData.csv_data)
+        : sheetData.csv_data;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        sheetCountries = parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('[developerApi] sheet_data country_pricing_config fetch note:', err?.message || err);
+  }
+
+  let dbRows = [];
+  try {
+    const res = await supabase
+      .from('country_pricing_configs')
+      .select('*');
+    if (!res?.error && Array.isArray(res?.data)) {
+      dbRows = res.data;
+    }
+  } catch (err) {
+    console.warn('[developerApi] country_pricing_configs fetch note:', err?.message || err);
+  }
+
+  const merged = [];
+  if (dbRows.length > 0) {
+    for (const r of dbRows) {
+      const rCode = String(r.code || '').trim().toUpperCase();
+      const sheetMatch = sheetCountries.find((sc) => String(sc.code || '').trim().toUpperCase() === rCode);
+      const rateVal = Number(
+        r.shipping_fee ??
+        r.shipping_rate ??
+        sheetMatch?.shippingRate ??
+        sheetMatch?.shippingFee ??
+        sheetMatch?.shipping_fee ??
+        0
+      );
+      const unitVal = String(r.shipping_unit || sheetMatch?.shippingUnit || 'kg').toLowerCase() === 'g' ? 'g' : 'kg';
+      merged.push({
+        code: rCode,
+        name: String(r.name || sheetMatch?.name || '').trim(),
+        shippingRate: isNaN(rateVal) ? 0 : rateVal,
+        shippingUnit: unitVal,
+        enabled: r.enabled !== false,
+      });
+    }
+  }
+
+  for (const sc of sheetCountries) {
+    const scCode = String(sc.code || '').trim().toUpperCase();
+    const scName = String(sc.name || '').trim().toLowerCase();
+    const exists = merged.some(
+      (c) => (scCode && c.code === scCode) || (scName && c.name.toLowerCase() === scName)
+    );
+    if (!exists) {
+      const rateVal = Number(sc.shippingRate ?? sc.shippingFee ?? sc.shipping_fee ?? 0);
+      const unitVal = String(sc.shippingUnit || 'kg').toLowerCase() === 'g' ? 'g' : 'kg';
+      merged.push({
+        code: scCode,
+        name: String(sc.name || '').trim(),
+        shippingRate: isNaN(rateVal) ? 0 : rateVal,
+        shippingUnit: unitVal,
+        enabled: sc.enabled !== false,
+      });
+    }
+  }
+
+  return merged;
+}
+
+/**
+ * Matches an international destination country case-insensitively by ISO code or full name.
+ */
+function resolveCountryShippingConfig(countryConfigs = [], countryCode = '', countryName = '') {
+  const codeUpper = String(countryCode || '').trim().toUpperCase();
+  const nameLower = String(countryName || '').trim().toLowerCase();
+  return countryConfigs.find((c) => {
+    const cCode = String(c.code || '').trim().toUpperCase();
+    const cName = String(c.name || '').trim().toLowerCase();
+    if (codeUpper && cCode && cCode === codeUpper) return true;
+    if (nameLower && cName && cName === nameLower) return true;
+    return false;
+  }) || null;
+}
+
+/**
  * Calculate product weight with +100g (0.1kg) offset as requested for API consumers.
  * Handles database records stored in kg (e.g. 0.7, 0.8, 1.2) or grams.
  */
@@ -2564,6 +2769,16 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       dropship_recipient_state: a.recipient_state,
       dropship_recipient_pincode: a.recipient_pincode,
       dropship_packing_preference: a.packing_preference,
+      recipient_country: a.recipient_country || null,
+      recipient_country_code: a.recipient_country_code || null,
+      is_international: Boolean(a.is_international),
+      order_currency: a.order_currency || 'INR',
+      customer_shipping_amount: Number(a.customer_shipping_amount || 0),
+      customer_shipping_method: a.customer_shipping_method || null,
+      wholesale_subtotal_inr: Number(a.wholesale_subtotal_inr || 0),
+      shipping_fee_inr: Number(a.shipping_fee_inr || 0),
+      total_wholesale_inr: Number(a.total_wholesale_inr || 0),
+      billed_weight_kg: Number(a.billed_weight_kg || 0),
       message: a.shipping_notes || a.message,
     }));
 
@@ -2620,6 +2835,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     const formatStatusLabel = (status) => {
       switch ((status || '').toLowerCase()) {
+        case 'awaiting_shipping_quote': return 'Awaiting Shipping Quote';
         case 'payment_pending': return 'Payment Pending';
         case 'payment_received': return 'Payment Received';
         case 'new': return 'Payment Pending';
@@ -2644,7 +2860,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }
 
       const orderStatus = o.status || 'payment_pending';
-      const isPaid = ['payment_received', 'order_confirmed', 'in_process', 'shipped', 'verified', 'processing', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase());
+      const orderStatusLower = orderStatus.toLowerCase();
+      const isAwaitingQuote = orderStatusLower === 'awaiting_shipping_quote';
+      const isPaid = ['payment_received', 'order_confirmed', 'in_process', 'shipped', 'verified', 'processing', 'dispatched', 'delivered'].includes(orderStatusLower);
       const requestOrigin = request?.headers?.get('origin');
       const requestHost = request?.headers?.get('host');
       let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
@@ -2652,6 +2870,66 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         siteUrl = requestOrigin;
       } else if (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1'))) {
         siteUrl = `http://${requestHost}`;
+      }
+
+      const notesText = o.shipping_notes || o.message || '';
+      const destCountryCode = o.recipient_country_code
+        ? String(o.recipient_country_code).trim().toUpperCase()
+        : (o.is_international ? null : 'IN');
+      const isInternational = Boolean(o.is_international) || (Boolean(destCountryCode) && destCountryCode !== 'IN');
+      const destCountry = o.recipient_country
+        ? String(o.recipient_country).trim()
+        : (isInternational ? (destCountryCode || 'International Destination') : 'India');
+
+      const addrStreet = o.dropship_recipient_address || null;
+      const addrCity = o.dropship_recipient_city || null;
+      const addrState = o.dropship_recipient_state || null;
+      const addrPin = o.dropship_recipient_pincode || o.pincode || '';
+      const addrBody = [addrStreet, addrCity, addrState].filter(Boolean).join(', ');
+      const pinSegment = addrPin ? (isInternational ? ` ${addrPin}` : ` - PIN: ${addrPin}`) : '';
+      const fullAddress = `${addrBody}${pinSegment}${destCountry ? `, ${destCountry}` : ''}`.replace(/^,\s*/, '') || null;
+
+      const itemsWholesaleSum = (Array.isArray(o.items) ? o.items : []).reduce((acc, it) => {
+        const wp = Number(it.wholesale_price ?? it.price ?? it.unit_price ?? 0);
+        const qty = Math.max(1, parseInt(it.quantity || 1, 10));
+        return acc + (wp * qty);
+      }, 0);
+      const wholesaleSubtotalInr = Number(o.wholesale_subtotal_inr || 0) > 0
+        ? Number(o.wholesale_subtotal_inr)
+        : (itemsWholesaleSum > 0 ? itemsWholesaleSum : Number(o.total_amount || 0));
+
+      let shippingFeeInr = Number(o.shipping_fee_inr || 0);
+      if (shippingFeeInr <= 0 && notesText) {
+        const intlMatch = notesText.match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i);
+        if (intlMatch) {
+          shippingFeeInr = Number(intlMatch[1].replace(/,/g, '')) || 0;
+        }
+      }
+      const totalPayableInr = Number(o.total_wholesale_inr || 0) > 0
+        ? Number(o.total_wholesale_inr)
+        : (wholesaleSubtotalInr + shippingFeeInr);
+
+      const customerCurrency = String(o.order_currency || 'INR').trim().toUpperCase() || 'INR';
+      let customerBilledPrice = (Array.isArray(o.items) ? o.items : []).reduce((acc, it) => {
+        const sp = Number(it.selling_price ?? it.custom_billed_price ?? it.dropship_billed_price ?? it.wholesale_price ?? it.price ?? 0);
+        const qty = Math.max(1, parseInt(it.quantity || 1, 10));
+        return acc + (sp * qty);
+      }, 0);
+      if (notesText) {
+        const slipMatch = notesText.match(/Billed Retail Price on Parcel Slip:\s*(?:₹|[A-Z]{3}\s*)?([0-9.,]+)/i);
+        if (slipMatch) {
+          const parsedSlip = Number(slipMatch[1].replace(/,/g, ''));
+          if (!isNaN(parsedSlip) && parsedSlip > 0) customerBilledPrice = parsedSlip;
+        }
+      }
+
+      let billedWeightKg = Number(o.billed_weight_kg || 0);
+      if (billedWeightKg <= 0 && notesText) {
+        const weightMatch = notesText.match(/International Shipping\s*\([^,]+,\s*([0-9.]+)\s*kg\)/i);
+        if (weightMatch) billedWeightKg = Number(weightMatch[1]) || 0;
+      }
+      if (billedWeightKg <= 0 && Array.isArray(o.items) && o.items.length > 0) {
+        billedWeightKg = Math.max(1, Math.ceil(calculateWeaveItemsWeightGrams(o.items) / 1000));
       }
 
       return {
@@ -2662,30 +2940,45 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         updated_at: o.updated_at,
         status: orderStatus,
         status_label: formatStatusLabel(orderStatus),
-        payment_status: isPaid ? 'paid' : 'pending',
-        payment_link: !isPaid ? `${siteUrl}/order-tracking/${o.id}?pay=1` : null,
+        payment_status: isPaid ? 'paid' : (isAwaitingQuote ? 'awaiting_quote' : 'pending'),
+        payment_link: (!isPaid && !isAwaitingQuote) ? `${siteUrl}/order-tracking/${o.id}?pay=1` : null,
+        is_international: isInternational,
+        destination_country: destCountry,
+        destination_country_code: destCountryCode,
+        billed_weight_kg: billedWeightKg,
+        pricing: {
+          wholesale_subtotal_inr: wholesaleSubtotalInr,
+          shipping_fee_inr: shippingFeeInr,
+          total_payable_inr: totalPayableInr,
+          billing_currency: 'INR',
+          customer_billed_price: customerBilledPrice,
+          customer_currency: customerCurrency,
+        },
         tracking: {
           carrier: o.tracking_carrier || null,
           tracking_number: o.tracking_number || null,
           tracking_message: o.tracking_message || null,
           tracking_url: `${siteUrl}/order-tracking/${o.id}`,
-          is_dispatched: ['shipped', 'dispatched', 'delivered'].includes((orderStatus).toLowerCase()),
+          is_dispatched: ['shipped', 'dispatched', 'delivered'].includes(orderStatusLower),
         },
         customer: {
           name: o.dropship_recipient_name || o.buyer_name,
           phone: o.dropship_recipient_phone || o.phone,
           email: o.email || null,
-          address: o.dropship_recipient_address || null,
-          city: o.dropship_recipient_city || null,
-          state: o.dropship_recipient_state || null,
-          pincode: o.dropship_recipient_pincode || o.pincode,
+          address: addrStreet,
+          full_address: fullAddress,
+          city: addrCity,
+          state: addrState,
+          pincode: addrPin || null,
+          country: destCountry,
+          country_code: destCountryCode,
         },
         sender: {
           name: o.dropship_sender_name || o.business_name || 'B2B Partner Store',
           phone: o.dropship_sender_phone || null,
         },
         items: o.items || [],
-        notes: o.shipping_notes || o.message || '',
+        notes: notesText,
       };
     });
 
@@ -3878,6 +4171,7 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
       }, { status: 404, headers: corsHeaders });
     }
 
+    const isApiOrder = Boolean(apiOrd);
     const currentStatus = String(order.status || '').toLowerCase();
     if (currentStatus === 'paid' || currentStatus === 'payment_received') {
       return Response.json({
@@ -3887,33 +4181,57 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
       }, { status: 400, headers: corsHeaders });
     }
 
-    // Calculate exact wholesale amount due
-    let totalWholesaleAmount = 0;
+    if (currentStatus === 'awaiting_shipping_quote') {
+      return Response.json({
+        success: false,
+        status: 'error',
+        code: 'AWAITING_SHIPPING_QUOTE',
+        message: 'International shipping quote is pending confirmation. Payment cannot be initiated until the shipping rate is finalized.',
+      }, { status: 400, headers: corsHeaders });
+    }
+
+    // Calculate exact wholesale subtotal in INR
+    let wholesaleSubtotalInr = 0;
     const items = Array.isArray(order.items) ? order.items : [];
     items.forEach((it) => {
       const wp = Number(it.wholesale_price || (it.selling_price && it.price && it.price < it.selling_price ? it.price : 0) || it.price || 0);
       const qty = Math.max(1, parseInt(it.quantity || 1, 10));
-      totalWholesaleAmount += wp * qty;
+      wholesaleSubtotalInr += wp * qty;
     });
 
-    if (totalWholesaleAmount <= 0 && order.shipping_notes) {
-      const dueMatch = order.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+    if (wholesaleSubtotalInr <= 0 && Number(order.wholesale_subtotal_inr) > 0) {
+      wholesaleSubtotalInr = Number(order.wholesale_subtotal_inr);
+    }
+    if (wholesaleSubtotalInr <= 0 && order.shipping_notes) {
+      const dueMatch = order.shipping_notes.match(/Wholesale Subtotal:\s*₹?\s*([0-9.,]+)/i)
+        || order.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
       if (dueMatch) {
-        totalWholesaleAmount = Number(dueMatch[1].replace(/,/g, '')) || 0;
+        wholesaleSubtotalInr = Number(dueMatch[1].replace(/,/g, '')) || 0;
       }
     }
-    if (totalWholesaleAmount <= 0 && order.total_amount && Number(order.total_amount) > 0) {
-      totalWholesaleAmount = Number(order.total_amount);
+    if (wholesaleSubtotalInr <= 0 && order.total_amount && Number(order.total_amount) > 0) {
+      wholesaleSubtotalInr = Number(order.total_amount);
     }
 
-    // Check expedited shipping
-    const isExpedited = order.message && /Shipping:\s*Expedited/i.test(order.message);
-    let shippingFee = 0;
-    if (isExpedited) {
-      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i);
-      shippingFee = feeMatch ? Number(feeMatch[1].replace(/,/g, '')) : 150;
+    // Add international shipping (INR) or domestic expedited shipping (INR)
+    const isInternationalOrder = Boolean(order.is_international) || (
+      Boolean(order.recipient_country_code) &&
+      String(order.recipient_country_code).trim().toUpperCase() !== 'IN'
+    );
+
+    let shippingFeeInr = Number(order.shipping_fee_inr || 0);
+    if (shippingFeeInr <= 0 && order.shipping_notes) {
+      const intlShipMatch = order.shipping_notes.match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i);
+      if (intlShipMatch) {
+        shippingFeeInr = Number(intlShipMatch[1].replace(/,/g, '')) || 0;
+      }
     }
-    totalWholesaleAmount += shippingFee;
+    if (!isInternationalOrder && shippingFeeInr <= 0 && order.message && /Shipping:\s*Expedited/i.test(order.message)) {
+      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i);
+      shippingFeeInr = feeMatch ? (Number(feeMatch[1].replace(/,/g, '')) || 150) : 150;
+    }
+
+    const totalWholesaleAmount = wholesaleSubtotalInr + shippingFeeInr;
 
     if (totalWholesaleAmount <= 0) {
       return Response.json({
@@ -3923,6 +4241,54 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
         message: 'Order total wholesale amount could not be determined.',
       }, { status: 400, headers: corsHeaders });
     }
+
+    // Resolve reseller's Indian phone and email FIRST for api_orders / international orders
+    // (never rely on international recipient_phone, which fails Indian gateway validation)
+    let resellerProfile = null;
+    if (order.user_id) {
+      try {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('email, whatsapp, whatsapp_number, full_name, business_name')
+          .eq('id', order.user_id)
+          .maybeSingle();
+        if (prof) resellerProfile = prof;
+      } catch (profErr) {
+        console.warn('[handleInitiateOrderPayment] Reseller profile lookup warning:', profErr?.message || profErr);
+      }
+    }
+
+    const extractIndianPhone = (raw) => {
+      const digits = String(raw || '').replace(/[^0-9]/g, '');
+      if (!digits) return '';
+      if (digits.length === 10) return digits;
+      if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
+      if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+      return digits.length > 10 ? digits.slice(-10) : '';
+    };
+
+    const resellerPhoneCandidate =
+      extractIndianPhone(order.sender_phone) ||
+      extractIndianPhone(resellerProfile?.whatsapp) ||
+      extractIndianPhone(resellerProfile?.phone) ||
+      extractIndianPhone(resellerProfile?.whatsapp_number);
+
+    const domesticRecipientPhoneFallback = !isInternationalOrder
+      ? extractIndianPhone(order.recipient_phone || order.phone)
+      : '';
+
+    const payerPhone = (isApiOrder || isInternationalOrder)
+      ? (resellerPhoneCandidate || domesticRecipientPhoneFallback || '9999999999')
+      : (domesticRecipientPhoneFallback || resellerPhoneCandidate || '9999999999');
+
+    const payerEmail = (isApiOrder || isInternationalOrder)
+      ? (
+          resellerProfile?.email ||
+          order.sender_email ||
+          (!isInternationalOrder ? (order.recipient_email || order.email) : '') ||
+          'support@weave365.com'
+        )
+      : (order.recipient_email || order.email || resellerProfile?.email || 'support@weave365.com');
 
     const requestOrigin = request.headers.get('origin');
     const requestHost = request.headers.get('host');
@@ -3999,6 +4365,9 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
         redirect_url: ppData.redirectUrl,
         order_id: merchantOrderId,
         amount: totalWholesaleAmount,
+        wholesale_subtotal_inr: wholesaleSubtotalInr,
+        shipping_fee_inr: shippingFeeInr,
+        currency: 'INR',
       }, { status: 200, headers: corsHeaders });
     } else {
       const cf = getCashfreeConfig();
@@ -4012,7 +4381,6 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
       const cfOrderId = `CF_ORD_${cleanId}_${Date.now().toString().slice(-6)}`;
       const sep = returnUrl.includes('?') ? '&' : '?';
       const redirectCallbackUrl = `${returnUrl}${sep}cf_order_id={order_id}&order_id=${order.id}`;
-      const customerPhone = (order.recipient_phone || order.phone || order.sender_phone || '').replace(/[^0-9]/g, '').slice(-10) || '9999999999';
 
       const cfReqBody = {
         order_id: cfOrderId,
@@ -4020,9 +4388,9 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
         order_currency: 'INR',
         customer_details: {
           customer_id: order.user_id || `CUST_${cleanId}`,
-          customer_name: (order.sender_name || order.buyer_name || order.recipient_name || 'Reseller').slice(0, 50),
-          customer_phone: customerPhone.length === 10 ? customerPhone : '9999999999',
-          customer_email: order.recipient_email || order.email || 'support@weave365.com',
+          customer_name: (order.sender_name || resellerProfile?.business_name || resellerProfile?.full_name || order.buyer_name || order.recipient_name || 'Reseller').slice(0, 50),
+          customer_phone: payerPhone.length === 10 ? payerPhone : '9999999999',
+          customer_email: String(payerEmail).trim() || 'support@weave365.com',
         },
         order_meta: {
           return_url: redirectCallbackUrl,
@@ -4061,6 +4429,9 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
         order_id: cfOrderId,
         environment: cf.env,
         amount: totalWholesaleAmount,
+        wholesale_subtotal_inr: wholesaleSubtotalInr,
+        shipping_fee_inr: shippingFeeInr,
+        currency: 'INR',
       }, { status: 200, headers: corsHeaders });
     }
   } catch (err) {
@@ -4344,7 +4715,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         platform,
       } = body || {};
 
-      // Support 'shipping_address', 'customer', or native Shopify webhook structure
+      // Support 'shipping_address', 'customer', or native Shopify/WooCommerce webhook structure
       const rawShip = shipping_address || body?.shipping_address || body?.billing_address || {};
       const rawCust = customer || body?.customer || {};
 
@@ -4356,6 +4727,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         ''
       ).trim();
 
+      // Preserve full international dial codes (e.g. +1..., +44..., +971...) without truncating
       const customerPhone = (
         rawShip.phone ||
         rawCust.phone ||
@@ -4377,17 +4749,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         ''
       ).trim();
 
-      const recipientAddress = (
-        rawShip.address_line1 ||
-        rawShip.address1 ||
-        rawShip.address ||
-        [rawShip.address1, rawShip.address2].filter(Boolean).join(', ') ||
-        rawCust.address_line1 ||
-        rawCust.address1 ||
-        rawCust.address ||
-        ''
-      ).trim();
-
+      const recipientAddress = extractCombinedAddress(rawShip, rawCust);
       const recipientCity = (rawShip.city || rawCust.city || '').trim();
       const recipientState = (rawShip.state || rawShip.province || rawShip.state_code || rawCust.state || rawCust.province || '').trim();
       const recipientEmail = (
@@ -4398,11 +4760,71 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         ''
       ).trim().toLowerCase();
 
-      if (!customerName || !customerPhone || !customerPincode) {
+      const {
+        recipientCountryCode: initialCountryCode,
+        recipientCountry: initialCountryName,
+        isInternational,
+      } = extractCountryDetails(rawShip, rawCust, body);
+
+      const orderCurrency = (
+        String(
+          body?.order_currency ||
+          body?.currency ||
+          body?.presentment_currency ||
+          rawCust.currency ||
+          'INR'
+        ).trim().toUpperCase() || 'INR'
+      );
+
+      const shopifyShippingLinesTotal = Array.isArray(body?.shipping_lines)
+        ? body.shipping_lines.reduce((acc, sl) => acc + (Number(sl?.price || sl?.discounted_price || 0) || 0), 0)
+        : 0;
+      const customerShippingAmount = Number(
+        body?.customer_shipping_amount ??
+        body?.customer_shipping_total ??
+        body?.shipping_total ??
+        body?.shipping_amount ??
+        body?.total_shipping_price_set?.shop_money?.amount ??
+        shopifyShippingLinesTotal ??
+        0
+      ) || 0;
+      const customerShippingMethod = String(
+        body?.customer_shipping_method ||
+        body?.shipping_method ||
+        (Array.isArray(body?.shipping_lines) && body.shipping_lines[0]?.title) ||
+        ''
+      ).trim() || null;
+
+      const paymentType = String(body?.payment_type || body?.payment_mode || '').toLowerCase();
+      const paymentMethodStr = String(body?.payment_method || '').toLowerCase();
+      const gatewayStr = String(body?.gateway || '').toLowerCase();
+      const isCod = (
+        paymentType === 'cod' ||
+        paymentType === 'cash_on_delivery' ||
+        paymentMethodStr === 'cod' ||
+        paymentMethodStr === 'cash_on_delivery' ||
+        gatewayStr.includes('cod') ||
+        gatewayStr.includes('cash on delivery') ||
+        gatewayStr.includes('cash_on_delivery')
+      );
+
+      // International orders must strictly be prepaid (COD blocked)
+      if (isInternational && isCod) {
+        return Response.json({
+          status: 'error',
+          code: 'COD_NOT_SUPPORTED_INTERNATIONAL',
+          message: 'Cash on Delivery (COD) is not supported for international dropship orders. International orders must be prepaid.',
+        }, { status: 400, headers: cors });
+      }
+
+      // Pincode is mandatory for India, optional for international (require address or city instead)
+      if (!customerName || !customerPhone || (!isInternational && !customerPincode) || (isInternational && !recipientAddress && !recipientCity)) {
         return Response.json({
           status: 'error',
           code: 'INVALID_CUSTOMER_DETAILS',
-          message: 'Missing customer details. Name, phone number, and pincode/zip are required for delivery.',
+          message: isInternational
+            ? 'Missing customer details. Name, phone number, and street address or city are required for international delivery.'
+            : 'Missing customer details. Name, phone number, and pincode/zip are required for delivery.',
         }, { status: 400, headers: cors });
       }
 
@@ -4586,6 +5008,14 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
         const productTitle = item.product_title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
 
+        // Weight per item in grams (default 1200g = 1.2kg, matching CheckoutPage.jsx)
+        const rawItemWeight = matchedVariant?.weight ?? matchedProduct?.weight;
+        let itemWeightGrams = 1200;
+        if (rawItemWeight !== undefined && rawItemWeight !== null && rawItemWeight !== '' && !isNaN(Number(rawItemWeight)) && Number(rawItemWeight) > 0) {
+          const numWeight = Number(rawItemWeight);
+          itemWeightGrams = Math.round(numWeight > 15 ? numWeight : numWeight * 1000);
+        }
+
         return {
           sku: sku,
           variant_code: matchedVariant?.code || sku,
@@ -4599,6 +5029,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           dropship_billed_price: finalSellingPrice,
           price: wholesalePrice,
           unit_price: wholesalePrice,
+          weight_grams: itemWeightGrams,
           image: imageSrc || undefined,
         };
       });
@@ -4638,6 +5069,10 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const isMixedOrder = validWeaveItems.length < rawItems.length;
       const normalizedItems = validWeaveItems;
 
+      // Compute weight strictly for normalizedItems (excluding third-party items in mixed carts)
+      const totalGrams = calculateWeaveItemsWeightGrams(normalizedItems);
+      const billedWeightKg = Math.max(1, Math.ceil(totalGrams / 1000));
+
       // Compute total wholesale amount vs total retail customer amount for Weave 365 products
       const totalWholesaleAmount = normalizedItems.reduce((acc, it) => acc + ((Number(it.wholesale_price) || 0) * (it.quantity || 1)), 0);
       const calculatedRetailTotal = normalizedItems.reduce((acc, it) => acc + ((Number(it.selling_price) || 0) * (it.quantity || 1)), 0);
@@ -4653,15 +5088,13 @@ export async function handleDeveloperApiPost(request, pathSegments) {
             body?.billed_price ||
             body?.custom_billed_price ||
             body?.total_customer_price ||
+            body?.customer_order_total ||
             calculatedRetailTotal ||
             totalWholesaleAmount
           );
 
-      const paymentType = String(body?.payment_type || body?.payment_mode || '').toLowerCase();
-      const gatewayStr = String(body?.gateway || '').toLowerCase();
-      const isCod = paymentType === 'cod' || paymentType === 'cash_on_delivery' || gatewayStr.includes('cod') || gatewayStr.includes('cash on delivery') || gatewayStr.includes('cash_on_delivery');
       const codAmountToCollect = isCod ? (isMixedOrder ? calculatedRetailTotal : Number(body?.cod_amount || customerOrderAmount)) : 0;
-      const resellerProfitMargin = Math.max(0, customerOrderAmount - totalWholesaleAmount);
+      const resellerProfitMargin = orderCurrency === 'INR' ? Math.max(0, customerOrderAmount - totalWholesaleAmount) : 0;
 
       // Check Real-Time Stock Availability for all items before placing
       const { data: stockData } = await supabase.from('vendor_product_stock').select('*');
@@ -4718,14 +5151,18 @@ export async function handleDeveloperApiPost(request, pathSegments) {
               siteUrl = `http://${requestHost}`;
             }
 
+            const existingStatus = String(existingOrder.status || 'payment_pending').toLowerCase();
+            const isExistingPaid = ['paid', 'payment_received', 'order_confirmed', 'in_process', 'shipped', 'verified', 'processing', 'dispatched', 'delivered'].includes(existingStatus);
+            const isExistingAwaitingQuote = existingStatus === 'awaiting_shipping_quote';
+
             return Response.json({
               status: 'success',
               order_id: existingOrder.id,
               order_number: existingOrder.order_number || null,
               reseller_order_id: existingOrder.reseller_order_id,
               order_status: existingOrder.status,
-              payment_status: existingOrder.status === 'paid' ? 'paid' : 'pending',
-              payment_link: `${siteUrl}/order-tracking/${existingOrder.id}?pay=1`,
+              payment_status: isExistingPaid ? 'paid' : (isExistingAwaitingQuote ? 'awaiting_quote' : 'pending'),
+              payment_link: (isExistingPaid || isExistingAwaitingQuote) ? null : `${siteUrl}/order-tracking/${existingOrder.id}?pay=1`,
               is_duplicate: true,
               message: `Order #${resolvedResellerOrderId} was already received and processed. Duplicate webhook ignored safely.`,
               order: existingOrder,
@@ -4736,16 +5173,68 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }
       }
 
+      // Compute country-wise international shipping strictly in INR
+      let recipientCountryCode = initialCountryCode;
+      let recipientCountry = initialCountryName;
+      let shippingFeeInr = 0;
+      let awaitingQuote = false;
+      let orderStatus = 'payment_pending';
+
+      if (isInternational) {
+        const countryConfigs = await fetchCountryPricingConfigs(supabase);
+        const matchedCountryConfig = resolveCountryShippingConfig(countryConfigs, initialCountryCode, initialCountryName);
+        recipientCountryCode = initialCountryCode || matchedCountryConfig?.code || '';
+        recipientCountry = initialCountryName || matchedCountryConfig?.name || recipientCountryCode || 'International Destination';
+
+        if (!matchedCountryConfig || matchedCountryConfig.enabled === false || !(matchedCountryConfig.shippingRate > 0)) {
+          awaitingQuote = true;
+          orderStatus = 'awaiting_shipping_quote';
+          shippingFeeInr = 0;
+        } else {
+          awaitingQuote = false;
+          orderStatus = 'payment_pending';
+          shippingFeeInr = matchedCountryConfig.shippingUnit === 'g'
+            ? Math.round(totalGrams * matchedCountryConfig.shippingRate)
+            : Math.round(billedWeightKg * matchedCountryConfig.shippingRate);
+        }
+      } else {
+        recipientCountryCode = 'IN';
+        recipientCountry = initialCountryName || 'India';
+        shippingFeeInr = 0;
+        awaitingQuote = false;
+        orderStatus = 'payment_pending';
+      }
+
+      const totalPayableInr = totalWholesaleAmount + shippingFeeInr;
+      const countryDisplay = recipientCountry || recipientCountryCode || (isInternational ? 'International Destination' : 'India');
+
       const resolvedPlatform = platform || (isShopify ? 'shopify' : 'api');
       const platformLabel = platform === 'woocommerce' ? 'WooCommerce' : 'Shopify';
       const filterNote = isMixedOrder ? `[${platformLabel} Multi-Vendor: ${normalizedItems.length} of ${rawItems.length} items fulfilled by Weave 365]` : '';
       const resolvedNotes = [shipping_notes || body?.note || body?.notes || '', filterNote].filter(Boolean).join(' | ');
-      const fullAddressStr = `${recipientAddress}${recipientCity ? `, ${recipientCity}` : ''}${recipientState ? `, ${recipientState}` : ''} - PIN: ${customerPincode}`;
+
+      const addressBody = [recipientAddress, recipientCity, recipientState].filter(Boolean).join(', ');
+      const pinPart = customerPincode ? (isInternational ? ` ${customerPincode}` : ` - PIN: ${customerPincode}`) : '';
+      const fullAddressStr = `${addressBody}${pinPart}${countryDisplay ? `, ${countryDisplay}` : ''}`.replace(/^,\s*/, '');
 
       const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
       const senderPhone = sender?.phone || '';
 
-      const courierSlipSummary = `Billed Retail Price on Parcel Slip: ₹${customerOrderAmount.toLocaleString('en-IN')}. Payment Mode: ${isCod ? `COD (Collect ₹${codAmountToCollect.toLocaleString('en-IN')})` : 'PREPAID'}. Wholesale Due: ₹${totalWholesaleAmount.toLocaleString('en-IN')}. Reseller Margin: ₹${resellerProfitMargin.toLocaleString('en-IN')}.`;
+      const formattedRetailSlipValue = formatCustomerCurrency(customerOrderAmount, orderCurrency);
+      const formattedCodValue = formatCustomerCurrency(codAmountToCollect, orderCurrency);
+      const marginNote = orderCurrency === 'INR'
+        ? ` Reseller Margin: ₹${resellerProfitMargin.toLocaleString('en-IN')}.`
+        : '';
+      const courierSlipSummary = `Billed Retail Price on Parcel Slip: ${formattedRetailSlipValue}. Payment Mode: ${isCod ? `COD (Collect ${formattedCodValue})` : 'PREPAID'}. Wholesale Due: ₹${totalWholesaleAmount.toLocaleString('en-IN')}.${marginNote}`;
+
+      let intlShippingNote = '';
+      if (isInternational) {
+        intlShippingNote = awaitingQuote
+          ? `Wholesale Subtotal: ₹${totalWholesaleAmount.toLocaleString('en-IN')} | International Shipping (${countryDisplay}, ${billedWeightKg} kg): Pending Quote (Manual international shipping quote required before payment) | Total Payable (INR): Pending Quote`
+          : `Wholesale Subtotal: ₹${totalWholesaleAmount.toLocaleString('en-IN')} | International Shipping (${countryDisplay}, ${billedWeightKg} kg): ₹${shippingFeeInr.toLocaleString('en-IN')} | Total Payable (INR): ₹${totalPayableInr.toLocaleString('en-IN')}`;
+      }
+
+      const finalShippingNotes = [resolvedNotes, courierSlipSummary, intlShippingNote].filter(Boolean).join(' | ');
 
       // Resolve reseller email to send the wholesale invoice & payment link
       let resellerEmail = (body?.reseller_email || body?.reseller?.email || sender?.email || '').trim().toLowerCase();
@@ -4768,7 +5257,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       }
 
       // 1. Primary: Insert into dedicated api_orders table (strictly bound to authenticated key)
-      const apiOrderPayload = {
+      const baseApiOrderPayload = {
         api_key_id: auth.keyRecord?.id || null,
         user_id: auth.keyRecord?.user_id || null,
         reseller_order_id: resolvedResellerOrderId,
@@ -4779,23 +5268,51 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         recipient_address: recipientAddress,
         recipient_city: recipientCity,
         recipient_state: recipientState,
-        recipient_pincode: customerPincode,
+        recipient_pincode: customerPincode || '',
         sender_name: senderName,
         sender_phone: senderPhone,
         packing_preference: packing_preference || 'Standard Protective Wholesale Packaging',
         items: normalizedItems,
-        status: 'payment_pending',
-        shipping_notes: `${resolvedNotes ? `${resolvedNotes} | ` : ''}${courierSlipSummary}`,
+        status: orderStatus,
+        shipping_notes: finalShippingNotes,
+      };
+
+      const fullApiOrderPayload = {
+        ...baseApiOrderPayload,
+        recipient_country: countryDisplay,
+        recipient_country_code: recipientCountryCode || (isInternational ? '' : 'IN'),
+        is_international: isInternational,
+        order_currency: orderCurrency,
+        customer_shipping_amount: customerShippingAmount,
+        customer_shipping_method: customerShippingMethod,
+        wholesale_subtotal_inr: totalWholesaleAmount,
+        shipping_fee_inr: shippingFeeInr,
+        total_wholesale_inr: totalPayableInr,
+        billed_weight_kg: billedWeightKg,
       };
 
       let insertedOrder = null;
       let insertError = null;
 
-      const apiRes = await supabase
+      let apiRes = await supabase
         .from('api_orders')
-        .insert([apiOrderPayload])
+        .insert([fullApiOrderPayload])
         .select()
         .single();
+
+      // Zero-downtime DB insert fallback: retry with base columns if schema-cache / column error occurs
+      if (apiRes.error) {
+        const errCode = String(apiRes.error.code || '');
+        const errMsg = String(apiRes.error.message || '');
+        if (errCode === 'PGRST204' || errCode === '42703' || /column|schema cache/i.test(errMsg)) {
+          console.warn('[developerApi POST /orders] Retrying api_orders insert with base columns:', errMsg);
+          apiRes = await supabase
+            .from('api_orders')
+            .insert([baseApiOrderPayload])
+            .select()
+            .single();
+        }
+      }
 
       if (!apiRes.error && apiRes.data) {
         insertedOrder = apiRes.data;
@@ -4809,12 +5326,12 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           business_name: senderName,
           phone: customerPhone,
           email: recipientEmail || resellerEmail || '',
-          pincode: customerPincode,
-          message: `[Wholesale API Order #${resolvedResellerOrderId || 'N/A'}] Delivery Address: ${fullAddressStr}. ${courierSlipSummary} Notes: ${resolvedNotes || 'Wholesale Packaging'}`,
+          pincode: customerPincode || '',
+          message: `[Wholesale API Order #${resolvedResellerOrderId || 'N/A'}] Delivery Address: ${fullAddressStr}. ${courierSlipSummary}${intlShippingNote ? ` ${intlShippingNote}.` : ''} Notes: ${resolvedNotes || 'Wholesale Packaging'}`,
           items: normalizedItems,
-          total_amount: totalWholesaleAmount,
+          total_amount: totalPayableInr,
           payment_method: isCod ? 'cod' : 'api_invoice_payment',
-          status: 'payment_pending',
+          status: orderStatus,
         };
 
         const ordersRes = await supabase
@@ -4854,15 +5371,22 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       } else if (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1'))) {
         siteUrl = `http://${requestHost}`;
       }
-      const paymentLink = `${siteUrl}/order-tracking/${insertedOrder.id}?pay=1`;
+      const paymentLink = awaitingQuote ? null : `${siteUrl}/order-tracking/${insertedOrder.id}?pay=1`;
 
-      // Dispatch automated wholesale invoice & payment link email to reseller website owner
+      // Dispatch automated wholesale invoice & payment link (or quote-pending notice) email to reseller
       let emailResult = { success: false };
       try {
         emailResult = await sendResellerInvoiceEmail({
           order: insertedOrder,
           resellerOrderId: resolvedResellerOrderId,
           totalWholesaleAmount,
+          wholesaleSubtotalInr: totalWholesaleAmount,
+          shippingFeeInr,
+          totalPayableInr,
+          isInternational,
+          destinationCountry: countryDisplay,
+          billedWeightKg,
+          awaitingQuote,
           items: normalizedItems,
           recipientName: customerName,
           shippingAddress: fullAddressStr,
@@ -4874,24 +5398,50 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         console.error('[developerApi POST /orders] Reseller invoice email dispatch error:', eErr);
       }
 
+      const pricingResponse = {
+        wholesale_subtotal_inr: totalWholesaleAmount,
+        shipping_fee_inr: shippingFeeInr,
+        total_payable_inr: totalPayableInr,
+        billing_currency: 'INR',
+        wholesale_amount: totalWholesaleAmount,
+        customer_billed_price: customerOrderAmount,
+        customer_currency: orderCurrency,
+        reseller_margin: resellerProfitMargin,
+        payment_mode: isCod ? 'COD' : 'PREPAID',
+        cod_amount_to_collect: codAmountToCollect,
+        currency: 'INR',
+      };
+
+      const completeCustomerResponse = {
+        name: customerName,
+        phone: customerPhone,
+        email: recipientEmail || null,
+        address: recipientAddress,
+        full_address: fullAddressStr,
+        city: recipientCity || null,
+        state: recipientState || null,
+        pincode: customerPincode || null,
+        country: countryDisplay,
+        country_code: recipientCountryCode || null,
+      };
+
+      const orderStatusLabel = awaitingQuote ? 'Awaiting Shipping Quote' : 'Payment Pending';
+
       return Response.json({
         status: 'success',
         order_id: insertedOrder.id,
         order_number: insertedOrder.order_number || null,
         reseller_order_id: resolvedResellerOrderId,
-        order_status: 'payment_pending',
-        payment_status: 'pending',
+        order_status: orderStatus,
+        payment_status: awaitingQuote ? 'awaiting_quote' : 'pending',
         payment_link: paymentLink,
+        is_international: isInternational,
+        destination_country: countryDisplay,
+        destination_country_code: recipientCountryCode || null,
+        billed_weight_kg: billedWeightKg,
         invoice_email_sent_to: resellerEmail,
         email_dispatched: Boolean(emailResult?.success),
-        pricing: {
-          wholesale_amount: totalWholesaleAmount,
-          customer_billed_price: customerOrderAmount,
-          reseller_margin: resellerProfitMargin,
-          payment_mode: isCod ? 'COD' : 'PREPAID',
-          cod_amount_to_collect: codAmountToCollect,
-          currency: 'INR',
-        },
+        pricing: pricingResponse,
         items_filtered: isMixedOrder ? {
           total_order_items: rawItems.length,
           weave365_items_processed: normalizedItems.length,
@@ -4902,24 +5452,28 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           recipient_name: customerName,
           recipient_address: fullAddressStr,
           parcel_declared_value: customerOrderAmount,
+          parcel_declared_currency: orderCurrency,
           cod_amount_to_collect: codAmountToCollect,
         },
-        message: 'Order received. An invoice and instant payment link has been emailed to your reseller account. Order fulfillment begins upon payment confirmation.',
+        message: awaitingQuote
+          ? `Order received. Our export team is confirming the international shipping quote for ${countryDisplay} and will send the INR payment link shortly.`
+          : 'Order received. An invoice and instant payment link has been emailed to your reseller account. Order fulfillment begins upon payment confirmation.',
         tracking_url: `${siteUrl}/order-tracking/${encodeURIComponent(insertedOrder.order_number || insertedOrder.id)}`,
         estimated_dispatch: '24-48 Business Hours after payment confirmation',
         order: {
           id: insertedOrder.id,
           order_number: insertedOrder.order_number || null,
-          status: 'payment_pending',
-          status_label: 'Payment Pending',
-          payment_status: 'pending',
+          status: orderStatus,
+          status_label: orderStatusLabel,
+          payment_status: awaitingQuote ? 'awaiting_quote' : 'pending',
           payment_link: paymentLink,
+          is_international: isInternational,
+          destination_country: countryDisplay,
+          destination_country_code: recipientCountryCode || null,
+          billed_weight_kg: billedWeightKg,
+          pricing: pricingResponse,
           items: normalizedItems,
-          customer: {
-            name: customerName,
-            phone: customerPhone,
-            address: fullAddressStr,
-          },
+          customer: completeCustomerResponse,
         },
       }, { status: 201, headers: cors });
 

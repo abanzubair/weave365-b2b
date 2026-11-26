@@ -100,6 +100,8 @@ function getStatusBadgeStyle(status) {
     case 'in_fulfillment':
     case 'active':
       return { backgroundColor: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe' };
+    case 'awaiting_shipping_quote':
+      return { backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa' };
     case 'pending_payment':
     case 'payment_pending':
       return { backgroundColor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' };
@@ -120,6 +122,63 @@ function isOrderDropship(order) {
   if (order.order_dropship_senders && typeof order.order_dropship_senders === 'object' && Object.keys(order.order_dropship_senders).length > 0) return true;
   if (order.dropship_sender_name || order.dropship_recipient_name) return true;
   return false;
+}
+
+function getOrderIntlMetadata(order) {
+  if (!order) {
+    return {
+      isInternational: false,
+      recipientCountry: 'India',
+      recipientCountryCode: 'IN',
+      countryDisplay: '',
+      shippingFeeInr: 0,
+      wholesaleSubtotalInr: 0,
+      totalWholesaleInr: 0,
+      billedWeightKg: 0,
+      orderCurrency: 'INR',
+      customerOrderAmount: 0,
+      isAwaitingQuote: false,
+    };
+  }
+  const deliveryAddr = Array.isArray(order.order_delivery_addresses) ? order.order_delivery_addresses[0] : order.order_delivery_addresses;
+  const rawCode = String(order.recipient_country_code || order.dropship_recipient_country_code || deliveryAddr?.country_code || '').trim().toUpperCase();
+  const rawCountry = String(order.recipient_country || order.dropship_recipient_country || deliveryAddr?.country || '').trim();
+  const isInternational = Boolean(
+    order.is_international ||
+    (rawCode && rawCode !== 'IN') ||
+    (rawCountry && !/^(in|ind|india)$/i.test(rawCountry))
+  );
+  const recipientCountry = rawCountry || (isInternational ? 'International Destination' : 'India');
+  const recipientCountryCode = rawCode || (isInternational ? '' : 'IN');
+  const countryDisplay = isInternational
+    ? `${recipientCountry}${recipientCountryCode ? ` (${recipientCountryCode})` : ''}`
+    : '';
+  const statusLower = String(order.status || '').toLowerCase().trim();
+  const isAwaitingQuote = statusLower === 'awaiting_shipping_quote';
+  return {
+    isInternational,
+    recipientCountry,
+    recipientCountryCode,
+    countryDisplay,
+    shippingFeeInr: Number(order.shipping_fee_inr || 0),
+    wholesaleSubtotalInr: Number(order.wholesale_subtotal_inr || 0),
+    totalWholesaleInr: Number(order.total_wholesale_inr || 0),
+    billedWeightKg: Number(order.billed_weight_kg || 0),
+    orderCurrency: String(order.order_currency || order.currency || 'INR').trim().toUpperCase() || 'INR',
+    customerOrderAmount: Number(order.customer_order_amount || 0),
+    isAwaitingQuote,
+  };
+}
+
+function formatOrderStatusLabel(order) {
+  const s = String(order?.status || '').toLowerCase().trim();
+  if (s === 'awaiting_shipping_quote') return 'Awaiting Shipping Quote';
+  if (s === 'payment_received') return 'Payment Received';
+  if (s === 'order_confirmed') return 'Order Confirmed';
+  if (s === 'in_process') return 'In Process';
+  if (s === 'shipped') return 'Shipped';
+  if (s === 'pending_payment' || s === 'payment_pending') return 'Payment Pending';
+  return order?.status?.replace(/_/g, ' ') || (order?._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received');
 }
 
 export function Account({
@@ -412,6 +471,11 @@ export function Account({
         }
 
         let explicitSenderAddress = null;
+        let parsedShippingFeeInr = 0;
+        let parsedWholesaleInr = 0;
+        let parsedTotalInr = 0;
+        let parsedWeightKg = 0;
+        let parsedCountryFromNotes = '';
         if (a.shipping_notes) {
           const addrMatch = a.shipping_notes.match(/\[Sender Address:\s*({[^}]+})\]/i);
           if (addrMatch) {
@@ -419,7 +483,36 @@ export function Account({
               explicitSenderAddress = JSON.parse(addrMatch[1]);
             } catch (_) {}
           }
+          const intlMatch = a.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9.,]+)/i);
+          if (intlMatch) {
+            parsedCountryFromNotes = (intlMatch[1] || '').trim();
+            if (intlMatch[2]) parsedWeightKg = Number(intlMatch[2]) || 0;
+            if (intlMatch[3]) parsedShippingFeeInr = Number(intlMatch[3].replace(/,/g, '')) || 0;
+          }
+          const subMatch = a.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+          if (subMatch) parsedWholesaleInr = Number(subMatch[1].replace(/,/g, '')) || 0;
+          const totMatch = a.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+          if (totMatch) parsedTotalInr = Number(totMatch[1].replace(/,/g, '')) || 0;
         }
+
+        const rawCountryCode = String(a.recipient_country_code || '').trim().toUpperCase();
+        const rawCountryName = String(a.recipient_country || parsedCountryFromNotes || '').trim();
+        const isInternational = Boolean(
+          a.is_international ||
+          (rawCountryCode && rawCountryCode !== 'IN') ||
+          (rawCountryName && !/^(in|ind|india)$/i.test(rawCountryName))
+        );
+        const resolvedCountry = rawCountryName || (isInternational ? 'International Destination' : 'India');
+        const resolvedCountryCode = rawCountryCode || (isInternational ? '' : 'IN');
+
+        const computedItemsWholesale = parsedItems.reduce((sum, it) => {
+          const wp = Number(it.wholesale_price || (it.selling_price && it.price && it.price < it.selling_price ? it.price : 0) || it.price || 0);
+          return sum + wp * Math.max(1, parseInt(it.quantity || 1, 10));
+        }, 0);
+        const wholesaleSubtotalInr = Number(a.wholesale_subtotal_inr || 0) || parsedWholesaleInr || computedItemsWholesale;
+        const shippingFeeInr = Number(a.shipping_fee_inr || 0) || parsedShippingFeeInr;
+        const totalWholesaleInr = Number(a.total_wholesale_inr || 0) || parsedTotalInr || (wholesaleSubtotalInr + shippingFeeInr);
+        const billedWeightKg = Number(a.billed_weight_kg || 0) || parsedWeightKg;
 
         const userDefaultAddr = addresses.find(ad => ad.is_default) || addresses[0] || null;
         const customDispatchAddr = buyerProfile?.qualification?.dispatch_address || null;
@@ -437,6 +530,18 @@ export function Account({
           ...a,
           _sourceTable: 'api_orders',
           is_dropship: true,
+          is_international: isInternational,
+          recipient_country: resolvedCountry,
+          recipient_country_code: resolvedCountryCode,
+          shipping_fee_inr: shippingFeeInr,
+          wholesale_subtotal_inr: wholesaleSubtotalInr,
+          total_wholesale_inr: totalWholesaleInr,
+          billed_weight_kg: billedWeightKg,
+          order_currency: String(a.order_currency || 'INR').trim().toUpperCase() || 'INR',
+          customer_order_amount: Number(a.customer_order_amount || 0),
+          customer_shipping_amount: Number(a.customer_shipping_amount || 0),
+          customer_shipping_method: a.customer_shipping_method || null,
+          total_amount: Number(a.total_amount || 0) > 0 ? Number(a.total_amount) : (totalWholesaleInr > 0 ? totalWholesaleInr : undefined),
           order_number: a.order_number || (a.reseller_order_id ? (String(a.reseller_order_id).startsWith('API-') ? a.reseller_order_id : `API-${a.reseller_order_id}`) : a.id),
           buyer_name: a.recipient_name || a.buyer_name,
           phone: a.recipient_phone || a.phone,
@@ -454,6 +559,8 @@ export function Account({
           dropship_recipient_city: a.recipient_city,
           dropship_recipient_state: a.recipient_state,
           dropship_recipient_pincode: a.recipient_pincode,
+          dropship_recipient_country: resolvedCountry,
+          dropship_recipient_country_code: resolvedCountryCode,
           dropship_packing_preference: a.packing_preference,
           order_items: parsedItems,
           items: parsedItems,
@@ -1246,11 +1353,14 @@ export function Account({
                                   ? order.order_items
                                   : (Array.isArray(order.items) ? order.items : []);
 
-                                const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
-                                  ? Number(order.total_amount)
-                                  : (orderItemsList.length > 0
-                                    ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
-                                    : 0);
+                                const intlMeta = getOrderIntlMetadata(order);
+                                const orderTotal = intlMeta.totalWholesaleInr > 0
+                                  ? intlMeta.totalWholesaleInr
+                                  : ((order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
+                                      ? Number(order.total_amount)
+                                      : (orderItemsList.length > 0
+                                        ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
+                                        : 0));
                                 const isDropshipOrder = isOrderDropship(order);
                                 const displayRef = order.order_number || order.id;
                                 const senderName = dropshipSender?.sender_name || order.dropship_sender_name || order.sender_name || order.business_name || 'Reseller';
@@ -1279,6 +1389,14 @@ export function Account({
                                           <span className="order-type-text">
                                             {isDropshipOrder ? 'Dropship' : 'Direct Wholesale'}
                                           </span>
+                                          {intlMeta.isInternational && (
+                                            <span
+                                              className="order-badge-dropship"
+                                              style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em', marginLeft: '4px' }}
+                                            >
+                                              INTERNATIONAL
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
 
@@ -1330,7 +1448,7 @@ export function Account({
                                             <span className="routing-role-label">To:</span>
                                             <span className="routing-name">{recipientName}</span>
                                             <span className="routing-sub">
-                                              {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
+                                              {[recipientCity, recipientPincode, intlMeta.countryDisplay].filter(Boolean).join(' · ')}
                                             </span>
                                           </div>
                                           {isDropshipOrder && (
@@ -1354,25 +1472,24 @@ export function Account({
                                           </span>
                                         </div>
                                         <span className="ledger-total-value">
-                                          {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                                          {intlMeta.isAwaitingQuote
+                                            ? 'Quote Pending'
+                                            : (orderTotal > 0 ? formatMoney(orderTotal, { currency: 'INR' }) : 'Price on request')}
                                         </span>
+                                        {intlMeta.isInternational && (intlMeta.shippingFeeInr > 0 || intlMeta.billedWeightKg > 0 || intlMeta.isAwaitingQuote) && (
+                                          <span style={{ fontSize: '11px', color: intlMeta.isAwaitingQuote ? '#c2410c' : '#475569', display: 'block' }}>
+                                            {intlMeta.isAwaitingQuote
+                                              ? `${intlMeta.wholesaleSubtotalInr > 0 ? `Items ${formatMoney(intlMeta.wholesaleSubtotalInr, { currency: 'INR' })} · ` : ''}Ship Quote Pending`
+                                              : `Ship ${formatMoney(intlMeta.shippingFeeInr, { currency: 'INR' })}${intlMeta.billedWeightKg > 0 ? ` · ${intlMeta.billedWeightKg} kg` : ''}`}
+                                          </span>
+                                        )}
                                       </div>
 
                                       {/* COL 5: STATUS */}
                                       <div className="ledger-td col-status">
                                         <span className="order-status-pill" style={statusStyle}>
                                           <span className="status-dot" />
-                                          {order.status === 'payment_received' 
-                                            ? 'Payment Received' 
-                                            : order.status === 'order_confirmed'
-                                              ? 'Order Confirmed'
-                                              : order.status === 'in_process'
-                                                ? 'In Process'
-                                                : order.status === 'shipped'
-                                                  ? 'Shipped'
-                                                  : (order.status === 'pending_payment' || order.status === 'payment_pending')
-                                                    ? 'Payment Pending'
-                                                    : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
+                                          {formatOrderStatusLabel(order)}
                                         </span>
                                       </div>
 
@@ -1428,7 +1545,9 @@ export function Account({
                                             <p className="expand-addr-text">
                                               <strong>{recipientName}</strong><br />
                                               {recipientAddress && <>{recipientAddress}<br /></>}
-                                              {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}<br />
+                                              {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
+                                              {intlMeta.countryDisplay && <>{(recipientCity || recipientPincode) ? ' · ' : ''}{intlMeta.countryDisplay}</>}
+                                              {(recipientCity || recipientPincode || intlMeta.countryDisplay) && <br />}
                                               {recipientPhone && <>Phone: {recipientPhone}</>}
                                             </p>
                                           </div>
@@ -1496,11 +1615,14 @@ export function Account({
                                 ? order.order_items
                                 : (Array.isArray(order.items) ? order.items : []);
 
-                              const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
-                                ? Number(order.total_amount)
-                                : (orderItemsList.length > 0
-                                  ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
-                                  : 0);
+                              const intlMeta = getOrderIntlMetadata(order);
+                              const orderTotal = intlMeta.totalWholesaleInr > 0
+                                ? intlMeta.totalWholesaleInr
+                                : ((order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
+                                    ? Number(order.total_amount)
+                                    : (orderItemsList.length > 0
+                                      ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
+                                      : 0));
                               const isDropshipOrder = isOrderDropship(order);
                               const isExpanded = expandedOrderId === order.id;
                               const primaryItem = orderItemsList[0] || {};
@@ -1530,6 +1652,14 @@ export function Account({
                                         <span className="order-type-text">
                                           {isDropshipOrder ? 'Dropship' : 'Direct Wholesale'}
                                         </span>
+                                        {intlMeta.isInternational && (
+                                          <span
+                                            className="order-badge-dropship"
+                                            style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em', marginLeft: '4px' }}
+                                          >
+                                            INTERNATIONAL
+                                          </span>
+                                        )}
                                       </div>
                                     </div>
                                     <span 
@@ -1537,17 +1667,7 @@ export function Account({
                                       style={statusStyle}
                                     >
                                       <span className="status-dot" />
-                                      {order.status === 'payment_received' 
-                                        ? 'Payment Received' 
-                                        : order.status === 'order_confirmed'
-                                          ? 'Order Confirmed'
-                                          : order.status === 'in_process'
-                                            ? 'In Process'
-                                            : order.status === 'shipped'
-                                              ? 'Shipped'
-                                              : (order.status === 'pending_payment' || order.status === 'payment_pending')
-                                                ? 'Payment Pending'
-                                                : (order.status?.replace(/_/g, ' ') || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received'))}
+                                      {formatOrderStatusLabel(order)}
                                     </span>
                                   </div>
 
@@ -1558,7 +1678,7 @@ export function Account({
                                         <span className="delivery-flat-label">To:</span>
                                         <span className="delivery-flat-name">{recipientName}</span>
                                         <span className="delivery-flat-sub">
-                                          {[recipientCity, recipientPincode].filter(Boolean).join(' - ')}
+                                          {[recipientCity, recipientPincode, intlMeta.countryDisplay].filter(Boolean).join(' · ')}
                                           {recipientPhone ? ` · Ph: ${recipientPhone}` : ''}
                                         </span>
                                       </div>
@@ -1668,8 +1788,17 @@ export function Account({
                                         Total ({orderItemsList.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} items)
                                       </span>
                                       <span className="order-total-value">
-                                        {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                                        {intlMeta.isAwaitingQuote
+                                          ? 'Quote Pending'
+                                          : (orderTotal > 0 ? formatMoney(orderTotal, { currency: 'INR' }) : 'Price on request')}
                                       </span>
+                                      {intlMeta.isInternational && (intlMeta.shippingFeeInr > 0 || intlMeta.billedWeightKg > 0 || intlMeta.isAwaitingQuote) && (
+                                        <span style={{ fontSize: '11px', color: intlMeta.isAwaitingQuote ? '#c2410c' : '#475569', display: 'block' }}>
+                                          {intlMeta.isAwaitingQuote
+                                            ? `${intlMeta.wholesaleSubtotalInr > 0 ? `Items ${formatMoney(intlMeta.wholesaleSubtotalInr, { currency: 'INR' })} · ` : ''}Ship Quote Pending`
+                                            : `Ship ${formatMoney(intlMeta.shippingFeeInr, { currency: 'INR' })}${intlMeta.billedWeightKg > 0 ? ` · ${intlMeta.billedWeightKg} kg` : ''}`}
+                                        </span>
+                                      )}
                                     </div>
 
                                     <div className="order-card-actions">

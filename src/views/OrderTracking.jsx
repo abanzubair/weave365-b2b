@@ -52,7 +52,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const orderCurrency = useMemo(() => {
     if (order?.currency) return String(order.currency).toUpperCase();
     if (order?.message) {
-      const match = order.message.match(/Currency:\s*([A-Z]{3})/i) || order.message.match(/\(([A-Z]{3})\)/);
+      const match = order.message.match(/Currency:\s*([A-Z]{3})/i);
       if (match) return match[1].toUpperCase();
     }
     if (Array.isArray(order?.items) && order.items[0]?.currency) {
@@ -60,6 +60,49 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     }
     return 'INR';
   }, [order]);
+
+  const customerStoreCurrency = useMemo(() => {
+    if (order?.order_currency) return String(order.order_currency).trim().toUpperCase();
+    return orderCurrency || 'INR';
+  }, [order?.order_currency, orderCurrency]);
+
+  const isInternationalOrder = useMemo(() => {
+    if (!order) return false;
+    const code = String(order.recipient_country_code || order.dropship_recipient_country_code || '').trim().toUpperCase();
+    const country = String(order.recipient_country || order.dropship_recipient_country || '').trim();
+    return Boolean(
+      order.is_international ||
+      (code && code !== 'IN') ||
+      (country && !/^(in|ind|india)$/i.test(country))
+    );
+  }, [order]);
+
+  const destinationCountry = useMemo(() => {
+    if (!order) return '';
+    const raw = String(order.recipient_country || order.dropship_recipient_country || '').trim();
+    if (raw) return raw;
+    return isInternationalOrder ? 'International Destination' : 'India';
+  }, [order, isInternationalOrder]);
+
+  const destinationCountryCode = useMemo(() => {
+    if (!order) return '';
+    const raw = String(order.recipient_country_code || order.dropship_recipient_country_code || '').trim().toUpperCase();
+    if (raw) return raw;
+    return isInternationalOrder ? '' : 'IN';
+  }, [order, isInternationalOrder]);
+
+  const billingCurrency = useMemo(() => {
+    const isResellerOrIntl = Boolean(
+      order?._sourceTable === 'api_orders' ||
+      order?.reseller_order_id ||
+      order?.order_currency ||
+      isInternationalOrder ||
+      Number(order?.wholesale_subtotal_inr || 0) > 0 ||
+      Number(order?.shipping_fee_inr || 0) > 0 ||
+      Number(order?.total_wholesale_inr || 0) > 0
+    );
+    return isResellerOrIntl ? 'INR' : orderCurrency;
+  }, [order, isInternationalOrder, orderCurrency]);
 
   // Resolve item details (image, title, unitPrice, totalPrice) consistently for display & total calculations
   const resolvedItems = useMemo(() => {
@@ -171,10 +214,14 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     });
   }, [order?.items, order?.order_items, catalogProducts]);
 
-  // Robust Total Order Value calculation
+  // Robust Total Order Value calculation (INR for API/international orders)
   const totalOrderValue = useMemo(() => {
     const wholesaleSum = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
     const labelSum = resolvedItems.reduce((acc, it) => acc + (((it.labelUnitPrice || it.unitPrice) * it.qty) || 0), 0);
+
+    if (order?.total_wholesale_inr !== undefined && order?.total_wholesale_inr !== null && Number(order.total_wholesale_inr) > 0) {
+      return Number(order.total_wholesale_inr);
+    }
 
     // 1. Explicit positive order.total_amount
     if (order?.total_amount !== undefined && order?.total_amount !== null && Number(order.total_amount) > 0) {
@@ -188,7 +235,12 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     // 2. Parse from message or shipping_notes if available
     const combinedNotes = `${order?.shipping_notes || ''} ${order?.message || ''}`;
     if (combinedNotes) {
-      const dueMatch = combinedNotes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+      const totalPayableMatch = combinedNotes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+      if (totalPayableMatch) {
+        const parsed = Number(totalPayableMatch[1].replace(/,/g, ''));
+        if (parsed > 0) return parsed;
+      }
+      const dueMatch = combinedNotes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
       if (dueMatch) {
         const parsed = Number(dueMatch[1].replace(/,/g, ''));
         if (parsed > 0) return parsed;
@@ -204,14 +256,27 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
     // 3. Sum of resolved item totals
     return wholesaleSum || 0;
-  }, [order?.total_amount, order?.message, order?.shipping_notes, resolvedItems]);
+  }, [order?.total_wholesale_inr, order?.total_amount, order?.message, order?.shipping_notes, resolvedItems]);
 
   // Complete Amount Breakup calculation (Subtotal, Coupon Discount, Shipping, Total)
   const amountBreakdown = useMemo(() => {
     const totalQuantity = resolvedItems.reduce((acc, it) => acc + (Number(it.qty) || 1), 0);
     let itemsSubtotal = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
+    const combinedNotes = `${order?.shipping_notes || ''} ${order?.message || ''}`;
+
+    const explicitWholesaleSubtotal = Number(order?.wholesale_subtotal_inr || 0);
+    if (explicitWholesaleSubtotal > 0) {
+      itemsSubtotal = explicitWholesaleSubtotal;
+    } else if (combinedNotes) {
+      const subMatch = combinedNotes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+      if (subMatch) {
+        const parsedSub = Number(subMatch[1].replace(/,/g, ''));
+        if (parsedSub > 0) itemsSubtotal = parsedSub;
+      }
+    }
+
     const totalLabelPrice = resolvedItems.reduce((acc, it) => acc + (((it.labelUnitPrice || it.unitPrice) * it.qty) || 0), 0);
-    const hasLabelPrice = totalLabelPrice > 0 && totalLabelPrice > itemsSubtotal;
+    const hasLabelPrice = customerStoreCurrency === 'INR' && totalLabelPrice > 0 && totalLabelPrice > itemsSubtotal;
     const resellerMargin = hasLabelPrice ? Math.max(0, totalLabelPrice - itemsSubtotal) : 0;
 
     let couponDiscount = Number(order?.coupon_discount || 0);
@@ -224,19 +289,34 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       }
     }
 
-    const finalTotal = totalOrderValue;
+    const isAwaitingQuote = String(order?.status || '').toLowerCase().trim() === 'awaiting_shipping_quote';
+    let billedWeightKg = Number(order?.billed_weight_kg || 0);
+    if (!billedWeightKg && combinedNotes) {
+      const wtMatch = combinedNotes.match(/International Shipping\s*\([^)]*,\s*([0-9.]+)\s*kg\)/i);
+      if (wtMatch) billedWeightKg = Number(wtMatch[1]) || 0;
+    }
+
+    let explicitIntlShippingFee = Number(order?.shipping_fee_inr || 0);
+    if (!explicitIntlShippingFee && combinedNotes) {
+      const intlShipMatch = combinedNotes.match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i);
+      if (intlShipMatch) {
+        explicitIntlShippingFee = Number(intlShipMatch[1].replace(/,/g, '')) || 0;
+      }
+    }
+
+    let finalTotal = totalOrderValue;
     const netItems = Math.max(0, itemsSubtotal - couponDiscount);
     const diff = finalTotal - netItems;
 
-    // Check if the order explicitly requested expedited delivery
+    // Check if the order explicitly requested expedited delivery (domestic)
     let isExpedited = false;
     let explicitShippingFee = null;
 
-    if (order?.shipping_speed) {
+    if (!isInternationalOrder && order?.shipping_speed) {
       isExpedited = String(order.shipping_speed).toLowerCase() === 'expedited';
     }
 
-    if (order?.message) {
+    if (!isInternationalOrder && order?.message) {
       if (/Shipping:\s*Expedited/i.test(order.message)) {
         isExpedited = true;
       }
@@ -247,35 +327,41 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       }
     }
 
-    // Heuristic for orders where shipping_speed was not saved to DB:
-    // If diff is a clean positive multiple of ₹150 (the exact expedited rate in India: ₹150, ₹300, ₹450, etc.)
-    if (!isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
+    // Heuristic for domestic orders where shipping_speed was not saved to DB:
+    if (!isInternationalOrder && !isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
       isExpedited = true;
       explicitShippingFee = Math.round(diff);
     }
 
     let shippingFee = 0;
-    if (isExpedited) {
+    if (isInternationalOrder) {
+      shippingFee = isAwaitingQuote ? 0 : Math.max(0, explicitIntlShippingFee);
+      if (isAwaitingQuote) {
+        finalTotal = netItems;
+      } else if (Number(order?.total_wholesale_inr || 0) > 0) {
+        finalTotal = Number(order.total_wholesale_inr);
+      } else {
+        finalTotal = Math.max(0, netItems + shippingFee);
+      }
+    } else if (isExpedited) {
       if (explicitShippingFee !== null && !isNaN(explicitShippingFee)) {
         shippingFee = explicitShippingFee;
       } else {
         shippingFee = Math.max(0, finalTotal - netItems);
       }
-      // Reconcile itemsSubtotal if catalog prices drifted slightly:
-      // finalTotal = itemsSubtotal - couponDiscount + shippingFee => itemsSubtotal = finalTotal - shippingFee + couponDiscount
       if (Math.abs((itemsSubtotal - couponDiscount + shippingFee) - finalTotal) > 0.01) {
         itemsSubtotal = Math.max(0, finalTotal - shippingFee + couponDiscount);
       }
     } else {
-      // Standard shipping in India is ALWAYS Free (₹0)
       shippingFee = 0;
-      // In standard free shipping: Total Paid = Items Subtotal - Coupon Discount
-      // If there was any catalog price drift or discrepancy between recorded wholesale unit prices
-      // and what was actually charged at checkout, sync itemsSubtotal with finalTotal + couponDiscount
       if (finalTotal > 0 && Math.abs((itemsSubtotal - couponDiscount) - finalTotal) > 0.01) {
         itemsSubtotal = Math.max(0, finalTotal + couponDiscount);
       }
     }
+
+    const customerOrderTotal = Number(order?.customer_order_amount || order?.dropship_billed_price || 0);
+    const customerShippingAmount = Number(order?.customer_shipping_amount || 0);
+    const customerShippingMethod = order?.customer_shipping_method || '';
 
     return {
       totalQuantity,
@@ -286,10 +372,14 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       couponDiscount,
       couponCode,
       shippingFee,
+      billedWeightKg,
       isExpedited,
       finalTotal,
+      customerOrderTotal,
+      customerShippingAmount,
+      customerShippingMethod,
     };
-  }, [resolvedItems, order, totalOrderValue]);
+  }, [resolvedItems, order, totalOrderValue, customerStoreCurrency, isInternationalOrder]);
 
   // Ensure catalog products are available for image & title lookups
   useEffect(() => {
@@ -455,8 +545,29 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 }))
               : (ordData.items || []);
 
+            const ordCountryCode = String(deliveryAddr?.country_code || ordData.recipient_country_code || '').trim().toUpperCase();
+            const ordCountryName = String(deliveryAddr?.country || ordData.recipient_country || '').trim();
+            const ordIsIntl = Boolean(
+              ordData.is_international ||
+              (ordCountryCode && ordCountryCode !== 'IN') ||
+              (ordCountryName && !/^(in|ind|india)$/i.test(ordCountryName))
+            );
+            const ordResolvedCountry = ordCountryName || (ordIsIntl ? 'International Destination' : 'India');
+            const ordResolvedCode = ordCountryCode || (ordIsIntl ? '' : 'IN');
+
             trackingOrder = {
               ...ordData,
+              _sourceTable: 'orders',
+              is_international: ordIsIntl,
+              recipient_country: ordResolvedCountry,
+              recipient_country_code: ordResolvedCode,
+              shipping_fee_inr: Number(ordData.shipping_fee_inr || 0),
+              wholesale_subtotal_inr: Number(ordData.wholesale_subtotal_inr || 0),
+              total_wholesale_inr: Number(ordData.total_wholesale_inr || 0),
+              billed_weight_kg: Number(ordData.billed_weight_kg || 0),
+              order_currency: String(ordData.order_currency || ordData.currency || 'INR').trim().toUpperCase() || 'INR',
+              customer_shipping_amount: Number(ordData.customer_shipping_amount || 0),
+              customer_shipping_method: ordData.customer_shipping_method || null,
               order_delivery_addresses: deliveryAddr,
               order_dropship_senders: dropshipSender,
               order_items: itemsList,
@@ -474,6 +585,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               dropship_recipient_city: deliveryAddr?.city || ordData.dropship_recipient_city,
               dropship_recipient_state: deliveryAddr?.state || ordData.dropship_recipient_state,
               dropship_recipient_pincode: deliveryAddr?.pincode || ordData.dropship_recipient_pincode || ordData.pincode,
+              dropship_recipient_country: ordResolvedCountry,
+              dropship_recipient_country_code: ordResolvedCode,
               dropship_packing_preference: dropshipSender?.packing_preference || ordData.dropship_packing_preference,
               tracking_carrier: latestFulfillment?.tracking_carrier || ordData.tracking_carrier,
               tracking_number: latestFulfillment?.tracking_number || ordData.tracking_number,
@@ -491,17 +604,58 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   return acc + (wp * (it.quantity || 1));
                 }, 0);
               }
+              let parsedShippingFeeInr = 0;
+              let parsedWeightKg = 0;
+              let parsedTotalPayableInr = 0;
+              let parsedCountryFromNotes = '';
               if (found.shipping_notes) {
-                const dueMatch = found.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+                const dueMatch = found.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
                 if (dueMatch) {
                   const parsedDue = Number(dueMatch[1].replace(/,/g, ''));
                   if (parsedDue > 0) totalWholesale = parsedDue;
                 }
+                const intlMatch = found.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9.,]+)/i);
+                if (intlMatch) {
+                  parsedCountryFromNotes = (intlMatch[1] || '').trim();
+                  if (intlMatch[2]) parsedWeightKg = Number(intlMatch[2]) || 0;
+                  if (intlMatch[3]) parsedShippingFeeInr = Number(intlMatch[3].replace(/,/g, '')) || 0;
+                }
+                const totMatch = found.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+                if (totMatch) {
+                  parsedTotalPayableInr = Number(totMatch[1].replace(/,/g, '')) || 0;
+                }
               }
+
+              const foundCountryCode = String(found.recipient_country_code || '').trim().toUpperCase();
+              const foundCountryName = String(found.recipient_country || parsedCountryFromNotes || '').trim();
+              const foundIsIntl = Boolean(
+                found.is_international ||
+                (foundCountryCode && foundCountryCode !== 'IN') ||
+                (foundCountryName && !/^(in|ind|india)$/i.test(foundCountryName))
+              );
+              const resolvedFoundCountry = foundCountryName || (foundIsIntl ? 'International Destination' : 'India');
+              const resolvedFoundCode = foundCountryCode || (foundIsIntl ? '' : 'IN');
+
+              const wholesaleSubtotalInr = Number(found.wholesale_subtotal_inr || 0) || totalWholesale;
+              const shippingFeeInr = Number(found.shipping_fee_inr || 0) || parsedShippingFeeInr;
+              const totalWholesaleInr = Number(found.total_wholesale_inr || 0) || parsedTotalPayableInr || (wholesaleSubtotalInr + shippingFeeInr);
+              const billedWeightKg = Number(found.billed_weight_kg || 0) || parsedWeightKg;
 
               trackingOrder = {
                 ...found,
-                total_amount: totalWholesale > 0 ? totalWholesale : found.total_amount,
+                _sourceTable: apiData ? 'api_orders' : 'inquiries',
+                is_international: foundIsIntl,
+                recipient_country: resolvedFoundCountry,
+                recipient_country_code: resolvedFoundCode,
+                wholesale_subtotal_inr: wholesaleSubtotalInr,
+                shipping_fee_inr: shippingFeeInr,
+                total_wholesale_inr: totalWholesaleInr,
+                billed_weight_kg: billedWeightKg,
+                order_currency: String(found.order_currency || 'INR').trim().toUpperCase() || 'INR',
+                customer_order_amount: Number(found.customer_order_amount || 0),
+                customer_shipping_amount: Number(found.customer_shipping_amount || 0),
+                customer_shipping_method: found.customer_shipping_method || null,
+                total_amount: totalWholesaleInr > 0 ? totalWholesaleInr : (totalWholesale > 0 ? totalWholesale : found.total_amount),
                 buyer_name: found.recipient_name || found.buyer_name,
                 phone: found.recipient_phone || found.phone,
                 email: found.recipient_email || found.email,
@@ -515,6 +669,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 dropship_recipient_city: found.recipient_city || found.dropship_recipient_city,
                 dropship_recipient_state: found.recipient_state || found.dropship_recipient_state,
                 dropship_recipient_pincode: found.recipient_pincode || found.dropship_recipient_pincode,
+                dropship_recipient_country: resolvedFoundCountry,
+                dropship_recipient_country_code: resolvedFoundCode,
                 dropship_packing_preference: found.packing_preference || found.dropship_packing_preference,
                 message: found.shipping_notes || found.message,
               };
@@ -691,6 +847,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   const getStepProgress = () => {
     if (currentStatus === 'cancelled' || currentStatus === 'rejected') return -1;
+    if (currentStatus === 'awaiting_shipping_quote') return 0;
     if (currentStatus === 'payment_pending' || currentStatus === 'pending_payment') return 0;
     if (currentStatus === 'delivered' || currentStatus === 'done' || currentStatus === 'completed') return 5;
     if (currentStatus === 'shipped' || currentStatus === 'dispatched' || currentStatus === 'in_transit') return 4;
@@ -824,8 +981,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       return;
     }
 
-    // 2. Opened via invoice payment link (?pay=1) -> prompt / auto-launch payment gateway
-    const isPending = ['payment_pending', 'pending_payment', 'new'].includes((order.status || '').toLowerCase());
+    // 2. Opened via invoice payment link (?pay=1) -> prompt / auto-launch payment gateway (never when awaiting quote)
+    const statusLower = (order.status || '').toLowerCase().trim();
+    const isPending = ['payment_pending', 'pending_payment', 'new'].includes(statusLower) && statusLower !== 'awaiting_shipping_quote';
     if (payFlag === '1' && isPending && !autoTriggeredRef.current) {
       autoTriggeredRef.current = true;
       const timer = setTimeout(() => {
@@ -869,6 +1027,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       case 'payment_received':
       case 'paid':
         return 'Payment received successfully! Your order is confirmed and queued for processing at our Varanasi center.';
+      case 'awaiting_shipping_quote':
+        return `Weave365's export team is confirming the international courier shipping quote${destinationCountry ? ` for ${destinationCountry}` : ''}. Your INR payment link will be sent shortly once shipping is finalized.`;
       case 'payment_pending':
       case 'pending_payment':
       case 'new':
@@ -1006,10 +1166,31 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     <span>{copied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-                {(order.is_dropship || order.reseller_order_id) && (
+                {(order.is_dropship || order.reseller_order_id || isInternationalOrder || currentStatus === 'awaiting_shipping_quote') && (
                   <div className="tracking-meta-tags">
                     {order.is_dropship && (
                       <span className="tracking-dropship-tag">Dropship</span>
+                    )}
+                    {isInternationalOrder && (
+                      <span
+                        className="tracking-dropship-tag"
+                        style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 700, letterSpacing: '0.04em' }}
+                      >
+                        INTERNATIONAL
+                      </span>
+                    )}
+                    {isInternationalOrder && destinationCountry && (
+                      <span className="tracking-ref-tag">
+                        {destinationCountry}{destinationCountryCode ? ` (${destinationCountryCode})` : ''}
+                      </span>
+                    )}
+                    {currentStatus === 'awaiting_shipping_quote' && (
+                      <span
+                        className="tracking-dropship-tag"
+                        style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', fontWeight: 600 }}
+                      >
+                        Awaiting Shipping Quote
+                      </span>
                     )}
                     {order.reseller_order_id && (
                       <span className="tracking-ref-tag" title={`Ref: #${order.reseller_order_id}`}>
@@ -1110,8 +1291,43 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               })}
             </div>
 
+            {/* Awaiting International Shipping Quote Banner (Pay Now hidden) */}
+            {currentStatus === 'awaiting_shipping_quote' && (
+              <div
+                className="order-payment-pending-panel"
+                role="status"
+                style={{
+                  background: '#fff7ed',
+                  border: '1px solid #fed7aa',
+                  borderRadius: '0.625rem',
+                  padding: '1rem 1.25rem',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem'
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#c2410c' }}>
+                    International Shipping Quote Pending
+                  </div>
+                  <div style={{ fontSize: '0.9375rem', fontWeight: 600, color: '#7c2d12', marginTop: '0.25rem' }}>
+                    Our export team is confirming the courier quote for {destinationCountry || 'your destination'}
+                    {amountBreakdown.billedWeightKg > 0 ? ` (${amountBreakdown.billedWeightKg} kg)` : ''}. Your INR payment link will be sent shortly.
+                  </div>
+                  {amountBreakdown.itemsSubtotal > 0 && (
+                    <div style={{ fontSize: '0.8125rem', color: '#9a3412', marginTop: '0.25rem' }}>
+                      Items Wholesale Subtotal: <strong>{formatMoney(amountBreakdown.itemsSubtotal, { currency: 'INR' })}</strong> + International Shipping (Pending Quote)
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Payment Pending Action Card */}
-            {(currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new') && (
+            {currentStatus !== 'awaiting_shipping_quote' && (currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new') && (
               <div className="order-payment-pending-panel" style={{
                 background: '#f8fafc',
                 border: '1px solid #e2e8f0',
@@ -1129,7 +1345,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     Action Required
                   </div>
                   <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#0f172a', marginTop: '0.25rem' }}>
-                    Amount Due: {formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })}
+                    Amount Due: {formatMoney(amountBreakdown.finalTotal, { currency: billingCurrency })}
                   </div>
                 </div>
                 <button
@@ -1152,7 +1368,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {isProcessingPayment ? 'Connecting...' : `Pay ${formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })} →`}
+                  {isProcessingPayment ? 'Connecting...' : `Pay ${formatMoney(amountBreakdown.finalTotal, { currency: billingCurrency })} →`}
                 </button>
               </div>
             )}
@@ -1260,7 +1476,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   {(order.dropship_recipient_city || parsedAddress?.city || order.dropship_recipient_pincode || order.pincode) && (
                     <p className="recipient-pin-row">
                       {[order.dropship_recipient_city || parsedAddress?.city, order.dropship_recipient_state].filter(Boolean).join(', ')}
-                      {(order.dropship_recipient_pincode || order.pincode) ? ` • PIN: ${order.dropship_recipient_pincode || order.pincode}` : ''}
+                      {(order.dropship_recipient_pincode || order.pincode) ? ` • ${isInternationalOrder ? 'Postal Code' : 'PIN'}: ${order.dropship_recipient_pincode || order.pincode}` : ''}
+                    </p>
+                  )}
+                  {(isInternationalOrder || (destinationCountry && destinationCountry !== 'India')) && (
+                    <p className="recipient-pin-row" style={{ fontWeight: 600, color: '#1d4ed8' }}>
+                      Country: {destinationCountry}{destinationCountryCode ? ` (${destinationCountryCode})` : ''}
+                      {amountBreakdown.billedWeightKg > 0 ? ` · Billed Weight: ${amountBreakdown.billedWeightKg} kg` : ''}
                     </p>
                   )}
                   {order.is_dropship && (
@@ -1308,19 +1530,19 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                             <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
                           )}
                           <span className="item-meta-item">Qty: {item.qty}</span>
-                          {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
+                          {item.labelUnitPrice > 0 && (customerStoreCurrency !== 'INR' || item.labelUnitPrice > item.unitPrice) && (
                             <span className="item-meta-item">
-                              Invoice Price: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}</strong>
+                              Invoice Price: <strong>{formatMoney(item.labelUnitPrice * item.qty, { currency: customerStoreCurrency })}</strong>
                             </span>
                           )}
                         </div>
                       </div>
                       <div className="tracking-item-price">
                         <div>
-                          <strong>{item.totalPrice ? formatMoney(item.totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: orderCurrency }) : 'Direct')}</strong>
-                          {item.labelUnitPrice > 0 && item.labelUnitPrice > item.unitPrice && (
+                          <strong>{item.totalPrice ? formatMoney(item.totalPrice, { currency: billingCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: billingCurrency }) : 'Direct')}</strong>
+                          {item.labelUnitPrice > 0 && (customerStoreCurrency !== 'INR' || item.labelUnitPrice > item.unitPrice) && (
                             <div className="item-slip-subtext">
-                              Invoice: {formatMoney(item.labelUnitPrice * item.qty, { currency: orderCurrency })}
+                              Invoice: {formatMoney(item.labelUnitPrice * item.qty, { currency: customerStoreCurrency })}
                             </div>
                           )}
                         </div>
@@ -1333,10 +1555,10 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 <div className="tracking-amount-breakup-card">
                   <div className="tracking-breakup-row">
                     <span className="tracking-breakup-label">
-                      Items Subtotal ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
+                      Items Wholesale ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
                     </span>
                     <span className="tracking-breakup-val">
-                      {formatMoney(amountBreakdown.itemsSubtotal, { currency: orderCurrency })}
+                      {formatMoney(amountBreakdown.itemsSubtotal, { currency: billingCurrency })}
                     </span>
                   </div>
 
@@ -1347,7 +1569,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                           Price on Invoice
                         </span>
                         <span className="tracking-breakup-val">
-                          {formatMoney(amountBreakdown.totalLabelPrice, { currency: orderCurrency })}
+                          {formatMoney(amountBreakdown.totalLabelPrice, { currency: billingCurrency })}
                         </span>
                       </div>
 
@@ -1356,7 +1578,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                           Reseller Margin
                         </span>
                         <span className="tracking-breakup-val" style={{ fontWeight: 600, color: '#166534' }}>
-                          +{formatMoney(amountBreakdown.resellerMargin, { currency: orderCurrency })}
+                          +{formatMoney(amountBreakdown.resellerMargin, { currency: billingCurrency })}
                         </span>
                       </div>
                     </>
@@ -1373,22 +1595,29 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         )}
                       </span>
                       <span className="tracking-breakup-val tracking-coupon-amount">
-                        -{formatMoney(amountBreakdown.couponDiscount, { currency: orderCurrency })}
+                        -{formatMoney(amountBreakdown.couponDiscount, { currency: billingCurrency })}
                       </span>
                     </div>
                   )}
 
                   <div className="tracking-breakup-row">
                     <span className="tracking-breakup-label">
-                      Shipping &amp; Delivery
+                      {isInternationalOrder
+                        ? `International Shipping (${destinationCountry}${amountBreakdown.billedWeightKg > 0 ? ` · ${amountBreakdown.billedWeightKg} kg` : ''})`
+                        : 'Shipping & Delivery'}
                       {amountBreakdown.isExpedited && (
                         <span className="tracking-shipping-badge">Expedited</span>
                       )}
                     </span>
-                    <span className={`tracking-breakup-val ${amountBreakdown.shippingFee === 0 ? 'tracking-free-shipping' : ''}`}>
-                      {amountBreakdown.shippingFee > 0
-                        ? `+${formatMoney(amountBreakdown.shippingFee, { currency: orderCurrency })}`
-                        : 'FREE'}
+                    <span
+                      className={`tracking-breakup-val ${!isInternationalOrder && amountBreakdown.shippingFee === 0 ? 'tracking-free-shipping' : ''}`}
+                      style={currentStatus === 'awaiting_shipping_quote' ? { color: '#c2410c', fontWeight: 600 } : undefined}
+                    >
+                      {currentStatus === 'awaiting_shipping_quote'
+                        ? 'Pending Quote'
+                        : amountBreakdown.shippingFee > 0
+                          ? `+${formatMoney(amountBreakdown.shippingFee, { currency: billingCurrency })}`
+                          : 'FREE'}
                     </span>
                   </div>
 
@@ -1396,12 +1625,44 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
                   <div className="tracking-breakup-row tracking-total-row">
                     <span className="tracking-total-label">
-                      {currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new' ? 'Amount Due' : 'Total Paid'}
+                      {currentStatus === 'awaiting_shipping_quote'
+                        ? 'Total Payable (INR)'
+                        : (currentStatus === 'payment_pending' || currentStatus === 'pending_payment' || currentStatus === 'new'
+                            ? `Amount Due (${billingCurrency})`
+                            : `Total Paid (${billingCurrency})`)}
                     </span>
                     <strong className="tracking-total-amount">
-                      {formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })}
+                      {currentStatus === 'awaiting_shipping_quote'
+                        ? 'Pending Shipping Quote'
+                        : formatMoney(amountBreakdown.finalTotal, { currency: billingCurrency })}
                     </strong>
                   </div>
+
+                  {(amountBreakdown.customerOrderTotal > 0 || amountBreakdown.customerShippingAmount > 0 || (customerStoreCurrency && customerStoreCurrency !== billingCurrency)) && (
+                    <>
+                      <div className="tracking-breakup-divider" />
+                      {amountBreakdown.customerOrderTotal > 0 && (
+                        <div className="tracking-breakup-row">
+                          <span className="tracking-breakup-label">
+                            Customer Store Total ({customerStoreCurrency})
+                          </span>
+                          <span className="tracking-breakup-val">
+                            {formatMoney(amountBreakdown.customerOrderTotal, { currency: customerStoreCurrency })}
+                          </span>
+                        </div>
+                      )}
+                      {(amountBreakdown.customerShippingAmount > 0 || amountBreakdown.customerShippingMethod) && (
+                        <div className="tracking-breakup-row">
+                          <span className="tracking-breakup-label">
+                            Customer Shipping{amountBreakdown.customerShippingMethod ? ` (${amountBreakdown.customerShippingMethod})` : ''}
+                          </span>
+                          <span className="tracking-breakup-val">
+                            {formatMoney(amountBreakdown.customerShippingAmount, { currency: customerStoreCurrency })}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}

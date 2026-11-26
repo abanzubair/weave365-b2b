@@ -18,6 +18,7 @@ import Papa from 'papaparse';
 import {
   handleDeveloperApiGet,
   handleDeveloperApiPost,
+  handleInitiateOrderPayment,
   _setSupabaseClientForTesting,
   _setCatalogProductsForTesting,
   _setStockMapForTesting,
@@ -30,6 +31,10 @@ import {
   applyResellerMarkup,
   formatForWooCommerceCsv,
 } from '../app/api/[[...route]]/developerApiHandler.js';
+import {
+  renderResellerInvoiceEmailHtml,
+  sendResellerInvoiceEmail,
+} from '../app/api/[[...route]]/resellerInvoiceEmailService.js';
 import {
   generateStockMap,
   buildGlobalStockMap,
@@ -2152,6 +2157,683 @@ describe('Weave365 B2B Developer API Verification', () => {
       const revealedJson = await postPayReveal.json();
       assert.equal(revealedJson.success, true);
       assert.match(revealedJson.rawKey, /^w365_live_[a-f0-9]{48}$/);
+    });
+  });
+
+  describe('13. International Dropship Orders, Shipping Calculation & Strict INR Gateway Billing', () => {
+    let originalFetch;
+    let originalResendKey;
+    let originalCashfreeAppId;
+    let originalCashfreeSecret;
+    let originalCashfreeEnv;
+    let originalPhonePeEnabled;
+    let countryDbRows;
+    let countrySheetConfigs;
+    let resellerProfiles;
+    let fetchCalls;
+    let activeCatalog;
+
+    function buildIntlSupabaseMock() {
+      const makeOrderChain = (rowsSource) => {
+        const filters = { eqs: {}, ins: null, orRaw: null };
+        const applyFilters = () =>
+          rowsSource.filter((row) => {
+            for (const [k, v] of Object.entries(filters.eqs)) {
+              if (row[k] !== v) return false;
+            }
+            if (filters.ins && !filters.ins.vals.includes(row[filters.ins.col])) {
+              return false;
+            }
+            if (filters.orRaw) {
+              const clauses = filters.orRaw.split(',').map((c) => c.trim());
+              const matched = clauses.some((clause) => {
+                const eqIdx = clause.indexOf('.eq.');
+                if (eqIdx === -1) return false;
+                const col = clause.slice(0, eqIdx);
+                const val = clause.slice(eqIdx + 4);
+                return String(row[col] ?? '') === String(val);
+              });
+              if (!matched) return false;
+            }
+            return true;
+          });
+
+        const chain = {
+          eq: (col, val) => {
+            filters.eqs[col] = val;
+            return chain;
+          },
+          in: (col, vals) => {
+            filters.ins = { col, vals };
+            return chain;
+          },
+          or: (expr) => {
+            filters.orRaw = expr;
+            return chain;
+          },
+          order: () => chain,
+          limit: async () => ({ data: applyFilters(), error: null }),
+          maybeSingle: async () => ({ data: applyFilters()[0] || null, error: null }),
+        };
+        return chain;
+      };
+
+      return {
+        from: (table) => {
+          if (table === 'api_keys') {
+            return {
+              select: () => ({
+                eq: (col, val) => ({
+                  maybeSingle: async () => ({ data: mockKeys[val] || null, error: null }),
+                }),
+              }),
+            };
+          }
+          if (table === 'api_usage_daily') {
+            const makeUsageResult = () => ({
+              or: async () => ({ data: [{ total_requests: 10 }], error: null }),
+              eq: (col, keyId) => ({
+                data: [{ total_requests: usageTotals[keyId] || 0 }],
+                error: null,
+              }),
+            });
+            return {
+              select: () => ({
+                gte: () => ({
+                  ...makeUsageResult(),
+                  order: () => makeUsageResult(),
+                }),
+              }),
+            };
+          }
+          if (table === 'sheet_data') {
+            return {
+              select: () => ({
+                eq: (col, id) => ({
+                  maybeSingle: async () => {
+                    if (id === 'stock_map') return { data: { csv_data: sheetStockMapData }, error: null };
+                    if (id === 'products_json') return { data: { csv_data: JSON.stringify(activeCatalog) }, error: null };
+                    if (id === 'country_pricing_config') {
+                      return { data: { csv_data: JSON.stringify(countrySheetConfigs) }, error: null };
+                    }
+                    return { data: null, error: null };
+                  },
+                }),
+              }),
+            };
+          }
+          if (table === 'country_pricing_configs') {
+            return {
+              select: async () => ({ data: countryDbRows, error: null }),
+            };
+          }
+          if (table === 'vendor_product_stock') {
+            return {
+              select: async () => ({ data: [], error: null }),
+            };
+          }
+          if (table === 'profiles') {
+            return {
+              select: () => ({
+                eq: (col, val) => ({
+                  maybeSingle: async () => ({ data: resellerProfiles[val] || null, error: null }),
+                }),
+              }),
+            };
+          }
+          if (table === 'api_orders') {
+            return {
+              select: () => makeOrderChain(insertedApiOrders),
+              insert: (rows) => ({
+                select: () => ({
+                  single: async () => {
+                    const created = {
+                      id: `api-order-${insertedApiOrders.length + 1}`,
+                      order_number: null,
+                      created_at: new Date().toISOString(),
+                      ...rows[0],
+                    };
+                    insertedApiOrders.push(created);
+                    return { data: created, error: null };
+                  },
+                }),
+              }),
+              update: (patch) => ({
+                eq: async (col, val) => {
+                  const idx = insertedApiOrders.findIndex((o) => o[col] === val);
+                  if (idx >= 0) {
+                    insertedApiOrders[idx] = { ...insertedApiOrders[idx], ...patch };
+                  }
+                  return { data: insertedApiOrders[idx] || null, error: null };
+                },
+              }),
+            };
+          }
+          if (table === 'orders' || table === 'inquiries') {
+            return {
+              select: () => makeOrderChain([]),
+            };
+          }
+          return {
+            select: () => ({
+              eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }),
+            }),
+          };
+        },
+        rpc: async () => ({ data: null, error: null }),
+      };
+    }
+
+    beforeEach(() => {
+      originalFetch = globalThis.fetch;
+      originalResendKey = process.env.RESEND_API_KEY;
+      originalCashfreeAppId = process.env.CASHFREE_APP_ID;
+      originalCashfreeSecret = process.env.CASHFREE_SECRET_KEY;
+      originalCashfreeEnv = process.env.CASHFREE_ENV;
+      originalPhonePeEnabled = process.env.NEXT_PUBLIC_PHONEPE_ENABLED;
+
+      process.env.RESEND_API_KEY = 're_test_mock_key';
+      process.env.CASHFREE_APP_ID = 'cf_test_app_id';
+      process.env.CASHFREE_SECRET_KEY = 'cf_test_secret_key';
+      process.env.CASHFREE_ENV = 'sandbox';
+      process.env.NEXT_PUBLIC_PHONEPE_ENABLED = 'false';
+
+      mockKeys[hashPro].orders_enabled = true;
+      mockKeys[hashPro].user_id = 'reseller-user-1';
+      mockKeys[hashPro].client_email = 'reseller@silkheritage.in';
+      activeCatalog = mockCatalog;
+
+      countryDbRows = [
+        { code: 'US', name: 'United States', enabled: true },
+        { code: 'AE', name: 'United Arab Emirates', enabled: true },
+        { code: 'GB', name: 'United Kingdom', enabled: false },
+        { code: 'AU', name: 'Australia', enabled: true },
+      ];
+      countrySheetConfigs = [
+        { code: 'US', name: 'United States', shippingRate: 1400, shippingUnit: 'kg', enabled: true },
+        { code: 'AE', name: 'United Arab Emirates', shippingRate: 1280, shippingUnit: 'kg', enabled: true },
+        { code: 'GB', name: 'United Kingdom', shippingRate: 1350, shippingUnit: 'kg', enabled: false },
+        { code: 'AU', name: 'Australia', shippingRate: 0, shippingUnit: 'kg', enabled: true },
+      ];
+
+      resellerProfiles = {
+        'reseller-user-1': {
+          id: 'reseller-user-1',
+          email: 'reseller@silkheritage.in',
+          whatsapp: '+91 98200 11223',
+          whatsapp_number: '9820011223',
+          full_name: 'Aarav Merchant',
+          business_name: 'Silk Heritage Exports',
+        },
+      };
+
+      fetchCalls = [];
+      globalThis.fetch = async (url, options = {}) => {
+        const parsedBody = options.body ? JSON.parse(options.body) : null;
+        fetchCalls.push({ url: String(url), method: options.method || 'GET', body: parsedBody });
+        if (String(url).includes('resend.com/emails')) {
+          return new Response(JSON.stringify({ id: 'resend-email-1' }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        if (String(url).includes('cashfree.com')) {
+          return new Response(JSON.stringify({ payment_session_id: 'session_cf_test_123' }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return new Response(JSON.stringify({}), { status: 200 });
+      };
+
+      _setSupabaseClientForTesting(buildIntlSupabaseMock());
+    });
+
+    afterEach(() => {
+      globalThis.fetch = originalFetch;
+      if (originalResendKey === undefined) delete process.env.RESEND_API_KEY;
+      else process.env.RESEND_API_KEY = originalResendKey;
+      if (originalCashfreeAppId === undefined) delete process.env.CASHFREE_APP_ID;
+      else process.env.CASHFREE_APP_ID = originalCashfreeAppId;
+      if (originalCashfreeSecret === undefined) delete process.env.CASHFREE_SECRET_KEY;
+      else process.env.CASHFREE_SECRET_KEY = originalCashfreeSecret;
+      if (originalCashfreeEnv === undefined) delete process.env.CASHFREE_ENV;
+      else process.env.CASHFREE_ENV = originalCashfreeEnv;
+      if (originalPhonePeEnabled === undefined) delete process.env.NEXT_PUBLIC_PHONEPE_ENABLED;
+      else process.env.NEXT_PUBLIC_PHONEPE_ENABLED = originalPhonePeEnabled;
+    });
+
+    it('US prepaid order with address1 + address2 and USD currency saves full address/country, computes INR weight-based shipping, formats retail slip in USD, and sends INR invoice email', async () => {
+      const req = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+        body: JSON.stringify({
+          platform: 'shopify',
+          reseller_order_id: 'US-1001',
+          order_currency: 'USD',
+          customer_shipping_total: 25.00,
+          shipping_lines: [{ title: 'DHL Express International', price: '25.00' }],
+          shipping_address: {
+            name: 'Emily Carter',
+            phone: '+1 212 555 0199',
+            address1: '350 Fifth Avenue',
+            address2: 'Suite 4210',
+            city: 'New York',
+            province: 'NY',
+            zip: '10118',
+            country_code: 'US',
+            country: 'United States',
+          },
+          sender: {
+            name: 'Silk Heritage Exports',
+            phone: '+91 98200 11223',
+            email: 'reseller@silkheritage.in',
+          },
+          items: [
+            { sku: '102001-1', quantity: 1, selling_price: 185 },
+          ],
+        }),
+      });
+
+      const res = await handleDeveloperApiPost(req, ['v1', 'orders']);
+      assert.equal(res.status, 201);
+      const json = await res.json();
+
+      // Default item weight 1200g -> ceil(1.2) = 2 kg * ₹1400/kg = ₹2800
+      assert.equal(json.order_status, 'payment_pending');
+      assert.equal(json.payment_status, 'pending');
+      assert.ok(json.payment_link && json.payment_link.includes('?pay=1'));
+      assert.equal(json.is_international, true);
+      assert.equal(json.destination_country, 'United States');
+      assert.equal(json.destination_country_code, 'US');
+      assert.equal(json.billed_weight_kg, 2);
+
+      assert.equal(json.pricing.wholesale_subtotal_inr, 5200);
+      assert.equal(json.pricing.shipping_fee_inr, 2800);
+      assert.equal(json.pricing.total_payable_inr, 8000);
+      assert.equal(json.pricing.billing_currency, 'INR');
+      assert.equal(json.pricing.customer_billed_price, 185);
+      assert.equal(json.pricing.customer_currency, 'USD');
+
+      assert.equal(json.order.customer.address, '350 Fifth Avenue, Suite 4210');
+      assert.match(json.order.customer.full_address, /350 Fifth Avenue, Suite 4210, New York, NY 10118, United States/);
+      assert.equal(json.order.customer.country, 'United States');
+      assert.equal(json.order.customer.country_code, 'US');
+      assert.equal(json.order.customer.phone, '+1 212 555 0199');
+
+      // Retail slip formatted in USD, never mislabeled with ₹
+      assert.equal(json.courier_slip.parcel_declared_currency, 'USD');
+      assert.equal(json.courier_slip.parcel_declared_value, 185);
+
+      assert.equal(insertedApiOrders.length, 1);
+      const saved = insertedApiOrders[0];
+      assert.equal(saved.recipient_address, '350 Fifth Avenue, Suite 4210');
+      assert.equal(saved.recipient_country, 'United States');
+      assert.equal(saved.recipient_country_code, 'US');
+      assert.equal(saved.is_international, true);
+      assert.equal(saved.order_currency, 'USD');
+      assert.equal(saved.customer_shipping_amount, 25);
+      assert.equal(saved.customer_shipping_method, 'DHL Express International');
+      assert.equal(saved.wholesale_subtotal_inr, 5200);
+      assert.equal(saved.shipping_fee_inr, 2800);
+      assert.equal(saved.total_wholesale_inr, 8000);
+      assert.equal(saved.billed_weight_kg, 2);
+      assert.equal(saved.recipient_phone, '+1 212 555 0199');
+      assert.match(saved.shipping_notes, /Billed Retail Price on Parcel Slip:\s*USD 185\.00/);
+      assert.doesNotMatch(saved.shipping_notes, /Billed Retail Price on Parcel Slip:\s*₹/);
+      assert.match(saved.shipping_notes, /International Shipping \(United States, 2 kg\):\s*₹2,800/);
+
+      // Reseller invoice email was dispatched strictly in INR
+      const emailCall = fetchCalls.find((c) => c.url.includes('resend.com/emails'));
+      assert.ok(emailCall, 'Reseller invoice email should have been dispatched');
+      assert.match(emailCall.body.subject, /₹8,000/);
+      assert.match(emailCall.body.html, /International Shipping \(United States &middot; 2 kg\)/);
+      assert.match(emailCall.body.html, /₹2,800/);
+      assert.match(emailCall.body.html, /Pay ₹8,000/);
+
+      // GET /api/v1/orders returns complete international & pricing fields
+      const getRes = await handleDeveloperApiGet(
+        new Request(`https://www.weave365.com/api/v1/orders?id=${saved.id}`, {
+          headers: { 'x-api-key': TEST_KEY_PRO },
+        }),
+        ['v1', 'orders']
+      );
+      assert.equal(getRes.status, 200);
+      const getJson = await getRes.json();
+      assert.equal(getJson.order.is_international, true);
+      assert.equal(getJson.order.destination_country, 'United States');
+      assert.equal(getJson.order.destination_country_code, 'US');
+      assert.equal(getJson.order.billed_weight_kg, 2);
+      assert.equal(getJson.order.pricing.wholesale_subtotal_inr, 5200);
+      assert.equal(getJson.order.pricing.shipping_fee_inr, 2800);
+      assert.equal(getJson.order.pricing.total_payable_inr, 8000);
+      assert.equal(getJson.order.pricing.billing_currency, 'INR');
+      assert.equal(getJson.order.pricing.customer_currency, 'USD');
+      assert.equal(getJson.order.customer.address, '350 Fifth Avenue, Suite 4210');
+      assert.equal(getJson.order.customer.country, 'United States');
+    });
+
+    it('UAE prepaid order with empty postcode succeeds without 400 error and preserves international phone', async () => {
+      const req = new Request('https://www.weave365.com/api/v1/orders', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+        body: JSON.stringify({
+          platform: 'woocommerce',
+          reseller_order_id: 'AE-2001',
+          order_currency: 'AED',
+          shipping_address: {
+            name: 'Fatima Al Mansoori',
+            phone: '+971 50 123 4567',
+            address1: 'Villa 14, Jumeirah 1',
+            city: 'Dubai',
+            postcode: '',
+            country_code: 'AE',
+            country_name: 'United Arab Emirates',
+          },
+          items: [{ sku: '102002-1', quantity: 1, selling_price: 450 }],
+        }),
+      });
+
+      const res = await handleDeveloperApiPost(req, ['v1', 'orders']);
+      assert.equal(res.status, 201);
+      const json = await res.json();
+      assert.equal(json.is_international, true);
+      assert.equal(json.destination_country_code, 'AE');
+      assert.equal(json.destination_country, 'United Arab Emirates');
+      assert.equal(json.order.customer.pincode, null);
+      assert.equal(json.order.customer.phone, '+971 50 123 4567');
+      // 2 kg * ₹1280/kg = ₹2560
+      assert.equal(json.pricing.wholesale_subtotal_inr, 4300);
+      assert.equal(json.pricing.shipping_fee_inr, 2560);
+      assert.equal(json.pricing.total_payable_inr, 6860);
+    });
+
+    it('Domestic India order requires pincode (400 INVALID_CUSTOMER_DETAILS when empty) and valid India order gets shipping_fee_inr: 0', async () => {
+      const missingPinRes = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/v1/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+          body: JSON.stringify({
+            platform: 'woocommerce',
+            reseller_order_id: 'IN-MISS-PIN',
+            shipping_address: {
+              name: 'Rohan Sharma',
+              phone: '9876543210',
+              address1: '12 MG Road',
+              city: 'Bengaluru',
+              state: 'KA',
+              postcode: '',
+              country_code: 'IN',
+              country_name: 'India',
+            },
+            items: [{ sku: '102001-1', quantity: 1, selling_price: 7500 }],
+          }),
+        }),
+        ['v1', 'orders']
+      );
+      assert.equal(missingPinRes.status, 400);
+      assert.equal((await missingPinRes.json()).code, 'INVALID_CUSTOMER_DETAILS');
+
+      const validIndiaRes = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/v1/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+          body: JSON.stringify({
+            platform: 'woocommerce',
+            reseller_order_id: 'IN-OK-1',
+            shipping_address: {
+              name: 'Rohan Sharma',
+              phone: '9876543210',
+              address1: '12 MG Road',
+              city: 'Bengaluru',
+              state: 'KA',
+              postcode: '560001',
+              country_code: 'IN',
+              country_name: 'India',
+            },
+            items: [{ sku: '102001-1', quantity: 1, selling_price: 7500 }],
+          }),
+        }),
+        ['v1', 'orders']
+      );
+      assert.equal(validIndiaRes.status, 201);
+      const validJson = await validIndiaRes.json();
+      assert.equal(validJson.is_international, false);
+      assert.equal(validJson.destination_country, 'India');
+      assert.equal(validJson.destination_country_code, 'IN');
+      assert.equal(validJson.pricing.shipping_fee_inr, 0);
+      assert.equal(validJson.pricing.total_payable_inr, 5200);
+    });
+
+    it('International COD order is rejected with 400 COD_NOT_SUPPORTED_INTERNATIONAL', async () => {
+      const res = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/v1/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+          body: JSON.stringify({
+            platform: 'woocommerce',
+            reseller_order_id: 'US-COD-99',
+            payment_type: 'cod',
+            gateway: 'cod',
+            order_currency: 'USD',
+            shipping_address: {
+              name: 'John Doe',
+              phone: '+1 415 555 0100',
+              address1: '100 Market St',
+              city: 'San Francisco',
+              state: 'CA',
+              postcode: '94105',
+              country_code: 'US',
+              country: 'United States',
+            },
+            items: [{ sku: '102001-1', quantity: 1, selling_price: 199 }],
+          }),
+        }),
+        ['v1', 'orders']
+      );
+      assert.equal(res.status, 400);
+      const json = await res.json();
+      assert.equal(json.code, 'COD_NOT_SUPPORTED_INTERNATIONAL');
+      assert.equal(insertedApiOrders.length, 0);
+    });
+
+    it('Unconfigured, disabled, and 0-rate international countries save as awaiting_shipping_quote with payment_link: null and hide Pay Now in email & GET /orders', async () => {
+      const cases = [
+        { code: 'JP', name: 'Japan', orderId: 'JP-UNCONFIG-1' },
+        { code: 'GB', name: 'United Kingdom', orderId: 'GB-DISABLED-1' },
+        { code: 'AU', name: 'Australia', orderId: 'AU-ZERO-1' },
+      ];
+
+      for (const c of cases) {
+        const res = await handleDeveloperApiPost(
+          new Request('https://www.weave365.com/api/v1/orders', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+            body: JSON.stringify({
+              platform: 'woocommerce',
+              reseller_order_id: c.orderId,
+              order_currency: 'USD',
+              shipping_address: {
+                name: 'International Buyer',
+                phone: '+44 20 7946 0958',
+                address1: '10 Downing Street',
+                city: 'London',
+                country_code: c.code,
+                country_name: c.name,
+              },
+              items: [{ sku: '102001-1', quantity: 1, selling_price: 200 }],
+            }),
+          }),
+          ['v1', 'orders']
+        );
+
+        assert.equal(res.status, 201, `Expected 201 for ${c.code}`);
+        const json = await res.json();
+        assert.equal(json.order_status, 'awaiting_shipping_quote');
+        assert.equal(json.payment_status, 'awaiting_quote');
+        assert.equal(json.payment_link, null, `Must never issue ₹0 payment_link for ${c.code}`);
+        assert.equal(json.order.payment_link, null);
+        assert.equal(json.order.status_label, 'Awaiting Shipping Quote');
+        assert.equal(json.pricing.shipping_fee_inr, 0);
+
+        const getRes = await handleDeveloperApiGet(
+          new Request(`https://www.weave365.com/api/v1/orders?id=${json.order_id}`, {
+            headers: { 'x-api-key': TEST_KEY_PRO },
+          }),
+          ['v1', 'orders']
+        );
+        assert.equal(getRes.status, 200);
+        const getJson = await getRes.json();
+        assert.equal(getJson.order.status, 'awaiting_shipping_quote');
+        assert.equal(getJson.order.status_label, 'Awaiting Shipping Quote');
+        assert.equal(getJson.order.payment_link, null);
+      }
+
+      // Verify email rendered for awaitingQuote hides Pay Now button and never falls back to India
+      const quoteHtml = renderResellerInvoiceEmailHtml({
+        orderNumber: 'ORD-QUOTE-1',
+        resellerOrderId: 'JP-UNCONFIG-1',
+        items: [{ sku: '102001-1', product_title: 'Pure Katan Silk Banarasi Saree', quantity: 1, wholesale_price: 5200 }],
+        wholesaleSubtotalInr: 5200,
+        shippingFeeInr: 0,
+        totalPayableInr: 5200,
+        isInternational: true,
+        destinationCountry: '',
+        billedWeightKg: 2,
+        awaitingQuote: true,
+        recipientName: 'Kenji Sato',
+        shippingAddress: '',
+        paymentLink: 'https://www.weave365.com/order-tracking/should-not-appear?pay=1',
+      });
+      assert.doesNotMatch(quoteHtml, /should-not-appear/);
+      assert.doesNotMatch(quoteHtml, /Pay ₹/);
+      assert.match(quoteHtml, /International Shipping Quote Pending/);
+      assert.match(quoteHtml, /Pending Quote \(International Destination\)/);
+      assert.doesNotMatch(quoteHtml, /Delivery Destination[\s\S]*?>India</);
+    });
+
+    it('Mixed cart (1 Weave365 item + 1 third-party item) calculates weight and international shipping strictly on the Weave365 item only', async () => {
+      // Give 102001 a 0.9kg weight -> ceil(0.9) = 1 kg -> US ₹1400 * 1 = ₹1400 (instead of 2+ kg if third-party item were counted)
+      activeCatalog = mockCatalog.map((p) =>
+        p.id === '102001' ? { ...p, weight: 0.9 } : p
+      );
+      _setCatalogProductsForTesting(activeCatalog);
+
+      const res = await handleDeveloperApiPost(
+        new Request('https://www.weave365.com/api/v1/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': TEST_KEY_PRO },
+          body: JSON.stringify({
+            platform: 'woocommerce',
+            reseller_order_id: 'US-MIXED-1',
+            order_currency: 'USD',
+            shipping_address: {
+              name: 'Olivia Brown',
+              phone: '+1 310 555 0144',
+              address1: '400 Rodeo Dr',
+              city: 'Beverly Hills',
+              state: 'CA',
+              postcode: '90210',
+              country_code: 'US',
+              country_name: 'United States',
+            },
+            items: [
+              { sku: '102001-1', quantity: 1, selling_price: 160 },
+              { sku: 'THIRD-PARTY-HEAVY-99', quantity: 5, selling_price: 100, weight: 10, weight_grams: 10000 },
+            ],
+          }),
+        }),
+        ['v1', 'orders']
+      );
+
+      assert.equal(res.status, 201);
+      const json = await res.json();
+      assert.deepEqual(json.items_filtered, {
+        total_order_items: 2,
+        weave365_items_processed: 1,
+      });
+      assert.equal(json.billed_weight_kg, 1);
+      assert.equal(json.pricing.wholesale_subtotal_inr, 5200);
+      assert.equal(json.pricing.shipping_fee_inr, 1400);
+      assert.equal(json.pricing.total_payable_inr, 6600);
+      assert.equal(json.pricing.customer_billed_price, 160);
+    });
+
+    it('handleInitiateOrderPayment charges exact wholesale_subtotal_inr + shipping_fee_inr in INR, blocks awaiting_shipping_quote, and uses reseller Indian phone rather than international recipient phone', async () => {
+      insertedApiOrders.push(
+        {
+          id: 'intl-quote-pending-1',
+          user_id: 'reseller-user-1',
+          reseller_order_id: 'JP-900',
+          status: 'awaiting_shipping_quote',
+          is_international: true,
+          recipient_country: 'Japan',
+          recipient_country_code: 'JP',
+          recipient_name: 'Kenji Sato',
+          recipient_phone: '+81 90 1234 5678',
+          sender_phone: '+91 98200 11223',
+          wholesale_subtotal_inr: 5200,
+          shipping_fee_inr: 0,
+          items: [{ sku: '102001-1', quantity: 1, wholesale_price: 5200, selling_price: 180 }],
+        },
+        {
+          id: 'intl-ready-to-pay-1',
+          user_id: 'reseller-user-1',
+          reseller_order_id: 'US-901',
+          status: 'payment_pending',
+          is_international: true,
+          recipient_country: 'United States',
+          recipient_country_code: 'US',
+          recipient_name: 'Emily Carter',
+          recipient_phone: '+1 212 555 0199',
+          recipient_email: 'emily@us-buyer.com',
+          sender_name: 'Silk Heritage Exports',
+          sender_phone: '', // Intentionally empty to verify profile.whatsapp fallback over international recipient_phone
+          wholesale_subtotal_inr: 5200,
+          shipping_fee_inr: 2800,
+          total_wholesale_inr: 8000,
+          items: [{ sku: '102001-1', quantity: 1, wholesale_price: 5200, selling_price: 185 }],
+        }
+      );
+
+      // 1. Blocks awaiting_shipping_quote
+      const blockedRes = await handleInitiateOrderPayment(
+        new Request('https://www.weave365.com/api/developer/initiate-order-payment', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ order_id: 'intl-quote-pending-1', gateway: 'cashfree' }),
+        }),
+        buildIntlSupabaseMock()
+      );
+      assert.equal(blockedRes.status, 400);
+      const blockedJson = await blockedRes.json();
+      assert.equal(blockedJson.code, 'AWAITING_SHIPPING_QUOTE');
+
+      // 2. Charges exact INR total (5200 + 2800 = 8000) and uses reseller's 10-digit Indian phone & email
+      const payRes = await handleInitiateOrderPayment(
+        new Request('https://www.weave365.com/api/developer/initiate-order-payment', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ order_id: 'intl-ready-to-pay-1', gateway: 'cashfree' }),
+        }),
+        buildIntlSupabaseMock()
+      );
+      assert.equal(payRes.status, 200);
+      const payJson = await payRes.json();
+      assert.equal(payJson.success, true);
+      assert.equal(payJson.gateway, 'cashfree');
+      assert.equal(payJson.amount, 8000);
+      assert.equal(payJson.wholesale_subtotal_inr, 5200);
+      assert.equal(payJson.shipping_fee_inr, 2800);
+      assert.equal(payJson.currency, 'INR');
+
+      const cfCall = fetchCalls.find((c) => c.url.includes('cashfree.com'));
+      assert.ok(cfCall, 'Cashfree order creation call should have been made');
+      assert.equal(cfCall.body.order_amount, 8000);
+      assert.equal(cfCall.body.order_currency, 'INR');
+      assert.equal(cfCall.body.customer_details.customer_phone, '9820011223');
+      assert.notEqual(cfCall.body.customer_details.customer_phone, '2125550199');
+      assert.equal(cfCall.body.customer_details.customer_email, 'reseller@silkheritage.in');
     });
   });
 });

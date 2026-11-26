@@ -818,10 +818,30 @@ export function Admin({
           (typeof o.message === 'string' && /\[(?:Wholesale API Order|API Dropship Order|API Order)/i.test(o.message))
         );
 
+        const rawCountryCode = String(deliveryAddr?.country_code || o.recipient_country_code || '').trim().toUpperCase();
+        const rawCountryName = String(deliveryAddr?.country || o.recipient_country || '').trim();
+        const isInternational = Boolean(
+          o.is_international ||
+          (rawCountryCode && rawCountryCode !== 'IN') ||
+          (rawCountryName && !/^(in|ind|india)$/i.test(rawCountryName))
+        );
+        const resolvedCountry = rawCountryName || (isInternational ? 'International Destination' : 'India');
+        const resolvedCountryCode = rawCountryCode || (isInternational ? '' : 'IN');
+
         return {
           ...o,
           _sourceTable: 'orders',
           isApi,
+          is_international: isInternational,
+          recipient_country: resolvedCountry,
+          recipient_country_code: resolvedCountryCode,
+          shipping_fee_inr: Number(o.shipping_fee_inr || 0),
+          wholesale_subtotal_inr: Number(o.wholesale_subtotal_inr || 0),
+          total_wholesale_inr: Number(o.total_wholesale_inr || 0),
+          billed_weight_kg: Number(o.billed_weight_kg || 0),
+          order_currency: String(o.order_currency || o.currency || 'INR').trim().toUpperCase() || 'INR',
+          customer_shipping_amount: Number(o.customer_shipping_amount || 0),
+          customer_shipping_method: o.customer_shipping_method || null,
           account_email: o.email || p?.email || null,
           account_name: p?.full_name || p?.business_name || null,
           order_delivery_addresses: deliveryAddr,
@@ -838,6 +858,8 @@ export function Admin({
           dropship_recipient_city: deliveryAddr?.city || o.dropship_recipient_city,
           dropship_recipient_state: deliveryAddr?.state || o.dropship_recipient_state,
           dropship_recipient_pincode: deliveryAddr?.pincode || o.dropship_recipient_pincode,
+          dropship_recipient_country: resolvedCountry,
+          dropship_recipient_country_code: resolvedCountryCode,
           dropship_sender_name: dropshipSender?.sender_name || o.dropship_sender_name,
           dropship_sender_phone: dropshipSender?.sender_phone || o.dropship_sender_phone,
           dropship_sender_address: dropshipSender?.sender_address || o.dropship_sender_address,
@@ -863,6 +885,11 @@ export function Admin({
 
         let extractedNoteEmail = null;
         let explicitSenderAddress = null;
+        let parsedShippingFeeInr = 0;
+        let parsedWholesaleInr = 0;
+        let parsedTotalInr = 0;
+        let parsedWeightKg = 0;
+        let parsedCountryFromNotes = '';
         if (a.shipping_notes) {
           const match = a.shipping_notes.match(/(?:Dispatched to|email[:\s]+)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
           if (match) extractedNoteEmail = match[1];
@@ -873,7 +900,43 @@ export function Admin({
               explicitSenderAddress = JSON.parse(addrMatch[1]);
             } catch (_) {}
           }
+
+          const intlMatch = a.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9.,]+)/i);
+          if (intlMatch) {
+            parsedCountryFromNotes = (intlMatch[1] || '').trim();
+            if (intlMatch[2]) parsedWeightKg = Number(intlMatch[2]) || 0;
+            if (intlMatch[3]) parsedShippingFeeInr = Number(intlMatch[3].replace(/,/g, '')) || 0;
+          }
+
+          const subMatch = a.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+          if (subMatch) parsedWholesaleInr = Number(subMatch[1].replace(/,/g, '')) || 0;
+
+          const totMatch = a.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+          if (totMatch) parsedTotalInr = Number(totMatch[1].replace(/,/g, '')) || 0;
         }
+
+        const rawCountryCode = String(a.recipient_country_code || '').trim().toUpperCase();
+        const rawCountryName = String(a.recipient_country || parsedCountryFromNotes || '').trim();
+        const isInternational = Boolean(
+          a.is_international ||
+          (rawCountryCode && rawCountryCode !== 'IN') ||
+          (rawCountryName && !/^(in|ind|india)$/i.test(rawCountryName))
+        );
+        const resolvedCountry = rawCountryName || (isInternational ? 'International Destination' : 'India');
+        const resolvedCountryCode = rawCountryCode || (isInternational ? '' : 'IN');
+
+        const apiItems = Array.isArray(a.items) ? a.items : [];
+        const computedItemsWholesale = apiItems.reduce((sum, it) => {
+          const wp = Number(it.wholesale_price || (it.selling_price && it.price && it.price < it.selling_price ? it.price : 0) || it.price || 0);
+          return sum + wp * Math.max(1, parseInt(it.quantity || 1, 10));
+        }, 0);
+        const wholesaleSubtotalInr = Number(a.wholesale_subtotal_inr || 0) || parsedWholesaleInr || computedItemsWholesale;
+        const shippingFeeInr = Number(a.shipping_fee_inr || 0) || parsedShippingFeeInr;
+        const totalWholesaleInr = Number(a.total_wholesale_inr || 0) || parsedTotalInr || (wholesaleSubtotalInr + shippingFeeInr);
+        const billedWeightKg = Number(a.billed_weight_kg || 0) || parsedWeightKg;
+        const orderCurrency = String(a.order_currency || 'INR').trim().toUpperCase() || 'INR';
+        const customerShippingAmount = Number(a.customer_shipping_amount || 0);
+        const customerShippingMethod = a.customer_shipping_method || null;
 
         const senderName = a.sender_name || customDispatchAddr?.name || customDispatchAddr?.full_name || defaultAddr?.full_name || p?.business_name || p?.full_name || 'Reseller';
         const senderPhone = a.sender_phone || customDispatchAddr?.phone || customDispatchAddr?.phone_number || defaultAddr?.phone_number || p?.whatsapp || p?.phone || '';
@@ -905,6 +968,17 @@ export function Admin({
           account_email: p?.email || extractedNoteEmail || a.client_email || a.email || null,
           account_name: p?.full_name || p?.business_name || null,
           is_dropship: true,
+          is_international: isInternational,
+          recipient_country: resolvedCountry,
+          recipient_country_code: resolvedCountryCode,
+          shipping_fee_inr: shippingFeeInr,
+          wholesale_subtotal_inr: wholesaleSubtotalInr,
+          total_wholesale_inr: totalWholesaleInr,
+          billed_weight_kg: billedWeightKg,
+          order_currency: orderCurrency,
+          customer_shipping_amount: customerShippingAmount,
+          customer_shipping_method: customerShippingMethod,
+          total_amount: Number(a.total_amount || 0) > 0 ? Number(a.total_amount) : (totalWholesaleInr > 0 ? totalWholesaleInr : undefined),
           buyer_name: a.recipient_name || a.buyer_name,
           phone: a.recipient_phone || a.phone,
           email: a.recipient_email || a.email,
@@ -922,6 +996,8 @@ export function Admin({
           dropship_recipient_city: a.recipient_city,
           dropship_recipient_state: a.recipient_state,
           dropship_recipient_pincode: a.recipient_pincode,
+          dropship_recipient_country: resolvedCountry,
+          dropship_recipient_country_code: resolvedCountryCode,
           dropship_packing_preference: a.packing_preference,
           message: a.shipping_notes || a.message,
         };
