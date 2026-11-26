@@ -1892,7 +1892,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                             : { hasMarkup: false };
                           return (
                             <tr key={idx}>
-                              <td>
+                              <td className="admin-inspect-td-product">
                                 <a 
                                   href={resolved.productUrl}
                                   target="_blank"
@@ -1917,14 +1917,14 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                   </div>
                                 </a>
                               </td>
-                              <td style={{ textAlign: 'center', color: '#475569' }}>×{resolved.quantity}</td>
-                              <td style={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                              <td className="admin-inspect-td-qty" data-label="Qty" style={{ textAlign: 'center', color: '#475569' }}>×{resolved.quantity}</td>
+                              <td className="admin-inspect-td-wholesale" data-label="Wholesale" style={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                                 {resolved.price > 0 ? formatMoney(lineWholesale, { currency: 'INR' }) : '—'}
                               </td>
                               {showCustomerMarkupCol && (
-                                <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                                <td className="admin-inspect-td-customer" data-label="Customer" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                                   {lineCustomer > 0 ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
+                                    <div className="admin-inspect-customer-stack">
                                       <span style={{ fontWeight: 600, fontSize: '0.84rem', color: '#0f172a' }}>
                                         {formatMoney(lineCustomer, { currency: modalCustomerCurrency })}
                                       </span>
