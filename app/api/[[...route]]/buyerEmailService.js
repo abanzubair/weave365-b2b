@@ -116,7 +116,7 @@ export function renderBuyerConfirmationEmailHtml({
   let couponDiscount = Number(order.coupon_discount || 0);
   let couponCode = order.coupon_code || '';
   if (!couponDiscount && order.message) {
-    const match = order.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9.,]+)\)/i);
+    const match = order.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
     if (match) {
       couponCode = couponCode || match[1];
       couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
@@ -128,8 +128,8 @@ export function renderBuyerConfirmationEmailHtml({
   if (order.shipping_amount && Number(order.shipping_amount) > 0) {
     shippingFee = Number(order.shipping_amount);
   } else if (order.message) {
-    const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i) ||
-                     order.message.match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9.,]+)\)/i);
+    const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
+                     order.message.match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
     if (feeMatch) {
       shippingFee = Number(feeMatch[1].replace(/,/g, ''));
     }

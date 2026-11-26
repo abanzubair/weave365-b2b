@@ -2900,7 +2900,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
       let shippingFeeInr = Number(o.shipping_fee_inr || 0);
       if (shippingFeeInr <= 0 && notesText) {
-        const intlMatch = notesText.match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i);
+        const intlMatch = notesText.match(/International Shipping[^:]*:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
         if (intlMatch) {
           shippingFeeInr = Number(intlMatch[1].replace(/,/g, '')) || 0;
         }
@@ -2916,7 +2916,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         return acc + (sp * qty);
       }, 0);
       if (notesText) {
-        const slipMatch = notesText.match(/Billed Retail Price on Parcel Slip:\s*(?:₹|[A-Z]{3}\s*)?([0-9.,]+)/i);
+        const slipMatch = notesText.match(/Billed Retail Price on Parcel Slip:\s*(?:₹|[A-Z]{3}\s*)?([0-9][0-9,]*(?:\.[0-9]+)?)/i);
         if (slipMatch) {
           const parsedSlip = Number(slipMatch[1].replace(/,/g, ''));
           if (!isNaN(parsedSlip) && parsedSlip > 0) customerBilledPrice = parsedSlip;
@@ -4203,8 +4203,8 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
       wholesaleSubtotalInr = Number(order.wholesale_subtotal_inr);
     }
     if (wholesaleSubtotalInr <= 0 && order.shipping_notes) {
-      const dueMatch = order.shipping_notes.match(/Wholesale Subtotal:\s*₹?\s*([0-9.,]+)/i)
-        || order.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9.,]+)/i);
+      const dueMatch = order.shipping_notes.match(/Wholesale Subtotal:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i)
+        || order.shipping_notes.match(/Wholesale Due:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (dueMatch) {
         wholesaleSubtotalInr = Number(dueMatch[1].replace(/,/g, '')) || 0;
       }
@@ -4221,13 +4221,13 @@ export async function handleInitiateOrderPayment(request, supabase, corsHeaders 
 
     let shippingFeeInr = Number(order.shipping_fee_inr || 0);
     if (shippingFeeInr <= 0 && order.shipping_notes) {
-      const intlShipMatch = order.shipping_notes.match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i);
+      const intlShipMatch = order.shipping_notes.match(/International Shipping[^:]*:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (intlShipMatch) {
         shippingFeeInr = Number(intlShipMatch[1].replace(/,/g, '')) || 0;
       }
     }
     if (!isInternationalOrder && shippingFeeInr <= 0 && order.message && /Shipping:\s*Expedited/i.test(order.message)) {
-      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i);
+      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       shippingFeeInr = feeMatch ? (Number(feeMatch[1].replace(/,/g, '')) || 150) : 150;
     }
 

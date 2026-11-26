@@ -15,6 +15,7 @@
 import test, { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import Papa from 'papaparse';
+import { getDropshipCustomPricing } from '../src/utils/courierSlipGenerator.js';
 import {
   handleDeveloperApiGet,
   handleDeveloperApiPost,
@@ -2834,6 +2835,71 @@ describe('Weave365 B2B Developer API Verification', () => {
       assert.equal(cfCall.body.customer_details.customer_phone, '9820011223');
       assert.notEqual(cfCall.body.customer_details.customer_phone, '2125550199');
       assert.equal(cfCall.body.customer_details.customer_email, 'reseller@silkheritage.in');
+    });
+
+    it('getDropshipCustomPricing and GET /api/v1/orders accurately sum multi-item parcel slip values and parse currency-prefixed notes with trailing periods', async () => {
+      const multiItemOrder = {
+        id: 'intl-multi-slip-1',
+        order_currency: 'AED',
+        customer_shipping_amount: 75,
+        shipping_notes: 'Billed Retail Price on Parcel Slip: AED 620.00. Payment Mode: PREPAID. Wholesale Due: ₹7,728. | Wholesale Subtotal: ₹7,728 | International Shipping (United Arab Emirates, 3 kg): ₹3,840 | Total Payable (INR): ₹11,568',
+        items: [
+          { sku: '102001', quantity: 1, wholesale_price: 1890, selling_price: 135 },
+          { sku: '102002', quantity: 1, wholesale_price: 1890, selling_price: 135 },
+          { sku: '102003', quantity: 1, wholesale_price: 1974, selling_price: 140 },
+          { sku: '102004', quantity: 1, wholesale_price: 1974, selling_price: 135 },
+        ],
+      };
+
+      const slipPricing = getDropshipCustomPricing(multiItemOrder);
+      assert.equal(slipPricing.hasCustom, true);
+      assert.equal(slipPricing.itemsRetailTotal, 545);
+      assert.equal(slipPricing.customerShipping, 75);
+      assert.equal(slipPricing.billedPrice, 620);
+      assert.equal(slipPricing.netPrice, 620);
+
+      // Without shipping_notes slip text, still sums all 4 items + customer shipping (never just first item 135)
+      const itemsOnlyPricing = getDropshipCustomPricing({
+        order_currency: 'AED',
+        customer_shipping_amount: 75,
+        items: multiItemOrder.items,
+      });
+      assert.equal(itemsOnlyPricing.itemsRetailTotal, 545);
+      assert.equal(itemsOnlyPricing.netPrice, 620);
+
+      // Verify GET /api/v1/orders also parses trailing-period AED 620.00. cleanly
+      const proKeyHash = await hashApiKey(TEST_KEY_PRO);
+      insertedApiOrders.push({
+        ...multiItemOrder,
+        api_key_id: mockKeys[proKeyHash].id,
+        user_id: mockKeys[proKeyHash].user_id,
+        reseller_order_id: 'WC-INTL-SLIP-1',
+        recipient_name: 'Test International',
+        recipient_phone: '+971 50 123 4567',
+        recipient_address: 'Villa 14, Al Wasl Road, Jumeirah 1',
+        recipient_city: 'Dubai',
+        recipient_state: 'Dubai',
+        recipient_pincode: '',
+        recipient_country: 'United Arab Emirates',
+        recipient_country_code: 'AE',
+        is_international: true,
+        wholesale_subtotal_inr: 7728,
+        shipping_fee_inr: 3840,
+        total_wholesale_inr: 11568,
+        billed_weight_kg: 3,
+        status: 'payment_pending',
+        created_at: new Date().toISOString(),
+      });
+      const getRes = await handleDeveloperApiGet(
+        new Request('https://www.weave365.com/api/v1/orders', { headers: { 'x-api-key': TEST_KEY_PRO } }),
+        ['v1', 'orders']
+      );
+      assert.equal(getRes.status, 200);
+      const getJson = await getRes.json();
+      const fetched = getJson.orders.find((o) => o.reseller_order_id === 'WC-INTL-SLIP-1');
+      assert.ok(fetched);
+      assert.equal(fetched.pricing.customer_billed_price, 620);
+      assert.equal(fetched.pricing.customer_currency, 'AED');
     });
   });
 });

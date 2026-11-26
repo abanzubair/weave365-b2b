@@ -483,15 +483,15 @@ export function Account({
               explicitSenderAddress = JSON.parse(addrMatch[1]);
             } catch (_) {}
           }
-          const intlMatch = a.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9.,]+)/i);
+          const intlMatch = a.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
           if (intlMatch) {
             parsedCountryFromNotes = (intlMatch[1] || '').trim();
             if (intlMatch[2]) parsedWeightKg = Number(intlMatch[2]) || 0;
             if (intlMatch[3]) parsedShippingFeeInr = Number(intlMatch[3].replace(/,/g, '')) || 0;
           }
-          const subMatch = a.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+          const subMatch = a.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
           if (subMatch) parsedWholesaleInr = Number(subMatch[1].replace(/,/g, '')) || 0;
-          const totMatch = a.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+          const totMatch = a.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
           if (totMatch) parsedTotalInr = Number(totMatch[1].replace(/,/g, '')) || 0;
         }
 

@@ -235,17 +235,17 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     // 2. Parse from message or shipping_notes if available
     const combinedNotes = `${order?.shipping_notes || ''} ${order?.message || ''}`;
     if (combinedNotes) {
-      const totalPayableMatch = combinedNotes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+      const totalPayableMatch = combinedNotes.match(/Total Payable \(INR\):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (totalPayableMatch) {
         const parsed = Number(totalPayableMatch[1].replace(/,/g, ''));
         if (parsed > 0) return parsed;
       }
-      const dueMatch = combinedNotes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+      const dueMatch = combinedNotes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (dueMatch) {
         const parsed = Number(dueMatch[1].replace(/,/g, ''));
         if (parsed > 0) return parsed;
       }
-      const match = combinedNotes.match(/Total:\s*₹?\s*([0-9.,]+)/i);
+      const match = combinedNotes.match(/Total:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (match) {
         const parsed = Number(match[1].replace(/,/g, ''));
         if (parsed > 0 && (!labelSum || parsed <= wholesaleSum || Math.round(parsed) !== Math.round(labelSum))) {
@@ -268,7 +268,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     if (explicitWholesaleSubtotal > 0) {
       itemsSubtotal = explicitWholesaleSubtotal;
     } else if (combinedNotes) {
-      const subMatch = combinedNotes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+      const subMatch = combinedNotes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (subMatch) {
         const parsedSub = Number(subMatch[1].replace(/,/g, ''));
         if (parsedSub > 0) itemsSubtotal = parsedSub;
@@ -282,7 +282,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     let couponDiscount = Number(order?.coupon_discount || 0);
     let couponCode = order?.coupon_code || '';
     if (!couponDiscount && order?.message) {
-      const match = order.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9.,]+)\)/i);
+      const match = order.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
       if (match) {
         couponCode = couponCode || match[1];
         couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
@@ -298,7 +298,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
     let explicitIntlShippingFee = Number(order?.shipping_fee_inr || 0);
     if (!explicitIntlShippingFee && combinedNotes) {
-      const intlShipMatch = combinedNotes.match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i);
+      const intlShipMatch = combinedNotes.match(/International Shipping[^:]*:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
       if (intlShipMatch) {
         explicitIntlShippingFee = Number(intlShipMatch[1].replace(/,/g, '')) || 0;
       }
@@ -320,8 +320,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       if (/Shipping:\s*Expedited/i.test(order.message)) {
         isExpedited = true;
       }
-      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i) ||
-                       order.message.match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9.,]+)\)/i);
+      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
+                       order.message.match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
       if (feeMatch) {
         explicitShippingFee = Number(feeMatch[1].replace(/,/g, ''));
       }
@@ -609,18 +609,18 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               let parsedTotalPayableInr = 0;
               let parsedCountryFromNotes = '';
               if (found.shipping_notes) {
-                const dueMatch = found.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9.,]+)/i);
+                const dueMatch = found.shipping_notes.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
                 if (dueMatch) {
                   const parsedDue = Number(dueMatch[1].replace(/,/g, ''));
                   if (parsedDue > 0) totalWholesale = parsedDue;
                 }
-                const intlMatch = found.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9.,]+)/i);
+                const intlMatch = found.shipping_notes.match(/International Shipping\s*\(([^,)]+)(?:,\s*([0-9.]+)\s*kg)?\):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
                 if (intlMatch) {
                   parsedCountryFromNotes = (intlMatch[1] || '').trim();
                   if (intlMatch[2]) parsedWeightKg = Number(intlMatch[2]) || 0;
                   if (intlMatch[3]) parsedShippingFeeInr = Number(intlMatch[3].replace(/,/g, '')) || 0;
                 }
-                const totMatch = found.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9.,]+)/i);
+                const totMatch = found.shipping_notes.match(/Total Payable \(INR\):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
                 if (totMatch) {
                   parsedTotalPayableInr = Number(totMatch[1].replace(/,/g, '')) || 0;
                 }

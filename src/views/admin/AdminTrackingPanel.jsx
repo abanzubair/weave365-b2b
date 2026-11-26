@@ -44,6 +44,34 @@ import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 import { printCourierSlip, getDropshipCustomPricing } from '../../utils/courierSlipGenerator.js';
+import { useCountryCurrency } from '../../store/useCountryCurrency.js';
+import { DEFAULT_BASELINE_RATES } from '../../constants/currencyRates.js';
+
+function computeDropshipMarkupSummary({ itemsRetailInCurrency = 0, wholesaleInr = 0, currency = 'INR', exchangeRates = {} }) {
+  const curr = String(currency || 'INR').trim().toUpperCase() || 'INR';
+  const retailVal = Number(itemsRetailInCurrency) || 0;
+  const wholesaleVal = Number(wholesaleInr) || 0;
+  if (retailVal <= 0 || wholesaleVal <= 0) {
+    return { hasMarkup: false, markupInr: 0, markupPct: 0, customerInrApprox: 0, rate: 1, isEstimated: false };
+  }
+  const rate = curr === 'INR'
+    ? 1
+    : Number(exchangeRates?.[curr] || DEFAULT_BASELINE_RATES?.[curr] || 0);
+  if (rate <= 0) {
+    return { hasMarkup: false, markupInr: 0, markupPct: 0, customerInrApprox: 0, rate: 0, isEstimated: curr !== 'INR' };
+  }
+  const customerInrApprox = curr === 'INR' ? retailVal : Math.round(retailVal / rate);
+  const markupInr = customerInrApprox - wholesaleVal;
+  const markupPct = wholesaleVal > 0 ? (markupInr / wholesaleVal) * 100 : 0;
+  return {
+    hasMarkup: true,
+    markupInr,
+    markupPct,
+    customerInrApprox,
+    rate,
+    isEstimated: curr !== 'INR',
+  };
+}
 
 async function updateSupabaseOrderTracking(id, { status, trackingCarrier, trackingNumber, trackingMessage, sourceTable }) {
   let table = 'inquiries';
@@ -265,6 +293,7 @@ export function getOrderStatusDisplay(status) {
 }
 
 export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [], loadAdminData, loading = false }) {
+  const { exchangeRates } = useCountryCurrency();
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('tracking'); // 'tracking' | 'details'
   const [searchQuery, setSearchQuery] = useState('');
@@ -387,12 +416,19 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
 
     const b2rPrice = Number(matchedVariant?.prices?.b2r || matchedVariant?.prices?.single || matchedProd?.resellerPrice || 0);
     const mrpPrice = Number(matchedVariant?.prices?.mrp || matchedVariant?.prices?.offer || matchedProd?.price || 0);
-    const recordedPrice = Number(item.unit_price) || Number(item.price) || 0;
+    const recordedPrice = Number(item.wholesale_price ?? item.unit_price ?? item.price ?? 0);
+    const customerUnitPrice = Number(
+      item.selling_price ||
+      item.custom_billed_price ||
+      item.dropship_billed_price ||
+      item.customer_price ||
+      0
+    );
 
     let price = recordedPrice;
     // If recordedPrice was saved as wholesale mrp (or 0) but item was ordered as single-piece,
     // resolve to b2rPrice (the single-piece price shown to buyers on the storefront product page)
-    if (isSinglePiece && b2rPrice > 0 && (recordedPrice <= mrpPrice || recordedPrice === 0)) {
+    if (!Number(item.wholesale_price) && isSinglePiece && b2rPrice > 0 && (recordedPrice <= mrpPrice || recordedPrice === 0)) {
       price = b2rPrice;
     } else if (!price) {
       price = (isSinglePiece && b2rPrice > 0) ? b2rPrice : (mrpPrice || b2rPrice || 0);
@@ -414,6 +450,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
       title,
       color,
       price,
+      customerUnitPrice,
       image: imageSrc || fallbackProductImage,
       quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
       productId: targetProductId,
@@ -896,6 +933,20 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                 const customPricing = getDropshipCustomPricing(inquiry);
                 const customerOrderCurr = inquiry.order_currency || 'INR';
                 const isAwaitingQuote = isAwaitingShippingQuoteStatus(inquiry.status);
+                const rowWholesaleInr = Number(inquiry.wholesale_subtotal_inr || 0) > 0
+                  ? Number(inquiry.wholesale_subtotal_inr)
+                  : itemsList.reduce((sum, it) => sum + ((Number(it.wholesale_price ?? it.price ?? it.unit_price ?? 0) || 0) * Math.max(1, parseInt(it.quantity || 1, 10))), 0) || Number(inquiry.total_amount || 0);
+                const rowCustomerItemsBasis = customPricing.itemsRetailTotal > 0
+                  ? customPricing.itemsRetailTotal
+                  : Math.max(0, customPricing.netPrice - customPricing.customerShipping);
+                const rowMarkup = isDropship
+                  ? computeDropshipMarkupSummary({
+                      itemsRetailInCurrency: rowCustomerItemsBasis,
+                      wholesaleInr: rowWholesaleInr,
+                      currency: customerOrderCurr,
+                      exchangeRates,
+                    })
+                  : { hasMarkup: false };
 
                 return (
                   <tr key={inquiry.id} className={`admin-order-row ${isDropship ? 'is-dropship-row' : ''}`}>
@@ -1062,9 +1113,24 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                 {resolved.color !== 'Standard' ? `${resolved.color} · ` : ''}{resolved.quantity} {resolved.quantity > 1 ? 'pcs' : 'pc'}
                               </span>
                               {isDropship && customPricing.hasCustom && (
-                                <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
-                                  Bill: {formatMoney(customPricing.billedPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
-                                </span>
+                                <>
+                                  <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
+                                    Bill: {formatMoney(customPricing.netPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
+                                  </span>
+                                  {rowMarkup.hasMarkup && (
+                                    <span
+                                      className="admin-slip-price-pill"
+                                      style={{
+                                        background: rowMarkup.markupInr >= 0 ? '#ecfdf5' : '#fef2f2',
+                                        color: rowMarkup.markupInr >= 0 ? '#047857' : '#b91c1c',
+                                        borderColor: rowMarkup.markupInr >= 0 ? '#a7f3d0' : '#fecaca',
+                                      }}
+                                      title={rowMarkup.isEstimated ? `Estimated reseller markup at live FX rate (customer items ≈ ${formatMoney(rowMarkup.customerInrApprox, { currency: 'INR' })} vs ₹${rowWholesaleInr})` : 'Exact reseller markup added over wholesale'}
+                                    >
+                                      Markup: {rowMarkup.isEstimated ? '≈ ' : ''}{rowMarkup.markupInr >= 0 ? '+' : ''}{formatMoney(rowMarkup.markupInr, { currency: 'INR' })} ({rowMarkup.markupPct >= 0 ? '+' : ''}{rowMarkup.markupPct.toFixed(0)}%)
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -1105,9 +1171,24 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                               <strong className="admin-item-total-qty">{totalItemsQty} items</strong>
                               <span className="admin-item-styles-count">{itemsList.length} styles</span>
                               {isDropship && customPricing.hasCustom && (
-                                <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
-                                  Bill: {formatMoney(customPricing.billedPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
-                                </span>
+                                <>
+                                  <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
+                                    Bill: {formatMoney(customPricing.netPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
+                                  </span>
+                                  {rowMarkup.hasMarkup && (
+                                    <span
+                                      className="admin-slip-price-pill"
+                                      style={{
+                                        background: rowMarkup.markupInr >= 0 ? '#ecfdf5' : '#fef2f2',
+                                        color: rowMarkup.markupInr >= 0 ? '#047857' : '#b91c1c',
+                                        borderColor: rowMarkup.markupInr >= 0 ? '#a7f3d0' : '#fecaca',
+                                      }}
+                                      title={rowMarkup.isEstimated ? `Estimated reseller markup at live FX rate (customer items ≈ ${formatMoney(rowMarkup.customerInrApprox, { currency: 'INR' })} vs ₹${rowWholesaleInr})` : 'Exact reseller markup added over wholesale'}
+                                    >
+                                      Markup: {rowMarkup.isEstimated ? '≈ ' : ''}{rowMarkup.markupInr >= 0 ? '+' : ''}{formatMoney(rowMarkup.markupInr, { currency: 'INR' })} ({rowMarkup.markupPct >= 0 ? '+' : ''}{rowMarkup.markupPct.toFixed(0)}%)
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -1670,6 +1751,8 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                     const inspectItems = (Array.isArray(selectedInquiry.order_items) && selectedInquiry.order_items.length > 0)
                       ? selectedInquiry.order_items
                       : (Array.isArray(selectedInquiry.items) ? selectedInquiry.items : []);
+                    const showCustomerMarkupCol = Boolean(selectedInquiry.isDropship);
+                    const summaryColSpan = showCustomerMarkupCol ? 5 : 4;
                     return (
                       <div className="admin-inspect-items-wrap">
                         <div className="admin-inspect-items-header">
@@ -1684,12 +1767,25 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                               <th scope="col">SKU</th>
                               <th scope="col">Color</th>
                               <th scope="col" style={{ textAlign: 'center' }}>Qty</th>
-                              <th scope="col" style={{ textAlign: 'right' }}>Price (INR)</th>
+                              <th scope="col" style={{ textAlign: 'right' }}>{showCustomerMarkupCol ? 'Wholesale (INR)' : 'Price (INR)'}</th>
+                              {showCustomerMarkupCol && (
+                                <th scope="col" style={{ textAlign: 'right' }}>Customer / Markup</th>
+                              )}
                             </tr>
                           </thead>
                           <tbody>
                             {inspectItems.map((it, idx) => {
                               const resolved = resolveItemDetails(it);
+                              const lineWholesale = resolved.price * resolved.quantity;
+                              const lineCustomer = resolved.customerUnitPrice > 0 ? resolved.customerUnitPrice * resolved.quantity : 0;
+                              const itemMarkup = lineCustomer > 0 && lineWholesale > 0
+                                ? computeDropshipMarkupSummary({
+                                    itemsRetailInCurrency: lineCustomer,
+                                    wholesaleInr: lineWholesale,
+                                    currency: modalCustomerCurrency,
+                                    exchangeRates,
+                                  })
+                                : { hasMarkup: false };
                               return (
                                 <tr key={idx}>
                                   <td>
@@ -1714,7 +1810,34 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                   <td><code className="admin-sku-code">{resolved.sku}</code></td>
                                   <td><span className="admin-color-tag">{resolved.color}</span></td>
                                   <td style={{ textAlign: 'center' }}><strong>{resolved.quantity}</strong></td>
-                                  <td style={{ textAlign: 'right', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>{resolved.price > 0 ? formatMoney(resolved.price * resolved.quantity) : 'Wholesale Tier'}</td>
+                                  <td style={{ textAlign: 'right', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>{resolved.price > 0 ? formatMoney(lineWholesale, { currency: 'INR' }) : 'Wholesale Tier'}</td>
+                                  {showCustomerMarkupCol && (
+                                    <td style={{ textAlign: 'right' }}>
+                                      {lineCustomer > 0 ? (
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                          <strong style={{ fontSize: '0.84rem', color: '#0f172a' }}>
+                                            {formatMoney(lineCustomer, { currency: modalCustomerCurrency })}
+                                          </strong>
+                                          {itemMarkup.hasMarkup && (
+                                            <span
+                                              style={{
+                                                fontSize: '0.72rem',
+                                                fontWeight: 600,
+                                                color: itemMarkup.markupInr > 0 ? '#047857' : (itemMarkup.markupInr < 0 ? '#b91c1c' : '#64748b'),
+                                              }}
+                                              title={itemMarkup.isEstimated ? `Approx. ${formatMoney(itemMarkup.customerInrApprox, { currency: 'INR' })} at live FX vs ₹${lineWholesale}` : 'Exact markup over wholesale'}
+                                            >
+                                              {itemMarkup.markupInr === 0
+                                                ? 'No markup (0%)'
+                                                : `${itemMarkup.isEstimated ? '≈ ' : ''}${itemMarkup.markupInr > 0 ? '+' : ''}${formatMoney(itemMarkup.markupInr, { currency: 'INR' })} (${itemMarkup.markupPct > 0 ? '+' : ''}${itemMarkup.markupPct.toFixed(1)}%)`}
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>—</span>
+                                      )}
+                                    </td>
+                                  )}
                                 </tr>
                               );
                             })}
@@ -1730,7 +1853,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                               let couponDiscount = Number(selectedInquiry.coupon_discount || 0);
                               let couponCode = selectedInquiry.coupon_code || '';
                               if (!couponDiscount && selectedInquiry.message) {
-                                const match = selectedInquiry.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9.,]+)\)/i);
+                                const match = selectedInquiry.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
                                 if (match) {
                                   couponCode = couponCode || match[1];
                                   couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
@@ -1757,9 +1880,9 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
 
                               let explicitShippingFee = explicitIntlShipping > 0 ? explicitIntlShipping : null;
                               if (explicitShippingFee === null) {
-                                const feeMatch = (selectedInquiry.message || '').match(/International Shipping[^:]*:\s*₹?\s*([0-9.,]+)/i) ||
-                                                 (selectedInquiry.message || '').match(/Shipping Fee:\s*₹?([0-9.,]+)/i) ||
-                                                 (selectedInquiry.message || '').match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9.,]+)\)/i);
+                                const feeMatch = (selectedInquiry.message || '').match(/International Shipping[^:]*:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
+                                                 (selectedInquiry.message || '').match(/Shipping Fee:\s*₹?([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
+                                                 (selectedInquiry.message || '').match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
                                 if (feeMatch) {
                                   explicitShippingFee = Number(feeMatch[1].replace(/,/g, '')) || 0;
                                 }
@@ -1802,38 +1925,100 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                 ? 'Total Payable (INR)'
                                 : (isPendingPayment ? 'Amount Due (INR)' : (isCancelledOrder ? 'Order Total (Cancelled)' : 'Total Paid (INR)'));
 
+                              const customerItemsBasis = modalCustomPricing.itemsRetailTotal > 0
+                                ? modalCustomPricing.itemsRetailTotal
+                                : Math.max(0, modalCustomPricing.netPrice - modalCustomPricing.customerShipping);
+                              const modalMarkup = showCustomerMarkupCol
+                                ? computeDropshipMarkupSummary({
+                                    itemsRetailInCurrency: customerItemsBasis,
+                                    wholesaleInr: displayItemsSubtotal,
+                                    currency: modalCustomerCurrency,
+                                    exchangeRates,
+                                  })
+                                : { hasMarkup: false };
+
                               const parcelSlipRow = modalCustomPricing.hasCustom ? (
-                                <tr className="admin-inspect-slip-row">
-                                  <td colSpan="4">
-                                    <div className="admin-inspect-slip-title-wrap">
-                                      <span className="admin-inspect-slip-heading">
-                                        Parcel Slip Value ({modalCustomerCurrency})
-                                      </span>
-                                      <span className="admin-slip-price-pill">
-                                        Printed on Slip
-                                      </span>
-                                    </div>
-                                  </td>
-                                  <td style={{ textAlign: 'right' }}>
-                                    <div className="admin-inspect-slip-amount-wrap">
-                                      <strong className="admin-inspect-slip-amount">
-                                        {formatMoney(modalCustomPricing.netPrice, { currency: modalCustomerCurrency })}
-                                      </strong>
-                                      {modalCustomPricing.discount > 0 && (
-                                        <span className="admin-inspect-slip-subtext">
-                                          ({formatMoney(modalCustomPricing.billedPrice, { currency: modalCustomerCurrency })} - {formatMoney(modalCustomPricing.discount, { currency: modalCustomerCurrency })})
+                                <>
+                                  <tr className="admin-inspect-slip-row">
+                                    <td colSpan={summaryColSpan}>
+                                      <div className="admin-inspect-slip-title-wrap">
+                                        <span className="admin-inspect-slip-heading">
+                                          Parcel Slip Value ({modalCustomerCurrency})
                                         </span>
+                                        <span className="admin-slip-price-pill">
+                                          Printed on Slip
+                                        </span>
+                                      </div>
+                                      {modalCustomPricing.itemsRetailTotal > 0 && modalCustomPricing.customerShipping > 0 && (
+                                        <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '2px' }}>
+                                          Items {formatMoney(modalCustomPricing.itemsRetailTotal, { currency: modalCustomerCurrency })} + Customer Shipping {formatMoney(modalCustomPricing.customerShipping, { currency: modalCustomerCurrency })}
+                                        </div>
                                       )}
-                                    </div>
-                                  </td>
-                                </tr>
+                                    </td>
+                                    <td style={{ textAlign: 'right' }}>
+                                      <div className="admin-inspect-slip-amount-wrap">
+                                        <strong className="admin-inspect-slip-amount">
+                                          {formatMoney(modalCustomPricing.netPrice, { currency: modalCustomerCurrency })}
+                                        </strong>
+                                        {modalCustomPricing.discount > 0 && (
+                                          <span className="admin-inspect-slip-subtext">
+                                            ({formatMoney(modalCustomPricing.billedPrice, { currency: modalCustomerCurrency })} - {formatMoney(modalCustomPricing.discount, { currency: modalCustomerCurrency })})
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  {modalMarkup.hasMarkup && (
+                                    <tr style={{ background: modalMarkup.markupInr >= 0 ? '#f0fdf4' : '#fef2f2' }}>
+                                      <td colSpan={summaryColSpan}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                            <span style={{ fontWeight: 700, fontSize: '0.84rem', color: modalMarkup.markupInr >= 0 ? '#166534' : '#991b1b' }}>
+                                              Reseller Markup Added
+                                            </span>
+                                            <span
+                                              style={{
+                                                fontSize: '0.7rem',
+                                                fontWeight: 600,
+                                                padding: '1px 6px',
+                                                borderRadius: '999px',
+                                                background: '#ffffff',
+                                                border: '1px solid #cbd5e1',
+                                                color: '#334155',
+                                              }}
+                                            >
+                                              {modalMarkup.isEstimated && modalMarkup.rate > 0
+                                                ? `Est. @ 1 ${modalCustomerCurrency} ≈ ₹${(1 / modalMarkup.rate).toFixed(2)}`
+                                                : 'Exact INR'}
+                                            </span>
+                                          </div>
+                                          <span style={{ fontSize: '0.75rem', color: '#475569' }}>
+                                            Customer Items {formatMoney(customerItemsBasis, { currency: modalCustomerCurrency })}
+                                            {modalMarkup.isEstimated ? ` (≈ ${formatMoney(modalMarkup.customerInrApprox, { currency: 'INR' })})` : ''}
+                                            {' '}vs Wholesale {formatMoney(displayItemsSubtotal, { currency: 'INR' })}
+                                          </span>
+                                        </div>
+                                      </td>
+                                      <td style={{ textAlign: 'right' }}>
+                                        <strong style={{ fontSize: '0.92rem', color: modalMarkup.markupInr >= 0 ? '#15803d' : '#b91c1c' }}>
+                                          {modalMarkup.isEstimated ? '≈ ' : ''}
+                                          {modalMarkup.markupInr >= 0 ? '+' : ''}
+                                          {formatMoney(modalMarkup.markupInr, { currency: 'INR' })}
+                                        </strong>
+                                        <div style={{ fontSize: '0.74rem', fontWeight: 600, color: modalMarkup.markupInr >= 0 ? '#166534' : '#991b1b' }}>
+                                          ({modalMarkup.markupPct >= 0 ? '+' : ''}{modalMarkup.markupPct.toFixed(1)}%)
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </>
                               ) : null;
 
                               if (hasAdjustments) {
                                 return (
                                   <>
                                     <tr className="admin-inspect-summary-subtotal">
-                                      <td colSpan="4">
+                                      <td colSpan={summaryColSpan}>
                                         <span className="admin-inspect-subtotal-label">Items Wholesale</span>
                                         <span className="admin-inspect-subtotal-units">({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
                                       </td>
@@ -1843,7 +2028,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                     </tr>
                                     {couponDiscount > 0 && (
                                       <tr className="admin-inspect-summary-coupon">
-                                        <td colSpan="4">
+                                        <td colSpan={summaryColSpan}>
                                           <div className="admin-inspect-coupon-wrap">
                                             <span className="admin-inspect-coupon-label">Applied Coupon</span>
                                             <span className="admin-inspect-coupon-pill">
@@ -1858,7 +2043,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                     )}
                                     {(modalIsIntl || modalIsAwaitingQuote || shippingFee > 0) && (
                                       <tr className="admin-inspect-summary-shipping">
-                                        <td colSpan="4">
+                                        <td colSpan={summaryColSpan}>
                                           <span className="admin-inspect-shipping-label">
                                             {modalIsIntl
                                               ? `International Shipping (${modalCountryDisplay}${selectedInquiry.billed_weight_kg > 0 ? ` · ${selectedInquiry.billed_weight_kg} kg` : ''})`
@@ -1875,7 +2060,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                                       </tr>
                                     )}
                                     <tr className="admin-inspect-summary-total">
-                                      <td colSpan="4">
+                                      <td colSpan={summaryColSpan}>
                                         <div className="admin-inspect-total-left">
                                           <span className="admin-inspect-total-label">{totalStatusLabel}</span>
                                           {modalIsAwaitingQuote ? (
@@ -1903,7 +2088,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                               return (
                                 <>
                                   <tr className="admin-inspect-summary-total">
-                                    <td colSpan="4">
+                                    <td colSpan={summaryColSpan}>
                                       <div className="admin-inspect-total-left">
                                         <span className="admin-inspect-total-label">{totalStatusLabel} ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
                                         {selectedInquiry.payment_method && (

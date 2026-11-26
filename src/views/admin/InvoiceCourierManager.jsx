@@ -274,7 +274,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
                 // 1. Slip retail price (what seller wants to print on the courier slip)
                 let slipPrice = 0;
                 const noteText = inq.shipping_notes || inq.message || '';
-                const mSlip = noteText.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*₹?([0-9.,]+)/i);
+                const mSlip = noteText.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*(?:₹|[A-Z]{3}\s*)?([0-9][0-9,]*(?:\.[0-9]+)?)/i);
                 if (mSlip && mSlip[1]) {
                   slipPrice = Number(mSlip[1].replace(/,/g, '')) || 0;
                 } else if (items.length > 0) {
@@ -283,7 +283,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
 
                 // 2. Wholesale due (what reseller owes Weave365)
                 let wholesaleDue = Number(inq.total_amount || 0);
-                const mWholesale = noteText.match(/Wholesale Due:\s*₹?([0-9.,]+)/i);
+                const mWholesale = noteText.match(/Wholesale (?:Subtotal|Due):\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i);
                 if (mWholesale && mWholesale[1]) {
                   wholesaleDue = Number(mWholesale[1].replace(/,/g, '')) || wholesaleDue;
                 } else if (!wholesaleDue && items.length > 0) {

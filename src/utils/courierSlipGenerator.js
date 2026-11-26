@@ -57,31 +57,47 @@ function parseAddressFromMessage(msg) {
  * @returns {{ hasCustom: boolean, billedPrice: number, discount: number, netPrice: number }}
  */
 export function getDropshipCustomPricing(inquiry) {
-  if (!inquiry) return { hasCustom: false, billedPrice: 0, discount: 0, netPrice: 0 };
+  if (!inquiry) {
+    return { hasCustom: false, billedPrice: 0, discount: 0, netPrice: 0, itemsRetailTotal: 0, customerShipping: 0 };
+  }
   const items = (Array.isArray(inquiry.order_items) && inquiry.order_items.length > 0)
     ? inquiry.order_items
     : (Array.isArray(inquiry.items) ? inquiry.items : []);
 
-  let billedPrice = Number(inquiry.dropship_billed_price || inquiry.custom_billed_price || inquiry.customer_price || inquiry.customer_order_amount || 0);
-  let discount = Number(inquiry.dropship_discount || inquiry.custom_discount || 0);
+  const itemsRetailTotal = items.reduce((sum, it) => {
+    if (!it) return sum;
+    const unitRetail = Number(it.customer_price || it.selling_price || it.custom_billed_price || it.dropship_billed_price || 0);
+    if (unitRetail <= 0) return sum;
+    const qty = Math.max(1, parseInt(it.quantity || 1, 10));
+    return sum + (unitRetail * qty);
+  }, 0);
 
-  if (!billedPrice) {
-    const itWithPrice = items.find(it => it && (Number(it.customer_price) > 0 || Number(it.selling_price) > 0 || Number(it.custom_billed_price) > 0 || Number(it.dropship_billed_price) > 0));
-    if (itWithPrice) {
-      billedPrice = Number(itWithPrice.customer_price || itWithPrice.selling_price || itWithPrice.custom_billed_price || itWithPrice.dropship_billed_price || 0);
-    }
-  }
+  const customerShipping = Math.max(0, Number(inquiry.customer_shipping_amount || inquiry.customer_shipping_total || 0) || 0);
+
+  let billedPrice = Number(
+    inquiry.dropship_billed_price ||
+    inquiry.custom_billed_price ||
+    inquiry.customer_price ||
+    inquiry.customer_order_amount ||
+    inquiry.customer_order_total ||
+    0
+  );
+  let discount = Number(inquiry.dropship_discount || inquiry.custom_discount || 0);
 
   const msgText = inquiry.shipping_notes || inquiry.message || '';
   if (!billedPrice && msgText) {
-    const m = msgText.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*₹?([0-9.,]+)/i);
+    const m = msgText.match(/Billed (?:Retail )?Price on (?:Parcel )?Slip:\s*(?:₹|[A-Z]{3}\s*)?([0-9][0-9,]*(?:\.[0-9]+)?)/i);
     if (m && m[1]) {
       billedPrice = Number(m[1].replace(/,/g, '')) || 0;
     }
   }
 
+  if (!billedPrice && itemsRetailTotal > 0) {
+    billedPrice = itemsRetailTotal + customerShipping;
+  }
+
   if (!discount && msgText) {
-    const m = msgText.match(/Discount on (?:Slip|Bill):\s*₹?([0-9.,]+)/i);
+    const m = msgText.match(/Discount on (?:Slip|Bill):\s*(?:₹|[A-Z]{3}\s*)?([0-9][0-9,]*(?:\.[0-9]+)?)/i);
     if (m && m[1]) {
       discount = Number(m[1].replace(/,/g, '')) || 0;
     }
@@ -94,6 +110,8 @@ export function getDropshipCustomPricing(inquiry) {
     billedPrice,
     discount,
     netPrice,
+    itemsRetailTotal,
+    customerShipping,
   };
 }
 
@@ -203,6 +221,13 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
   ];
 
   const customPricing = getDropshipCustomPricing(inquiry);
+  const slipCurrency = String(inquiry.order_currency || 'INR').trim().toUpperCase() || 'INR';
+  const formatSlipAmount = (val) => {
+    const num = Number(val) || 0;
+    return slipCurrency === 'INR'
+      ? formatCurrencyINR(num)
+      : num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   let totalQty = 0;
   let grandTotal = 0;
@@ -242,8 +267,8 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
     grandTotal += netAmount;
 
     // GST 5% reverse calculation for HSN 5407 textiles
-    const taxable = Math.round(netAmount / 1.05);
-    const igst = netAmount - taxable;
+    const taxable = slipCurrency === 'INR' ? Math.round(netAmount / 1.05) : Number((netAmount / 1.05).toFixed(2));
+    const igst = slipCurrency === 'INR' ? (netAmount - taxable) : Number((netAmount - taxable).toFixed(2));
 
     return `
       <tr>
@@ -251,12 +276,12 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
         <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: left;">${goods}</td>
         <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: center;">${hsn}</td>
         <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: center;">${qty}</td>
-        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatCurrencyINR(unitPrice)}</td>
-        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatCurrencyINR(amount)}</td>
-        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: center;">${discount > 0 ? formatCurrencyINR(discount) : ''}</td>
-        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatCurrencyINR(taxable)}</td>
-        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatCurrencyINR(igst)}</td>
-        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatCurrencyINR(netAmount)}</td>
+        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatSlipAmount(unitPrice)}</td>
+        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatSlipAmount(amount)}</td>
+        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: center;">${discount > 0 ? formatSlipAmount(discount) : ''}</td>
+        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatSlipAmount(taxable)}</td>
+        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatSlipAmount(igst)}</td>
+        <td style="border: 1px solid #000; padding: 5px 6px; font-size: 12px; text-align: right;">${formatSlipAmount(netAmount)}</td>
       </tr>
     `;
   }).join('');
@@ -267,11 +292,17 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
     grandTotal = 4000;
   }
 
+  const slipGrandTotal = (customPricing.hasCustom && customPricing.netPrice > grandTotal)
+    ? customPricing.netPrice
+    : grandTotal;
+
   // Weight and dimensions
   const packageWeight = inquiry.package_weight || `${(totalQty * 1.2).toFixed(1)} KG`;
   const packageDimensions = inquiry.package_dimensions || '40 x 30 x 5 CM';
 
-  const amountInWords = numberToWordsINR(grandTotal);
+  const amountInWords = slipCurrency === 'INR'
+    ? `Rupees ${numberToWordsINR(slipGrandTotal)} Only`
+    : `Total Declared Value: ${slipCurrency} ${formatSlipAmount(slipGrandTotal)}`;
 
   return `
 <!DOCTYPE html>
@@ -519,7 +550,7 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
         </div>
         <div class="middle-row" style="margin-top: 10px;">
           <span class="middle-label-col">Total Value:</span>
-          <span class="middle-val-col">₹ ${formatCurrencyINR(grandTotal)}</span>
+          <span class="middle-val-col">${slipCurrency === 'INR' ? '₹' : slipCurrency} ${formatSlipAmount(slipGrandTotal)}</span>
         </div>
       </div>
     </div>
@@ -557,7 +588,7 @@ export function generateCourierSlipHtml(inquiry = {}, products = []) {
 
       <!-- Amount in words (resolves Excel formula #VALUE! to correct amount) -->
       <div class="amount-words-row">
-        Rupees ${amountInWords} Only
+        ${amountInWords}
       </div>
 
       <div class="disclaimer-block">
