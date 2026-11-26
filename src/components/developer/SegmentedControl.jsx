@@ -16,9 +16,10 @@ const BILLING_CYCLE_OPTIONS = [
  * @param {string} value - Active option value triggering re-measurement.
  * @returns {{ trackRef: React.RefObject<HTMLDivElement | null>, sliderReady: boolean }}
  */
-export function useSegmentedSlider(value) {
+export function useSegmentedSlider(value, resetKey = '') {
   const trackRef = useRef(null);
   const hasMountedRef = useRef(false);
+  const lastResetKeyRef = useRef(resetKey);
   const [sliderReady, setSliderReady] = useState(false);
 
   useLayoutEffect(() => {
@@ -43,7 +44,7 @@ export function useSegmentedSlider(value) {
             ? label.parentElement
             : label;
       } else {
-        target = track.querySelector('[role="radio"][aria-checked="true"], .active');
+        target = track.querySelector('[role="radio"][aria-checked="true"], [role="tab"][aria-selected="true"], .active');
       }
       if (!target) return;
 
@@ -70,7 +71,9 @@ export function useSegmentedSlider(value) {
       }
     };
 
-    const isValueChange = hasMountedRef.current;
+    const didResetChange = lastResetKeyRef.current !== resetKey;
+    lastResetKeyRef.current = resetKey;
+    const isValueChange = hasMountedRef.current && !didResetChange;
     hasMountedRef.current = true;
     updateIndicator(isValueChange);
     setSliderReady(true);
@@ -90,7 +93,7 @@ export function useSegmentedSlider(value) {
       cancelled = true;
       ro.disconnect();
     };
-  }, [value]);
+  }, [value, resetKey]);
 
   return { trackRef, sliderReady };
 }

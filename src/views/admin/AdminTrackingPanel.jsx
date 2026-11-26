@@ -6,7 +6,7 @@
  * blind dropship dispatch label generation with an impeccable, quiet, scan-first interface.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { 
   Truck, 
   Search, 
@@ -46,6 +46,8 @@ import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 import { printCourierSlip, getDropshipCustomPricing } from '../../utils/courierSlipGenerator.js';
 import { useCountryCurrency } from '../../store/useCountryCurrency.js';
 import { DEFAULT_BASELINE_RATES } from '../../constants/currencyRates.js';
+import { useSegmentedSlider } from '../../components/developer/SegmentedControl.jsx';
+import '../../styles/segmentedControl.css';
 
 function computeDropshipMarkupSummary({ itemsRetailInCurrency = 0, wholesaleInr = 0, currency = 'INR', exchangeRates = {} }) {
   const curr = String(currency || 'INR').trim().toUpperCase() || 'INR';
@@ -295,7 +297,45 @@ export function getOrderStatusDisplay(status) {
 export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [], loadAdminData, loading = false }) {
   const { exchangeRates } = useCountryCurrency();
   const [selectedInquiry, setSelectedInquiry] = useState(null);
+  const modalDialogRef = useRef(null);
   const [activeModalTab, setActiveModalTab] = useState('tracking'); // 'tracking' | 'details'
+  const [showAllCarriers, setShowAllCarriers] = useState(false);
+  const { trackRef: modalTabTrackRef, sliderReady: modalTabSliderReady } = useSegmentedSlider(
+    activeModalTab,
+    selectedInquiry?.id || ''
+  );
+
+  useEffect(() => {
+    setShowAllCarriers(false);
+    const dialog = modalDialogRef.current;
+    if (!dialog) return;
+    if (selectedInquiry) {
+      if (!dialog.open) {
+        try {
+          dialog.showModal();
+        } catch {
+          dialog.setAttribute('open', '');
+        }
+      }
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        let pressedOutside = false;
+        const isOutside = (e) => {
+          const r = dialog.getBoundingClientRect();
+          return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+        };
+        const onPointerDown = (e) => { pressedOutside = isOutside(e); };
+        const onPointerUp = (e) => { if (pressedOutside && isOutside(e)) dialog.close(); };
+        dialog.addEventListener('pointerdown', onPointerDown);
+        dialog.addEventListener('pointerup', onPointerUp);
+        return () => {
+          dialog.removeEventListener('pointerdown', onPointerDown);
+          dialog.removeEventListener('pointerup', onPointerUp);
+        };
+      }
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [selectedInquiry]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('new'); // Defaults to 'new' (Needs Attention)
   const [typeFilter, setTypeFilter] = useState('orders'); // 'orders' | 'dropship' | 'all'
@@ -483,30 +523,60 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
   };
 
   // Helper template filler for quick notification message
-  const applyTemplate = (type) => {
+  const getTrackingNoteForStatus = (type, carrierOverride = formCarrier, trackingOverride = formTrackingNum) => {
     if (type === 'awaiting_shipping_quote') {
-      setFormMessage('Our export team is confirming the international courier shipping quote for your destination. Your INR payment link will be shared shortly.');
-      setFormStatus('awaiting_shipping_quote');
-    } else if (type === 'payment_received' || type === 'paid' || type === 'needs_attention' || type === 'new') {
-      setFormMessage('Payment received successfully! Your order is queued for confirmation and processing at our Varanasi center.');
-      setFormStatus('payment_received');
-    } else if (type === 'order_confirmed' || type === 'confirmed') {
-      setFormMessage('Order confirmed! Our weaving and fulfillment team is reviewing your item details and scheduling dispatch.');
-      setFormStatus('order_confirmed');
-    } else if (type === 'in_process' || type === 'verified' || type === 'processing') {
-      setFormMessage('Your order is in process! Your pieces are currently undergoing quality inspection and careful packaging at our Varanasi hub.');
-      setFormStatus('in_process');
-    } else if (type === 'shipped' || type === 'dispatched' || type === 'in_transit') {
-      const carrierStr = formCarrier ? ` via ${formCarrier}` : '';
-      const trackingStr = formTrackingNum ? ` (Tracking AWB: ${formTrackingNum})` : '';
-      setFormMessage(`Package shipped${carrierStr}${trackingStr}! Your shipment is on its way to your destination.`);
-      setFormStatus('shipped');
-    } else if (type === 'delivered' || type === 'done') {
-      setFormMessage('Shipment successfully delivered! Thank you for ordering with Weave 365.');
-      setFormStatus('delivered');
-    } else if (type === 'cancelled' || type === 'rejected') {
-      setFormMessage('This order has been cancelled. Please reach out to our team if you need assistance.');
-      setFormStatus('cancelled');
+      return 'Our export team is confirming the international courier shipping quote for your destination. Your INR payment link will be shared shortly.';
+    }
+    if (type === 'payment_received' || type === 'paid' || type === 'needs_attention' || type === 'new') {
+      return 'Payment received successfully! Your order is queued for confirmation and processing at our Varanasi center.';
+    }
+    if (type === 'order_confirmed' || type === 'confirmed') {
+      return 'Order confirmed! Our weaving and fulfillment team is reviewing your item details and scheduling dispatch.';
+    }
+    if (type === 'in_process' || type === 'verified' || type === 'processing') {
+      return 'Your order is in process! Your pieces are currently undergoing quality inspection and careful packaging at our Varanasi hub.';
+    }
+    if (type === 'shipped' || type === 'dispatched' || type === 'in_transit') {
+      const cleanCarrier = String(carrierOverride || '').trim();
+      const cleanTracking = String(trackingOverride || '').trim();
+      const carrierStr = cleanCarrier ? ` via ${cleanCarrier}` : '';
+      const trackingStr = cleanTracking ? ` (Tracking AWB: ${cleanTracking})` : '';
+      return `Package shipped${carrierStr}${trackingStr}! Your shipment is on its way to your destination.`;
+    }
+    if (type === 'delivered' || type === 'done') {
+      return 'Shipment successfully delivered! Thank you for ordering with Weave 365.';
+    }
+    if (type === 'cancelled' || type === 'rejected') {
+      return 'This order has been cancelled. Please reach out to our team if you need assistance.';
+    }
+    return '';
+  };
+
+  const applyTemplate = (type, carrierOverride = formCarrier, trackingOverride = formTrackingNum) => {
+    const normalizedType =
+      type === 'paid' || type === 'needs_attention' || type === 'new' ? 'payment_received' :
+      type === 'confirmed' ? 'order_confirmed' :
+      type === 'verified' || type === 'processing' ? 'in_process' :
+      type === 'dispatched' || type === 'in_transit' ? 'shipped' :
+      type === 'done' ? 'delivered' :
+      type === 'rejected' ? 'cancelled' :
+      type;
+    const note = getTrackingNoteForStatus(normalizedType, carrierOverride, trackingOverride);
+    if (note) setFormMessage(note);
+    setFormStatus(normalizedType);
+  };
+
+  const handleCarrierChange = (nextCarrier) => {
+    setFormCarrier(nextCarrier);
+    if (isShippedStatus(formStatus) && (!formMessage || formMessage.startsWith('Package shipped'))) {
+      setFormMessage(getTrackingNoteForStatus('shipped', nextCarrier, formTrackingNum));
+    }
+  };
+
+  const handleTrackingNumChange = (nextTracking) => {
+    setFormTrackingNum(nextTracking);
+    if (isShippedStatus(formStatus) && (!formMessage || formMessage.startsWith('Package shipped'))) {
+      setFormMessage(getTrackingNoteForStatus('shipped', formCarrier, nextTracking));
     }
   };
 
@@ -867,21 +937,21 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
         >
           <table className="admin-orders-table">
             <colgroup>
-              <col style={{ width: '56px' }} />
-              <col style={{ width: '120px' }} />
-              <col style={{ width: '160px' }} />
-              <col style={{ width: '235px' }} />
-              <col style={{ width: '175px' }} />
-              <col style={{ width: '190px' }} />
-              <col style={{ width: '150px' }} />
-              <col style={{ width: '170px' }} />
+              <col style={{ width: '48px' }} />
+              <col style={{ width: '118px' }} />
+              <col style={{ width: '184px' }} />
+              <col style={{ width: '264px' }} />
+              <col style={{ width: '248px' }} />
+              <col style={{ width: '154px' }} />
+              <col style={{ width: '148px' }} />
+              <col style={{ width: '142px' }} />
             </colgroup>
             <thead>
               <tr>
                 <th 
                   scope="col"
                   className="admin-th-col admin-th-sno" 
-                  style={{ width: '56px', textAlign: 'center', cursor: 'pointer', userSelect: 'none' }}
+                  style={{ width: '48px', textAlign: 'center', cursor: 'pointer', userSelect: 'none' }}
                   onClick={() => setDateSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
                   title={`Sort by Serial Number: currently ${dateSortOrder === 'desc' ? 'Descending (highest first)' : 'Ascending'}. Click to toggle.`}
                 >
@@ -890,7 +960,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                 <th 
                   scope="col"
                   className="admin-th-col admin-th-date"
-                  style={{ width: '120px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
+                  style={{ width: '118px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
                   onClick={() => setDateSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
                   title={`Sort by Date: currently ${dateSortOrder === 'desc' ? 'Latest at top (newest first)' : 'Oldest first'}. Click to toggle.`}
                 >
@@ -903,12 +973,12 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                     )}
                   </div>
                 </th>
-                <th scope="col" className="admin-th-col admin-th-order-id" style={{ width: '160px', textAlign: 'left' }}>Order ID</th>
-                <th scope="col" className="admin-th-col admin-th-recipient" style={{ width: '235px', textAlign: 'left' }}>Recipient & Destination</th>
-                <th scope="col" className="admin-th-col admin-th-items" style={{ width: '175px', textAlign: 'left' }}>Items</th>
-                <th scope="col" className="admin-th-col admin-th-carrier" style={{ width: '190px', textAlign: 'left' }}>Carrier & Tracking</th>
-                <th scope="col" className="admin-th-col admin-th-status" style={{ width: '150px', textAlign: 'left' }}>Status</th>
-                <th scope="col" className="admin-th-col admin-th-actions" style={{ width: '170px', textAlign: 'right' }}>Actions</th>
+                <th scope="col" className="admin-th-col admin-th-order-id" style={{ width: '184px', textAlign: 'left' }}>Order ID</th>
+                <th scope="col" className="admin-th-col admin-th-recipient" style={{ width: '264px', textAlign: 'left' }}>Recipient & Destination</th>
+                <th scope="col" className="admin-th-col admin-th-items" style={{ width: '248px', textAlign: 'left' }}>Items & Pricing</th>
+                <th scope="col" className="admin-th-col admin-th-carrier" style={{ width: '154px', textAlign: 'left' }}>Carrier & Tracking</th>
+                <th scope="col" className="admin-th-col admin-th-status" style={{ width: '148px', textAlign: 'left' }}>Status</th>
+                <th scope="col" className="admin-th-col admin-th-actions" style={{ width: '142px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -987,8 +1057,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           </span>
                           {isIntl && (
                             <span
-                              className="admin-source-badge"
-                              style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 700 }}
+                              className="admin-source-badge badge-international"
                               title={`International destination: ${countryDisplay || 'International'}`}
                             >
                               INTERNATIONAL
@@ -1052,10 +1121,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                         </div>
                         <div className="admin-destination-text" title={addressText}>
                           <MapPin size={11} className="admin-pin-icon" />
-                          <span className="admin-loc-name">
-                            {cityState}
-                            {isIntl && countryDisplay ? ` · ${countryDisplay}` : ''}
-                          </span>
+                          <span className="admin-loc-name">{cityState}</span>
                           {(inquiry.dropship_recipient_phone || inquiry.phone) && (
                             <>
                               <span className="admin-dot-sep">·</span>
@@ -1064,11 +1130,13 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           )}
                         </div>
                         {isIntl && (
-                          <div className="admin-sender-subtext" style={{ color: isAwaitingQuote ? '#c2410c' : '#1d4ed8', fontWeight: 600 }}>
-                            {inquiry.billed_weight_kg > 0 ? `${inquiry.billed_weight_kg} kg · ` : ''}
+                          <div className="admin-sender-subtext" style={{ color: isAwaitingQuote ? '#c2410c' : '#3730a3', fontWeight: 600 }} title={countryDisplay}>
+                            {inquiry.recipient_country_code || countryLabel}
+                            {inquiry.billed_weight_kg > 0 ? ` · ${inquiry.billed_weight_kg} kg` : ''}
+                            {' · '}
                             {isAwaitingQuote
-                              ? 'Shipping Quote Pending'
-                              : `Int'l Ship: ${formatMoney(inquiry.shipping_fee_inr || 0, { currency: 'INR' })}`}
+                              ? 'Quote Pending'
+                              : `Ship: ${formatMoney(inquiry.shipping_fee_inr || 0, { currency: 'INR' })}`}
                           </div>
                         )}
                         {(() => {
@@ -1089,113 +1157,109 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
 
                     {/* Ordered Items Summary */}
                     <td>
-                      {itemsList.length === 1 ? (() => {
-                        const resolved = resolveItemDetails(itemsList[0]);
-                        return (
-                          <div className="admin-item-single-row">
-                            <a 
-                              href={resolved.productUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="admin-item-thumb-link"
-                              title={`View ${resolved.title} on Storefront ↗`}
-                            >
-                              <img 
-                                src={resolved.image} 
-                                alt={resolved.title} 
-                                className="admin-item-avatar"
-                                onError={(e) => { e.target.src = fallbackProductImage; }}
-                              />
-                            </a>
-                            <div className="admin-item-text-info">
-                              <span className="admin-item-sku" title={resolved.sku}>{resolved.sku}</span>
-                              <span className="admin-item-desc" title={`${resolved.color} · ${resolved.quantity} pc`}>
-                                {resolved.color !== 'Standard' ? `${resolved.color} · ` : ''}{resolved.quantity} {resolved.quantity > 1 ? 'pcs' : 'pc'}
+                      {(() => {
+                        const pricingStack = isDropship && (customPricing.hasCustom || rowWholesaleInr > 0) ? (
+                          <div className="admin-items-pricing-stack">
+                            {customPricing.hasCustom && (
+                              <span
+                                className="admin-slip-price-pill"
+                                title={`Retail price printed on customer parcel slip: ${formatMoney(customPricing.netPrice, { currency: customerOrderCurr })}`}
+                              >
+                                Bill: {formatMoney(customPricing.netPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
                               </span>
-                              {isDropship && customPricing.hasCustom && (
-                                <>
-                                  <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
-                                    Bill: {formatMoney(customPricing.netPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
-                                  </span>
-                                  {rowMarkup.hasMarkup && (
-                                    <span
-                                      className="admin-slip-price-pill"
-                                      style={{
-                                        background: rowMarkup.markupInr >= 0 ? '#ecfdf5' : '#fef2f2',
-                                        color: rowMarkup.markupInr >= 0 ? '#047857' : '#b91c1c',
-                                        borderColor: rowMarkup.markupInr >= 0 ? '#a7f3d0' : '#fecaca',
-                                      }}
-                                      title={rowMarkup.isEstimated ? `Estimated reseller markup at live FX rate (customer items ≈ ${formatMoney(rowMarkup.customerInrApprox, { currency: 'INR' })} vs ₹${rowWholesaleInr})` : 'Exact reseller markup added over wholesale'}
-                                    >
-                                      Markup: {rowMarkup.isEstimated ? '≈ ' : ''}{rowMarkup.markupInr >= 0 ? '+' : ''}{formatMoney(rowMarkup.markupInr, { currency: 'INR' })} ({rowMarkup.markupPct >= 0 ? '+' : ''}{rowMarkup.markupPct.toFixed(0)}%)
-                                    </span>
-                                  )}
-                                </>
-                              )}
-                            </div>
+                            )}
+                            {rowMarkup.hasMarkup && (
+                              <span
+                                className={`admin-markup-pill ${rowMarkup.markupInr >= 0 ? 'is-positive' : 'is-negative'}`}
+                                title={rowMarkup.isEstimated ? `Estimated reseller markup at live FX rate (customer items ≈ ${formatMoney(rowMarkup.customerInrApprox, { currency: 'INR' })} vs ₹${rowWholesaleInr} wholesale)` : `Exact reseller markup added over ₹${rowWholesaleInr} wholesale`}
+                              >
+                                Markup: {rowMarkup.isEstimated ? '≈' : ''}{rowMarkup.markupInr >= 0 ? '+' : ''}{formatMoney(rowMarkup.markupInr, { currency: 'INR' })} ({rowMarkup.markupPct >= 0 ? '+' : ''}{rowMarkup.markupPct.toFixed(0)}%)
+                              </span>
+                            )}
                           </div>
-                        );
-                      })() : itemsList.length > 1 ? (() => {
-                        const visibleItems = itemsList.slice(0, 3);
-                        const remainingCount = itemsList.length - 3;
-                        return (
-                          <div 
-                            className="admin-items-stack-wrap"
-                            onClick={() => handleOpenEditor(inquiry, 'details')}
-                            title="Click to view all items in order"
-                            role="button"
-                            tabIndex={0}
-                          >
-                            <div className="admin-items-avatar-stack">
-                              {visibleItems.map((it, idx) => {
-                                const resolved = resolveItemDetails(it);
-                                return (
+                        ) : null;
+
+                        if (itemsList.length === 1) {
+                          const resolved = resolveItemDetails(itemsList[0]);
+                          return (
+                            <div className="admin-items-cell-col">
+                              <div className="admin-item-single-row">
+                                <a 
+                                  href={resolved.productUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="admin-item-thumb-link"
+                                  title={`View ${resolved.title} on Storefront ↗`}
+                                >
                                   <img 
-                                    key={idx} 
                                     src={resolved.image} 
                                     alt={resolved.title} 
-                                    className="admin-item-avatar stacked"
-                                    style={{ zIndex: 3 - idx }}
+                                    className="admin-item-avatar"
                                     onError={(e) => { e.target.src = fallbackProductImage; }}
-                                    title={`${resolved.sku} (${resolved.color}) x${resolved.quantity}`}
                                   />
-                                );
-                              })}
-                              {remainingCount > 0 && (
-                                <span className="admin-items-avatar-more" style={{ zIndex: 0 }}>
-                                  +{remainingCount}
-                                </span>
-                              )}
-                            </div>
-                            <div className="admin-item-text-info">
-                              <strong className="admin-item-total-qty">{totalItemsQty} items</strong>
-                              <span className="admin-item-styles-count">{itemsList.length} styles</span>
-                              {isDropship && customPricing.hasCustom && (
-                                <>
-                                  <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
-                                    Bill: {formatMoney(customPricing.netPrice, { currency: customerOrderCurr })}{customPricing.discount > 0 ? ` (-${formatMoney(customPricing.discount, { currency: customerOrderCurr })})` : ''}
+                                </a>
+                                <div className="admin-item-text-info">
+                                  <span className="admin-item-sku" title={resolved.sku}>{resolved.sku}</span>
+                                  <span className="admin-item-desc" title={`${resolved.color} · ${resolved.quantity} pc`}>
+                                    {resolved.color !== 'Standard' ? `${resolved.color} · ` : ''}{resolved.quantity} {resolved.quantity > 1 ? 'pcs' : 'pc'}
                                   </span>
-                                  {rowMarkup.hasMarkup && (
-                                    <span
-                                      className="admin-slip-price-pill"
-                                      style={{
-                                        background: rowMarkup.markupInr >= 0 ? '#ecfdf5' : '#fef2f2',
-                                        color: rowMarkup.markupInr >= 0 ? '#047857' : '#b91c1c',
-                                        borderColor: rowMarkup.markupInr >= 0 ? '#a7f3d0' : '#fecaca',
-                                      }}
-                                      title={rowMarkup.isEstimated ? `Estimated reseller markup at live FX rate (customer items ≈ ${formatMoney(rowMarkup.customerInrApprox, { currency: 'INR' })} vs ₹${rowWholesaleInr})` : 'Exact reseller markup added over wholesale'}
-                                    >
-                                      Markup: {rowMarkup.isEstimated ? '≈ ' : ''}{rowMarkup.markupInr >= 0 ? '+' : ''}{formatMoney(rowMarkup.markupInr, { currency: 'INR' })} ({rowMarkup.markupPct >= 0 ? '+' : ''}{rowMarkup.markupPct.toFixed(0)}%)
+                                </div>
+                              </div>
+                              {pricingStack}
+                            </div>
+                          );
+                        }
+
+                        if (itemsList.length > 1) {
+                          const visibleItems = itemsList.slice(0, 3);
+                          const remainingCount = itemsList.length - 3;
+                          return (
+                            <div className="admin-items-cell-col">
+                              <div 
+                                className="admin-items-stack-wrap"
+                                onClick={() => handleOpenEditor(inquiry, 'details')}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleOpenEditor(inquiry, 'details');
+                                  }
+                                }}
+                                title="Click to view all items in order"
+                                role="button"
+                                tabIndex={0}
+                              >
+                                <div className="admin-items-avatar-stack">
+                                  {visibleItems.map((it, idx) => {
+                                    const resolved = resolveItemDetails(it);
+                                    return (
+                                      <img 
+                                        key={idx} 
+                                        src={resolved.image} 
+                                        alt={resolved.title} 
+                                        className="admin-item-avatar stacked"
+                                        style={{ zIndex: 3 - idx }}
+                                        onError={(e) => { e.target.src = fallbackProductImage; }}
+                                        title={`${resolved.sku} (${resolved.color}) x${resolved.quantity}`}
+                                      />
+                                    );
+                                  })}
+                                  {remainingCount > 0 && (
+                                    <span className="admin-items-avatar-more" style={{ zIndex: 0 }}>
+                                      +{remainingCount}
                                     </span>
                                   )}
-                                </>
-                              )}
+                                </div>
+                                <div className="admin-item-text-info">
+                                  <strong className="admin-item-total-qty">{totalItemsQty} items · {itemsList.length} styles</strong>
+                                </div>
+                              </div>
+                              {pricingStack}
                             </div>
-                          </div>
-                        );
-                      })() : (
-                        <span className="admin-text-muted-subtle">{inquiry.variant_code || '1 Standard Item'}</span>
-                      )}
+                          );
+                        }
+
+                        return <span className="admin-text-muted-subtle">{inquiry.variant_code || '1 Standard Item'}</span>;
+                      })()}
                     </td>
 
                     {/* Logistics Carrier & Tracking */}
@@ -1303,46 +1367,41 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
       </div>
 
       {/* 4. Interactive Focused Modal (Tracking Update & Order Details) */}
-      {selectedInquiry && (
-        <div className="admin-modal-overlay" onClick={() => setSelectedInquiry(null)}>
-          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
-            
+      <dialog
+        ref={modalDialogRef}
+        closedby="any"
+        aria-labelledby="admin-order-modal-title"
+        className="admin-modal-dialog"
+        onClose={() => setSelectedInquiry(null)}
+      >
+        {selectedInquiry && (
+          <>
             {/* Modal Header */}
             <div className="admin-modal-header">
               <div className="admin-modal-header-left">
                 <div className="admin-modal-title-row">
-                  <h3 className="admin-modal-title">
+                  <h1 id="admin-order-modal-title" className="admin-modal-title">
                     Order #{selectedInquiry.order_number || (selectedInquiry.id ? selectedInquiry.id.substring(0, 8) : '')}
-                  </h3>
-                  {selectedInquiry.isApi && <span className="badge-api-mini">API Order</span>}
-                  {selectedInquiry.isDropship && <span className="badge-dropship-mini">Dropship</span>}
-                  {selectedInquiry.is_international && (
-                    <span
-                      className="badge-api-mini"
-                      style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 700 }}
-                    >
-                      INTERNATIONAL
+                  </h1>
+                  {selectedInquiry.reseller_order_id && (
+                    <span className="admin-modal-ref-inline" title={`Reseller Reference: #${selectedInquiry.reseller_order_id}`}>
+                      #{selectedInquiry.reseller_order_id}
                     </span>
                   )}
-                  {selectedInquiry.reseller_order_id && (
-                    <span className="badge-reseller-ref-modal" title={`Reseller Reference: #${selectedInquiry.reseller_order_id}`}>
-                      Ref: #{selectedInquiry.reseller_order_id}
-                    </span>
+                  {selectedInquiry.isApi && <span className="badge-api-mini">API</span>}
+                  {selectedInquiry.isDropship && <span className="badge-dropship-mini">Dropship</span>}
+                  {selectedInquiry.is_international && (
+                    <span className="admin-source-badge badge-international">International</span>
                   )}
                 </div>
                 <div className="admin-modal-sub-row">
                   <span className="admin-modal-meta-text">
                     <strong>{selectedInquiry.dropship_recipient_name || selectedInquiry.buyer_name || 'Customer'}</strong>
-                    {(selectedInquiry.dropship_recipient_phone || selectedInquiry.phone) ? ` · ${selectedInquiry.dropship_recipient_phone || selectedInquiry.phone}` : ''}
                     {selectedInquiry.dropship_recipient_city ? ` · ${selectedInquiry.dropship_recipient_city}` : ''}
-                    {selectedInquiry.is_international && selectedInquiry.recipient_country ? ` · ${selectedInquiry.recipient_country}${selectedInquiry.recipient_country_code ? ` (${selectedInquiry.recipient_country_code})` : ''}` : ''}
+                    {selectedInquiry.is_international && (selectedInquiry.recipient_country_code || selectedInquiry.recipient_country)
+                      ? `, ${selectedInquiry.recipient_country_code || selectedInquiry.recipient_country}`
+                      : ''}
                     {selectedInquiry.billed_weight_kg > 0 ? ` · ${selectedInquiry.billed_weight_kg} kg` : ''}
-                    {` · ${(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)} Item${(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1) > 1 ? 's' : ''}`}
-                    {isAwaitingShippingQuoteStatus(selectedInquiry.status)
-                      ? ' · Quote Pending'
-                      : (selectedInquiry.total_wholesale_inr || selectedInquiry.total_amount)
-                        ? ` · ${formatMoney(selectedInquiry.total_wholesale_inr || selectedInquiry.total_amount, { currency: 'INR' })}`
-                        : ''}
                   </span>
                 </div>
               </div>
@@ -1369,12 +1428,20 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
               </div>
             </div>
 
-            {/* Modal Tab Switcher */}
+            {/* Modal Tab Switcher (Spring-Sliding Segmented Control) */}
             <div className="admin-modal-tabs-strip">
-              <div className="admin-modal-tabs-segmented">
+              <div
+                ref={modalTabTrackRef}
+                data-slider={modalTabSliderReady ? 'ready' : 'static'}
+                className="w365-seg-track"
+                role="tablist"
+                aria-label="Order inspection sections"
+              >
                 <button
                   type="button"
-                  className={`admin-modal-tab-btn ${activeModalTab === 'tracking' ? 'active' : ''}`}
+                  role="tab"
+                  aria-selected={activeModalTab === 'tracking'}
+                  className={`w365-seg-btn w365-seg-btn--tab ${activeModalTab === 'tracking' ? 'active' : ''}`}
                   onClick={() => setActiveModalTab('tracking')}
                 >
                   <Truck size={14} />
@@ -1382,7 +1449,9 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                 </button>
                 <button
                   type="button"
-                  className={`admin-modal-tab-btn ${activeModalTab === 'details' ? 'active' : ''}`}
+                  role="tab"
+                  aria-selected={activeModalTab === 'details'}
+                  className={`w365-seg-btn w365-seg-btn--tab ${activeModalTab === 'details' ? 'active' : ''}`}
                   onClick={() => setActiveModalTab('details')}
                 >
                   <ShoppingBag size={14} />
@@ -1466,7 +1535,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           key={st.id}
                           type="button"
                           className={`admin-status-card-opt opt-${st.themeKey} ${st.isSelected ? 'selected' : ''}`}
-                          onClick={() => setFormStatus(st.targetStatus)}
+                          onClick={() => applyTemplate(st.targetStatus)}
                         >
                           <span className="admin-status-dot-sm" style={{ background: st.color }} />
                           <span className="admin-status-card-name">{st.label}</span>
@@ -1481,37 +1550,21 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                       <span className="admin-section-title">Logistics &amp; Tracking</span>
                     </div>
                     <div className="admin-form-grid-2col">
-                      {/* Left: Carrier input & Domestic carriers */}
                       <div className="admin-form-field-wrap">
-                        <label className="admin-field-label">Logistics Carrier</label>
+                        <label className="admin-field-label" htmlFor="admin-carrier-input">Logistics Carrier</label>
                         <input
+                          id="admin-carrier-input"
                           type="text"
-                          placeholder="Select or enter carrier name..."
+                          placeholder="Select or enter carrier..."
                           value={formCarrier}
-                          onChange={(e) => setFormCarrier(e.target.value)}
+                          onChange={(e) => handleCarrierChange(e.target.value)}
                           className="admin-form-input"
                         />
-                        <div className="admin-carrier-subgroup">
-                          <span className="admin-carrier-group-label">Domestic</span>
-                          <div className="admin-quick-carrier-tags">
-                            {DOMESTIC_CARRIERS.map(c => (
-                              <button 
-                                key={c} 
-                                type="button" 
-                                className={`admin-tag-pill ${(formCarrier || '').toLowerCase() === c.toLowerCase() ? 'active' : ''}`}
-                                onClick={() => setFormCarrier(c)}
-                              >
-                                {c}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
                       </div>
 
-                      {/* Right: AWB input & International carriers */}
                       <div className="admin-form-field-wrap">
                         <div className="admin-label-flex-row">
-                          <label className="admin-field-label">AWB / Tracking Number</label>
+                          <label className="admin-field-label" htmlFor="admin-awb-input">AWB / Tracking Number</label>
                           {formTrackingNum && formCarrier && getCarrierTrackingUrl(formCarrier, formTrackingNum) && (
                             <a 
                               href={getCarrierTrackingUrl(formCarrier, formTrackingNum)} 
@@ -1524,29 +1577,50 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           )}
                         </div>
                         <input
+                          id="admin-awb-input"
                           type="text"
                           placeholder="Tracking / AWB Number"
                           value={formTrackingNum}
-                          onChange={(e) => setFormTrackingNum(e.target.value)}
+                          onChange={(e) => handleTrackingNumChange(e.target.value)}
                           className="admin-form-input"
                         />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const isIntlOrder = Boolean(selectedInquiry.is_international);
+                      const primaryCarriers = isIntlOrder ? INTERNATIONAL_CARRIERS : DOMESTIC_CARRIERS;
+                      const secondaryCarriers = isIntlOrder ? DOMESTIC_CARRIERS : INTERNATIONAL_CARRIERS;
+                      const visibleCarriers = showAllCarriers
+                        ? [...primaryCarriers, ...secondaryCarriers]
+                        : primaryCarriers;
+                      return (
                         <div className="admin-carrier-subgroup">
-                          <span className="admin-carrier-group-label">International</span>
+                          <span className="admin-carrier-group-label">
+                            {showAllCarriers ? 'Carriers:' : (isIntlOrder ? 'Int’l Carriers:' : 'Carriers:')}
+                          </span>
                           <div className="admin-quick-carrier-tags">
-                            {INTERNATIONAL_CARRIERS.map(c => (
+                            {visibleCarriers.map(c => (
                               <button 
                                 key={c} 
                                 type="button" 
                                 className={`admin-tag-pill ${(formCarrier || '').toLowerCase() === c.toLowerCase() ? 'active' : ''}`}
-                                onClick={() => setFormCarrier(c)}
+                                onClick={() => handleCarrierChange(c)}
                               >
                                 {c}
                               </button>
                             ))}
+                            <button
+                              type="button"
+                              className="admin-tag-pill-toggle"
+                              onClick={() => setShowAllCarriers(prev => !prev)}
+                            >
+                              {showAllCarriers ? 'Fewer' : (isIntlOrder ? '+ Domestic' : '+ Int’l')}
+                            </button>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Section 3: Custom Tracking Message with Templates */}
@@ -1556,11 +1630,13 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                         <span className="admin-section-title">Tracking Note</span>
                       </div>
                       <div className="admin-quick-templates">
+                        <button type="button" onClick={() => applyTemplate('awaiting_shipping_quote')} className="admin-template-btn">Awaiting Quote</button>
                         <button type="button" onClick={() => applyTemplate('payment_received')} className="admin-template-btn">Payment Received</button>
                         <button type="button" onClick={() => applyTemplate('order_confirmed')} className="admin-template-btn">Order Confirmed</button>
                         <button type="button" onClick={() => applyTemplate('in_process')} className="admin-template-btn">In Process</button>
                         <button type="button" onClick={() => applyTemplate('shipped')} className="admin-template-btn">Shipped</button>
                         <button type="button" onClick={() => applyTemplate('delivered')} className="admin-template-btn">Delivered</button>
+                        <button type="button" onClick={() => applyTemplate('cancelled')} className="admin-template-btn">Cancelled</button>
                       </div>
                     </div>
                     <textarea
@@ -1579,7 +1655,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                         href={`/order-tracking/${selectedInquiry.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="admin-btn-secondary"
+                        className="admin-btn-ghost"
                         title="Open Buyer Live Tracking Page"
                       >
                         <ExternalLink size={14} /> <span>Live Tracking</span>
@@ -1605,7 +1681,7 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                 </form>
               )}
 
-              {/* TAB 2: Full Order & Items Inspection (Impeccable Layout) */}
+              {/* TAB 2: Full Order & Items Inspection (Soft, Minimal Layout) */}
               {activeModalTab === 'details' && (() => {
                 const modalCustomPricing = getDropshipCustomPricing(selectedInquiry);
                 const modalAccountEmail = resolveAccountEmail(selectedInquiry);
@@ -1615,83 +1691,137 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                 const modalCountryDisplay = selectedInquiry.recipient_country
                   ? `${selectedInquiry.recipient_country}${selectedInquiry.recipient_country_code ? ` (${selectedInquiry.recipient_country_code})` : ''}`
                   : (modalIsIntl ? 'International Destination' : 'India');
+                const inspectItems = (Array.isArray(selectedInquiry.order_items) && selectedInquiry.order_items.length > 0)
+                  ? selectedInquiry.order_items
+                  : (Array.isArray(selectedInquiry.items) ? selectedInquiry.items : []);
+                const showCustomerMarkupCol = Boolean(selectedInquiry.isDropship);
+
+                const totalQuantity = inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
+                const itemsSubtotal = inspectItems.reduce((acc, it) => {
+                  const resolved = resolveItemDetails(it);
+                  return acc + (resolved.price * resolved.quantity);
+                }, 0);
+
+                let couponDiscount = Number(selectedInquiry.coupon_discount || 0);
+                let couponCode = selectedInquiry.coupon_code || '';
+                if (!couponDiscount && selectedInquiry.message) {
+                  const match = selectedInquiry.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
+                  if (match) {
+                    couponCode = couponCode || match[1];
+                    couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
+                  }
+                }
+
+                const explicitWholesaleSubtotal = Number(selectedInquiry.wholesale_subtotal_inr || 0);
+                const explicitIntlShipping = Number(selectedInquiry.shipping_fee_inr || 0);
+                const explicitTotalWholesale = Number(selectedInquiry.total_wholesale_inr || 0);
+                const effectiveItemsSubtotal = explicitWholesaleSubtotal > 0 ? explicitWholesaleSubtotal : itemsSubtotal;
+
+                const finalTotal = explicitTotalWholesale > 0
+                  ? explicitTotalWholesale
+                  : ((selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
+                      ? Number(selectedInquiry.total_amount)
+                      : Math.max(0, effectiveItemsSubtotal - couponDiscount + explicitIntlShipping));
+
+                const paymentMethod = selectedInquiry.payment_method
+                  ? selectedInquiry.payment_method.toUpperCase()
+                  : 'ONLINE PAYMENT';
+
+                let isExpedited = String(selectedInquiry.shipping_speed || '').toLowerCase() === 'expedited' ||
+                  /Shipping:\s*Expedited/i.test(selectedInquiry.message || '');
+
+                let explicitShippingFee = explicitIntlShipping > 0 ? explicitIntlShipping : null;
+                if (explicitShippingFee === null) {
+                  const feeMatch = (selectedInquiry.message || '').match(/International Shipping[^:]*:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
+                                   (selectedInquiry.message || '').match(/Shipping Fee:\s*₹?([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
+                                   (selectedInquiry.message || '').match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
+                  if (feeMatch) {
+                    explicitShippingFee = Number(feeMatch[1].replace(/,/g, '')) || 0;
+                  }
+                }
+
+                const netItems = Math.max(0, effectiveItemsSubtotal - couponDiscount);
+                const diff = finalTotal - netItems;
+
+                if (!modalIsIntl && !isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
+                  isExpedited = true;
+                  explicitShippingFee = Math.round(diff);
+                }
+
+                let shippingFee = 0;
+                let displayItemsSubtotal = effectiveItemsSubtotal;
+
+                if (modalIsIntl) {
+                  shippingFee = modalIsAwaitingQuote ? 0 : (explicitShippingFee !== null && !isNaN(explicitShippingFee) ? explicitShippingFee : Math.max(0, finalTotal - netItems));
+                } else if (isExpedited) {
+                  shippingFee = (explicitShippingFee !== null && !isNaN(explicitShippingFee))
+                    ? explicitShippingFee
+                    : Math.max(0, finalTotal - netItems);
+                  if (Math.abs((displayItemsSubtotal - couponDiscount + shippingFee) - finalTotal) > 0.01) {
+                    displayItemsSubtotal = Math.max(0, finalTotal - shippingFee + couponDiscount);
+                  }
+                } else {
+                  shippingFee = 0;
+                  if (finalTotal > 0 && Math.abs((displayItemsSubtotal - couponDiscount) - finalTotal) > 0.01) {
+                    displayItemsSubtotal = Math.max(0, finalTotal + couponDiscount);
+                  }
+                }
+
+                const statusLower = String(selectedInquiry.status || '').toLowerCase().trim();
+                const isPendingPayment = statusLower === 'pending_payment' || statusLower === 'payment_pending';
+                const isCancelledOrder = statusLower === 'cancelled';
+                const totalStatusLabel = modalIsAwaitingQuote
+                  ? 'Total Payable'
+                  : (isPendingPayment ? 'Amount Due' : (isCancelledOrder ? 'Order Total' : 'Total Paid'));
+
+                const customerItemsBasis = modalCustomPricing.itemsRetailTotal > 0
+                  ? modalCustomPricing.itemsRetailTotal
+                  : Math.max(0, modalCustomPricing.netPrice - modalCustomPricing.customerShipping);
+                const modalMarkup = showCustomerMarkupCol
+                  ? computeDropshipMarkupSummary({
+                      itemsRetailInCurrency: customerItemsBasis,
+                      wholesaleInr: displayItemsSubtotal,
+                      currency: modalCustomerCurrency,
+                      exchangeRates,
+                    })
+                  : { hasMarkup: false };
+
                 return (
                 <div className="admin-order-full-inspection">
                   
-                  {/* Address Summary Cards */}
+                  {/* Compact From / To Cards */}
                   <div className="admin-address-inspection-grid">
-                    {/* Ship From */}
                     <div className="admin-inspect-card">
                       <div className="admin-inspect-card-top-row">
                         <span className="admin-inspect-header">
-                          <User size={13} /> SENDER
+                          <User size={12} /> From (Reseller)
                         </span>
                         {selectedInquiry.dropship_packing_preference && (
-                          <span className="admin-inspect-pack-badge" title={`Packaging: ${selectedInquiry.dropship_packing_preference}`}>
+                          <span className="admin-inspect-pack-badge" title={selectedInquiry.dropship_packing_preference}>
                             {getShortPackagingLabel(selectedInquiry.dropship_packing_preference)}
                           </span>
                         )}
                       </div>
                       <strong className="admin-inspect-name">
-                        {selectedInquiry.dropship_sender_name || selectedInquiry.business_name || 'Weave365 Wholesale Partner'}
+                        {selectedInquiry.dropship_sender_name || selectedInquiry.business_name || 'Weave365 Partner'}
                       </strong>
                       <p className="admin-inspect-detail">
-                        <span className="admin-inspect-label">Phone:</span>{' '}
-                        {selectedInquiry.dropship_sender_phone || selectedInquiry.phone || 'N/A'}
+                        {selectedInquiry.dropship_sender_phone || selectedInquiry.phone || '—'}
+                        {modalAccountEmail ? ` · ${modalAccountEmail}` : ''}
                       </p>
-                      {selectedInquiry.dropship_sender_address && (
-                        <p className="admin-inspect-detail">{selectedInquiry.dropship_sender_address}</p>
-                      )}
                       {(selectedInquiry.dropship_sender_city || selectedInquiry.dropship_sender_pincode) && (
-                        <p className="admin-inspect-pin">
-                          {[
-                            selectedInquiry.dropship_sender_city,
-                            selectedInquiry.dropship_sender_state,
-                          ].filter(Boolean).join(', ')}
-                          {selectedInquiry.dropship_sender_pincode ? ` - ${selectedInquiry.dropship_sender_pincode}` : ''}
+                        <p className="admin-inspect-detail" style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                          {[selectedInquiry.dropship_sender_city, selectedInquiry.dropship_sender_state, selectedInquiry.dropship_sender_pincode].filter(Boolean).join(', ')}
                         </p>
-                      )}
-                      {modalAccountEmail && (
-                        <p className="admin-inspect-detail">
-                          <span className="admin-inspect-label">Account:</span>{' '}
-                          <strong className="admin-inspect-account-text">{modalAccountEmail}</strong>
-                        </p>
-                      )}
-                      {modalCustomPricing.hasCustom && (
-                        <div className="admin-inspect-slip-price-box">
-                          <div className="admin-inspect-slip-price-row">
-                            <span className="admin-inspect-slip-price-label">Parcel Slip Price ({modalCustomerCurrency}):</span>
-                            <strong className="admin-inspect-slip-price-val">{formatMoney(modalCustomPricing.billedPrice, { currency: modalCustomerCurrency })}</strong>
-                          </div>
-                          {modalCustomPricing.discount > 0 && (
-                            <div className="admin-inspect-slip-price-row discount">
-                              <span>Discount:</span>
-                              <span>-{formatMoney(modalCustomPricing.discount, { currency: modalCustomerCurrency })}</span>
-                            </div>
-                          )}
-                          <div className="admin-inspect-slip-price-row net">
-                            <span>Printed on Slip:</span>
-                            <strong>{formatMoney(modalCustomPricing.netPrice, { currency: modalCustomerCurrency })}</strong>
-                          </div>
-                        </div>
                       )}
                     </div>
 
-                    {/* Ship To */}
                     <div className="admin-inspect-card highlighted">
                       <div className="admin-inspect-card-top-row">
                         <span className="admin-inspect-header primary">
-                          <MapPin size={13} /> RECIPIENT
+                          <MapPin size={12} /> Ship To
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {modalIsIntl && (
-                            <span
-                              className="badge-api-mini"
-                              style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 700 }}
-                            >
-                              INTERNATIONAL
-                            </span>
-                          )}
                           {selectedInquiry.dropship_recipient_phone && (
                             <a 
                               href={`https://wa.me/${String(selectedInquiry.dropship_recipient_phone).replace(/\D/g, '')}`} 
@@ -1710,430 +1840,212 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                         {selectedInquiry.dropship_recipient_name || selectedInquiry.buyer_name || 'Customer'}
                       </strong>
                       <p className="admin-inspect-detail">
-                        <span className="admin-inspect-label">Phone:</span>{' '}
-                        {selectedInquiry.dropship_recipient_phone || selectedInquiry.phone || 'N/A'}
+                        {selectedInquiry.dropship_recipient_phone || selectedInquiry.phone || '—'}
                       </p>
-                      <p className="admin-inspect-detail">
-                        {selectedInquiry.dropship_recipient_address || getParsedAddress(selectedInquiry.message) || 'Address in order notes'}
+                      <p className="admin-inspect-detail" style={{ color: '#475569' }}>
+                        {[
+                          selectedInquiry.dropship_recipient_address || getParsedAddress(selectedInquiry.message),
+                          selectedInquiry.dropship_recipient_city,
+                          selectedInquiry.dropship_recipient_state,
+                          selectedInquiry.dropship_recipient_pincode || selectedInquiry.pincode,
+                          modalIsIntl ? modalCountryDisplay : null,
+                        ].filter(Boolean).join(', ') || 'Address in order notes'}
                       </p>
-                      {(selectedInquiry.dropship_recipient_city || selectedInquiry.dropship_recipient_state || selectedInquiry.dropship_recipient_pincode || selectedInquiry.pincode) && (
-                        <p className="admin-inspect-pin">
-                          {[selectedInquiry.dropship_recipient_city, selectedInquiry.dropship_recipient_state].filter(Boolean).join(', ')}
-                          {(selectedInquiry.dropship_recipient_pincode || selectedInquiry.pincode) ? ` - ${selectedInquiry.dropship_recipient_pincode || selectedInquiry.pincode}` : ''}
+                      {modalIsIntl && (selectedInquiry.customer_shipping_method || selectedInquiry.customer_shipping_amount > 0) && (
+                        <p className="admin-inspect-detail" style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '2px' }}>
+                          Store shipping: {selectedInquiry.customer_shipping_method || 'Standard'} ({formatMoney(selectedInquiry.customer_shipping_amount || 0, { currency: modalCustomerCurrency })})
                         </p>
-                      )}
-                      {modalIsIntl && (
-                        <>
-                          <p className="admin-inspect-detail">
-                            <span className="admin-inspect-label">Destination Country:</span>{' '}
-                            <strong>{modalCountryDisplay}</strong>
-                          </p>
-                          {selectedInquiry.billed_weight_kg > 0 && (
-                            <p className="admin-inspect-detail">
-                              <span className="admin-inspect-label">Billed Weight:</span>{' '}
-                              <strong>{selectedInquiry.billed_weight_kg} kg</strong>
-                            </p>
-                          )}
-                          {(selectedInquiry.customer_shipping_method || selectedInquiry.customer_shipping_amount > 0) && (
-                            <p className="admin-inspect-detail">
-                              <span className="admin-inspect-label">Customer Shipping:</span>{' '}
-                              {selectedInquiry.customer_shipping_method || 'Standard'}{' '}
-                              ({formatMoney(selectedInquiry.customer_shipping_amount || 0, { currency: modalCustomerCurrency })})
-                            </p>
-                          )}
-                        </>
                       )}
                     </div>
                   </div>
 
-                  {/* Items Detailed Table */}
-                  {(() => {
-                    const inspectItems = (Array.isArray(selectedInquiry.order_items) && selectedInquiry.order_items.length > 0)
-                      ? selectedInquiry.order_items
-                      : (Array.isArray(selectedInquiry.items) ? selectedInquiry.items : []);
-                    const showCustomerMarkupCol = Boolean(selectedInquiry.isDropship);
-                    const summaryColSpan = showCustomerMarkupCol ? 5 : 4;
-                    return (
-                      <div className="admin-inspect-items-wrap">
-                        <div className="admin-inspect-items-header">
-                          <span className="admin-inspect-items-title">
-                            Items <span className="admin-inspect-items-count">({inspectItems.length || 1})</span>
-                          </span>
-                        </div>
-                        <table className="admin-inspect-table">
-                          <thead>
-                            <tr>
-                              <th scope="col">Item</th>
-                              <th scope="col">SKU</th>
-                              <th scope="col">Color</th>
-                              <th scope="col" style={{ textAlign: 'center' }}>Qty</th>
-                              <th scope="col" style={{ textAlign: 'right' }}>{showCustomerMarkupCol ? 'Wholesale (INR)' : 'Price (INR)'}</th>
+                  {/* Clean 4-Column Items Table */}
+                  <div className="admin-inspect-items-wrap">
+                    <div className="admin-inspect-items-header">
+                      <span className="admin-inspect-items-title">
+                        Items ({inspectItems.length || 1})
+                      </span>
+                    </div>
+                    <table className="admin-inspect-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Product</th>
+                          <th scope="col" style={{ textAlign: 'center', width: '56px' }}>Qty</th>
+                          <th scope="col" style={{ textAlign: 'right', width: '105px' }}>Wholesale</th>
+                          {showCustomerMarkupCol && (
+                            <th scope="col" style={{ textAlign: 'right', width: '145px' }}>Customer / Markup</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inspectItems.map((it, idx) => {
+                          const resolved = resolveItemDetails(it);
+                          const lineWholesale = resolved.price * resolved.quantity;
+                          const lineCustomer = resolved.customerUnitPrice > 0 ? resolved.customerUnitPrice * resolved.quantity : 0;
+                          const itemMarkup = lineCustomer > 0 && lineWholesale > 0
+                            ? computeDropshipMarkupSummary({
+                                itemsRetailInCurrency: lineCustomer,
+                                wholesaleInr: lineWholesale,
+                                currency: modalCustomerCurrency,
+                                exchangeRates,
+                              })
+                            : { hasMarkup: false };
+                          return (
+                            <tr key={idx}>
+                              <td>
+                                <a 
+                                  href={resolved.productUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="admin-inspect-item-cell"
+                                  title={`Open ${resolved.title} in new tab`}
+                                >
+                                  <img 
+                                    src={resolved.image} 
+                                    alt={resolved.title} 
+                                    className="admin-inspect-item-img"
+                                    onError={(e) => { e.target.src = fallbackProductImage; }}
+                                  />
+                                  <div className="admin-inspect-item-text">
+                                    <span className="admin-inspect-item-title">{resolved.title}</span>
+                                    <div className="admin-inspect-item-sub">
+                                      <code className="admin-inspect-sku-inline">{resolved.sku}</code>
+                                      {resolved.color && resolved.color !== 'Standard' && (
+                                        <span>{resolved.color}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </a>
+                              </td>
+                              <td style={{ textAlign: 'center', color: '#475569' }}>×{resolved.quantity}</td>
+                              <td style={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                                {resolved.price > 0 ? formatMoney(lineWholesale, { currency: 'INR' }) : '—'}
+                              </td>
                               {showCustomerMarkupCol && (
-                                <th scope="col" style={{ textAlign: 'right' }}>Customer / Markup</th>
+                                <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                                  {lineCustomer > 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
+                                      <span style={{ fontWeight: 600, fontSize: '0.84rem', color: '#0f172a' }}>
+                                        {formatMoney(lineCustomer, { currency: modalCustomerCurrency })}
+                                      </span>
+                                      {itemMarkup.hasMarkup && (
+                                        <span
+                                          style={{
+                                            fontSize: '0.72rem',
+                                            fontWeight: 600,
+                                            color: itemMarkup.markupInr > 0 ? '#276749' : (itemMarkup.markupInr < 0 ? '#9b3b3b' : '#64748b'),
+                                          }}
+                                          title={itemMarkup.isEstimated ? `Approx. ${formatMoney(itemMarkup.customerInrApprox, { currency: 'INR' })} vs ₹${lineWholesale}` : 'Exact markup'}
+                                        >
+                                          {itemMarkup.markupInr === 0
+                                            ? '0%'
+                                            : `${itemMarkup.isEstimated ? '≈' : ''}${itemMarkup.markupInr > 0 ? '+' : ''}${formatMoney(itemMarkup.markupInr, { currency: 'INR' })} (${itemMarkup.markupPct > 0 ? '+' : ''}${itemMarkup.markupPct.toFixed(0)}%)`}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span style={{ color: '#94a3b8' }}>—</span>
+                                  )}
+                                </td>
                               )}
                             </tr>
-                          </thead>
-                          <tbody>
-                            {inspectItems.map((it, idx) => {
-                              const resolved = resolveItemDetails(it);
-                              const lineWholesale = resolved.price * resolved.quantity;
-                              const lineCustomer = resolved.customerUnitPrice > 0 ? resolved.customerUnitPrice * resolved.quantity : 0;
-                              const itemMarkup = lineCustomer > 0 && lineWholesale > 0
-                                ? computeDropshipMarkupSummary({
-                                    itemsRetailInCurrency: lineCustomer,
-                                    wholesaleInr: lineWholesale,
-                                    currency: modalCustomerCurrency,
-                                    exchangeRates,
-                                  })
-                                : { hasMarkup: false };
-                              return (
-                                <tr key={idx}>
-                                  <td>
-                                    <a 
-                                      href={resolved.productUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="admin-inspect-item-cell"
-                                      title={`Open ${resolved.title} page in new tab ↗`}
-                                    >
-                                      <img 
-                                        src={resolved.image} 
-                                        alt={resolved.title} 
-                                        className="admin-inspect-item-img"
-                                        onError={(e) => { e.target.src = fallbackProductImage; }}
-                                      />
-                                      <div className="admin-inspect-item-text">
-                                        <span className="admin-inspect-item-title">{resolved.title}</span>
-                                      </div>
-                                    </a>
-                                  </td>
-                                  <td><code className="admin-sku-code">{resolved.sku}</code></td>
-                                  <td><span className="admin-color-tag">{resolved.color}</span></td>
-                                  <td style={{ textAlign: 'center' }}><strong>{resolved.quantity}</strong></td>
-                                  <td style={{ textAlign: 'right', fontWeight: 'var(--admin-font-weight-semibold, 600)' }}>{resolved.price > 0 ? formatMoney(lineWholesale, { currency: 'INR' }) : 'Wholesale Tier'}</td>
-                                  {showCustomerMarkupCol && (
-                                    <td style={{ textAlign: 'right' }}>
-                                      {lineCustomer > 0 ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                                          <strong style={{ fontSize: '0.84rem', color: '#0f172a' }}>
-                                            {formatMoney(lineCustomer, { currency: modalCustomerCurrency })}
-                                          </strong>
-                                          {itemMarkup.hasMarkup && (
-                                            <span
-                                              style={{
-                                                fontSize: '0.72rem',
-                                                fontWeight: 600,
-                                                color: itemMarkup.markupInr > 0 ? '#047857' : (itemMarkup.markupInr < 0 ? '#b91c1c' : '#64748b'),
-                                              }}
-                                              title={itemMarkup.isEstimated ? `Approx. ${formatMoney(itemMarkup.customerInrApprox, { currency: 'INR' })} at live FX vs ₹${lineWholesale}` : 'Exact markup over wholesale'}
-                                            >
-                                              {itemMarkup.markupInr === 0
-                                                ? 'No markup (0%)'
-                                                : `${itemMarkup.isEstimated ? '≈ ' : ''}${itemMarkup.markupInr > 0 ? '+' : ''}${formatMoney(itemMarkup.markupInr, { currency: 'INR' })} (${itemMarkup.markupPct > 0 ? '+' : ''}${itemMarkup.markupPct.toFixed(1)}%)`}
-                                            </span>
-                                          )}
-                                        </div>
-                                      ) : (
-                                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>—</span>
-                                      )}
-                                    </td>
-                                  )}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                          <tfoot>
-                            {(() => {
-                              const totalQuantity = inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
-                              const itemsSubtotal = inspectItems.reduce((acc, it) => {
-                                const resolved = resolveItemDetails(it);
-                                return acc + (resolved.price * resolved.quantity);
-                              }, 0);
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
-                              let couponDiscount = Number(selectedInquiry.coupon_discount || 0);
-                              let couponCode = selectedInquiry.coupon_code || '';
-                              if (!couponDiscount && selectedInquiry.message) {
-                                const match = selectedInquiry.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
-                                if (match) {
-                                  couponCode = couponCode || match[1];
-                                  couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
-                                }
-                              }
-
-                              const explicitWholesaleSubtotal = Number(selectedInquiry.wholesale_subtotal_inr || 0);
-                              const explicitIntlShipping = Number(selectedInquiry.shipping_fee_inr || 0);
-                              const explicitTotalWholesale = Number(selectedInquiry.total_wholesale_inr || 0);
-                              const effectiveItemsSubtotal = explicitWholesaleSubtotal > 0 ? explicitWholesaleSubtotal : itemsSubtotal;
-
-                              const finalTotal = explicitTotalWholesale > 0
-                                ? explicitTotalWholesale
-                                : ((selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
-                                    ? Number(selectedInquiry.total_amount)
-                                    : Math.max(0, effectiveItemsSubtotal - couponDiscount + explicitIntlShipping));
-
-                              const paymentMethod = selectedInquiry.payment_method 
-                                ? selectedInquiry.payment_method.toUpperCase() 
-                                : 'ONLINE PAYMENT';
-
-                              let isExpedited = String(selectedInquiry.shipping_speed || '').toLowerCase() === 'expedited' ||
-                                /Shipping:\s*Expedited/i.test(selectedInquiry.message || '');
-
-                              let explicitShippingFee = explicitIntlShipping > 0 ? explicitIntlShipping : null;
-                              if (explicitShippingFee === null) {
-                                const feeMatch = (selectedInquiry.message || '').match(/International Shipping[^:]*:\s*₹?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
-                                                 (selectedInquiry.message || '').match(/Shipping Fee:\s*₹?([0-9][0-9,]*(?:\.[0-9]+)?)/i) ||
-                                                 (selectedInquiry.message || '').match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9][0-9,]*(?:\.[0-9]+)?)\)/i);
-                                if (feeMatch) {
-                                  explicitShippingFee = Number(feeMatch[1].replace(/,/g, '')) || 0;
-                                }
-                              }
-
-                              const netItems = Math.max(0, effectiveItemsSubtotal - couponDiscount);
-                              const diff = finalTotal - netItems;
-
-                              if (!modalIsIntl && !isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
-                                isExpedited = true;
-                                explicitShippingFee = Math.round(diff);
-                              }
-
-                              let shippingFee = 0;
-                              let displayItemsSubtotal = effectiveItemsSubtotal;
-
-                              if (modalIsIntl) {
-                                shippingFee = modalIsAwaitingQuote ? 0 : (explicitShippingFee !== null && !isNaN(explicitShippingFee) ? explicitShippingFee : Math.max(0, finalTotal - netItems));
-                              } else if (isExpedited) {
-                                if (explicitShippingFee !== null && !isNaN(explicitShippingFee)) {
-                                  shippingFee = explicitShippingFee;
-                                } else {
-                                  shippingFee = Math.max(0, finalTotal - netItems);
-                                }
-                                if (Math.abs((displayItemsSubtotal - couponDiscount + shippingFee) - finalTotal) > 0.01) {
-                                  displayItemsSubtotal = Math.max(0, finalTotal - shippingFee + couponDiscount);
-                                }
-                              } else {
-                                shippingFee = 0;
-                                if (finalTotal > 0 && Math.abs((displayItemsSubtotal - couponDiscount) - finalTotal) > 0.01) {
-                                  displayItemsSubtotal = Math.max(0, finalTotal + couponDiscount);
-                                }
-                              }
-
-                              const hasAdjustments = modalIsIntl || modalIsAwaitingQuote || couponDiscount > 0 || shippingFee > 0 || Math.abs(displayItemsSubtotal - finalTotal) > 0.01;
-                              const statusLower = String(selectedInquiry.status || '').toLowerCase().trim();
-                              const isPendingPayment = statusLower === 'pending_payment' || statusLower === 'payment_pending';
-                              const isCancelledOrder = statusLower === 'cancelled';
-                              const totalStatusLabel = modalIsAwaitingQuote
-                                ? 'Total Payable (INR)'
-                                : (isPendingPayment ? 'Amount Due (INR)' : (isCancelledOrder ? 'Order Total (Cancelled)' : 'Total Paid (INR)'));
-
-                              const customerItemsBasis = modalCustomPricing.itemsRetailTotal > 0
-                                ? modalCustomPricing.itemsRetailTotal
-                                : Math.max(0, modalCustomPricing.netPrice - modalCustomPricing.customerShipping);
-                              const modalMarkup = showCustomerMarkupCol
-                                ? computeDropshipMarkupSummary({
-                                    itemsRetailInCurrency: customerItemsBasis,
-                                    wholesaleInr: displayItemsSubtotal,
-                                    currency: modalCustomerCurrency,
-                                    exchangeRates,
-                                  })
-                                : { hasMarkup: false };
-
-                              const parcelSlipRow = modalCustomPricing.hasCustom ? (
-                                <>
-                                  <tr className="admin-inspect-slip-row">
-                                    <td colSpan={summaryColSpan}>
-                                      <div className="admin-inspect-slip-title-wrap">
-                                        <span className="admin-inspect-slip-heading">
-                                          Parcel Slip Value ({modalCustomerCurrency})
-                                        </span>
-                                        <span className="admin-slip-price-pill">
-                                          Printed on Slip
-                                        </span>
-                                      </div>
-                                      {modalCustomPricing.itemsRetailTotal > 0 && modalCustomPricing.customerShipping > 0 && (
-                                        <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '2px' }}>
-                                          Items {formatMoney(modalCustomPricing.itemsRetailTotal, { currency: modalCustomerCurrency })} + Customer Shipping {formatMoney(modalCustomPricing.customerShipping, { currency: modalCustomerCurrency })}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td style={{ textAlign: 'right' }}>
-                                      <div className="admin-inspect-slip-amount-wrap">
-                                        <strong className="admin-inspect-slip-amount">
-                                          {formatMoney(modalCustomPricing.netPrice, { currency: modalCustomerCurrency })}
-                                        </strong>
-                                        {modalCustomPricing.discount > 0 && (
-                                          <span className="admin-inspect-slip-subtext">
-                                            ({formatMoney(modalCustomPricing.billedPrice, { currency: modalCustomerCurrency })} - {formatMoney(modalCustomPricing.discount, { currency: modalCustomerCurrency })})
-                                          </span>
-                                        )}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  {modalMarkup.hasMarkup && (
-                                    <tr style={{ background: modalMarkup.markupInr >= 0 ? '#f0fdf4' : '#fef2f2' }}>
-                                      <td colSpan={summaryColSpan}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                            <span style={{ fontWeight: 700, fontSize: '0.84rem', color: modalMarkup.markupInr >= 0 ? '#166534' : '#991b1b' }}>
-                                              Reseller Markup Added
-                                            </span>
-                                            <span
-                                              style={{
-                                                fontSize: '0.7rem',
-                                                fontWeight: 600,
-                                                padding: '1px 6px',
-                                                borderRadius: '999px',
-                                                background: '#ffffff',
-                                                border: '1px solid #cbd5e1',
-                                                color: '#334155',
-                                              }}
-                                            >
-                                              {modalMarkup.isEstimated && modalMarkup.rate > 0
-                                                ? `Est. @ 1 ${modalCustomerCurrency} ≈ ₹${(1 / modalMarkup.rate).toFixed(2)}`
-                                                : 'Exact INR'}
-                                            </span>
-                                          </div>
-                                          <span style={{ fontSize: '0.75rem', color: '#475569' }}>
-                                            Customer Items {formatMoney(customerItemsBasis, { currency: modalCustomerCurrency })}
-                                            {modalMarkup.isEstimated ? ` (≈ ${formatMoney(modalMarkup.customerInrApprox, { currency: 'INR' })})` : ''}
-                                            {' '}vs Wholesale {formatMoney(displayItemsSubtotal, { currency: 'INR' })}
-                                          </span>
-                                        </div>
-                                      </td>
-                                      <td style={{ textAlign: 'right' }}>
-                                        <strong style={{ fontSize: '0.92rem', color: modalMarkup.markupInr >= 0 ? '#15803d' : '#b91c1c' }}>
-                                          {modalMarkup.isEstimated ? '≈ ' : ''}
-                                          {modalMarkup.markupInr >= 0 ? '+' : ''}
-                                          {formatMoney(modalMarkup.markupInr, { currency: 'INR' })}
-                                        </strong>
-                                        <div style={{ fontSize: '0.74rem', fontWeight: 600, color: modalMarkup.markupInr >= 0 ? '#166534' : '#991b1b' }}>
-                                          ({modalMarkup.markupPct >= 0 ? '+' : ''}{modalMarkup.markupPct.toFixed(1)}%)
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </>
-                              ) : null;
-
-                              if (hasAdjustments) {
-                                return (
-                                  <>
-                                    <tr className="admin-inspect-summary-subtotal">
-                                      <td colSpan={summaryColSpan}>
-                                        <span className="admin-inspect-subtotal-label">Items Wholesale</span>
-                                        <span className="admin-inspect-subtotal-units">({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
-                                      </td>
-                                      <td style={{ textAlign: 'right' }}>
-                                        <span className="admin-inspect-subtotal-amount">{formatMoney(displayItemsSubtotal, { currency: 'INR' })}</span>
-                                      </td>
-                                    </tr>
-                                    {couponDiscount > 0 && (
-                                      <tr className="admin-inspect-summary-coupon">
-                                        <td colSpan={summaryColSpan}>
-                                          <div className="admin-inspect-coupon-wrap">
-                                            <span className="admin-inspect-coupon-label">Applied Coupon</span>
-                                            <span className="admin-inspect-coupon-pill">
-                                              <Tag size={10.5} /> {couponCode || 'APPLIED'}
-                                            </span>
-                                          </div>
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                          <span className="admin-inspect-coupon-amount">-{formatMoney(couponDiscount, { currency: 'INR' })}</span>
-                                        </td>
-                                      </tr>
-                                    )}
-                                    {(modalIsIntl || modalIsAwaitingQuote || shippingFee > 0) && (
-                                      <tr className="admin-inspect-summary-shipping">
-                                        <td colSpan={summaryColSpan}>
-                                          <span className="admin-inspect-shipping-label">
-                                            {modalIsIntl
-                                              ? `International Shipping (${modalCountryDisplay}${selectedInquiry.billed_weight_kg > 0 ? ` · ${selectedInquiry.billed_weight_kg} kg` : ''})`
-                                              : `Shipping & Delivery ${isExpedited ? '(Expedited Air)' : ''}`}
-                                          </span>
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                          <span className="admin-inspect-shipping-amount" style={modalIsAwaitingQuote ? { color: '#c2410c', fontWeight: 600 } : undefined}>
-                                            {modalIsAwaitingQuote
-                                              ? 'Pending Quote'
-                                              : (shippingFee > 0 ? `+${formatMoney(shippingFee, { currency: 'INR' })}` : 'FREE')}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    )}
-                                    <tr className="admin-inspect-summary-total">
-                                      <td colSpan={summaryColSpan}>
-                                        <div className="admin-inspect-total-left">
-                                          <span className="admin-inspect-total-label">{totalStatusLabel}</span>
-                                          {modalIsAwaitingQuote ? (
-                                            <span className="admin-inspect-payment-pill pending">
-                                              QUOTE PENDING
-                                            </span>
-                                          ) : selectedInquiry.payment_method && (
-                                            <span className={`admin-inspect-payment-pill ${isPendingPayment ? 'pending' : ''}`}>
-                                              {paymentMethod}{isPendingPayment ? ' · UNPAID' : ''}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-                                      <td style={{ textAlign: 'right' }}>
-                                        <span className="admin-inspect-total-amount">
-                                          {modalIsAwaitingQuote ? 'Pending Quote' : formatMoney(finalTotal, { currency: 'INR' })}
-                                        </span>
-                                      </td>
-                                    </tr>
-                                    {parcelSlipRow}
-                                  </>
-                                );
-                              }
-
-                              return (
-                                <>
-                                  <tr className="admin-inspect-summary-total">
-                                    <td colSpan={summaryColSpan}>
-                                      <div className="admin-inspect-total-left">
-                                        <span className="admin-inspect-total-label">{totalStatusLabel} ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
-                                        {selectedInquiry.payment_method && (
-                                          <span className={`admin-inspect-payment-pill ${isPendingPayment ? 'pending' : ''}`}>
-                                            {paymentMethod}{isPendingPayment ? ' · UNPAID' : ''}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td style={{ textAlign: 'right' }}>
-                                      <span className="admin-inspect-total-amount">{formatMoney(finalTotal, { currency: 'INR' })}</span>
-                                    </td>
-                                  </tr>
-                                  {parcelSlipRow}
-                                </>
-                              );
-                            })()}
-                          </tfoot>
-                        </table>
+                  {/* Clean Totals & Dropship Cards */}
+                  <div className="admin-inspect-summary-panel">
+                    <div className="admin-inspect-totals-card">
+                      <div className="admin-inspect-total-row">
+                        <span>Items Wholesale ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
+                        <span>{formatMoney(displayItemsSubtotal, { currency: 'INR' })}</span>
                       </div>
-                    );
-                  })()}
+                      {couponDiscount > 0 && (
+                        <div className="admin-inspect-total-row" style={{ color: '#276749' }}>
+                          <span>Coupon {couponCode ? `(${couponCode})` : ''}</span>
+                          <span>-{formatMoney(couponDiscount, { currency: 'INR' })}</span>
+                        </div>
+                      )}
+                      {(modalIsIntl || modalIsAwaitingQuote || shippingFee > 0) && (
+                        <div className="admin-inspect-total-row">
+                          <span>
+                            {modalIsIntl
+                              ? `International Shipping (${selectedInquiry.recipient_country_code || modalCountryDisplay}${selectedInquiry.billed_weight_kg > 0 ? ` · ${selectedInquiry.billed_weight_kg} kg` : ''})`
+                              : `Shipping${isExpedited ? ' (Expedited)' : ''}`}
+                          </span>
+                          <span style={modalIsAwaitingQuote ? { color: '#b45309', fontWeight: 600 } : undefined}>
+                            {modalIsAwaitingQuote
+                              ? 'Pending Quote'
+                              : (shippingFee > 0 ? `+${formatMoney(shippingFee, { currency: 'INR' })}` : 'FREE')}
+                          </span>
+                        </div>
+                      )}
+                      <div className="admin-inspect-total-row grand">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700 }}>{totalStatusLabel} (INR)</span>
+                          {modalIsAwaitingQuote ? (
+                            <span className="admin-inspect-payment-pill pending">Quote Pending</span>
+                          ) : selectedInquiry.payment_method && (
+                            <span className={`admin-inspect-payment-pill ${isPendingPayment ? 'pending' : ''}`}>
+                              {paymentMethod}{isPendingPayment ? ' · Unpaid' : ''}
+                            </span>
+                          )}
+                        </div>
+                        <strong>{modalIsAwaitingQuote ? 'Pending Quote' : formatMoney(finalTotal, { currency: 'INR' })}</strong>
+                      </div>
+                    </div>
 
-                  {/* Inspection Footer Actions (Balanced 1-Row Layout) */}
+                    {showCustomerMarkupCol && modalCustomPricing.hasCustom && (
+                      <div className="admin-dropship-cards-grid">
+                        <div className="admin-dropship-stat-card">
+                          <span className="admin-dropship-stat-label">Parcel Slip Value ({modalCustomerCurrency})</span>
+                          <strong className="admin-dropship-stat-value">
+                            {formatMoney(modalCustomPricing.netPrice, { currency: modalCustomerCurrency })}
+                          </strong>
+                          <span className="admin-dropship-stat-sub">
+                            {modalCustomPricing.itemsRetailTotal > 0 && modalCustomPricing.customerShipping > 0
+                              ? `Items ${formatMoney(modalCustomPricing.itemsRetailTotal, { currency: modalCustomerCurrency })} + Ship ${formatMoney(modalCustomPricing.customerShipping, { currency: modalCustomerCurrency })}`
+                              : modalCustomPricing.discount > 0
+                                ? `After ${formatMoney(modalCustomPricing.discount, { currency: modalCustomerCurrency })} discount`
+                                : 'Printed on customer slip'}
+                          </span>
+                        </div>
+
+                        {modalMarkup.hasMarkup && (
+                          <div className={`admin-dropship-stat-card ${modalMarkup.markupInr >= 0 ? 'is-profit' : 'is-loss'}`}>
+                            <span className="admin-dropship-stat-label">Reseller Markup Added</span>
+                            <strong className="admin-dropship-stat-value">
+                              {modalMarkup.isEstimated ? '≈ ' : ''}
+                              {modalMarkup.markupInr >= 0 ? '+' : ''}
+                              {formatMoney(modalMarkup.markupInr, { currency: 'INR' })} ({modalMarkup.markupPct >= 0 ? '+' : ''}{modalMarkup.markupPct.toFixed(1)}%)
+                            </strong>
+                            <span className="admin-dropship-stat-sub">
+                              {modalMarkup.isEstimated && modalMarkup.rate > 0
+                                ? `Customer ${formatMoney(customerItemsBasis, { currency: modalCustomerCurrency })} ≈ ${formatMoney(modalMarkup.customerInrApprox, { currency: 'INR' })} @ 1 ${modalCustomerCurrency} ≈ ₹${(1 / modalMarkup.rate).toFixed(2)}`
+                                : `Customer ${formatMoney(customerItemsBasis, { currency: 'INR' })} vs Wholesale ${formatMoney(displayItemsSubtotal, { currency: 'INR' })}`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Inspection Footer Actions */}
                   <div className="admin-modal-footer">
                     <div className="admin-modal-footer-left">
                       <a
                         href={`/order-tracking/${selectedInquiry.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="admin-btn-secondary"
+                        className="admin-btn-ghost"
                         title="Open Buyer Live Tracking Page"
                       >
                         <ExternalLink size={14} /> <span>Live Tracking</span>
                       </a>
                     </div>
                     <div className="admin-modal-footer-right">
-                      <button
-                        type="button"
-                        className="admin-btn-action-primary"
-                        onClick={() => setActiveModalTab('tracking')}
-                        title="Update status, enter tracking carrier & dispatch"
-                      >
-                        <Truck size={14} /> <span>Fulfill / Dispatch</span>
-                      </button>
                       <button
                         type="button"
                         className="admin-btn-secondary"
@@ -2150,9 +2062,17 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
                           className="admin-btn-action-wa"
                           title="Send Customer WhatsApp Dispatch Alert"
                         >
-                          <MessageCircle size={14} /> <span>WhatsApp Alert</span>
+                          <MessageCircle size={14} /> <span>WhatsApp</span>
                         </a>
                       )}
+                      <button
+                        type="button"
+                        className="admin-btn-action-primary"
+                        onClick={() => setActiveModalTab('tracking')}
+                        title="Update status, enter tracking carrier & dispatch"
+                      >
+                        <Truck size={14} /> <span>Fulfill / Dispatch</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2161,9 +2081,9 @@ export function AdminTrackingPanel({ inquiries = [], profiles = [], products = [
 
             </div>
 
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </dialog>
 
     </div>
   );

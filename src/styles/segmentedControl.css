@@ -247,8 +247,24 @@
 }
 
 /* Hide static checked styling once sliding ::before pill is active */
+.w365-seg-btn--tab {
+  min-block-size: var(--seg-item-min-h, 30px);
+  padding: var(--seg-item-py, 0.2rem) 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: var(--seg-pill-radius, 6px);
+  gap: 0.4rem;
+}
+
+.w365-seg-btn--tab.active,
+.w365-seg-btn--tab[aria-selected="true"] {
+  color: var(--admin-text-heading, #0f172a);
+  font-weight: 600;
+}
+
 .w365-seg-track[data-slider="ready"] .w365-seg-input:checked + .w365-seg-label,
-.w365-seg-track[data-slider="ready"] .w365-seg-btn.active {
+.w365-seg-track[data-slider="ready"] .w365-seg-btn.active,
+.w365-seg-track[data-slider="ready"] .w365-seg-btn[aria-selected="true"] {
   background: transparent;
   border-color: transparent;
   box-shadow: none;
