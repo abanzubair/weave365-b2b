@@ -563,7 +563,6 @@ const CHAT_WIDGET_STYLES = `
 .wc-msg-user {
   background: #eff6ff;
   color: #0f172a;
-  border: 1.5px solid rgba(59, 130, 246, 0.28);
   border-bottom-right-radius: 4px;
 }
 
@@ -659,11 +658,9 @@ const CHAT_WIDGET_STYLES = `
   font-weight: 600;
   line-height: 1.35;
   color: #111827;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  overflow: clip;
+  white-space: nowrap;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, #000 84%, transparent 100%);
 }
 
 .wc-product-meta {
@@ -923,7 +920,7 @@ const CHAT_WIDGET_STYLES = `
   gap: 6px;
   background: #f3f4f6;
   border: 1px solid transparent;
-  border-radius: 16px;
+  border-radius: 10px;
   padding: 6px 6px 6px 8px;
   transition: border-color 150ms ease, background-color 150ms ease;
 }
@@ -1697,19 +1694,21 @@ export function ChatConciergeWidget() {
               </>
             )}
 
-            <a
-              href={primaryWaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={mode === 'chat' || composerExpanded ? 'wc-wa-link' : 'wc-wa-cta'}
-            >
-              <WhatsappIcon
-                size={16}
-                className="wc-wa-cta-icon"
-                aria-hidden="true"
-              />
-              <span>{primaryWaLabel}</span>
-            </a>
+            {!(mode === 'chat' && messages.some((m) => Boolean(m.handoff))) && (
+              <a
+                href={primaryWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={mode === 'chat' || composerExpanded ? 'wc-wa-link' : 'wc-wa-cta'}
+              >
+                <WhatsappIcon
+                  size={16}
+                  className="wc-wa-cta-icon"
+                  aria-hidden="true"
+                />
+                <span>{primaryWaLabel}</span>
+              </a>
+            )}
           </div>
         </div>
       )}
