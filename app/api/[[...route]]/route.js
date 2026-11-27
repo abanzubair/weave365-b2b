@@ -55,6 +55,7 @@ import {
   handleValidateCoupon,
 } from './couponsHandler.js';
 import { GET as presenceGet, POST as presencePost } from './presenceHandler.js';
+import { POST as chatPost } from './chatHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
@@ -119,6 +120,7 @@ export async function POST(request, { params }) {
   if (routeKey === 'admin/sync') return adminSyncPost(request);
   if (routeKey === 'check-email' || routeKey === 'auth/check-email') return checkEmailPost(request);
   if (routeKey === 'presence' || routeKey === 'admin/presence') return presencePost(request);
+  if (routeKey === 'chat') return chatPost(request);
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
 }
 

@@ -41,8 +41,8 @@ const CartDrawer = dynamic(
   () => import('./CartDrawer.jsx').then((m) => m.CartDrawer),
   { ssr: false }
 );
-const WhatsAppFloat = dynamic(
-  () => import('./WhatsAppFloat.jsx').then((m) => m.WhatsAppFloat),
+const ChatConciergeWidget = dynamic(
+  () => import('./chat/ChatConciergeWidget.jsx').then((m) => m.ChatConciergeWidget),
   { ssr: false }
 );
 import { InternalLinkNetwork } from './InternalLinkNetwork.jsx';
@@ -90,12 +90,6 @@ export function AppShell({ children }) {
     configOptions,
     setConfigOptions,
   } = useStorefront();
-
-  const [showWaFloat, setShowWaFloat] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setShowWaFloat(true), 2500);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Smooth mobile menu mount and unmount animation state
   const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
@@ -861,7 +855,7 @@ export function AppShell({ children }) {
       )}
 
 
-      {!hideShellSections && showWaFloat && <WhatsAppFloat />}
+      {!hideShellSections && <ChatConciergeWidget />}
     </>
   );
 }
