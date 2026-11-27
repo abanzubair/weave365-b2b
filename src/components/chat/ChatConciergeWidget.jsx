@@ -208,26 +208,63 @@ const CHAT_WIDGET_STYLES = `
   transform: scale(0.96);
 }
 
-/* Subtle Proactive Pill Teaser (Desktop & Mobile) */
+/* Proactive Pill Teaser (Desktop & Mobile) */
 .wc-teaser {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: min(296px, calc(100vw - 32px));
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.09);
+  gap: 7px;
+  max-width: min(304px, calc(100vw - 32px));
+  background: #eff6ff;
+  border: 1.5px solid rgba(59, 130, 246, 0.28);
   border-radius: 999px;
-  padding: 5px 7px 5px 12px;
+  padding: 6px 8px 6px 13px;
   box-shadow:
-    0 10px 28px -8px rgba(15, 23, 42, 0.14),
-    0 2px 6px rgba(15, 23, 42, 0.04);
+    0 12px 28px -6px rgba(37, 99, 235, 0.16),
+    0 4px 10px rgba(15, 23, 42, 0.06);
   transform-origin: bottom right;
 }
 
+.wc-teaser:hover {
+  background: #f8fbff;
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow:
+    0 16px 34px -6px rgba(37, 99, 235, 0.22),
+    0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+@keyframes wc-teaser-float {
+  0%, 70%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  78% {
+    transform: translateY(-6px) scale(1.03);
+  }
+  84% {
+    transform: translateY(0) scale(1);
+  }
+  90% {
+    transform: translateY(-3px) scale(1.015);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  .wc-teaser {
+    animation: wc-teaser-float 4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s infinite;
+  }
+
+  .wc-teaser:hover {
+    animation-play-state: paused;
+    transform: translateY(-2px);
+  }
+
   .wc-teaser,
   .wc-panel {
-    transition: opacity 180ms cubic-bezier(0.22, 1, 0.36, 1), transform 180ms cubic-bezier(0.22, 1, 0.36, 1), width 180ms ease;
+    transition:
+      opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      width 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease;
     @starting-style {
       opacity: 0;
       transform: translateY(6px) scale(0.98);
@@ -238,22 +275,26 @@ const CHAT_WIDGET_STYLES = `
 .wc-teaser-open-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  min-height: 28px;
+  gap: 8px;
+  min-height: 30px;
   padding: 2px 4px 2px 0;
   background: transparent;
   border: none;
-  color: #1e293b;
+  color: #0f172a;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 13.5px;
+  font-weight: 600;
   line-height: 1.25;
   text-align: left;
   cursor: pointer;
 }
 
-.wc-teaser-open-btn:hover {
+.wc-teaser-open-btn .wc-ai-icon {
   color: #0f172a;
+}
+
+.wc-teaser-open-btn:hover {
+  color: #020617;
 }
 
 .wc-teaser-close-btn {
@@ -275,6 +316,20 @@ const CHAT_WIDGET_STYLES = `
 .wc-teaser-close-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+@media (min-width: 769px) {
+  .wc-teaser {
+    max-width: 316px;
+    padding: 7px 10px 7px 15px;
+    gap: 8px;
+  }
+
+  .wc-teaser-open-btn {
+    font-size: 13.5px;
+    min-height: 30px;
+    gap: 8px;
+  }
 }
 
 /* Non-modal Dialog Panel */
@@ -506,8 +561,9 @@ const CHAT_WIDGET_STYLES = `
 }
 
 .wc-msg-user {
-  background: #111827;
-  color: #ffffff;
+  background: #eff6ff;
+  color: #0f172a;
+  border: 1.5px solid rgba(59, 130, 246, 0.28);
   border-bottom-right-radius: 4px;
 }
 
@@ -983,19 +1039,20 @@ const CHAT_WIDGET_STYLES = `
   min-block-size: 40px;
   padding: 9px 14px;
   border-radius: 12px;
-  background: #111827;
-  color: #ffffff;
+  background: #eff6ff;
+  color: #0f172a;
   font-family: inherit;
   font-size: 0.84375rem;
   font-weight: 600;
   line-height: 1.3;
-  border: 1px solid transparent;
+  border: 1.5px solid rgba(59, 130, 246, 0.28);
   cursor: pointer;
-  transition: background-color 150ms ease, transform 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 
 .wc-ai-cta:hover {
-  background: #1f2937;
+  background: #f8fbff;
+  border-color: rgba(59, 130, 246, 0.45);
 }
 
 .wc-ai-cta:active {
@@ -1003,7 +1060,7 @@ const CHAT_WIDGET_STYLES = `
 }
 
 .wc-ai-cta-icon {
-  color: #34d399;
+  color: #2563eb;
   flex-shrink: 0;
 }
 
