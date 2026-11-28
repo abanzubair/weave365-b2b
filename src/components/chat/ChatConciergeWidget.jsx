@@ -145,7 +145,7 @@ const CHAT_WIDGET_STYLES = `
 /* ── Weave 365 AI Sourcing Concierge Widget ── */
 .wc-root {
   position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px) + var(--wc-vv-bottom, 0px));
   right: calc(24px + env(safe-area-inset-right, 0px));
   z-index: 9990;
   font-family: var(--font-body, 'Manrope', system-ui, sans-serif);
@@ -176,6 +176,8 @@ const CHAT_WIDGET_STYLES = `
 
 /* Floating Trigger Button */
 .wc-trigger {
+  position: relative;
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -184,21 +186,98 @@ const CHAT_WIDGET_STYLES = `
   min-width: 44px;
   min-height: 44px;
   border-radius: 50%;
-  background: #e8f4f2;
-  color: #128C7E;
-  border: 1.5px solid rgba(18, 140, 126, 0.34);
+  border: none;
+  padding: 0;
+  color: #16a34a;
+  cursor: pointer;
+  --color-1: #ffffff;
+  --color-2: #f0fdf4;
+  --color-3: #dcfce7;
+  --color-4: #ccfbf1;
+  --color-5: #e0f2fe;
+  --border-angle: 200deg;
+  --border-color-1: rgba(22, 163, 74, 0.35);
+  --border-color-2: rgba(13, 148, 136, 0.14);
+  background: radial-gradient(
+    var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+    var(--color-1) var(--stop-1),
+    var(--color-2) var(--stop-2),
+    var(--color-3) var(--stop-3),
+    var(--color-4) var(--stop-4),
+    var(--color-5) var(--stop-5)
+  );
   box-shadow:
     0 10px 26px rgba(18, 140, 126, 0.16),
     0 2px 6px rgba(15, 23, 42, 0.08);
-  cursor: pointer;
-  padding: 0;
-  transition: transform 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, border-color 150ms ease-out;
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wc-trigger {
+    transition:
+      --pos-x 0.5s,
+      --pos-y 0.5s,
+      --spread-x 0.5s,
+      --spread-y 0.5s,
+      --color-1 0.5s,
+      --color-2 0.5s,
+      --color-3 0.5s,
+      --color-4 0.5s,
+      --color-5 0.5s,
+      --border-angle 0.5s,
+      --border-color-1 0.5s,
+      --border-color-2 0.5s,
+      --stop-1 0.5s,
+      --stop-2 0.5s,
+      --stop-3 0.5s,
+      --stop-4 0.5s,
+      --stop-5 0.5s,
+      transform 150ms ease-out,
+      box-shadow 150ms ease-out;
+  }
+}
+
+.wc-trigger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    var(--border-angle),
+    var(--border-color-1),
+    var(--border-color-2)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.wc-trigger:hover,
+.wc-trigger:active {
+  --pos-x: 0%;
+  --pos-y: 95.51%;
+  --spread-x: 110.24%;
+  --spread-y: 110.2%;
+  --color-1: #ffffff;
+  --color-2: #bef264;
+  --color-3: #86efac;
+  --color-4: #bae6fd;
+  --color-5: #f0fdf4;
+  --stop-1: 0%;
+  --stop-2: 10%;
+  --stop-3: 35.44%;
+  --stop-4: 71.34%;
+  --stop-5: 90.76%;
+  --border-angle: 210deg;
+  --border-color-1: rgba(13, 148, 136, 0.18);
+  --border-color-2: rgba(22, 163, 74, 0.55);
 }
 
 .wc-trigger:hover {
   transform: translateY(-2px);
-  background: #d7eeea;
-  border-color: #128C7E;
   box-shadow:
     0 14px 30px rgba(18, 140, 126, 0.22),
     0 4px 10px rgba(15, 23, 42, 0.1);
@@ -208,52 +287,156 @@ const CHAT_WIDGET_STYLES = `
   transform: scale(0.96);
 }
 
-/* Proactive Pill Teaser (Desktop & Mobile) */
+/* Proactive Mini Card Teaser (Desktop & Mobile) - Lightweight Light-Mode Sunset Border Beam */
 .wc-teaser {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  max-width: min(304px, calc(100vw - 32px));
-  background: #eff6ff;
-  border: 1.5px solid rgba(59, 130, 246, 0.28);
-  border-radius: 999px;
-  padding: 6px 8px 6px 13px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  width: min(268px, calc(100vw - 32px));
+  background: #ffffff;
+  border: none;
+  border-radius: 16px;
+  padding: 12px 12px 12px 14px;
   box-shadow:
-    0 12px 28px -6px rgba(37, 99, 235, 0.16),
-    0 4px 10px rgba(15, 23, 42, 0.06);
+    0 14px 32px -6px rgba(15, 23, 42, 0.16),
+    0 4px 12px rgba(15, 23, 42, 0.06),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.06);
   transform-origin: bottom right;
 }
 
-.wc-teaser:hover {
-  background: #f8fbff;
-  border-color: rgba(59, 130, 246, 0.45);
-  box-shadow:
-    0 16px 34px -6px rgba(37, 99, 235, 0.22),
-    0 6px 14px rgba(15, 23, 42, 0.08);
+.wc-teaser > * {
+  position: relative;
+  z-index: 3;
 }
 
-@keyframes wc-teaser-float {
-  0%, 70%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  78% {
-    transform: translateY(-6px) scale(1.03);
-  }
-  84% {
-    transform: translateY(0) scale(1);
-  }
-  90% {
-    transform: translateY(-3px) scale(1.015);
+.wc-teaser::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background:
+    conic-gradient(
+      from var(--wc-teaser-angle),
+      transparent 0%,
+      transparent 54%,
+      rgba(255, 255, 255, 0.15) 58%,
+      rgba(224, 231, 255, 0.55) 64%,
+      rgba(255, 255, 255, 0.85) 67%,
+      rgba(254, 243, 199, 0.55) 70%,
+      rgba(255, 255, 255, 0.15) 76%,
+      transparent 80%,
+      transparent 100%
+    ),
+    radial-gradient(ellipse 38% 100% at 12% 55%, rgba(245, 158, 11, 0.9), transparent),
+    radial-gradient(ellipse 46% 80% at 68% 0%, rgba(129, 140, 248, 0.95), transparent),
+    radial-gradient(ellipse 46% 80% at 74% 100%, rgba(192, 132, 252, 0.95), transparent),
+    radial-gradient(ellipse 36% 100% at 96% 35%, rgba(244, 114, 182, 0.9), transparent),
+    radial-gradient(ellipse 40% 90% at 38% 100%, rgba(251, 191, 36, 0.88), transparent);
+  -webkit-mask:
+    conic-gradient(
+      from var(--wc-teaser-angle),
+      transparent 0%,
+      transparent 24%,
+      rgba(255, 255, 255, 0.14) 32%,
+      rgba(255, 255, 255, 0.45) 42%,
+      white 54%,
+      white 80%,
+      rgba(255, 255, 255, 0.45) 88%,
+      rgba(255, 255, 255, 0.14) 94%,
+      transparent 98%,
+      transparent 100%
+    ),
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: source-in, xor;
+  mask:
+    conic-gradient(
+      from var(--wc-teaser-angle),
+      transparent 0%,
+      transparent 24%,
+      rgba(255, 255, 255, 0.14) 32%,
+      rgba(255, 255, 255, 0.45) 42%,
+      white 54%,
+      white 80%,
+      rgba(255, 255, 255, 0.45) 88%,
+      rgba(255, 255, 255, 0.14) 94%,
+      transparent 98%,
+      transparent 100%
+    ),
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: intersect, exclude;
+  filter: saturate(1.15);
+  opacity: 0.92;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.wc-teaser::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 40% 95% at 12% 55%, rgba(253, 230, 138, 0.28), transparent),
+    radial-gradient(ellipse 46% 75% at 70% 0%, rgba(199, 210, 254, 0.28), transparent),
+    radial-gradient(ellipse 46% 75% at 74% 100%, rgba(221, 214, 254, 0.25), transparent),
+    radial-gradient(ellipse 36% 95% at 96% 35%, rgba(251, 207, 232, 0.26), transparent);
+  -webkit-mask-image: conic-gradient(
+    from var(--wc-teaser-angle),
+    transparent 0%,
+    transparent 24%,
+    rgba(255, 255, 255, 0.14) 34%,
+    rgba(255, 255, 255, 0.45) 44%,
+    white 54%,
+    white 80%,
+    rgba(255, 255, 255, 0.45) 88%,
+    rgba(255, 255, 255, 0.14) 94%,
+    transparent 98%,
+    transparent 100%
+  );
+  mask-image: conic-gradient(
+    from var(--wc-teaser-angle),
+    transparent 0%,
+    transparent 24%,
+    rgba(255, 255, 255, 0.14) 34%,
+    rgba(255, 255, 255, 0.45) 44%,
+    white 54%,
+    white 80%,
+    rgba(255, 255, 255, 0.45) 88%,
+    rgba(255, 255, 255, 0.14) 94%,
+    transparent 98%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wc-teaser:hover {
+  background: #ffffff;
+  box-shadow:
+    0 16px 34px -6px rgba(15, 23, 42, 0.18),
+    0 6px 14px rgba(15, 23, 42, 0.08),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+@keyframes wc-teaser-beam-spin {
+  to {
+    --wc-teaser-angle: 360deg;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .wc-teaser {
-    animation: wc-teaser-float 4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s infinite;
+    animation: wc-teaser-beam-spin 5.5s linear infinite;
   }
 
   .wc-teaser:hover {
-    animation-play-state: paused;
     transform: translateY(-2px);
   }
 
@@ -272,28 +455,59 @@ const CHAT_WIDGET_STYLES = `
   }
 }
 
+@media (forced-colors: active) {
+  .wc-teaser {
+    border: 1px solid CanvasText;
+  }
+
+  .wc-teaser::before,
+  .wc-teaser::after {
+    display: none;
+  }
+}
+
 .wc-teaser-open-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 30px;
-  padding: 2px 4px 2px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
   background: transparent;
   border: none;
   color: #0f172a;
   font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.25;
   text-align: left;
   cursor: pointer;
 }
 
-.wc-teaser-open-btn .wc-ai-icon {
+.wc-teaser-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.wc-teaser-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   color: #0f172a;
 }
 
-.wc-teaser-open-btn:hover {
+.wc-teaser-subcopy {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.wc-teaser-open-btn .wc-ai-icon {
+  color: #2563eb;
+}
+
+.wc-teaser-open-btn:hover .wc-teaser-title {
   color: #020617;
 }
 
@@ -303,6 +517,7 @@ const CHAT_WIDGET_STYLES = `
   justify-content: center;
   min-width: 24px;
   min-height: 24px;
+  margin: -2px -2px 0 0;
   border-radius: 50%;
   border: none;
   background: transparent;
@@ -320,33 +535,82 @@ const CHAT_WIDGET_STYLES = `
 
 @media (min-width: 769px) {
   .wc-teaser {
-    max-width: 316px;
-    padding: 7px 10px 7px 15px;
-    gap: 8px;
-  }
-
-  .wc-teaser-open-btn {
-    font-size: 13.5px;
-    min-height: 30px;
-    gap: 8px;
+    width: 280px;
+    padding: 13px 13px 13px 15px;
+    gap: 10px;
   }
 }
 
 /* Non-modal Dialog Panel */
 .wc-panel {
+  position: relative;
+  isolation: isolate;
   width: min(304px, calc(100vw - 32px));
   max-block-size: min(560px, calc(100dvh - 104px - env(safe-area-inset-bottom, 0px)));
   background: #ffffff;
   border: none;
   border-radius: 18px;
   box-shadow:
-    0 20px 48px -12px rgba(15, 23, 42, 0.16),
-    0 0 0 1px rgba(15, 23, 42, 0.06);
+    0 18px 40px -8px rgba(15, 23, 42, 0.16),
+    0 4px 12px -2px rgba(15, 23, 42, 0.08),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transform-origin: bottom right;
   transition: width 180ms ease;
+}
+
+.wc-panel > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Static soft edge glow matching the teaser card palette */
+.wc-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 46% 32% at 10% 14%, rgba(253, 230, 138, 0.11), transparent),
+    radial-gradient(ellipse 52% 28% at 72% 0%, rgba(199, 210, 254, 0.12), transparent),
+    radial-gradient(ellipse 50% 30% at 88% 92%, rgba(221, 214, 254, 0.11), transparent),
+    radial-gradient(ellipse 42% 32% at 98% 28%, rgba(251, 207, 232, 0.11), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wc-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background:
+    radial-gradient(ellipse 42% 38% at 12% 22%, rgba(245, 158, 11, 0.68), transparent),
+    radial-gradient(ellipse 50% 34% at 68% 0%, rgba(129, 140, 248, 0.72), transparent),
+    radial-gradient(ellipse 52% 36% at 74% 100%, rgba(192, 132, 252, 0.72), transparent),
+    radial-gradient(ellipse 38% 42% at 98% 32%, rgba(244, 114, 182, 0.68), transparent),
+    radial-gradient(ellipse 44% 38% at 30% 100%, rgba(251, 191, 36, 0.66), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 3;
+}
+
+@media (forced-colors: active) {
+  .wc-panel {
+    border: 1px solid CanvasText;
+  }
+
+  .wc-panel::before,
+  .wc-panel::after {
+    display: none;
+  }
 }
 
 .wc-panel-expanded {
@@ -360,7 +624,7 @@ const CHAT_WIDGET_STYLES = `
   justify-content: space-between;
   gap: 8px;
   padding: 13px 12px 10px 16px;
-  background: #ffffff;
+  background: transparent;
   border-bottom: 1px solid rgba(15, 23, 42, 0.05);
   flex-shrink: 0;
 }
@@ -830,7 +1094,7 @@ const CHAT_WIDGET_STYLES = `
 /* Inline Composer & Upload */
 .wc-footer {
   border-top: none;
-  background: #ffffff;
+  background: transparent;
   padding: 4px 12px 12px;
   display: flex;
   flex-direction: column;
@@ -975,6 +1239,9 @@ const CHAT_WIDGET_STYLES = `
 
 .wc-textarea::placeholder {
   color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wc-attach-btn,
@@ -1027,79 +1294,192 @@ const CHAT_WIDGET_STYLES = `
 }
 
 /* Primary AI Concierge CTA (Home) & Secondary WhatsApp Action */
-.wc-ai-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.wc-home-cta-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
+}
+
+.wc-ai-cta,
+.wc-wa-cta {
+  position: relative;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
   min-block-size: 40px;
-  padding: 9px 14px;
-  border-radius: 12px;
-  background: #eff6ff;
-  color: #0f172a;
+  padding: 9px 10px;
+  border-radius: 11px;
+  border: none;
+  color: #ffffff;
   font-family: inherit;
-  font-size: 0.84375rem;
-  font-weight: 600;
-  line-height: 1.3;
-  border: 1.5px solid rgba(59, 130, 246, 0.28);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 19px;
+  white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  background: radial-gradient(
+    var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+    var(--color-1) var(--stop-1),
+    var(--color-2) var(--stop-2),
+    var(--color-3) var(--stop-3),
+    var(--color-4) var(--stop-4),
+    var(--color-5) var(--stop-5)
+  );
 }
 
-.wc-ai-cta:hover {
-  background: #f8fbff;
-  border-color: rgba(59, 130, 246, 0.45);
+@media (prefers-reduced-motion: no-preference) {
+  .wc-ai-cta,
+  .wc-wa-cta {
+    transition:
+      --pos-x 0.5s,
+      --pos-y 0.5s,
+      --spread-x 0.5s,
+      --spread-y 0.5s,
+      --color-1 0.5s,
+      --color-2 0.5s,
+      --color-3 0.5s,
+      --color-4 0.5s,
+      --color-5 0.5s,
+      --border-angle 0.5s,
+      --border-color-1 0.5s,
+      --border-color-2 0.5s,
+      --stop-1 0.5s,
+      --stop-2 0.5s,
+      --stop-3 0.5s,
+      --stop-4 0.5s,
+      --stop-5 0.5s,
+      transform 150ms ease;
+  }
 }
 
+.wc-ai-cta::before,
+.wc-wa-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    var(--border-angle),
+    var(--border-color-1),
+    var(--border-color-2)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.wc-ai-cta {
+  --color-1: #ffffff;
+  --color-2: #f8fafc;
+  --color-3: #eff6ff;
+  --color-4: #fce7f3;
+  --color-5: #ede9fe;
+  --border-angle: 20deg;
+  --border-color-1: rgba(99, 102, 241, 0.18);
+  --border-color-2: rgba(217, 70, 239, 0.32);
+  color: #0f172a;
+}
+
+.wc-ai-cta:hover,
 .wc-ai-cta:active {
+  --pos-x: 0%;
+  --pos-y: 91.51%;
+  --spread-x: 120.24%;
+  --spread-y: 103.18%;
+  --color-1: #fbcfe8;
+  --color-2: #fed7aa;
+  --color-3: #fde68a;
+  --color-4: #e0e7ff;
+  --color-5: #f8fafc;
+  --border-angle: 190deg;
+  --border-color-1: rgba(244, 114, 182, 0.18);
+  --border-color-2: rgba(245, 158, 11, 0.45);
+  --stop-1: 0%;
+  --stop-2: 8.8%;
+  --stop-3: 21.44%;
+  --stop-4: 71.34%;
+  --stop-5: 85.76%;
+  color: #0f172a;
+}
+
+.wc-wa-cta {
+  --color-1: #ffffff;
+  --color-2: #f0fdf4;
+  --color-3: #dcfce7;
+  --color-4: #ccfbf1;
+  --color-5: #e0f2fe;
+  --border-angle: 200deg;
+  --border-color-1: rgba(22, 163, 74, 0.35);
+  --border-color-2: rgba(13, 148, 136, 0.14);
+  color: #0f172a;
+}
+
+.wc-wa-cta:hover,
+.wc-wa-cta:active {
+  --pos-x: 0%;
+  --pos-y: 95.51%;
+  --spread-x: 110.24%;
+  --spread-y: 110.2%;
+  --color-1: #ffffff;
+  --color-2: #bef264;
+  --color-3: #86efac;
+  --color-4: #bae6fd;
+  --color-5: #f0fdf4;
+  --stop-1: 0%;
+  --stop-2: 10%;
+  --stop-3: 35.44%;
+  --stop-4: 71.34%;
+  --stop-5: 90.76%;
+  --border-angle: 210deg;
+  --border-color-1: rgba(13, 148, 136, 0.18);
+  --border-color-2: rgba(22, 163, 74, 0.55);
+  color: #0f172a;
+}
+
+.wc-ai-cta:active,
+.wc-wa-cta:active {
   transform: scale(0.99);
 }
 
 .wc-ai-cta-icon {
   color: #2563eb;
   flex-shrink: 0;
+  stroke-width: 2.1;
 }
 
-.wc-wa-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  min-block-size: 32px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  background: transparent;
-  color: #475569;
-  font-family: inherit;
-  font-size: 0.78125rem;
-  font-weight: 500;
-  line-height: 1.3;
-  text-decoration: none;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
-}
-
-.wc-wa-cta:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.wc-wa-cta:active {
-  transform: scale(0.99);
+.wc-ai-cta-icon path {
+  stroke-width: 2.1;
 }
 
 .wc-wa-cta-icon {
-  color: #25D366;
+  color: #16a34a;
   flex-shrink: 0;
+}
+
+.wc-wa-link .wc-wa-cta-icon {
+  color: #25D366;
 }
 
 @media (forced-colors: active) {
   .wc-ai-cta,
   .wc-wa-cta {
+    background: ButtonFace;
+    color: ButtonText;
     border: 1px solid ButtonText;
+  }
+
+  .wc-ai-cta::before,
+  .wc-wa-cta::before {
+    display: none;
   }
 }
 
@@ -1148,13 +1528,13 @@ const CHAT_WIDGET_STYLES = `
 
 @media (max-width: 768px) {
   .wc-root {
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--wc-vv-bottom, 0px));
     right: calc(16px + env(safe-area-inset-right, 0px));
   }
 
   .wc-panel {
     width: min(304px, calc(100vw - 28px));
-    max-block-size: min(520px, calc(100dvh - 96px - env(safe-area-inset-bottom, 0px)));
+    max-block-size: min(520px, calc(var(--wc-vv-height, 100dvh) - 96px - env(safe-area-inset-bottom, 0px)));
   }
 
   .wc-panel-expanded {
@@ -1221,11 +1601,34 @@ export function ChatConciergeWidget() {
   const isSuppressedRoute = useMemo(() => isSuppressedAutoOpenRoute(pathname), [pathname]);
   const isOverlayOpen = Boolean(cartOpen || searchActive || menuOpen);
 
-  const primaryWaLabel = inputText.trim().length > 0 ? 'Send on WhatsApp →' : 'Ask on WhatsApp →';
   const primaryWaUrl = useMemo(
     () => buildStoreWhatsAppUrl(inputText.trim(), pathname, inputText.trim() ? 'chat_cta' : ''),
     [inputText, pathname]
   );
+
+  // Keep fixed chat widget above mobile onscreen keyboard via VisualViewport API
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof window === 'undefined' || !window.visualViewport) return undefined;
+
+    const vv = window.visualViewport;
+    const syncViewport = () => {
+      const bottomInset = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+      el.style.setProperty('--wc-vv-bottom', `${Math.round(bottomInset)}px`);
+      el.style.setProperty('--wc-vv-height', `${Math.round(vv.height)}px`);
+    };
+
+    syncViewport();
+    vv.addEventListener('resize', syncViewport);
+    vv.addEventListener('scroll', syncViewport);
+
+    return () => {
+      vv.removeEventListener('resize', syncViewport);
+      vv.removeEventListener('scroll', syncViewport);
+      el.style.removeProperty('--wc-vv-bottom');
+      el.style.removeProperty('--wc-vv-height');
+    };
+  }, [isOpen]);
 
   // Scroll latest chat reply into view
   useEffect(() => {
@@ -1552,7 +1955,10 @@ export function ChatConciergeWidget() {
                 <button
                   type="button"
                   className="wc-back-btn"
-                  onClick={() => setMode('home')}
+                  onClick={() => {
+                    setMode('home');
+                    setComposerExpanded(false);
+                  }}
                   aria-label="Back to quick topics"
                   title="Back to quick topics"
                 >
@@ -1622,23 +2028,37 @@ export function ChatConciergeWidget() {
 
           <div className="wc-footer">
             {mode === 'home' && !composerExpanded && (
-              <button
-                type="button"
-                className="wc-ai-cta"
-                onClick={() =>
-                  handleQuickTap(
-                    QUICK_TAPS.find((tap) => tap.kind === 'input') || {
-                      id: 'ask-question',
-                      label: 'Ask a Question',
-                      kind: 'input',
-                    }
-                  )
-                }
-              >
-                <MessageCircle size={16} className="wc-ai-cta-icon" aria-hidden="true" />
-                <span>Ask a Question</span>
-                <ArrowRight size={14} aria-hidden="true" />
-              </button>
+              <div className="wc-home-cta-row">
+                <button
+                  type="button"
+                  className="wc-ai-cta"
+                  onClick={() =>
+                    handleQuickTap(
+                      QUICK_TAPS.find((tap) => tap.kind === 'input') || {
+                        id: 'ask-question',
+                        label: 'Ask a Question',
+                        kind: 'input',
+                      }
+                    )
+                  }
+                >
+                  <MessageCircle size={17} className="wc-ai-cta-icon" aria-hidden="true" />
+                  <span>Ask AI</span>
+                </button>
+                <a
+                  href={primaryWaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="wc-wa-cta"
+                >
+                  <WhatsappIcon
+                    size={15}
+                    className="wc-wa-cta-icon"
+                    aria-hidden="true"
+                  />
+                  <span>WhatsApp</span>
+                </a>
+              </div>
             )}
 
             {(composerExpanded || mode === 'chat') && (
@@ -1678,7 +2098,7 @@ export function ChatConciergeWidget() {
                     value={inputText}
                     onChange={handleComposerChange}
                     onKeyDown={handleComposerKeyDown}
-                    placeholder="Ask anything or upload a photo…"
+                    placeholder="Ask or upload a photo…"
                     className="wc-textarea"
                   />
                   <button
@@ -1693,22 +2113,6 @@ export function ChatConciergeWidget() {
                 </form>
               </>
             )}
-
-            {!(mode === 'chat' && messages.some((m) => Boolean(m.handoff))) && (
-              <a
-                href={primaryWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={mode === 'chat' || composerExpanded ? 'wc-wa-link' : 'wc-wa-cta'}
-              >
-                <WhatsappIcon
-                  size={16}
-                  className="wc-wa-cta-icon"
-                  aria-hidden="true"
-                />
-                <span>{primaryWaLabel}</span>
-              </a>
-            )}
           </div>
         </div>
       )}
@@ -1720,11 +2124,18 @@ export function ChatConciergeWidget() {
             className="wc-teaser-open-btn"
             onClick={handleOpenManual}
           >
-            <MessageCircle size={16} className="wc-ai-icon" aria-hidden="true" />
-            <span>
+            <span className="wc-teaser-title-row">
+              <MessageCircle size={15} className="wc-ai-icon" aria-hidden="true" />
+              <span className="wc-teaser-title">
+                {isProductPage
+                  ? 'Bulk rates or fabric check?'
+                  : 'Need help sourcing?'}
+              </span>
+            </span>
+            <span className="wc-teaser-subcopy">
               {isProductPage
-                ? 'Bulk rates or fabric check?'
-                : 'Need help sourcing?'}
+                ? 'Wholesale MOQ, factory rates, or a fabric video.'
+                : 'Wholesale MOQ, zero-inventory reselling, or saree photo match.'}
             </span>
           </button>
           <button
